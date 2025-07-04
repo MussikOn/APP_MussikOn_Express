@@ -8,7 +8,15 @@ const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS;
 
 
 const serviceAccount = path.join(__dirname, `../../${FIREBASE_CREDENTIALS}`);
-// Inicializacion e FireBase.
+
+if(!admin.apps.length){
+  admin.initializeApp({
+    credential:admin.credential.cert(serviceAccount)
+  });
+}
+// Inicializando Auth
+export const suthAdmin = admin.auth(); 
+// Inicializacion en FireBase.
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
