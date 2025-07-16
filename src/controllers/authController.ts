@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { getUserByEmailModel, registerModel, updateUserByEmailModel } from "../models/authModel";
+import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel } from "../models/authModel";
 import { authUserRegister, UpdateUser, User } from "../utils/DataTypes";
 import { validarEmail, validarPassword } from "../utils/validatios";
 import { createToken } from "../utils/jwt";
@@ -9,7 +9,65 @@ import { URL_API } from "../../ENV";
 import { numberRandon } from "../utils/functions";
 import { db } from "../utils/firebase";
 
-
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     AuthUserRegister:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         roll:
+ *           type: string
+ *         userEmail:
+ *           type: string
+ *         userPassword:
+ *           type: string
+ *     Event:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         user:
+ *           type: string
+ *         eventName:
+ *           type: string
+ *         requesterName:
+ *           type: string
+ *         location:
+ *           type: string
+ *         date:
+ *           type: string
+ *         time:
+ *           type: string
+ *         duration:
+ *           type: string
+ *         instrument:
+ *           type: string
+ *         bringInstrument:
+ *           type: boolean
+ *         comment:
+ *           type: string
+ *         budget:
+ *           type: string
+ *         eventType:
+ *           type: string
+ *         flyerUrl:
+ *           type: string
+ *         songs:
+ *           type: array
+ *           items:
+ *             type: string
+ *         recommendations:
+ *           type: array
+ *           items:
+ *             type: string
+ *         mapsLink:
+ *           type: string
+ */
 export async function registerController(req:Request, res:Response){
     try{
         const {name,lastName,roll,userEmail,userPassword}:authUserRegister = req.body;
@@ -35,7 +93,7 @@ export async function registerController(req:Request, res:Response){
         }
     }catch(error){
         console.info(`Hubo un error al intentar registar un Usuario: ${error}`);
-        res.status(400).json({msg:"Error al registrarse.", error});  
+        res.status(400).json({msg:"Error al registrarse.", error});
         return;
     }
 }
@@ -69,7 +127,7 @@ export const updateUserByEmailController = async (req:Request, res:Response) =>{
 try{
     const dataUsers = req.body;
     const userEmail = req.params.userEmail.toLocaleLowerCase();
-    if(!dataUsers || !userEmail){res.status(401).json({msg:"No hay Datos para actualizar"})} 
+    if(!dataUsers || !userEmail){res.status(401).json({msg:"No hay Datos para actualizar"})}
     if(!validarEmail(userEmail)){res.status(400).json({msg:"Dirección de correo electrónico no válido."});return;};
     const updateValidation = await updateUserByEmailModel(userEmail,dataUsers);
     if(updateValidation){
@@ -82,7 +140,7 @@ try{
     console.info("Error al actualizar los datos.");
     res.status(401).json({msg:"Error al actualizar el usuario."});
 }
-    
+
 }
 
 export const emailRegisterController = async (req:Request, res:Response) =>{
@@ -106,7 +164,7 @@ export const emailRegisterController = async (req:Request, res:Response) =>{
                 <img src="https://lh3.googleusercontent.com/a/ACg8ocLSs4B7UmP4bKLb26G-puyYjCURVh0Qnf9yHD_zxbCfRJTd3DFOovBly95OzJTWk34hnBf1RhigsdCnM0Wwg3TKCgsJ3rs=s288-c-no" alt="MusikOn Logo" width="120" style="border-radius: 50%;" />
               </td>
             </tr>
-  
+
             <!-- Título -->
             <tr>
               <td style="padding: 30px; text-align: center;">
@@ -114,7 +172,7 @@ export const emailRegisterController = async (req:Request, res:Response) =>{
                 <p style="font-size: 16px; color: hsl(246, 100%, 92%);">Gracias por registrarte. Solo falta un paso para activar tu cuenta.</p>
               </td>
             </tr>
-  
+
             <!-- Botón -->
             <tr>
               <td style="text-align: center; padding: 20px;">
@@ -123,14 +181,14 @@ export const emailRegisterController = async (req:Request, res:Response) =>{
                 </h1>
               </td>
             </tr>
-  
+
             <!-- Mensaje de soporte -->
             <tr>
               <td style="padding: 20px 40px; text-align: center; font-size: 14px; color: #b6c9ff;">
                 Si no creaste esta cuenta, puedes ignorar este mensaje. Si tienes dudas, contáctanos en <a href="mailto:appmusikon@gmail.com" style="color: hsl(214, 100%, 77%);">appmusikon@gmail.com</a>
               </td>
             </tr>
-  
+
             <!-- Footer -->
             <tr>
               <td style="text-align: center; padding: 30px; background-color: #f0f0f0; font-size: 12px; color: #0041f3;">
@@ -160,7 +218,7 @@ export const emailRegisterController = async (req:Request, res:Response) =>{
 
 export const validNumberGetByEmail = async (req:Request, res:Response) =>{
 try{
-  const numBack = req.body.vaildNumber.toString(); 
+  const numBack = req.body.vaildNumber.toString();
   const numParam = req.params.vaildNumber.toString();
   if(numBack ===  "" || numParam === ""){res.status(402).json({msg:"Faltan datos requeridos."}); return;}
   const isMatch = await bcrypt.compare(numParam,numBack);
@@ -175,4 +233,27 @@ try{
 }catch(err){
   res.status(402).json({msg:"Fallo el proceso!"});
 }
+}
+
+export const addEventToUserController = async (req: Request, res: Response) => {
+    try {
+        const user = (req as any).user;
+        if (!user || !user.userEmail) {
+            res.status(401).json({ msg: "Usuario no autenticado." });
+            return;
+        }
+        const eventData = req.body;
+        if (!eventData) {
+            res.status(400).json({ msg: "No se proporcionó información del evento." });
+            return;
+        }
+        const result = await addEventToUserModel(user.userEmail, eventData);
+        if (!result) {
+            res.status(200).json({ msg: "Evento guardado exitosamente." });
+        } else {
+            res.status(400).json({ msg: result });
+        }
+    } catch (error) {
+        res.status(500).json({ msg: "Error al guardar el evento.", error });
+    }
 }

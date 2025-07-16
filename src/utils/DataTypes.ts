@@ -63,6 +63,30 @@ export type EventAlert = {
   calendarEventId?: string; // ID del evento en Google Calendar (si se agregó)
 };
 
+export interface Event {
+  id: string; // ID de Firestore
+  user: string; // Email del organizador
+  eventName: string;
+  eventType: string;
+  date: string;
+  time: string;
+  location: string;
+  duration: string;
+  instrument: string;
+  bringInstrument: boolean;
+  comment: string;
+  budget: string;
+  flyerUrl?: string;
+  songs: string[];
+  recommendations: string[];
+  mapsLink: string;
+  status: 'pending_musician' | 'musician_assigned' | 'completed' | 'cancelled';
+  assignedMusicianId?: string;
+  interestedMusicians?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FileMetadata {
   key: string;
   url: string;

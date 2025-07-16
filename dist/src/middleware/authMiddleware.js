@@ -10,11 +10,13 @@ function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         res.status(401).json({ message: 'Token no proporcionado' });
+        return;
     }
     const token = authHeader.split(' ')[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, ENV_1.TOKEN_SECRET);
-        req.body = decoded;
+        // Agregar el usuario decodificado en req.user en vez de sobrescribir req.body
+        req.user = decoded;
         next();
     }
     catch (err) {

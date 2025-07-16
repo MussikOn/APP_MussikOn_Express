@@ -14,10 +14,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const firebase_1 = require("../utils/firebase");
+const authMiddleware_1 = require("../middleware/authMiddleware");
 const adm = (0, express_1.default)();
 adm.use(express_1.default.json());
-// Ruta para eliminar todos los usuarios de Firestore
-adm.delete('/deleteAllUsers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+/**
+ * @swagger
+ * /superAdmin/deleteAllUsers:
+ *   delete:
+ *     summary: Elimina todos los usuarios de Firestore (protegido)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Todos los usuarios eliminados exitosamente
+ *       404:
+ *         description: No hay usuarios para eliminar
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Error al eliminar todos los usuarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+adm.delete('/deleteAllUsers', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const snapshot = yield firebase_1.db.collection('users').get();
         if (snapshot.empty) {

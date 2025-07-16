@@ -14,18 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFileUrl = exports.uploadFile = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
+const idriveE2_1 = require("../utils/idriveE2");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const s3 = new client_s3_1.S3Client({
-    region: process.env.IDRIVE_E2_REGION,
-    endpoint: process.env.IDRIVE_E2_ENDPOINT,
-    credentials: {
-        accessKeyId: process.env.IDRIVE_E2_ACCESS_KEY,
-        secretAccessKey: process.env.IDRIVE_E2_SECRET_KEY,
-    },
-    forcePathStyle: true,
-});
 const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
@@ -41,7 +33,7 @@ const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             ContentType: req.file.mimetype,
         });
         console.info("Direccion");
-        const direccion = yield s3.send(command);
+        const direccion = yield idriveE2_1.s3.send(command);
         console.info(direccion);
         const url = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${fileKey}`;
         res.status(200).json({
@@ -64,7 +56,7 @@ const getFileUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return;
         }
         const command = new client_s3_1.GetObjectCommand({ Bucket: process.env.IDRIVE_E2_BUCKET_NAME, Key: key, });
-        const url = yield (0, s3_request_presigner_1.getSignedUrl)(s3, command, { expiresIn: 60 * 5 });
+        const url = yield (0, s3_request_presigner_1.getSignedUrl)(idriveE2_1.s3, command, { expiresIn: 60 * 5 });
         res.status(200).json({ url });
     }
     catch (error) {
@@ -73,3 +65,56 @@ const getFileUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getFileUrl = getFileUrl;
+/**
+ * @swagger
+ * /media/saveImage:
+ *   post:
+ *     summary: Sube una imagen de perfil de músico
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Imagen subida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 url:
+ *                   type: string
+ *                 key:
+ *                   type: string
+ *
+ * /media/getImage/{key}:
+ *   get:
+ *     summary: Obtiene la URL firmada de una imagen subida
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Clave de la imagen
+ *     responses:
+ *       200:
+ *         description: URL firmada obtenida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 url:
+ *                   type: string
+ */

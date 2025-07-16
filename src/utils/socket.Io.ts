@@ -1,27 +1,20 @@
+import { Server } from "socket.io";
+import { socketHandler } from "../sockets/eventSocket";
 
-// // import {io} from "../../index"
+export const users: Record<string, string> = {};
 
-// // io.on('connection', (socket:any) => {
-// //   console.log('Usuario conectado:', socket.id);
+export function initializeSocket(server: any, userMap: Record<string, string>) {
+  const io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST", "PUT"],
+    },
+  });
 
+  io.on("connection", (socket) => {
+    socketHandler(io, socket, userMap);
+  });
 
-// //   socket.on('join', (userId:any) => {
-// //     socket.join(userId); 
-// //     console.log(`Usuario ${userId} unido a su sala.`);
-// //   });
-
-// //   socket.on('disconnect', () => {
-// //     console.log('Usuario desconectado:', socket.id);
-// //   });
-// // });
-
-// import { io } from "../../index"; // Ajusta la ruta según la ubicación
-
-// // Por ejemplo, en un controlador cuando se crea una solicitud de evento:
-// io.to(musicianId).emit("newAlert", {
-//   title: "¡Nuevo Evento!",
-//   message: "Has recibido una solicitud para participar.",
-//   date: new Date(),
-//   location: "Santo Domingo"
-// });
+  return io;
+}
 

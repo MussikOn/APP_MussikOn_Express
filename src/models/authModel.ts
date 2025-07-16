@@ -1,5 +1,6 @@
 import { authUserRegister, UpdateUser, User } from "../utils/DataTypes";
 import { db } from "../utils/firebase";
+import * as admin from 'firebase-admin';
 
 
 export const registerModel = async (name:string, lastName:string, roll: string, userEmail:string ,userPassword:string)=>{
@@ -60,4 +61,22 @@ export const updateUserByEmailModel = async (userEmail: string, updatedData: Par
       return "Error al actualizar los datos.";
     }
   };
+
+export const addEventToUserModel = async (userEmail: string, eventData: any) => {
+    try {
+        if (!userEmail || !eventData) {
+            return "Faltan datos para guardar el evento.";
+        }
+        const userRef = db.collection("users").doc(userEmail.toLowerCase());
+        // Agrega el evento al array 'createdEvents' del usuario
+        await userRef.update({
+            createdEvents: admin.firestore.FieldValue.arrayUnion(eventData),
+            update_at: new Date().toString(),
+        });
+        return false;
+    } catch (error) {
+        console.info("Error al guardar el evento en el usuario.");
+        return "Error al guardar el evento.";
+    }
+}
   

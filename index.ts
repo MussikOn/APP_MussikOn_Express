@@ -1,8 +1,9 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
-import { Server } from "socket.io";
-const port = process.env.PORT || 10000;
+import { initializeSocket } from "./src/utils/socket.Io";
+import { users as userSocketMap } from "./src/utils/socket.Io";
+const port = process.env.PORT || 1000;
 import { db } from "./src/utils/firebase";
 import { SERVER_PORT, URL_API } from "./ENV";
 import routAuth from "./src/routes/authRutes";
@@ -10,7 +11,9 @@ import adm from "./src/routes/superAdminRouter";
 import imgRouter from "./src/routes/imagesRoutes";
 import express, { Response, Request } from "express";
 import musician from "./src/routes/musicianProfileRoutes";
-import { socketHandler } from "./src/sockets/eventSocket";
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
+import eventsRouter from "./src/routes/eventsRoutes";
 const users: Record<string, string> = {};
 dotenv.config();
 const app = express();
@@ -20,18 +23,89 @@ app.use("/auth", routAuth);
 app.use("/superAdmin", adm);
 app.use("/imgs", imgRouter);
 app.use("/media", musician);
+app.use("/events", eventsRouter);
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST", "PUT"],
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "MusikOn API",
+      version: "1.0.0",
+      description: "API para gestión de músicos y eventos en MusikOn",
+    },
+    servers: [
+      {
+        url: "http://localhost:1000",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
   },
-});
+  apis: [
+    "./src/routes/*.ts",
+    "./src/controllers/*.ts",
+    "./index.ts"
+  ],
+};
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-io.on("connection", (socket) => {
-  socketHandler(io, socket, users);
-});
+/**
+ * @swagger
+ * /getAllUsers:
+ *   get:
+ *     summary: Obtiene todos los usuarios de la base de datos
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *
+ * /getAllUsers/{userEmail}:
+ *   post:
+ *     summary: Envía una notificación a un usuario y retorna todos los usuarios
+ *     parameters:
+ *       - in: path
+ *         name: userEmail
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Email del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userData:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
+const server = http.createServer(app);
+const io = initializeSocket(server, users);
+
+export { io, users };
 
 app.get("/getAllUsers", async (req: Request, res: Response) => {
   try {

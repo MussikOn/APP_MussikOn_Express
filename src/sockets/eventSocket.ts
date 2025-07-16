@@ -1,4 +1,9 @@
-// src/sockets/socketHandler.ts
+// Eventos de socket disponibles:
+// - register: Registrar usuario por email
+// - send-notification: Enviar notificación a usuario
+// - join: Unirse a una sala por userId
+// - disconnect: Eliminar usuario de la lista de conectados
+
 import { Server, Socket } from "socket.io";
 
 // const users: Record<string, string> = {};

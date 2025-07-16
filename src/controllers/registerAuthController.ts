@@ -3,6 +3,33 @@ import { db , dmAdmin } from "../utils/firebase";
 import nodemailer from "nodemailer";
 import {Request,Response} from "express";
 
+/**
+ * @swagger
+ * /auth/sendEmailVerificationLink:
+ *   post:
+ *     summary: Envía un link de verificación de email a un usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               uid:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Link generado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 link:
+ *                   type: string
+ */
 export const sendEmailVerificationLink = async (req:Request, res:Response) => {
   const { uid } = req.body;
 

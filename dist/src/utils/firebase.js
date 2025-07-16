@@ -36,12 +36,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.db = void 0;
+exports.db = exports.dmAdmin = exports.suthAdmin = void 0;
 const path_1 = __importDefault(require("path"));
 const admin = __importStar(require("firebase-admin"));
-const serviceAccount = path_1.default.join(__dirname, "../../mus1k0n-firebase-adminsdk-fbsvc-d5c9971a94.json");
-// Inicializacion e FireBase.
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-});
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS;
+const serviceAccount = path_1.default.join(__dirname, `../../${FIREBASE_CREDENTIALS}`);
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+    });
+}
+// Inicializando Auth
+exports.suthAdmin = admin.auth();
+// Inicializacion en FireBase.
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
+exports.dmAdmin = admin;
 exports.db = admin.firestore();
