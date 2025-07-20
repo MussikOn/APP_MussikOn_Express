@@ -82,7 +82,8 @@ export async function registerController(req:Request, res:Response){
         const saved = await registerModel(name, lastName, roll, userEmail, pass);
         if(!saved){
             const token = createToken(name,lastName,userEmail,roll);
-            res.status(200).json({msg:"Usuario Registrado con éxito.", token});
+            const user = await getUserByEmailModel(userEmail);
+            res.status(200).json({msg:"Usuario Registrado con éxito.", token, user});
             return;
         }else if(saved === "Hay campos que no han sido llenados"){
             res.status(409).json({msg:"Hay campos que no han sido llenados", data:saved});
@@ -115,7 +116,7 @@ export async function loginController(req:Request, res:Response){
         const isMatch = await bcrypt.compare(userPassword,pass);
         if(!isMatch){res.status(401).json({msg:"Contraseña incorrecta."}); return;}
         const token = createToken(name,lastName,userEmail,roll);
-        res.status(200).json({msg:"Login Exitoso",token});
+        res.status(200).json({msg:"Login Exitoso",token,user:data});
     }catch(error){
         res.status(401).json({msg:"Error en la petición, Inténtelo mas tarde.",error});
         return;
