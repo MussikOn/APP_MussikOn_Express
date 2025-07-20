@@ -7,7 +7,8 @@ import { io, users } from "../../index";
 export const requestMusicianController = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    if (!user || user.roll !== 'organizer') {
+    if (!user || user.roll !== 'eventCreator') {
+      console.log(user);
       res.status(403).json({ msg: "Solo los organizadores pueden crear solicitudes." });
       return;
     }
@@ -46,7 +47,7 @@ export const availableRequestsController = async (req: Request, res: Response): 
 export const acceptEventController = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = (req as any).user;
-    if (!user || user.roll !== 'musician') {
+    if (!user || user.roll !== 'musico') {
       res.status(403).json({ msg: "Solo los músicos pueden aceptar eventos." });
       return;
     }

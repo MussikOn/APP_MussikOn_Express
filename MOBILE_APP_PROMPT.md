@@ -101,7 +101,7 @@ Quiero que generes una aplicación móvil usando **React Native con Expo** que c
 - `GET /events/my-scheduled` — Ver eventos agendados.
 - `GET /events/my-past-performances` — Ver historial de actuaciones.
 
-### **Imágenes (opcional)**
+### **Imágenes crud completo**
 - `POST /media/saveImage` — Sube imagen de perfil de músico (form-data, campo `file`).
 - `GET /media/getImage/:key` — Obtiene URL firmada de imagen.
 
