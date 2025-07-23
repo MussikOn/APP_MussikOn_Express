@@ -15,10 +15,17 @@ export const setSocketInstance = (_io: Server, _users: Record<string, string>) =
 export const createRequest = async (req: Request, res: Response) => {
   try {
     const {
-      userId, eventType, date, time, location, instrument, budget, comments
+      userId, eventType, date, startTime, endTime, location, instrument, budget, comments
     } = req.body;
     const newRequest: Omit<MusicianRequest, 'id' | 'status' | 'createdAt' | 'updatedAt'> = {
-      userId, eventType, date, time, location, instrument, budget, comments
+      userId,
+      eventType,
+      date,
+      time: `${startTime} - ${endTime}`,
+      location,
+      instrument,
+      budget,
+      comments
     };
     const docRef = await db.collection('musicianRequests').add({
       ...newRequest,

@@ -6,51 +6,92 @@
 3. [Instalación y Puesta en Marcha](#instalación-y-puesta-en-marcha)
 4. [Variables de Entorno](#variables-de-entorno)
 5. [Flujo de Matching y Gestión de Eventos](#flujo-de-matching-y-gestión-de-eventos)
-6. [Endpoints Principales](#endpoints-principales)
-7. [Modelos de Datos](#modelos-de-datos)
-8. [Autenticación y Seguridad](#autenticación-y-seguridad)
-9. [Documentación Interactiva (Swagger)](#documentación-interactiva-swagger)
-10. [Cómo Contribuir](#cómo-contribuir)
-11. [Contacto](#contacto)
+6. [Checklist de Progreso y Pendientes](#checklist-de-progreso-y-pendientes)
+7. [Endpoints Principales](#endpoints-principales)
+8. [Modelos de Datos](#modelos-de-datos)
+9. [Autenticación y Seguridad](#autenticación-y-seguridad)
+10. [Documentación Interactiva (Swagger)](#documentación-interactiva-swagger)
+11. [Cómo Contribuir](#cómo-contribuir)
+12. [Contacto](#contacto)
 
 ---
 
 ## Flujo de Matching y Gestión de Eventos
 
 ### 1. Creación de Solicitud de Músico (Organizador)
-- El organizador crea una solicitud de evento con todos los detalles necesarios.
-- El backend guarda la solicitud y la pone en estado `pending_musician`.
-- Se emite una notificación en tiempo real a todos los músicos conectados (`io.emit('new_event_request', eventData)`).
+- [x] El organizador crea una solicitud de evento con todos los detalles necesarios.
+- [x] El backend guarda la solicitud y la pone en estado `pending_musician`.
+- [x] Se emite una notificación en tiempo real a todos los músicos conectados (`io.emit('new_event_request', eventData)`).
 
 ### 2. Notificaciones y Listado para Músicos
-- Los músicos reciben la notificación en tiempo real y pueden ver todas las solicitudes pendientes en `/events/available-requests`.
-- Pueden filtrar por instrumento, ubicación, etc.
+- [x] Los músicos reciben la notificación en tiempo real.
+- [ ] Los músicos pueden ver todas las solicitudes pendientes en `/events/available-requests` desde el frontend.
+- [ ] Permitir filtrar por instrumento, ubicación, etc. (frontend y backend).
 
 ### 3. Aceptación de Solicitud (Músico)
-- El músico acepta una solicitud (`POST /events/:eventId/accept`).
-- El backend actualiza el evento a `musician_assigned` y asigna el músico.
-- Se notifica al organizador en tiempo real (`io.to(organizerSocketId).emit('musician_accepted', eventData)`).
+- [ ] El músico puede aceptar una solicitud desde la app (`POST /events/:eventId/accept`).
+- [x] El backend actualiza el evento a `musician_assigned` y asigna el músico.
+- [ ] Se notifica al organizador en tiempo real en el frontend.
 
 ### 4. Gestión de Eventos para Organizadores y Músicos
-- Organizadores pueden ver:
-  - Eventos pendientes (`/events/my-pending`)
-  - Eventos asignados (`/events/my-assigned`)
-  - Eventos completados (`/events/my-completed`)
-- Músicos pueden ver:
-  - Solicitudes disponibles (`/events/available-requests`)
-  - Eventos agendados (`/events/my-scheduled`)
-  - Historial de actuaciones (`/events/my-past-performances`)
+- [ ] Organizadores pueden ver:
+  - [ ] Eventos pendientes (`/events/my-pending`)
+  - [ ] Eventos asignados (`/events/my-assigned`)
+  - [ ] Eventos completados (`/events/my-completed`)
+- [ ] Músicos pueden ver:
+  - [ ] Solicitudes disponibles (`/events/available-requests`)
+  - [ ] Eventos agendados (`/events/my-scheduled`)
+  - [ ] Historial de actuaciones (`/events/my-past-performances`)
 
 ### 5. Estados de los Eventos
-- `pending_musician`: Esperando que un músico acepte.
-- `musician_assigned`: Un músico ha aceptado.
-- `completed`: Evento realizado.
-- `cancelled`: Evento cancelado.
+- [x] `pending_musician`: Esperando que un músico acepte.
+- [x] `musician_assigned`: Un músico ha aceptado.
+- [x] `completed`: Evento realizado.
+- [x] `cancelled`: Evento cancelado.
 
 ### 6. Roles y Seguridad
-- Solo los organizadores pueden crear solicitudes.
-- Solo los músicos pueden aceptar solicitudes.
-- El middleware valida el rol del usuario.
+- [x] Solo los organizadores pueden crear solicitudes.
+- [x] Solo los músicos pueden aceptar solicitudes.
+- [ ] El middleware valida el rol del usuario en todos los endpoints.
+
+---
+
+## Checklist de Progreso y Pendientes
+
+### Funcionalidades Implementadas
+- [x] Creación de solicitudes de músico (organizador)
+- [x] Guardado y notificación en tiempo real de nuevas solicitudes
+- [x] Asignación de músico a solicitud (backend)
+- [x] Estados de evento y notificaciones básicas por socket
+- [x] Autenticación JWT y roles básicos
+
+### Funcionalidades Pendientes / Mejoras
+- [ ] Listado de solicitudes disponibles para músicos en el frontend
+- [ ] Acción de aceptar solicitud desde la app (músico)
+- [ ] Feedback en tiempo real al organizador cuando un músico acepta
+- [ ] Pantallas de gestión de eventos para ambos roles (pendientes, asignados, completados)
+- [ ] Filtros avanzados en solicitudes (instrumento, ubicación, fecha)
+- [ ] Validación de roles y permisos en todos los endpoints
+- [ ] Mejoras de UX/UI: validaciones, feedback visual, loading, errores claros
+- [ ] Pruebas automáticas (unitarias y de integración)
+- [ ] Documentación Swagger actualizada y ejemplos de uso
+
+---
+
+## Orden Recomendado de Desarrollo
+1. Implementar listado y filtrado de solicitudes disponibles para músicos en el frontend.
+2. Permitir aceptar solicitudes desde la app y notificar en tiempo real al organizador.
+3. Implementar pantallas de gestión de eventos para ambos roles.
+4. Mejorar validaciones, feedback visual y robustez general.
+5. Agregar pruebas automáticas y actualizar documentación.
+
+---
+
+## Estado Actual
+- El flujo de creación y notificación de solicitudes está **funcionando**.
+- El backend acepta y guarda correctamente los datos.
+- Falta completar la experiencia del músico y la gestión de eventos en el frontend.
+- Faltan validaciones de roles y pruebas automáticas para robustez total.
 
 ---
 
