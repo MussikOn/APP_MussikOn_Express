@@ -14,7 +14,8 @@ import musician from "./src/routes/musicianProfileRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import eventsRouter from "./src/routes/eventsRoutes";
-import musicianRequestRouter from "./src/routes/musicianRequestRoutes";
+import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
+import { setSocketInstance } from './src/controllers/musicianRequestController';
 const users: Record<string, string> = {};
 dotenv.config();
 const app = express();
@@ -25,7 +26,7 @@ app.use("/superAdmin", adm);
 app.use("/imgs", imgRouter);
 app.use("/media", musician);
 app.use("/events", eventsRouter);
-app.use("/musician-requests", musicianRequestRouter);
+app.use('/musician-requests', musicianRequestRoutes);
 
 const swaggerOptions = {
   definition: {
@@ -106,6 +107,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 const server = http.createServer(app);
 const io = initializeSocket(server, users);
+setSocketInstance(io, users);
 
 export { io, users };
 

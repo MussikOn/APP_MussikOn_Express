@@ -1,44 +1,15 @@
-import express from "express";
-import multer from "multer";
-import { 
-  createMusicianRequest,
-  getAvailableRequests,
-  respondToRequest,
-  acceptMusician,
-  getOrganizerRequestsList,
-  cancelRequest,
-  resendRequest
-} from "../controllers/musicianRequestController";
-import { authMiddleware } from "../middleware/authMiddleware";
+import { Router } from 'express';
+import { createRequest, acceptRequest, cancelRequest, getRequestStatus } from '../controllers/musicianRequestController';
 
-const router = express.Router();
+const router = Router();
 
-// Configurar multer para subida de imágenes
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB máximo
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Solo se permiten archivos de imagen'));
-    }
-  },
-});
-
-// Rutas para organizadores (creadores de eventos)
-router.post('/create', authMiddleware, upload.single('flyer'), createMusicianRequest);
-router.get('/organizer/:organizerId', authMiddleware, getOrganizerRequestsList);
-router.post('/cancel/:requestId', authMiddleware, cancelRequest);
-router.post('/resend/:requestId', authMiddleware, resendRequest);
-
-// Rutas para músicos
-router.get('/available', authMiddleware, getAvailableRequests);
-router.post('/respond/:requestId', authMiddleware, respondToRequest);
-
-// Rutas para aceptar músicos
-router.post('/accept/:requestId/:musicianId', authMiddleware, acceptMusician);
+// Crear solicitud
+router.post('/', createRequest);
+// Aceptar solicitud
+router.post('/accept', acceptRequest);
+// Cancelar solicitud
+router.post('/cancel', cancelRequest);
+// Consultar estado
+router.get('/:id/status', getRequestStatus);
 
 export default router; 
