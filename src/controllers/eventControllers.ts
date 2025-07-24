@@ -61,6 +61,7 @@ export const acceptEventController = async (req: Request, res: Response): Promis
     }
     const organizerSocketId = users[updatedEvent.user];
     if (organizerSocketId) {
+      console.log('Mapping actual de usuarios:', users);
       console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user);
       io.to(organizerSocketId).emit('musician_accepted', {
         requestId: updatedEvent.id,

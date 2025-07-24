@@ -114,7 +114,7 @@ export async function loginController(req:Request, res:Response){
         const roll = data.roll;
         const pass = data.userPassword;
         const isMatch = await bcrypt.compare(userPassword,pass);
-        if(!isMatch){res.status(401).json({msg:"Contraseña incorrecta."}); return;}
+        if(!isMatch){res.status(401).json({msg:"Contraseña incorrecta."}); return;} 
         const token = createToken(name,lastName,userEmail,roll);
         res.status(200).json({msg:"Login Exitoso",token,user:data});
     }catch(error){
