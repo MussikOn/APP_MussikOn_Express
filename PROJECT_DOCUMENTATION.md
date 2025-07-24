@@ -58,6 +58,46 @@
 
 ---
 
+## Eventos de Socket y Notificaciones en Tiempo Real
+
+MusikOn utiliza Socket.IO para notificaciones instantáneas entre organizadores y músicos. Los eventos principales son:
+
+| Evento                  | Emisor         | Receptor         | Payload ejemplo                                      |
+|-------------------------|---------------|------------------|------------------------------------------------------|
+| new_event_request       | Backend       | Músicos          | `{ id, userId, eventType, ... }`                     |
+| musician_accepted       | Backend       | Organizador/Músicos | `{ requestId, musician: { id } }`                 |
+| musician_request_taken  | Backend       | Músicos          | `{ requestId }`                                      |
+| request_cancelled       | Backend       | Músicos          | `{ requestId }`                                      |
+| notification            | Backend       | Usuario específico| `{ title, message, ... }`                            |
+
+Para más detalles sobre integración, revisa `docs/FRONTEND_INTEGRATION.md`.
+
+---
+
+## Endpoints adicionales
+
+- **Imágenes:**
+  - `GET /imgs/getAllImg` — Obtener galería de imágenes
+  - `POST /media/saveImage` — Subir imagen de perfil de músico
+  - `GET /media/getImage/:key` — Obtener URL firmada de imagen
+- **SuperAdmin:**
+  - `DELETE /superAdmin/deleteAllUsers` — Elimina todos los usuarios (protegido)
+
+---
+
+## Utilidades y Helpers
+
+| Archivo                | Descripción breve                                      |
+|------------------------|-------------------------------------------------------|
+| `utils/jwt.ts`         | Generación y validación de tokens JWT                 |
+| `utils/mailer.ts`      | Envío de correos electrónicos                         |
+| `utils/functions.ts`   | Funciones auxiliares (números aleatorios, errores)    |
+| `utils/idriveE2.ts`    | Conexión a almacenamiento S3/idriveE2                 |
+| `utils/validatios.ts`  | Validaciones de email y password                      |
+| `utils/socket.Io.ts`   | Inicialización y gestión de sockets                   |
+
+---
+
 ## Checklist de Progreso y Pendientes
 
 ### Funcionalidades Implementadas
@@ -66,8 +106,10 @@
 - [x] Asignación de músico a solicitud (backend)
 - [x] Estados de evento y notificaciones básicas por socket
 - [x] Autenticación JWT y roles básicos
+- [x] Endpoints de imágenes y superadmin
+- [x] Documentación de musician-requests
 
-### Funcionalidades Pendientes / Mejoras
+### Funcionalidades Pendientes / Roadmap
 - [ ] Listado de solicitudes disponibles para músicos en el frontend
 - [ ] Acción de aceptar solicitud desde la app (músico)
 - [ ] Feedback en tiempo real al organizador cuando un músico acepta

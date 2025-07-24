@@ -27,6 +27,8 @@
 
 - La API estará disponible en `http://localhost:1000` (o el puerto configurado).
 
+> **¿Necesitas gestionar solicitudes directas de músicos?** Consulta la documentación detallada en [`docs/MUSICIAN_REQUESTS_API.md`](docs/MUSICIAN_REQUESTS_API.md)
+
 ### Ejemplo de endpoints
 
 #### Registro de usuario
@@ -52,17 +54,60 @@ Content-Type: application/json
 }
 ```
 
-#### Obtener galería de imágenes
+#### Solicitud directa de músico
 ```http
-GET /imgs/getAllImg
+POST /musician-requests/
+Content-Type: application/json
+{
+  "userId": "organizador@example.com",
+  "eventType": "Boda",
+  "date": "2024-07-01",
+  "startTime": "18:00",
+  "endTime": "22:00",
+  "location": "Ciudad",
+  "instrument": "Guitarra",
+  "budget": "200 USD",
+  "comments": "Repertorio variado"
+}
 ```
 
-#### Subir imagen de perfil de músico
+#### Aceptar solicitud de músico
 ```http
-POST /media/saveImage
-Content-Type: multipart/form-data
-file: <archivo>
+POST /musician-requests/accept
+Content-Type: application/json
+{
+  "requestId": "abc123",
+  "musicianId": "musico@example.com"
+}
 ```
+
+#### Cancelar solicitud de músico
+```http
+POST /musician-requests/cancel
+Content-Type: application/json
+{
+  "requestId": "abc123"
+}
+```
+
+#### Consultar estado de solicitud
+```http
+GET /musician-requests/abc123/status
+```
+
+#### Endpoints de imágenes
+```http
+GET /imgs/getAllImg
+POST /media/saveImage
+GET /media/getImage/:key
+```
+
+#### Endpoint de superadmin
+```http
+DELETE /superAdmin/deleteAllUsers
+```
+
+> **¿Quieres integrar notificaciones en tiempo real?** Consulta la sección de eventos de socket en la documentación principal.
 
 ## 📄 Licencia
 MIT © 2025 [Jefry Astacio](https://github.com/jefryastacio)

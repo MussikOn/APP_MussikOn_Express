@@ -129,3 +129,47 @@ Esta API permite a los usuarios crear, aceptar, cancelar y consultar el estado d
 - Los eventos de socket permiten notificaciones en tiempo real a músicos y organizadores.
 - El endpoint `/musician-requests` es independiente del flujo de `/events`, pero ambos pueden coexistir.
 - Si necesitas ejemplos de integración frontend, revisa `docs/FRONTEND_INTEGRATION.md`. 
+
+---
+
+## Ejemplos de uso
+
+### Crear solicitud
+```http
+POST /musician-requests/
+Content-Type: application/json
+{
+  "userId": "organizador@example.com",
+  "eventType": "Boda",
+  "date": "2024-07-01",
+  "startTime": "18:00",
+  "endTime": "22:00",
+  "location": "Ciudad",
+  "instrument": "Guitarra",
+  "budget": "200 USD",
+  "comments": "Repertorio variado"
+}
+```
+
+### Respuesta exitosa
+```json
+{
+  "id": "abc123",
+  "userId": "organizador@example.com",
+  "eventType": "Boda",
+  "date": "2024-07-01",
+  "time": "18:00 - 22:00",
+  "location": "Ciudad",
+  "instrument": "Guitarra",
+  "budget": "200 USD",
+  "comments": "Repertorio variado",
+  "status": "pendiente"
+}
+```
+
+### Eventos de socket relacionados
+- `new_event_request`: Notifica a músicos sobre nuevas solicitudes.
+- `musician_accepted`: Notifica a organizador y músicos cuando una solicitud es aceptada.
+- `request_cancelled`: Notifica a músicos cuando una solicitud es cancelada.
+
+Para más detalles sobre integración de sockets, revisa la documentación principal y `docs/FRONTEND_INTEGRATION.md`. 
