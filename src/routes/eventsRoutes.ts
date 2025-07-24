@@ -54,7 +54,9 @@ router.post('/request-musician', authMiddleware, requestMusicianController);
  * /events/my-pending:
  *   get:
  *     tags: [Events]
- *     summary: Ver eventos pendientes del organizador
+ *     summary: Ver eventos/solicitudes pendientes del organizador
+ *     description: |
+ *       Devuelve los eventos/solicitudes en estado pendiente creados por el organizador autenticado. Usado en el tab "Pendientes" de la pantalla "Mis Solicitudes".
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -74,7 +76,9 @@ router.get('/my-pending', authMiddleware, myPendingEventsController);
  * /events/my-assigned:
  *   get:
  *     tags: [Events]
- *     summary: Ver eventos asignados del organizador
+ *     summary: Ver eventos/solicitudes asignados al organizador
+ *     description: |
+ *       Devuelve los eventos/solicitudes en estado asignado creados por el organizador autenticado. Usado en el tab "Asignados" de la pantalla "Mis Solicitudes".
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -165,7 +169,9 @@ router.post('/:eventId/accept', authMiddleware, acceptEventController);
  * /events/my-scheduled:
  *   get:
  *     tags: [Events]
- *     summary: Ver eventos agendados del músico
+ *     summary: Ver eventos/solicitudes agendados del músico
+ *     description: |
+ *       Devuelve los eventos/solicitudes en estado asignado/agendado para el músico autenticado. Usado en el tab "Agendados" de la pantalla "Mis Solicitudes".
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -205,18 +211,70 @@ router.get('/my-past-performances', authMiddleware, myPastPerformancesController
  * /events/my-events:
  *   get:
  *     tags: [Events]
- *     summary: Ver eventos del organizador
+ *     summary: Ver todos los eventos/solicitudes en los que participa el usuario (organizador o músico)
+ *     description: |
+ *       Devuelve todos los eventos/solicitudes en los que participa el usuario autenticado. Si el usuario es organizador, devuelve todos los eventos creados por él. Si es músico, devuelve todos los eventos donde está asignado como músico. Esta ruta es utilizada por la pantalla "Mis Solicitudes" para mostrar el tab "Todos".
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de eventos del organizador
+ *         description: Lista de eventos del usuario
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Event'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *             examples:
+ *               ejemplo:
+ *                 summary: Ejemplo de respuesta exitosa
+ *                 value:
+ *                   data:
+ *                     - id: "abc123"
+ *                       user: "organizador@email.com"
+ *                       eventName: "Concierto de Verano"
+ *                       eventType: "concierto"
+ *                       date: "2025-08-01"
+ *                       time: "20:00 - 22:00"
+ *                       location: "Teatro Nacional"
+ *                       duration: "120"
+ *                       instrument: "guitarra"
+ *                       bringInstrument: true
+ *                       comment: "Llevar amplificador"
+ *                       budget: "500"
+ *                       flyerUrl: "https://ejemplo.com/flyer.png"
+ *                       songs: ["Song 1", "Song 2"]
+ *                       recommendations: []
+ *                       mapsLink: "https://maps.google.com/?q=Teatro+Nacional"
+ *                       status: "musician_assigned"
+ *                       assignedMusicianId: "musico@email.com"
+ *                       interestedMusicians: ["musico@email.com"]
+ *                       createdAt: "2025-07-01T12:00:00.000Z"
+ *                       updatedAt: "2025-07-01T12:00:00.000Z"
+ *                     - id: "def456"
+ *                       user: "organizador@email.com"
+ *                       eventName: "Evento de Prueba"
+ *                       eventType: "culto"
+ *                       date: "2025-09-10"
+ *                       time: "18:00 - 19:00"
+ *                       location: "Iglesia Central"
+ *                       duration: "60"
+ *                       instrument: "piano"
+ *                       bringInstrument: false
+ *                       comment: ""
+ *                       budget: "200"
+ *                       flyerUrl: null
+ *                       songs: []
+ *                       recommendations: []
+ *                       mapsLink: "https://maps.google.com/?q=Iglesia+Central"
+ *                       status: "pending_musician"
+ *                       assignedMusicianId: null
+ *                       interestedMusicians: []
+ *                       createdAt: "2025-08-01T10:00:00.000Z"
+ *                       updatedAt: "2025-08-01T10:00:00.000Z"
  */
 router.get('/my-events', authMiddleware, myEventsController);
 
