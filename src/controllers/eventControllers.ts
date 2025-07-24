@@ -13,10 +13,12 @@ export const requestMusicianController = async (req: Request, res: Response): Pr
       return;
     }
     const eventData = req.body;
+    console.log('Payload recibido en /events/request-musician:', eventData);
     const event = await createEventModel({ ...eventData, user: user.userEmail });
     io.emit('new_event_request', event);
-    res.status(201).json(event);
+    res.status(201).json({ data: event });
   } catch (error) {
+    console.error('Error al crear el evento:', error);
     res.status(500).json({ msg: "Error al crear el evento.", error });
   }
 };
@@ -41,7 +43,7 @@ export const myCompletedEventsController = async (req: Request, res: Response): 
 
 export const availableRequestsController = async (req: Request, res: Response): Promise<void> => {
   const events = await getAvailableEvents();
-  res.json(events);
+  res.json({ data: events });
 };
 
 export const acceptEventController = async (req: Request, res: Response): Promise<void> => {
@@ -59,7 +61,17 @@ export const acceptEventController = async (req: Request, res: Response): Promis
     }
     const organizerSocketId = users[updatedEvent.user];
     if (organizerSocketId) {
-      io.to(organizerSocketId).emit('musician_accepted', updatedEvent);
+      console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user);
+      io.to(organizerSocketId).emit('musician_accepted', {
+        requestId: updatedEvent.id,
+        musician: {
+          name: user.name,
+          email: user.userEmail,
+          instrument: updatedEvent.instrument,
+          // Puedes agregar más campos aquí si lo deseas
+        },
+        event: updatedEvent
+      });
     }
     res.json(updatedEvent);
   } catch (error) {

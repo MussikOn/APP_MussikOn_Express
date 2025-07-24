@@ -18,10 +18,12 @@
 
 ## Flujo de Matching y Gestión de Eventos
 
+> **Nota:** El flujo alternativo de solicitudes directas de músicos está documentado en [`docs/MUSICIAN_REQUESTS_API.md`](docs/MUSICIAN_REQUESTS_API.md)
+
 ### 1. Creación de Solicitud de Músico (Organizador)
-- [x] El organizador crea una solicitud de evento con todos los detalles necesarios.
-- [x] El backend guarda la solicitud y la pone en estado `pending_musician`.
-- [x] Se emite una notificación en tiempo real a todos los músicos conectados (`io.emit('new_event_request', eventData)`).
+- El organizador puede crear una solicitud de evento tradicional o una solicitud directa de músico usando `/musician-requests/`.
+- El backend guarda la solicitud y la pone en estado `pending_musician` o `pendiente`.
+- Se emite una notificación en tiempo real a todos los músicos conectados (`io.emit('new_event_request', eventData)`).
 
 ### 2. Notificaciones y Listado para Músicos
 - [x] Los músicos reciben la notificación en tiempo real.
@@ -165,17 +167,23 @@ Configura tus credenciales en `ENV.ts` siguiendo el ejemplo de `ENV_example.ts`.
 
 ## Endpoints Principales (Actualizados)
 
+> **¿Solicitudes directas de músicos?** Consulta la documentación detallada en [`docs/MUSICIAN_REQUESTS_API.md`](docs/MUSICIAN_REQUESTS_API.md)
+
 ### Para Organizadores
 - `POST /events/request-musician` — Crear solicitud de músico
 - `GET /events/my-pending` — Ver eventos pendientes
 - `GET /events/my-assigned` — Ver eventos asignados
 - `GET /events/my-completed` — Ver eventos completados
+- `POST /musician-requests/` — Crear solicitud de músico (flujo alternativo)
+- `POST /musician-requests/cancel` — Cancelar solicitud de músico
 
 ### Para Músicos
 - `GET /events/available-requests` — Ver solicitudes disponibles
 - `POST /events/:eventId/accept` — Aceptar una solicitud
 - `GET /events/my-scheduled` — Ver eventos agendados
 - `GET /events/my-past-performances` — Ver historial de actuaciones
+- `POST /musician-requests/accept` — Aceptar solicitud de músico (flujo alternativo)
+- `GET /musician-requests/:id/status` — Consultar estado de solicitud de músico
 
 ---
 

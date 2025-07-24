@@ -11,10 +11,10 @@ export const createEventModel = async (eventData: Omit<Event, 'id' | 'status' | 
     status: 'pending_musician',
     createdAt: now,
     updatedAt: now,
-    assignedMusicianId: undefined,
     interestedMusicians: [],
   };
   await eventRef.set(event);
+  console.log('Evento guardado:', event);
   return event;
 };
 
@@ -30,6 +30,7 @@ export const getAvailableEvents = async () => {
   const snapshot = await db.collection("events")
     .where("status", "==", "pending_musician")
     .get();
+  console.log('Eventos encontrados en BD:', snapshot.docs.length);
   return snapshot.docs.map(doc => doc.data() as Event);
 };
 
