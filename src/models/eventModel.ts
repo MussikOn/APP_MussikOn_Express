@@ -57,4 +57,18 @@ export const getEventsByMusicianAndStatus = async (musicianId: string, status: E
     .where("status", "==", status)
     .get();
   return snapshot.docs.map(doc => doc.data() as Event);
+};
+
+export const getEventsByUser = async (userEmail: string) => {
+  const snapshot = await db.collection("events")
+    .where("user", "==", userEmail)
+    .get();
+  return snapshot.docs.map(doc => doc.data() as Event);
+};
+
+export const getEventsByMusician = async (musicianId: string) => {
+  const snapshot = await db.collection("events")
+    .where("assignedMusicianId", "==", musicianId)
+    .get();
+  return snapshot.docs.map(doc => doc.data() as Event);
 }; 

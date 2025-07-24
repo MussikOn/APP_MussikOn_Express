@@ -109,7 +109,7 @@ export async function loginController(req:Request, res:Response){
         if(!validarEmail(userEmail)){res.status(400).json({msg:"Dirección de correo electrónico no válido."});return;};
         const data = await getUserByEmailModel(userEmail);
         if(!data){res.status(401).json({msg:"Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta."});return;};
-        const name = data.name;
+        const name = data.name; 
         const lastName = data.lastName;
         const roll = data.roll;
         const pass = data.userPassword;

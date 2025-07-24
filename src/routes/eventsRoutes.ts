@@ -8,7 +8,8 @@ import {
   availableRequestsController,
   acceptEventController,
   myScheduledEventsController,
-  myPastPerformancesController
+  myPastPerformancesController,
+  myEventsController
 } from '../controllers/eventControllers';
 
 const router = express.Router();
@@ -198,5 +199,25 @@ router.get('/my-scheduled', authMiddleware, myScheduledEventsController);
  *                 $ref: '#/components/schemas/Event'
  */
 router.get('/my-past-performances', authMiddleware, myPastPerformancesController);
+
+/**
+ * @swagger
+ * /events/my-events:
+ *   get:
+ *     tags: [Events]
+ *     summary: Ver eventos del organizador
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de eventos del organizador
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ */
+router.get('/my-events', authMiddleware, myEventsController);
 
 export default router;

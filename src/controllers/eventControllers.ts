@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createEventModel, getEventsByUserAndStatus, getAvailableEvents, acceptEventModel, getEventsByMusicianAndStatus } from "../models/eventModel";
+import { createEventModel, getEventsByUserAndStatus, getAvailableEvents, acceptEventModel, getEventsByMusicianAndStatus, getEventsByUser, getEventsByMusician } from "../models/eventModel";
 import { Event } from "../utils/DataTypes";
 import { io, users } from "../../index";
 
@@ -62,14 +62,21 @@ export const acceptEventController = async (req: Request, res: Response): Promis
     const organizerSocketId = users[updatedEvent.user];
     if (organizerSocketId) {
       console.log('Mapping actual de usuarios:', users);
-      console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user);
+      console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user, 'payload:', {
+        requestId: updatedEvent.id,
+        musician: {
+          name: user.name,
+          email: user.userEmail,
+          instrument: updatedEvent.instrument,
+        },
+        event: updatedEvent
+      });
       io.to(organizerSocketId).emit('musician_accepted', {
         requestId: updatedEvent.id,
         musician: {
           name: user.name,
           email: user.userEmail,
           instrument: updatedEvent.instrument,
-          // Puedes agregar más campos aquí si lo deseas
         },
         event: updatedEvent
       });
@@ -90,4 +97,15 @@ export const myPastPerformancesController = async (req: Request, res: Response):
   const user = (req as any).user;
   const events = await getEventsByMusicianAndStatus(user.userEmail, 'completed');
   res.json(events);
+};
+
+export const myEventsController = async (req: Request, res: Response): Promise<void> => {
+  const user = (req as any).user;
+  let events: Event[] = [];
+  if (user.roll === 'eventCreator') {
+    events = await getEventsByUser(user.userEmail);
+  } else if (user.roll === 'musico') {
+    events = await getEventsByMusician(user.userEmail);
+  }
+  res.json({ data: events });
 };
