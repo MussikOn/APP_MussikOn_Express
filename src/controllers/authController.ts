@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel } from "../models/authModel";
+import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel, deleteUserByEmailModel } from "../models/authModel";
 import { authUserRegister, UpdateUser, User } from "../utils/DataTypes";
 import { validarEmail, validarPassword } from "../utils/validatios";
 import { createToken } from "../utils/jwt";
 import { sendEmail } from "../utils/mailer";
 import { URL_API } from "../../ENV";
-import { numberRandon } from "../utils/functions";
+import { numberRandon } from "../utils/functions"; 
 import { db } from "../utils/firebase";
 
 /**
@@ -70,7 +70,7 @@ import { db } from "../utils/firebase";
  */
 export async function registerController(req:Request, res:Response){
     try{
-        const {name,lastName,roll,userEmail,userPassword}:authUserRegister = req.body;
+        const {name,lastName,roll,userEmail,userPassword,status}:authUserRegister = req.body;
         if(!name || !lastName || !roll || !userEmail || !userPassword){ res.status(400).json({msg:"Error al registrarse, todos los campos deben de ser llenados"}); return;}
         if(!validarPassword(userPassword)){
             res.status(400).json({msg:"La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 ."}); return;
@@ -79,7 +79,9 @@ export async function registerController(req:Request, res:Response){
             res.status(400).json({msg:"Correo Electrónico inválido."}); return;
         }
         const pass = await bcrypt.hash(userPassword,10);
-        const saved = await registerModel(name, lastName, roll, userEmail, pass);
+        // status por defecto true si no se envía
+        const userStatus = typeof status === 'boolean' ? status : true;
+        const saved = await registerModel(name, lastName, roll, userEmail, pass, userStatus);
         if(!saved){
             const token = createToken(name,lastName,userEmail,roll);
             const user = await getUserByEmailModel(userEmail);
@@ -130,6 +132,10 @@ try{
     const userEmail = req.params.userEmail.toLocaleLowerCase();
     if(!dataUsers || !userEmail){res.status(401).json({msg:"No hay Datos para actualizar"})}
     if(!validarEmail(userEmail)){res.status(400).json({msg:"Dirección de correo electrónico no válido."});return;};
+    // status por defecto true si no se envía
+    if (typeof dataUsers.status !== 'boolean') {
+      dataUsers.status = true;
+    }
     const updateValidation = await updateUserByEmailModel(userEmail,dataUsers);
     if(updateValidation){
         console.info("Resultado de updateUserByEmailModel");
@@ -258,3 +264,28 @@ export const addEventToUserController = async (req: Request, res: Response) => {
         res.status(500).json({ msg: "Error al guardar el evento.", error });
     }
 }
+
+export const deleteUserByEmailController = async (req: Request, res: Response) => {
+  try {
+    const { userEmail } = req.body;
+    console.log('[DELETE] userEmail recibido:', userEmail); // LOG de depuración
+    if (!userEmail) {
+      res.status(400).json({ message: 'Falta el email' });
+      return;
+    }
+    const result = await deleteUserByEmailModel(userEmail);
+    console.log('[DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+    if (result === false) {
+      res.json({ message: 'Usuario eliminado correctamente' });
+    } else if (result === 'Falta el email') {
+      res.status(400).json({ message: 'Falta el email' });
+    } else if (result === 'not_found') {
+      res.status(404).json({ message: 'El usuario no existe o ya fue eliminado' });
+    } else {
+      res.status(500).json({ message: result });
+    }
+  } catch (error) {
+    console.error('[DELETE] Error al eliminar usuario:', error); // LOG de error
+    res.status(500).json({ message: 'Error al eliminar usuario', error: (error as Error).message });
+  }
+};

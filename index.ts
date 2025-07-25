@@ -16,10 +16,26 @@ import swaggerJSDoc from "swagger-jsdoc";
 import eventsRouter from "./src/routes/eventsRoutes";
 import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
 import { setSocketInstance } from './src/controllers/musicianRequestController';
+import { getUserByEmailModel } from './src/models/authModel';
 const users: Record<string, string> = {};
 dotenv.config();
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://192.168.54.59:5173',
+  'http://192.168.54.59:1000',
+  'http://192.168.100.101:5173'
+];
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use("/auth", routAuth);
 app.use("/superAdmin", adm);
@@ -109,6 +125,12 @@ const server = http.createServer(app);
 const io = initializeSocket(server, users);
 setSocketInstance(io, users);
 
+// Middleware global de manejo de errores
+app.use((err: any, req: Request, res: Response, next: Function) => {
+  console.error(err);
+  res.status(err.status || 500).json({ msg: err.message || 'Error interno', error: err });
+});
+
 export { io, users };
 
 app.get("/getAllUsers", async (req: Request, res: Response) => {
@@ -156,6 +178,17 @@ app.get("/", (req: Request, res: Response) => {
   });
 
   res.send(`<h1>MusikOn API</h1><p>Se Agregaron las notificaciones!</p>`);
+});
+
+// Endpoint temporal para verificar si un usuario existe
+app.get('/auth/check-user/:userEmail', async (req: Request, res: Response) => {
+  const userEmail = req.params.userEmail.toLowerCase();
+  const user = await getUserByEmailModel(userEmail);
+  if (user) {
+    res.status(200).json({ exists: true, user });
+  } else {
+    res.status(404).json({ exists: false, message: 'Usuario no encontrado' });
+  }
 });
 
 server.listen(port, () => {

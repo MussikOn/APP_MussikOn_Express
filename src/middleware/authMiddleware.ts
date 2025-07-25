@@ -21,3 +21,17 @@ export function authMiddleware(req:Request, res:Response, next:NextFunction) {
     res.status(401).json({ message: 'Token inválido o expirado' });
   }
 }
+
+/**
+ * Middleware para validar el rol del usuario.
+ * @param roles Roles permitidos para acceder al endpoint
+ */
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (!user || !roles.includes(user.roll)) {
+      return res.status(403).json({ msg: 'No autorizado. Rol insuficiente.' });
+    }
+    next();
+  };
+}

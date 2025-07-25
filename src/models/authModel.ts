@@ -3,7 +3,7 @@ import { db } from "../utils/firebase";
 import * as admin from 'firebase-admin';
 
 
-export const registerModel = async (name:string, lastName:string, roll: string, userEmail:string ,userPassword:string)=>{
+export const registerModel = async (name:string, lastName:string, roll: string, userEmail:string ,userPassword:string, status: boolean = true)=>{
     try{
         if(!name || !lastName || !roll || !userEmail || !userPassword){console.info("Hay campos que no han sido llenados, \n verificar codigo en C:/programacion/Express/MusikOn/src/models/authModel.ts linea 4."); return "Hay campos que no han sido llenados";}
         const newUser:authUserRegister={
@@ -15,7 +15,7 @@ export const registerModel = async (name:string, lastName:string, roll: string, 
             create_at: Date().toString(),
             update_at:"",
             delete_at:"",
-            status: false
+            status
         }
         const querySnapshot = await db.collection("users").where("userEmail", "==", userEmail).get();
         if(!querySnapshot.empty){
@@ -79,4 +79,17 @@ export const addEventToUserModel = async (userEmail: string, eventData: any) => 
         return "Error al guardar el evento.";
     }
 }
+
+export const deleteUserByEmailModel = async (userEmail: string) => {
+  try {
+    if (!userEmail) return 'Falta el email';
+    const doc = await db.collection('users').doc(userEmail.toLowerCase()).get();
+    if (!doc.exists) return 'not_found';
+    await db.collection('users').doc(userEmail.toLowerCase()).delete();
+    return false;
+  } catch (error) {
+    console.info('Error al eliminar el usuario:', error);
+    return 'Error al eliminar el usuario';
+  }
+};
   

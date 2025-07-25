@@ -1,6 +1,6 @@
 import express, {Request, Response, Router} from "express";
 import { authMiddleware } from "../middleware/authMiddleware";
-import { emailRegisterController, loginController, registerController, updateUserByEmailController, validNumberGetByEmail, addEventToUserController } from "../controllers/authController";
+import { emailRegisterController, loginController, registerController, updateUserByEmailController, validNumberGetByEmail, addEventToUserController, deleteUserByEmailController } from "../controllers/authController";
 
 const routAuth = Router();
 routAuth.use(express.json());
@@ -193,5 +193,30 @@ routAuth.post("/validEmail/:vaildNumber", validNumberGetByEmail);
  *         description: Evento guardado exitosamente
  */
 routAuth.post("/addEvent", authMiddleware, addEventToUserController); 
+
+/**
+ * @swagger
+ * /auth/delete:
+ *   delete:
+ *     tags: [Auth]
+ *     summary: Elimina un usuario por su email
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado exitosamente
+ *       404:
+ *         description: Usuario no encontrado
+ */
+routAuth.delete("/delete", deleteUserByEmailController);
 
 export default routAuth;

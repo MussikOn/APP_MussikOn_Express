@@ -1,7 +1,7 @@
 # Manejo de Errores en MusikOn API
 
 ## Middleware Global de Errores
-- Todos los errores no capturados en los controladores son manejados por un middleware global.
+- Todos los errores no capturados en los controladores son manejados por un middleware global implementado en `index.ts`.
 - Las respuestas de error tienen la forma:
 ```json
 {
@@ -16,6 +16,7 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ msg: err.message || 'Error interno', error: err });
 });
 ```
+- Si ocurre un error no manejado en cualquier parte del backend, este middleware lo capturará y enviará una respuesta consistente al frontend.
 
 ## Buenas Prácticas
 - No exponer detalles internos ni stack traces en producción.

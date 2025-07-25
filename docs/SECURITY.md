@@ -10,19 +10,29 @@ fetch('/events/my-pending', { headers: { Authorization: 'Bearer <token>' } })
 - Los middlewares validan el token y el rol antes de permitir el acceso.
 
 ## 2. Roles y Permisos
-- Los roles principales son: `musico`, `eventCreator` (organizador), y `admin`.
-- Los endpoints de eventos validan el rol antes de permitir crear o aceptar solicitudes.
+- Los roles principales ahora son:
+  - `musico`
+  - `eventCreator` (organizador)
+  - `usuario` (usuario general)
+  - `adminJunior`
+  - `adminMidLevel`
+  - `adminSenior`
+  - `superAdmin`
+- Los endpoints pueden requerir uno o varios roles específicos para acceder.
 - Ejemplo de middleware:
 ```ts
-function requireRole(role) {
-  return (req, res, next) => {
-    if (!req.user || req.user.roll !== role) {
-      return res.status(403).json({ msg: 'No autorizado' });
-    }
-    next();
-  };
-}
+import { requireRole } from './src/middleware/authMiddleware';
+
+// Solo organizadores pueden crear eventos
+router.post('/request-musician', authMiddleware, requireRole('eventCreator'), requestMusicianController);
+
+// Solo músicos pueden aceptar eventos
+router.post('/:eventId/accept', authMiddleware, requireRole('musico'), acceptEventController);
+
+// Permitir acceso a varios roles
+router.get('/admin-data', authMiddleware, requireRole('adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'), adminDataController);
 ```
+- Si el usuario no tiene el rol requerido, recibe un 403 Forbidden con el mensaje: `{ msg: 'No autorizado. Rol insuficiente.' }`
 
 ## 3. HTTPS y CORS
 - En producción, la API debe estar detrás de HTTPS (usa un proxy o configura SSL en el servidor).
@@ -48,6 +58,28 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.token.email == userId;
     }
   }
+}
+```
+
+## 6. Campo status en usuarios
+- El campo `status` indica si el usuario está activo (`true`) o inactivo (`false`).
+- Al crear o actualizar un usuario, puedes enviar el campo `status` (booleano). Si no se envía, será `true` por defecto.
+- Ejemplo de registro:
+```json
+{
+  "name": "Juan",
+  "lastName": "Pérez",
+  "roll": "musico",
+  "userEmail": "juan@example.com",
+  "userPassword": "Password*123",
+  "status": false
+}
+```
+- Ejemplo de actualización:
+```json
+{
+  "name": "Juan",
+  "status": false
 }
 ```
 
