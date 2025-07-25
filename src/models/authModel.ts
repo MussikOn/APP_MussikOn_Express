@@ -38,6 +38,8 @@ try{
     return data;
 
 }catch(error){
+    console.log(error);
+    console.log("./src/models/authModel.ts linea 41");
     console.info(`Error en la peticion getUserByEmail.\n\n`);
     return null;
 }
@@ -52,11 +54,13 @@ export const updateUserByEmailModel = async (userEmail: string, updatedData: Par
   
       await db.collection("users").doc(userEmail.toLowerCase()).update({
         ...updatedData,
-         update_at: new Date().toString(),
-        });
-  
+        update_at: new Date().toString(),
+      });
+      
       return false;
     } catch (error) {
+      console.log(error);
+      console.log("./src/models/authModel.ts linea 62");
       console.info("Error al actualizar los datos.");
       return "Error al actualizar los datos.";
     }
@@ -75,6 +79,8 @@ export const addEventToUserModel = async (userEmail: string, eventData: any) => 
         });
         return false;
     } catch (error) {
+        console.log(error);
+        console.log("./src/models/authModel.ts linea 82");
         console.info("Error al guardar el evento en el usuario.");
         return "Error al guardar el evento.";
     }
@@ -88,6 +94,8 @@ export const deleteUserByEmailModel = async (userEmail: string) => {
     await db.collection('users').doc(userEmail.toLowerCase()).delete();
     return false;
   } catch (error) {
+    console.log(error);
+    console.log("./src/models/authModel.ts linea 97");
     console.info('Error al eliminar el usuario:', error);
     return 'Error al eliminar el usuario';
   }

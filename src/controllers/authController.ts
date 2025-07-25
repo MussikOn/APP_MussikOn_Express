@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel, deleteUserByEmailModel } from "../models/authModel";
-import { authUserRegister, UpdateUser, User } from "../utils/DataTypes";
+import { authUserRegister } from "../utils/DataTypes";
 import { validarEmail, validarPassword } from "../utils/validatios";
 import { createToken } from "../utils/jwt";
 import { sendEmail } from "../utils/mailer";
-import { URL_API } from "../../ENV";
 import { numberRandon } from "../utils/functions"; 
 import { db } from "../utils/firebase";
 
@@ -70,7 +69,8 @@ import { db } from "../utils/firebase";
  */
 export async function registerController(req:Request, res:Response){
     try{
-        const {name,lastName,roll,userEmail,userPassword,status}:authUserRegister = req.body;
+      const {name,lastName,roll,userEmail,userPassword,status}:authUserRegister = req.body;
+      console.log(req.body);
         if(!name || !lastName || !roll || !userEmail || !userPassword){ res.status(400).json({msg:"Error al registrarse, todos los campos deben de ser llenados"}); return;}
         if(!validarPassword(userPassword)){
             res.status(400).json({msg:"La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 ."}); return;
@@ -274,6 +274,7 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
       return;
     }
     const result = await deleteUserByEmailModel(userEmail);
+    console.log(result);
     console.log('[DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
     if (result === false) {
       res.json({ message: 'Usuario eliminado correctamente' });
@@ -285,6 +286,7 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
       res.status(500).json({ message: result });
     }
   } catch (error) {
+    console.log("./src/controllers/authController.ts linea 288");
     console.error('[DELETE] Error al eliminar usuario:', error); // LOG de error
     res.status(500).json({ message: 'Error al eliminar usuario', error: (error as Error).message });
   }

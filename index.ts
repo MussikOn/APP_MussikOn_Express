@@ -2,10 +2,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import { initializeSocket } from "./src/utils/socket.Io";
-import { users as userSocketMap } from "./src/utils/socket.Io";
 const port = process.env.PORT || 1000;
 import { db } from "./src/utils/firebase";
-import { SERVER_PORT, URL_API } from "./ENV";
+import { URL_API } from "./ENV";
 import routAuth from "./src/routes/authRutes";
 import adm from "./src/routes/superAdminRouter";
 import imgRouter from "./src/routes/imagesRoutes";
@@ -17,6 +16,7 @@ import eventsRouter from "./src/routes/eventsRoutes";
 import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
 import { setSocketInstance } from './src/controllers/musicianRequestController';
 import { getUserByEmailModel } from './src/models/authModel';
+import adminRoutes from "./src/routes/adminRoutes";
 const users: Record<string, string> = {};
 dotenv.config();
 const allowedOrigins = [
@@ -37,6 +37,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use("/admin", adminRoutes);
 app.use("/auth", routAuth);
 app.use("/superAdmin", adm);
 app.use("/imgs", imgRouter);
@@ -48,9 +49,9 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "MusikOn API",
+      title: "MussikOn API",
       version: "1.0.0",
-      description: "API para gestión de músicos y eventos en MusikOn",
+      description: "API para gestión de músicos y eventos en MussikOn",
     },
     servers: [
       {
