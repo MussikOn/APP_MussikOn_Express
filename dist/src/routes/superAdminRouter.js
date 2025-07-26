@@ -19,8 +19,15 @@ const adm = (0, express_1.default)();
 adm.use(express_1.default.json());
 /**
  * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Endpoints de administración y superusuario
+ */
+/**
+ * @swagger
  * /superAdmin/deleteAllUsers:
  *   delete:
+ *     tags: [Admin]
  *     summary: Elimina todos los usuarios de Firestore (protegido)
  *     security:
  *       - bearerAuth: []

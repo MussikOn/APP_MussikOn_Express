@@ -12,8 +12,15 @@ const upload = (0, multer_1.default)({ storage });
 musician.use(upload.single("file"));
 /**
  * @swagger
+ * tags:
+ *   name: Media
+ *   description: Endpoints para gestión de imágenes de perfil de músico
+ */
+/**
+ * @swagger
  * /media/saveImage:
  *   post:
+ *     tags: [Media]
  *     summary: Sube una imagen de perfil de músico
  *     consumes:
  *       - multipart/form-data
@@ -59,9 +66,13 @@ musician.use(upload.single("file"));
  *               properties:
  *                 error:
  *                   type: string
- *
+ */
+musician.post("/saveImage", musicianProfileController_1.uploadFile);
+/**
+ * @swagger
  * /media/getImage/{key}:
  *   get:
+ *     tags: [Media]
  *     summary: Obtiene la URL firmada de una imagen subida
  *     parameters:
  *       - in: path
@@ -98,23 +109,6 @@ musician.use(upload.single("file"));
  *               properties:
  *                 error:
  *                   type: string
- */
-musician.post("/saveImage", musicianProfileController_1.uploadFile);
-/**
- * @swagger
- * /media/getImage/{key}:
- *   get:
- *     summary: Obtiene la URL firmada de una imagen subida
- *     parameters:
- *       - in: path
- *         name: key
- *         schema:
- *           type: string
- *         required: true
- *         description: Clave de la imagen
- *     responses:
- *       200:
- *         description: URL firmada obtenida
  */
 musician.get("/getImage/:key", musicianProfileController_1.getFileUrl);
 exports.default = musician;

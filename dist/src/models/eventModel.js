@@ -20,13 +20,14 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
+exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
     const eventRef = firebase_1.db.collection("events").doc();
-    const event = Object.assign(Object.assign({}, eventData), { id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, assignedMusicianId: undefined, interestedMusicians: [] });
+    const event = Object.assign(Object.assign({}, eventData), { id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, interestedMusicians: [] });
     yield eventRef.set(event);
+    console.log('Evento guardado:', event);
     return event;
 });
 exports.createEventModel = createEventModel;
@@ -42,6 +43,7 @@ const getAvailableEvents = () => __awaiter(void 0, void 0, void 0, function* () 
     const snapshot = yield firebase_1.db.collection("events")
         .where("status", "==", "pending_musician")
         .get();
+    console.log('Eventos encontrados en BD:', snapshot.docs.length);
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getAvailableEvents = getAvailableEvents;
@@ -67,3 +69,17 @@ const getEventsByMusicianAndStatus = (musicianId, status) => __awaiter(void 0, v
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByMusicianAndStatus = getEventsByMusicianAndStatus;
+const getEventsByUser = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const snapshot = yield firebase_1.db.collection("events")
+        .where("user", "==", userEmail)
+        .get();
+    return snapshot.docs.map(doc => doc.data());
+});
+exports.getEventsByUser = getEventsByUser;
+const getEventsByMusician = (musicianId) => __awaiter(void 0, void 0, void 0, function* () {
+    const snapshot = yield firebase_1.db.collection("events")
+        .where("assignedMusicianId", "==", musicianId)
+        .get();
+    return snapshot.docs.map(doc => doc.data());
+});
+exports.getEventsByMusician = getEventsByMusician;

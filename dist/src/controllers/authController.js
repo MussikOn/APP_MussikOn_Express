@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addEventToUserController = exports.validNumberGetByEmail = exports.emailRegisterController = exports.updateUserByEmailController = void 0;
+exports.deleteUserByEmailController = exports.addEventToUserController = exports.validNumberGetByEmail = exports.emailRegisterController = exports.updateUserByEmailController = void 0;
 exports.registerController = registerController;
 exports.loginController = loginController;
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -84,7 +84,8 @@ const firebase_1 = require("../utils/firebase");
 function registerController(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { name, lastName, roll, userEmail, userPassword } = req.body;
+            const { name, lastName, roll, userEmail, userPassword, status } = req.body;
+            console.log(req.body);
             if (!name || !lastName || !roll || !userEmail || !userPassword) {
                 res.status(400).json({ msg: "Error al registrarse, todos los campos deben de ser llenados" });
                 return;
@@ -98,10 +99,13 @@ function registerController(req, res) {
                 return;
             }
             const pass = yield bcrypt_1.default.hash(userPassword, 10);
-            const saved = yield (0, authModel_1.registerModel)(name, lastName, roll, userEmail, pass);
+            // status por defecto true si no se envía
+            const userStatus = typeof status === 'boolean' ? status : true;
+            const saved = yield (0, authModel_1.registerModel)(name, lastName, roll, userEmail, pass, userStatus);
             if (!saved) {
                 const token = (0, jwt_1.createToken)(name, lastName, userEmail, roll);
-                res.status(200).json({ msg: "Usuario Registrado con éxito.", token });
+                const user = yield (0, authModel_1.getUserByEmailModel)(userEmail);
+                res.status(200).json({ msg: "Usuario Registrado con éxito.", token, user });
                 return;
             }
             else if (saved === "Hay campos que no han sido llenados") {
@@ -150,7 +154,7 @@ function loginController(req, res) {
                 return;
             }
             const token = (0, jwt_1.createToken)(name, lastName, userEmail, roll);
-            res.status(200).json({ msg: "Login Exitoso", token });
+            res.status(200).json({ msg: "Login Exitoso", token, user: data });
         }
         catch (error) {
             res.status(401).json({ msg: "Error en la petición, Inténtelo mas tarde.", error });
@@ -170,6 +174,10 @@ const updateUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
             return;
         }
         ;
+        // status por defecto true si no se envía
+        if (typeof dataUsers.status !== 'boolean') {
+            dataUsers.status = true;
+        }
         const updateValidation = yield (0, authModel_1.updateUserByEmailModel)(userEmail, dataUsers);
         if (updateValidation) {
             console.info("Resultado de updateUserByEmailModel");
@@ -316,3 +324,34 @@ const addEventToUserController = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.addEventToUserController = addEventToUserController;
+const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userEmail } = req.body;
+        console.log('[DELETE] userEmail recibido:', userEmail); // LOG de depuración
+        if (!userEmail) {
+            res.status(400).json({ message: 'Falta el email' });
+            return;
+        }
+        const result = yield (0, authModel_1.deleteUserByEmailModel)(userEmail);
+        console.log(result);
+        console.log('[DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+        if (result === false) {
+            res.json({ message: 'Usuario eliminado correctamente' });
+        }
+        else if (result === 'Falta el email') {
+            res.status(400).json({ message: 'Falta el email' });
+        }
+        else if (result === 'not_found') {
+            res.status(404).json({ message: 'El usuario no existe o ya fue eliminado' });
+        }
+        else {
+            res.status(500).json({ message: result });
+        }
+    }
+    catch (error) {
+        console.log("./src/controllers/authController.ts linea 288");
+        console.error('[DELETE] Error al eliminar usuario:', error); // LOG de error
+        res.status(500).json({ message: 'Error al eliminar usuario', error: error.message });
+    }
+});
+exports.deleteUserByEmailController = deleteUserByEmailController;

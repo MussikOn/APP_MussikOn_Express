@@ -42,10 +42,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addEventToUserModel = exports.updateUserByEmailModel = exports.getUserByEmailModel = exports.registerModel = void 0;
+exports.deleteUserByEmailModel = exports.addEventToUserModel = exports.updateUserByEmailModel = exports.getUserByEmailModel = exports.registerModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const admin = __importStar(require("firebase-admin"));
-const registerModel = (name, lastName, roll, userEmail, userPassword) => __awaiter(void 0, void 0, void 0, function* () {
+const registerModel = (name_1, lastName_1, roll_1, userEmail_1, userPassword_1, ...args_1) => __awaiter(void 0, [name_1, lastName_1, roll_1, userEmail_1, userPassword_1, ...args_1], void 0, function* (name, lastName, roll, userEmail, userPassword, status = true) {
     try {
         if (!name || !lastName || !roll || !userEmail || !userPassword) {
             console.info("Hay campos que no han sido llenados, \n verificar codigo en C:/programacion/Express/MusikOn/src/models/authModel.ts linea 4.");
@@ -60,7 +60,7 @@ const registerModel = (name, lastName, roll, userEmail, userPassword) => __await
             create_at: Date().toString(),
             update_at: "",
             delete_at: "",
-            status: false
+            status
         };
         const querySnapshot = yield firebase_1.db.collection("users").where("userEmail", "==", userEmail).get();
         if (!querySnapshot.empty) {
@@ -86,6 +86,8 @@ const getUserByEmailModel = (userEmail) => __awaiter(void 0, void 0, void 0, fun
         return data;
     }
     catch (error) {
+        console.log(error);
+        console.log("./src/models/authModel.ts linea 41");
         console.info(`Error en la peticion getUserByEmail.\n\n`);
         return null;
     }
@@ -101,6 +103,8 @@ const updateUserByEmailModel = (userEmail, updatedData) => __awaiter(void 0, voi
         return false;
     }
     catch (error) {
+        console.log(error);
+        console.log("./src/models/authModel.ts linea 62");
         console.info("Error al actualizar los datos.");
         return "Error al actualizar los datos.";
     }
@@ -120,8 +124,28 @@ const addEventToUserModel = (userEmail, eventData) => __awaiter(void 0, void 0, 
         return false;
     }
     catch (error) {
+        console.log(error);
+        console.log("./src/models/authModel.ts linea 82");
         console.info("Error al guardar el evento en el usuario.");
         return "Error al guardar el evento.";
     }
 });
 exports.addEventToUserModel = addEventToUserModel;
+const deleteUserByEmailModel = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!userEmail)
+            return 'Falta el email';
+        const doc = yield firebase_1.db.collection('users').doc(userEmail.toLowerCase()).get();
+        if (!doc.exists)
+            return 'not_found';
+        yield firebase_1.db.collection('users').doc(userEmail.toLowerCase()).delete();
+        return false;
+    }
+    catch (error) {
+        console.log(error);
+        console.log("./src/models/authModel.ts linea 97");
+        console.info('Error al eliminar el usuario:', error);
+        return 'Error al eliminar el usuario';
+    }
+});
+exports.deleteUserByEmailModel = deleteUserByEmailModel;

@@ -95,3 +95,53 @@ export const getRequestStatus = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Error al consultar estado', details: err });
   }
 };
+
+// Obtener solicitud por ID
+export const getRequestById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const doc = await db.collection('musicianRequests').doc(id).get();
+    if (!doc.exists) {
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
+    }
+    res.status(200).json({ id: doc.id, ...doc.data() });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener solicitud', details: err });
+  }
+};
+
+// Actualizar solicitud
+export const updateRequest = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    const docRef = db.collection('musicianRequests').doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
+    }
+    await docRef.update({ ...updateData, updatedAt: new Date() });
+    res.status(200).json({ success: true, message: 'Solicitud actualizada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar solicitud', details: err });
+  }
+};
+
+// Eliminar solicitud
+export const deleteRequest = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const docRef = db.collection('musicianRequests').doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+    res.status(404).json({ error: 'Solicitud no encontrada' });
+    return;
+    }
+    await docRef.delete();
+    res.status(200).json({ success: true, message: 'Solicitud eliminada correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar solicitud', details: err });
+  }
+};

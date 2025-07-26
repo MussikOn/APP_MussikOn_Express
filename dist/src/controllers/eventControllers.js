@@ -9,23 +9,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.myPastPerformancesController = exports.myScheduledEventsController = exports.acceptEventController = exports.availableRequestsController = exports.myCompletedEventsController = exports.myAssignedEventsController = exports.myPendingEventsController = exports.requestMusicianController = void 0;
+exports.myEventsController = exports.myPastPerformancesController = exports.myScheduledEventsController = exports.acceptEventController = exports.availableRequestsController = exports.myCompletedEventsController = exports.myAssignedEventsController = exports.myPendingEventsController = exports.requestMusicianController = void 0;
 const eventModel_1 = require("../models/eventModel");
 const index_1 = require("../../index");
 // POST /events/request-musician
 const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        if (!user || user.roll !== 'organizer') {
+        if (!user || user.roll !== 'eventCreator') {
+            console.log(user);
             res.status(403).json({ msg: "Solo los organizadores pueden crear solicitudes." });
             return;
         }
         const eventData = req.body;
+        console.log('Payload recibido en /events/request-musician:', eventData);
         const event = yield (0, eventModel_1.createEventModel)(Object.assign(Object.assign({}, eventData), { user: user.userEmail }));
         index_1.io.emit('new_event_request', event);
-        res.status(201).json(event);
+        res.status(201).json({ data: event });
     }
     catch (error) {
+        console.error('Error al crear el evento:', error);
         res.status(500).json({ msg: "Error al crear el evento.", error });
     }
 });
@@ -50,13 +53,13 @@ const myCompletedEventsController = (req, res) => __awaiter(void 0, void 0, void
 exports.myCompletedEventsController = myCompletedEventsController;
 const availableRequestsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const events = yield (0, eventModel_1.getAvailableEvents)();
-    res.json(events);
+    res.json({ data: events });
 });
 exports.availableRequestsController = availableRequestsController;
 const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        if (!user || user.roll !== 'musician') {
+        if (!user || user.roll !== 'musico') {
             res.status(403).json({ msg: "Solo los músicos pueden aceptar eventos." });
             return;
         }
@@ -68,7 +71,25 @@ const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         const organizerSocketId = index_1.users[updatedEvent.user];
         if (organizerSocketId) {
-            index_1.io.to(organizerSocketId).emit('musician_accepted', updatedEvent);
+            console.log('Mapping actual de usuarios:', index_1.users);
+            console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user, 'payload:', {
+                requestId: updatedEvent.id,
+                musician: {
+                    name: user.name,
+                    email: user.userEmail,
+                    instrument: updatedEvent.instrument,
+                },
+                event: updatedEvent
+            });
+            index_1.io.to(organizerSocketId).emit('musician_accepted', {
+                requestId: updatedEvent.id,
+                musician: {
+                    name: user.name,
+                    email: user.userEmail,
+                    instrument: updatedEvent.instrument,
+                },
+                event: updatedEvent
+            });
         }
         res.json(updatedEvent);
     }
@@ -89,3 +110,15 @@ const myPastPerformancesController = (req, res) => __awaiter(void 0, void 0, voi
     res.json(events);
 });
 exports.myPastPerformancesController = myPastPerformancesController;
+const myEventsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    let events = [];
+    if (user.roll === 'eventCreator') {
+        events = yield (0, eventModel_1.getEventsByUser)(user.userEmail);
+    }
+    else if (user.roll === 'musico') {
+        events = yield (0, eventModel_1.getEventsByMusician)(user.userEmail);
+    }
+    res.json({ data: events });
+});
+exports.myEventsController = myEventsController;

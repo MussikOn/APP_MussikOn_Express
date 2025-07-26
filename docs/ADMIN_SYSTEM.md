@@ -1,4 +1,4 @@
-# Sistema de Administración Centralizada - MusikOn
+# Sistema de Administración Centralizada - MussikOn
 
 ## Objetivo
 Permitir a administradores y superadministradores gestionar todas las colecciones y recursos de la plataforma MusikOn desde un panel centralizado, con endpoints RESTful protegidos y bien documentados.

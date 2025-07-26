@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verImagen = void 0;
+exports.updateImageMetadata = exports.deleteImage = exports.uploadImage = exports.getImageUrl = exports.listImages = void 0;
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -21,53 +21,63 @@ const s3 = new aws_sdk_1.default.S3({
     accessKeyId: process.env.IDRIVE_E2_ACCESS_KEY,
     secretAccessKey: process.env.IDRIVE_E2_SECRET_KEY,
 });
-const verImagen = () => __awaiter(void 0, void 0, void 0, function* () {
-    s3.listBuckets((err, data) => {
-        if (err) {
-            console.info("Error: ");
-            console.info(err);
-            return;
-        }
-        else {
-            console.info("Data:");
-            console.info(data);
-            return;
-        }
-    });
+const BUCKET = process.env.IDRIVE_E2_BUCKET_NAME;
+const listImages = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield s3.listObjectsV2({
+            Bucket: BUCKET,
+            MaxKeys: 1000,
+        }).promise();
+        if (!response.Contents)
+            return [];
+        return response.Contents.map(item => ({
+            key: item.Key,
+            lastModified: item.LastModified,
+            size: item.Size,
+        }));
+    }
+    catch (error) {
+        throw error;
+    }
 });
-exports.verImagen = verImagen;
-// import { s3, ss3 } from "../utils/idriveE2";
-// export const getAllImagesModel = async () =>{
-//     try{
-//         const response = await ss3.listObjectsV2({
-//             Bucket:"musikon-media",
-//             MaxKeys:1000,
-//         }).promise();
-//         console.info(ss3);
-//         if(!response){return;}
-//         const files = response.Contents?.map((item)=>{
-//             const url = ss3.getSignedUrl("getObject",{
-//                 Bucket:"musikon-media",
-//                 Key:item.Key,
-//                 Expires:60 * 60,
-//             });
-//             return {
-//                 Key:item.Key,
-//                 url,
-//             }
-//         });
-//         console.info(files);
-//         return files;
-//     }catch(error){
-//         return;
-//     }
-// }
-// // ====================================================
-// export const getAllDataModel = async () =>{
-//     try {
-//         // const command
-//       } catch (error) {
-//         console.error("Error al listar imágenes:", error);
-//         return;
-//       }
-// }
+exports.listImages = listImages;
+const getImageUrl = (key) => {
+    return s3.getSignedUrl("getObject", {
+        Bucket: BUCKET,
+        Key: key,
+        Expires: 60 * 60, // 1 hora
+    });
+};
+exports.getImageUrl = getImageUrl;
+const uploadImage = (file) => __awaiter(void 0, void 0, void 0, function* () {
+    const key = Date.now() + "_" + file.originalname;
+    yield s3.putObject({
+        Bucket: BUCKET,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+    }).promise();
+    return { key, url: (0, exports.getImageUrl)(key) };
+});
+exports.uploadImage = uploadImage;
+const deleteImage = (key) => __awaiter(void 0, void 0, void 0, function* () {
+    yield s3.deleteObject({
+        Bucket: BUCKET,
+        Key: key,
+    }).promise();
+    return true;
+});
+exports.deleteImage = deleteImage;
+const updateImageMetadata = (key, metadata) => __awaiter(void 0, void 0, void 0, function* () {
+    // S3 no permite actualizar metadata directamente, hay que copiar el objeto sobre sí mismo
+    const copySource = `${BUCKET}/${key}`;
+    yield s3.copyObject({
+        Bucket: BUCKET,
+        CopySource: copySource,
+        Key: key,
+        Metadata: metadata,
+        MetadataDirective: "REPLACE",
+    }).promise();
+    return true;
+});
+exports.updateImageMetadata = updateImageMetadata;

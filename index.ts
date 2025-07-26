@@ -1,3 +1,5 @@
+// Lee el archivo START.md y continúa con el desarrollo del proyecto
+
 import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
@@ -12,6 +14,7 @@ import express, { Response, Request } from "express";
 import musician from "./src/routes/musicianProfileRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
+import redoc from "redoc-express";
 import eventsRouter from "./src/routes/eventsRoutes";
 import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
 import { setSocketInstance } from './src/controllers/musicianRequestController';
@@ -45,6 +48,31 @@ app.use("/media", musician);
 app.use("/events", eventsRouter);
 app.use('/musician-requests', musicianRequestRoutes);
 
+// Endpoint de prueba sin autenticación
+app.get('/test', (req, res) => {
+  res.json({ message: 'Backend funcionando correctamente' });
+});
+
+// Endpoint de prueba para solicitudes de músicos sin autenticación
+app.get('/test/musician-requests', (req, res) => {
+  res.json([
+    {
+      _id: '1',
+      userId: 'admin@mussikon.com',
+      eventType: 'concierto',
+      date: '2024-08-15',
+      time: '20:00 - 22:00',
+      location: 'Teatro Municipal',
+      instrument: 'guitarra',
+      budget: 500,
+      comments: 'Necesitamos un guitarrista para un concierto de rock',
+      status: 'pendiente',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ]);
+});
+
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
@@ -68,6 +96,17 @@ const swaggerOptions = {
       },
     },
     security: [{ bearerAuth: [] }],
+    tags: [
+      { name: "Auth", description: "Endpoints de autenticación y usuarios" },
+      { name: "Events", description: "Endpoints de eventos y matching" },
+      { name: "Images", description: "Endpoints de galería de imágenes" },
+      { name: "MusicianRequests", description: "Endpoints de solicitudes directas de músicos" },
+      { name: "Admin", description: "Endpoints de administración de usuarios" },
+      { name: "AdminEvents", description: "Endpoints de administración de eventos" },
+      { name: "AdminMusicians", description: "Endpoints de administración de músicos" },
+      { name: "AdminImages", description: "Endpoints de administración de imágenes" },
+      { name: "AdminMusicianRequests", description: "Endpoints de administración de solicitudes de músico" }
+    ]
   },
   apis: [
     "./src/routes/*.ts",
@@ -76,7 +115,76 @@ const swaggerOptions = {
   ],
 };
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Configuración avanzada de Swagger UI con sidebar mejorado
+const swaggerUiOptions = {
+  explorer: true,
+  customCss: `
+    .swagger-ui .topbar { display: none }
+    .swagger-ui .info { margin: 20px 0 }
+    .swagger-ui .scheme-container { margin: 20px 0 }
+    .swagger-ui .opblock-tag { font-size: 16px; font-weight: bold; }
+    .swagger-ui .opblock-tag-section { margin-bottom: 20px; }
+    .swagger-ui .opblock { margin: 10px 0; }
+    .swagger-ui .opblock-summary { font-weight: 500; }
+    .swagger-ui .sidebar { width: 300px; }
+    .swagger-ui .main { margin-left: 300px; }
+    .swagger-ui .sidebar .sidebar-content { padding: 20px; }
+    .swagger-ui .sidebar .sidebar-content .sidebar-item { margin: 10px 0; }
+    .swagger-ui .sidebar .sidebar-content .sidebar-item a { color: #333; text-decoration: none; }
+    .swagger-ui .sidebar .sidebar-content .sidebar-item a:hover { color: #007bff; }
+  `,
+  customSiteTitle: "MussikOn API Documentation",
+  customfavIcon: "/favicon.ico",
+  swaggerOptions: {
+    docExpansion: "list",
+    filter: true,
+    showRequestHeaders: true,
+    showCommonExtensions: true,
+    tryItOutEnabled: true,
+    requestInterceptor: (req: any) => {
+      req.headers['Content-Type'] = 'application/json';
+      return req;
+    }
+  }
+};
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+
+// Endpoint para servir el JSON de Swagger
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
+// Redoc como alternativa con sidebar lateral más moderno
+app.get('/redoc', redoc({
+  title: 'MussikOn API Documentation',
+  specUrl: '/api-docs/swagger.json',
+  redocOptions: {
+    theme: {
+      colors: {
+        primary: {
+          main: '#007bff'
+        }
+      },
+      sidebar: {
+        width: '300px'
+      }
+    },
+    hideDownloadButton: false,
+    hideHostname: false,
+    hideLoading: false,
+    nativeScrollbars: false,
+    pathInMiddlePanel: true,
+    requiredPropsFirst: true,
+    scrollYOffset: 0,
+    showExtensions: true,
+    sortPropsAlphabetically: true,
+    suppressWarnings: false,
+    untrustedSpec: false
+  }
+}));
 
 /**
  * @swagger
@@ -171,14 +279,7 @@ app.post("/getAllUsers/:userEmail", async (req: Request, res: Response) => {
 });
 
 app.get("/", (req: Request, res: Response) => {
-  io.to(users["jasbootstudios@gmail.com"]).emit("notification", {
-    title: "Nueva solicitud de evento",
-    nombre: "Organizador X",
-    fecha: "2025-04-25",
-    direccion: "Av. Siempre Viva #123",
-  });
-
-  res.send(`<h1>MusikOn API</h1><p>Se Agregaron las notificaciones!</p>`);
+  res.sendFile(__dirname + '/src/utils/index.html');
 });
 
 // Endpoint temporal para verificar si un usuario existe
@@ -193,6 +294,8 @@ app.get('/auth/check-user/:userEmail', async (req: Request, res: Response) => {
 });
 
 server.listen(port, () => {
-  console.log(`MusikOn API:${URL_API}${port}`);
-  console.log(`MusikOn Swagger:${URL_API}${port}/api-docs`);
+  console.log(`🎵 MussikOn API: ${URL_API}${port}`);
+  console.log(`📚 Swagger UI: ${URL_API}${port}/api-docs`);
+  console.log(`🎨 Redoc: ${URL_API}${port}/redoc`);
+  console.log(`🏠 Página de inicio: ${URL_API}${port}/`);
 });

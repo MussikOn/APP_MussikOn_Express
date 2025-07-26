@@ -114,11 +114,29 @@ export function adminImagesRemove(req: Request, res: Response, next: NextFunctio
 
 // --- Solicitudes de Músico ---
 export function adminMusicianRequestsGetAll(req: Request, res: Response, next: NextFunction): void {
-  res.status(200).json([]); return;
+  db.collection('musicianRequests').get()
+    .then(snapshot => {
+      const requests: any[] = [];
+      snapshot.forEach(doc => requests.push({ _id: doc.id, ...doc.data() }));
+      res.status(200).json(requests);
+    })
+    .catch(next);
 }
+
 export function adminMusicianRequestsGetById(req: Request, res: Response, next: NextFunction): void {
-  res.status(200).json({}); return;
+  db.collection('musicianRequests').doc(req.params.id).get()
+    .then(doc => {
+      if (!doc.exists) {
+        res.status(404).json({ message: 'Solicitud no encontrada' });
+        return;
+      }
+      res.status(200).json({ _id: doc.id, ...doc.data() });
+    })
+    .catch(next);
 }
+
 export function adminMusicianRequestsRemove(req: Request, res: Response, next: NextFunction): void {
-  res.status(200).json({ message: 'Solicitud eliminada' }); return;
+  db.collection('musicianRequests').doc(req.params.id).delete()
+    .then(() => { res.status(200).json({ message: 'Solicitud eliminada' }); })
+    .catch(next);
 } 

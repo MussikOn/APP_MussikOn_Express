@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllImagesController = void 0;
+exports.updateImageMetadataController = exports.deleteImageController = exports.uploadImageController = exports.getImageUrlController = exports.getAllImagesController = void 0;
 const imagesModel_1 = require("../models/imagesModel");
 /**
  * @swagger
@@ -33,15 +33,71 @@ const imagesModel_1 = require("../models/imagesModel");
  */
 const getAllImagesController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const files = yield (0, imagesModel_1.verImagen)();
-        // files1 es redundante, se elimina
-        console.info(files);
-        // if(!files){ res.status(402).json({msg:"No hay data para mostrar."});return;}
-        console.info("Todas las Imagenes");
+        const files = yield (0, imagesModel_1.listImages)();
         res.status(200).json({ msg: "Galería de fotos.", files });
     }
     catch (error) {
-        res.status(405).json({ msg: "Error al extrael las Imagenes." });
+        res.status(405).json({ msg: "Error al extraer las imágenes." });
     }
 });
 exports.getAllImagesController = getAllImagesController;
+const getImageUrlController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { key } = req.params;
+        if (!key) {
+            res.status(400).json({ error: "Missing file key" });
+            return;
+        }
+        const url = (0, imagesModel_1.getImageUrl)(key);
+        res.status(200).json({ url });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to generate file URL" });
+    }
+});
+exports.getImageUrlController = getImageUrlController;
+const uploadImageController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!req.file) {
+            res.status(400).json({ error: "No file uploaded" });
+            return;
+        }
+        const result = yield (0, imagesModel_1.uploadImage)(req.file);
+        res.status(200).json(Object.assign({ message: "File uploaded successfully" }, result));
+    }
+    catch (error) {
+        res.status(500).json({ error: "Upload failed" });
+    }
+});
+exports.uploadImageController = uploadImageController;
+const deleteImageController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { key } = req.params;
+        if (!key) {
+            res.status(400).json({ error: "Missing file key" });
+            return;
+        }
+        yield (0, imagesModel_1.deleteImage)(key);
+        res.status(200).json({ message: "Image deleted successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Delete failed" });
+    }
+});
+exports.deleteImageController = deleteImageController;
+const updateImageMetadataController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { key } = req.params;
+        const metadata = req.body;
+        if (!key || !metadata || typeof metadata !== 'object') {
+            res.status(400).json({ error: "Missing file key or metadata" });
+            return;
+        }
+        yield (0, imagesModel_1.updateImageMetadata)(key, metadata);
+        res.status(200).json({ message: "Metadata updated successfully" });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Update metadata failed" });
+    }
+});
+exports.updateImageMetadataController = updateImageMetadataController;

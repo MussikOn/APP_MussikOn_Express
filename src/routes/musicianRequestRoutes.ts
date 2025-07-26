@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createRequest, acceptRequest, cancelRequest, getRequestStatus } from '../controllers/musicianRequestController';
+import { createRequest, acceptRequest, cancelRequest, getRequestStatus, getRequestById, updateRequest, deleteRequest } from '../controllers/musicianRequestController';
 
 const router = Router();
 
@@ -133,5 +133,10 @@ router.post('/cancel', cancelRequest);
  *         description: Error al consultar estado
  */
 router.get('/:id/status', getRequestStatus);
+
+// CRUD completo
+router.get('/:id', getRequestById);
+router.put('/:id', updateRequest);
+router.delete('/:id', deleteRequest);
 
 export default router; 

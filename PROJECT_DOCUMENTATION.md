@@ -1,234 +1,750 @@
-# Dokumentación del Proyecto MusikOn API
+# 📖 Documentación Completa del Proyecto MusikOn API
 
-## Índice
+## 📋 Índice
+
 1. [Descripción General](#descripción-general)
-2. [Estructura del Proyecto](#estructura-del-proyecto)
-3. [Instalación y Puesta en Marcha](#instalación-y-puesta-en-marcha)
-4. [Variables de Entorno](#variables-de-entorno)
-5. [Flujo de Matching y Gestión de Eventos](#flujo-de-matching-y-gestión-de-eventos)
-6. [Checklist de Progreso y Pendientes](#checklist-de-progreso-y-pendientes)
-7. [Endpoints Principales](#endpoints-principales)
-8. [Modelos de Datos](#modelos-de-datos)
-9. [Autenticación y Seguridad](#autenticación-y-seguridad)
-10. [Documentación Interactiva (Swagger)](#documentación-interactiva-swagger)
-11. [Cómo Contribuir](#cómo-contribuir)
-12. [Contacto](#contacto)
+2. [Arquitectura del Sistema](#arquitectura-del-sistema)
+3. [Instalación y Configuración](#instalación-y-configuración)
+4. [Estructura del Proyecto](#estructura-del-proyecto)
+5. [API Endpoints](#api-endpoints)
+6. [Modelos de Datos](#modelos-de-datos)
+7. [Autenticación y Seguridad](#autenticación-y-seguridad)
+8. [Sistema de Eventos y Matching](#sistema-de-eventos-y-matching)
+9. [Solicitudes Directas de Músicos](#solicitudes-directas-de-músicos)
+10. [Sistema de Administración](#sistema-de-administración)
+11. [Gestión de Imágenes](#gestión-de-imágenes)
+12. [Notificaciones en Tiempo Real](#notificaciones-en-tiempo-real)
+13. [Documentación Interactiva](#documentación-interactiva)
+14. [Manejo de Errores](#manejo-de-errores)
+15. [Pruebas y Testing](#pruebas-y-testing)
+16. [Despliegue](#despliegue)
+17. [Roadmap y Mejoras](#roadmap-y-mejoras)
+18. [Contribución](#contribución)
 
 ---
 
-## Flujo de Matching y Gestión de Eventos
+## 🎯 Descripción General
 
-> **Nota:** El flujo alternativo de solicitudes directas de músicos está documentado en [`docs/MUSICIAN_REQUESTS_API.md`](docs/MUSICIAN_REQUESTS_API.md)
+**MusikOn** es una plataforma integral que conecta músicos con organizadores de eventos, facilitando la búsqueda, contratación y gestión musical en tiempo real. La API proporciona un ecosistema completo para la gestión de usuarios, eventos, solicitudes y notificaciones instantáneas.
 
-### 1. Creación de Solicitud de Músico (Organizador)
-- El organizador puede crear una solicitud de evento tradicional o una solicitud directa de músico usando `/musician-requests/`.
-- El backend guarda la solicitud y la pone en estado `pending_musician` o `pendiente`.
-- Se emite una notificación en tiempo real a todos los músicos conectados (`io.emit('new_event_request', eventData)`).
+### Características Principales
 
-### 2. Notificaciones y Listado para Músicos
-- [x] Los músicos reciben la notificación en tiempo real.
-- [ ] Los músicos pueden ver todas las solicitudes pendientes en `/events/available-requests` desde el frontend.
-- [ ] Permitir filtrar por instrumento, ubicación, etc. (frontend y backend).
-
-### 3. Aceptación de Solicitud (Músico)
-- [ ] El músico puede aceptar una solicitud desde la app (`POST /events/:eventId/accept`).
-- [x] El backend actualiza el evento a `musician_assigned` y asigna el músico.
-- [ ] Se notifica al organizador en tiempo real en el frontend.
-
-### 4. Gestión de Eventos para Organizadores y Músicos
-- [ ] Organizadores pueden ver:
-  - [ ] Eventos pendientes (`/events/my-pending`)
-  - [ ] Eventos asignados (`/events/my-assigned`)
-  - [ ] Eventos completados (`/events/my-completed`)
-- [ ] Músicos pueden ver:
-  - [ ] Solicitudes disponibles (`/events/available-requests`)
-  - [ ] Eventos agendados (`/events/my-scheduled`)
-  - [ ] Historial de actuaciones (`/events/my-past-performances`)
-
-### 5. Estados de los Eventos
-- [x] `pending_musician`: Esperando que un músico acepte.
-- [x] `musician_assigned`: Un músico ha aceptado.
-- [x] `completed`: Evento realizado.
-- [x] `cancelled`: Evento cancelado.
-
-### 6. Roles y Seguridad
-- [x] Solo los organizadores pueden crear solicitudes.
-- [x] Solo los músicos pueden aceptar solicitudes.
-- [ ] El middleware valida el rol del usuario en todos los endpoints.
+- 🔐 **Autenticación robusta** con JWT y roles granulares
+- 🎭 **Sistema de eventos** con matching automático
+- 📱 **Notificaciones en tiempo real** vía Socket.IO
+- 🖼️ **Gestión de imágenes** con almacenamiento S3
+- 👥 **Sistema de roles** completo (músico, organizador, admin)
+- 📊 **Panel de administración** centralizado
+- 📚 **Documentación interactiva** (Swagger + Redoc)
+- 🔄 **Solicitudes directas** de músicos
+- 📧 **Verificación por email**
+- 🛡️ **Seguridad avanzada** con validaciones
 
 ---
 
-## Eventos de Socket y Notificaciones en Tiempo Real
+## 🏗️ Arquitectura del Sistema
 
-MusikOn utiliza Socket.IO para notificaciones instantáneas entre organizadores y músicos. Los eventos principales son:
-
-| Evento                  | Emisor         | Receptor         | Payload ejemplo                                      |
-|-------------------------|---------------|------------------|------------------------------------------------------|
-| new_event_request       | Backend       | Músicos          | `{ id, userId, eventType, ... }`                     |
-| musician_accepted       | Backend       | Organizador/Músicos | `{ requestId, musician: { id } }`                 |
-| musician_request_taken  | Backend       | Músicos          | `{ requestId }`                                      |
-| request_cancelled       | Backend       | Músicos          | `{ requestId }`                                      |
-| notification            | Backend       | Usuario específico| `{ title, message, ... }`                            |
-
-Para más detalles sobre integración, revisa `docs/FRONTEND_INTEGRATION.md`.
-
----
-
-## Endpoints adicionales
-
-- **Imágenes:**
-  - `GET /imgs/getAllImg` — Obtener galería de imágenes
-  - `POST /media/saveImage` — Subir imagen de perfil de músico
-  - `GET /media/getImage/:key` — Obtener URL firmada de imagen
-- **SuperAdmin:**
-  - `DELETE /superAdmin/deleteAllUsers` — Elimina todos los usuarios (protegido)
-
----
-
-## Utilidades y Helpers
-
-| Archivo                | Descripción breve                                      |
-|------------------------|-------------------------------------------------------|
-| `utils/jwt.ts`         | Generación y validación de tokens JWT                 |
-| `utils/mailer.ts`      | Envío de correos electrónicos                         |
-| `utils/functions.ts`   | Funciones auxiliares (números aleatorios, errores)    |
-| `utils/idriveE2.ts`    | Conexión a almacenamiento S3/idriveE2                 |
-| `utils/validatios.ts`  | Validaciones de email y password                      |
-| `utils/socket.Io.ts`   | Inicialización y gestión de sockets                   |
-
----
-
-## Checklist de Progreso y Pendientes
-
-### Funcionalidades Implementadas
-- [x] Creación de solicitudes de músico (organizador)
-- [x] Guardado y notificación en tiempo real de nuevas solicitudes
-- [x] Asignación de músico a solicitud (backend)
-- [x] Estados de evento y notificaciones básicas por socket
-- [x] Autenticación JWT y roles básicos
-- [x] Endpoints de imágenes y superadmin
-- [x] Documentación de musician-requests
-
-### Funcionalidades Pendientes / Roadmap
-- [ ] Listado de solicitudes disponibles para músicos en el frontend
-- [ ] Acción de aceptar solicitud desde la app (músico)
-- [ ] Feedback en tiempo real al organizador cuando un músico acepta
-- [ ] Pantallas de gestión de eventos para ambos roles (pendientes, asignados, completados)
-- [ ] Filtros avanzados en solicitudes (instrumento, ubicación, fecha)
-- [ ] Validación de roles y permisos en todos los endpoints
-- [ ] Mejoras de UX/UI: validaciones, feedback visual, loading, errores claros
-- [ ] Pruebas automáticas (unitarias y de integración)
-- [ ] Documentación Swagger actualizada y ejemplos de uso
-
----
-
-## Orden Recomendado de Desarrollo
-1. Implementar listado y filtrado de solicitudes disponibles para músicos en el frontend.
-2. Permitir aceptar solicitudes desde la app y notificar en tiempo real al organizador.
-3. Implementar pantallas de gestión de eventos para ambos roles.
-4. Mejorar validaciones, feedback visual y robustez general.
-5. Agregar pruebas automáticas y actualizar documentación.
-
----
-
-## Estado Actual
-- El flujo de creación y notificación de solicitudes está **funcionando**.
-- El backend acepta y guarda correctamente los datos.
-- Falta completar la experiencia del músico y la gestión de eventos en el frontend.
-- Faltan validaciones de roles y pruebas automáticas para robustez total.
-
----
-
-## Descripción General
-MusikOn es una API que conecta músicos con organizadores de eventos, permitiendo la gestión de usuarios, eventos, imágenes y notificaciones en tiempo real.
+### Stack Tecnológico
 
 - **Backend:** Node.js + Express + TypeScript
 - **Base de datos:** Firebase Firestore
-- **Almacenamiento de archivos:** AWS S3 compatible (idriveE2)
+- **Almacenamiento:** AWS S3 (idriveE2)
 - **Autenticación:** JWT
-- **Documentación:** Swagger (OpenAPI)
+- **Tiempo real:** Socket.IO
+- **Documentación:** Swagger + Redoc
+- **Email:** Nodemailer
+- **Validación:** Joi
+
+### Patrón de Arquitectura
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   API Layer     │    │   Data Layer    │
+│   (React/Vue)   │◄──►│   (Express)     │◄──►│   (Firestore)   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Socket.IO     │    │   Middleware    │    │   Storage S3    │
+│   (Real-time)   │    │   (Auth/Admin)  │    │   (Images)      │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
 ---
 
-## Estructura del Proyecto
+## 🚀 Instalación y Configuración
+
+### Requisitos Previos
+
+- Node.js (v16 o superior)
+- npm o yarn
+- Cuenta de Firebase
+- Cuenta de idriveE2 (S3 compatible)
+
+### Pasos de Instalación
+
+1. **Clonar el repositorio:**
+```bash
+git clone https://github.com/JASBOOTSTUDIOS/Express_MusikOn_Backend.git
+cd Express_MusikOn_Backend
+```
+
+2. **Instalar dependencias:**
+```bash
+npm install
+```
+
+3. **Configurar variables de entorno:**
+```bash
+cp ENV_example.ts ENV.ts
+# Editar ENV.ts con tus credenciales
+```
+
+4. **Iniciar el servidor:**
+```bash
+npm run dev    # Desarrollo
+npm start      # Producción
+```
+
+### Variables de Entorno
+
+```typescript
+// Firebase Configuration
+export const FIREBASE_CREDENTIALS = "path/to/firebase-credentials.json";
+
+// S3 Storage (idriveE2)
+export const IDRIVE_E2_ENDPOINT = "https://your-endpoint.com";
+export const IDRIVE_E2_ACCESS_KEY = "your-access-key";
+export const IDRIVE_E2_SECRET_KEY = "your-secret-key";
+export const IDRIVE_E2_REGION = "your-region";
+export const IDRIVE_E2_BUCKET_NAME = "your-bucket-name";
+
+// Email Configuration
+export const EMAIL_USER = "your-email@gmail.com";
+export const EMAIL_PASSWORD = "your-app-password";
+
+// Server Configuration
+export const PORT = 1000;
+export const TOKEN_SECRET = "your-secret-key";
+export const URL_API = "http://localhost:";
+```
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
 APP_MussikOn_Express/
-├── ENV_example.ts         # Ejemplo de variables de entorno
-├── ENV.ts                # Variables de entorno reales (no subir a git)
-├── index.ts              # Punto de entrada principal (Express, Swagger, Sockets)
-├── package.json          # Dependencias y scripts
-├── README.md             # Resumen rápido
-├── PROJECT_DOCUMENTATION.md # (Este archivo)
-└── src/
-    ├── controllers/      # Lógica de negocio y endpoints
-    ├── middleware/       # Middlewares (autenticación, etc.)
-    ├── models/           # Acceso a datos y lógica de Firestore
-    ├── routes/           # Definición de rutas Express
-    ├── sockets/          # Lógica de sockets y notificaciones
-    └── utils/            # Utilidades, validaciones, JWT, mailer, etc.
+├── 📄 Configuración
+│   ├── package.json              # Dependencias y scripts
+│   ├── tsconfig.json            # Configuración TypeScript
+│   ├── ENV.ts                   # Variables de entorno
+│   └── ENV_example.ts           # Ejemplo de variables
+├── 📄 Documentación
+│   ├── README.md                # Documentación principal
+│   ├── PROJECT_DOCUMENTATION.md # Este archivo
+│   └── docs/                    # Documentación detallada
+├── 🚀 Punto de entrada
+│   └── index.ts                 # Servidor principal
+└── 📦 Código fuente (src/)
+    ├── 🎮 Controllers           # Lógica de negocio
+    │   ├── authController.ts     # Autenticación y usuarios
+    │   ├── eventControllers.ts   # Gestión de eventos
+    │   ├── musicianRequestController.ts # Solicitudes directas
+    │   ├── imagesController.ts   # Gestión de imágenes
+    │   ├── adminController.ts    # Panel de administración
+    │   ├── musicianProfileController.ts # Perfiles de músicos
+    │   ├── registerAuthController.ts # Registro adicional
+    │   └── authGoogleController.ts # Auth con Google (pendiente)
+    ├── 🛡️ Middleware            # Interceptores
+    │   ├── authMiddleware.ts     # Autenticación JWT
+    │   └── adminOnly.ts         # Acceso administrativo
+    ├── 📊 Models                # Acceso a datos
+    │   ├── authModel.ts         # Modelo de usuarios
+    │   ├── eventModel.ts        # Modelo de eventos
+    │   ├── musicianRequestModel.ts # Modelo de solicitudes
+    │   └── imagesModel.ts       # Modelo de imágenes
+    ├── 🛣️ Routes                # Definición de rutas
+    │   ├── authRutes.ts         # Rutas de autenticación
+    │   ├── eventsRoutes.ts      # Rutas de eventos
+    │   ├── musicianRequestRoutes.ts # Rutas de solicitudes
+    │   ├── imagesRoutes.ts      # Rutas de imágenes
+    │   ├── adminRoutes.ts       # Rutas de administración
+    │   ├── musicianProfileRoutes.ts # Rutas de perfiles
+    │   └── superAdminRouter.ts  # Rutas de superadmin
+    ├── 🔌 Sockets               # Tiempo real
+    │   └── eventSocket.ts       # Eventos de socket
+    └── 🛠️ Utils                 # Utilidades
+        ├── DataTypes.ts         # Tipos TypeScript
+        ├── firebase.ts          # Configuración Firebase
+        ├── jwt.ts              # Gestión de JWT
+        ├── mailer.ts           # Envío de emails
+        ├── socket.Io.ts        # Configuración Socket.IO
+        ├── validatios.ts       # Validaciones
+        ├── functions.ts        # Funciones auxiliares
+        ├── idriveE2.ts        # Configuración S3
+        └── index.html          # Página de inicio
 ```
 
 ---
 
-## Instalación y Puesta en Marcha
+## 📡 API Endpoints
 
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/JASBOOTSTUDIOS/Express_MusikOn_Backend.git
-   cd Express_MusikOn_Backend
-   ```
-2. Instala dependencias:
-   ```bash
-   npm install
-   ```
-3. Copia y configura las variables de entorno:
-   ```bash
-   cp ENV_example.ts ENV.ts
-   # Edita ENV.ts y agrega tus credenciales
-   ```
-4. Inicia el servidor:
-   ```bash
-   npm start
-   ```
-5. Accede a la documentación interactiva en:
-   - [http://localhost:1000/api-docs](http://localhost:1000/api-docs)
+### 🔐 Autenticación (`/auth`)
+
+| Método | Endpoint | Descripción | Autenticación |
+|--------|----------|-------------|---------------|
+| `POST` | `/auth/Register` | Registro de usuario | No |
+| `POST` | `/auth/login` | Login de usuario | No |
+| `GET` | `/auth/verToken` | Verificar token JWT | Sí |
+| `PUT` | `/auth/update/:userEmail` | Actualizar usuario | Sí |
+| `POST` | `/auth/authEmail` | Enviar email de verificación | No |
+| `POST` | `/auth/validEmail/:code` | Validar código de email | No |
+| `POST` | `/auth/addEvent` | Agregar evento al usuario | Sí |
+| `DELETE` | `/auth/delete` | Eliminar usuario | Sí |
+
+### 🎭 Eventos (`/events`)
+
+| Método | Endpoint | Descripción | Rol Requerido |
+|--------|----------|-------------|----------------|
+| `POST` | `/events/request-musician` | Crear solicitud de músico | eventCreator |
+| `GET` | `/events/my-pending` | Eventos pendientes | eventCreator |
+| `GET` | `/events/my-assigned` | Eventos asignados | eventCreator |
+| `GET` | `/events/my-completed` | Eventos completados | eventCreator |
+| `GET` | `/events/available-requests` | Solicitudes disponibles | musico |
+| `POST` | `/events/:eventId/accept` | Aceptar solicitud | musico |
+| `GET` | `/events/my-scheduled` | Eventos agendados | musico |
+| `GET` | `/events/my-past-performances` | Historial de actuaciones | musico |
+| `GET` | `/events/my-events` | Todos los eventos del usuario | Cualquiera |
+
+### 🎵 Solicitudes Directas (`/musician-requests`)
+
+| Método | Endpoint | Descripción | Autenticación |
+|--------|----------|-------------|---------------|
+| `POST` | `/musician-requests/` | Crear solicitud directa | Sí |
+| `POST` | `/musician-requests/accept` | Aceptar solicitud | Sí |
+| `POST` | `/musician-requests/cancel` | Cancelar solicitud | Sí |
+| `GET` | `/musician-requests/:id/status` | Consultar estado | No |
+
+### 🖼️ Imágenes (`/imgs`, `/media`)
+
+| Método | Endpoint | Descripción | Autenticación |
+|--------|----------|-------------|---------------|
+| `GET` | `/imgs/getAllImg` | Obtener galería de imágenes | No |
+| `GET` | `/imgs/getUrl/:key` | Obtener URL firmada | No |
+| `POST` | `/imgs/upload` | Subir imagen | Sí |
+| `DELETE` | `/imgs/delete/:key` | Eliminar imagen | Sí |
+| `PUT` | `/imgs/update-metadata/:key` | Actualizar metadatos | Sí |
+| `POST` | `/media/saveImage` | Subir imagen de perfil | Sí |
+| `GET` | `/media/getImage/:key` | Obtener imagen de perfil | No |
+
+### 👨‍💼 Administración (`/admin`)
+
+| Método | Endpoint | Descripción | Rol Requerido |
+|--------|----------|-------------|----------------|
+| `GET` | `/admin/users` | Listar usuarios | Admin |
+| `POST` | `/admin/users` | Crear usuario | Admin |
+| `GET` | `/admin/users/:id` | Obtener usuario | Admin |
+| `PUT` | `/admin/users/:id` | Actualizar usuario | Admin |
+| `DELETE` | `/admin/users/:id` | Eliminar usuario | Admin |
+| `GET` | `/admin/events` | Listar eventos | Admin |
+| `POST` | `/admin/events` | Crear evento | Admin |
+| `GET` | `/admin/events/:id` | Obtener evento | Admin |
+| `PUT` | `/admin/events/:id` | Actualizar evento | Admin |
+| `DELETE` | `/admin/events/:id` | Eliminar evento | Admin |
+
+### 🔧 SuperAdmin (`/superAdmin`)
+
+| Método | Endpoint | Descripción | Rol Requerido |
+|--------|----------|-------------|----------------|
+| `DELETE` | `/superAdmin/deleteAllUsers` | Eliminar todos los usuarios | superAdmin |
 
 ---
 
-## Variables de Entorno
-Configura tus credenciales en `ENV.ts` siguiendo el ejemplo de `ENV_example.ts`.
+## 📊 Modelos de Datos
 
-- FIREBASE_CREDENTIALS
-- IDRIVE_E2_ENDPOINT, IDRIVE_E2_ACCESS_KEY, IDRIVE_E2_SECRET_KEY, IDRIVE_E2_REGION
-- EMAIL_USER, EMAIL_PASSWORD
-- TOKEN_SECRET
-- SERVER_PORT, URL_API
+### Usuario (User)
+
+```typescript
+interface User {
+  name: string;
+  lastName: string;
+  userEmail: string;
+  userPassword: string;
+  roll: string;
+  create_at?: string;
+  update_at?: string;
+  delete_at?: string;
+  status?: boolean;
+}
+```
+
+### Evento (Event)
+
+```typescript
+interface Event {
+  id: string;
+  user: string;
+  eventName: string;
+  eventType: string;
+  date: string;
+  time: string;
+  location: string;
+  duration: string;
+  instrument: string;
+  bringInstrument: boolean;
+  comment: string;
+  budget: string;
+  flyerUrl?: string;
+  songs: string[];
+  recommendations: string[];
+  mapsLink: string;
+  status: 'pending_musician' | 'musician_assigned' | 'completed' | 'cancelled';
+  assignedMusicianId?: string;
+  interestedMusicians?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Solicitud de Músico (MusicianRequest)
+
+```typescript
+interface MusicianRequest {
+  id?: string;
+  userId: string;
+  eventType: string;
+  date: string;
+  time: string;
+  location: string;
+  instrument: string;
+  budget: number;
+  comments?: string;
+  status: 'pendiente' | 'asignada' | 'no_asignada' | 'cancelada' | 'completada';
+  assignedMusicianId?: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  updatedAt: FirebaseFirestore.Timestamp;
+}
+```
 
 ---
 
-## Endpoints Principales (Actualizados)
+## 🛡️ Autenticación y Seguridad
 
-> **¿Solicitudes directas de músicos?** Consulta la documentación detallada en [`docs/MUSICIAN_REQUESTS_API.md`](docs/MUSICIAN_REQUESTS_API.md)
+### Sistema de Roles
 
-### Para Organizadores
-- `POST /events/request-musician` — Crear solicitud de músico
-- `GET /events/my-pending` — Ver eventos pendientes
-- `GET /events/my-assigned` — Ver eventos asignados
-- `GET /events/my-completed` — Ver eventos completados
-- `POST /musician-requests/` — Crear solicitud de músico (flujo alternativo)
-- `POST /musician-requests/cancel` — Cancelar solicitud de músico
+- `musico` - Músicos que pueden aceptar eventos
+- `eventCreator` - Organizadores que crean eventos
+- `usuario` - Usuario general
+- `adminJunior` - Administrador junior
+- `adminMidLevel` - Administrador medio
+- `adminSenior` - Administrador senior
+- `superAdmin` - Super administrador
 
-### Para Músicos
-- `GET /events/available-requests` — Ver solicitudes disponibles
-- `POST /events/:eventId/accept` — Aceptar una solicitud
-- `GET /events/my-scheduled` — Ver eventos agendados
-- `GET /events/my-past-performances` — Ver historial de actuaciones
-- `POST /musician-requests/accept` — Aceptar solicitud de músico (flujo alternativo)
-- `GET /musician-requests/:id/status` — Consultar estado de solicitud de músico
+### Autenticación JWT
+
+```typescript
+// Generación de token
+const token = jwt.sign({
+  name, lastName, userEmail, roll
+}, TOKEN_SECRET, { expiresIn: "1h" });
+
+// Verificación de token
+const decoded = jwt.verify(token, TOKEN_SECRET);
+```
+
+### Middleware de Autenticación
+
+```typescript
+// Verificar token
+export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Token no proporcionado' });
+  }
+  // ... verificación del token
+}
+
+// Verificar rol
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (!user || !roles.includes(user.roll)) {
+      return res.status(403).json({ msg: 'No autorizado. Rol insuficiente.' });
+    }
+    next();
+  };
+}
+```
+
+### Validaciones
+
+- **Email:** Formato válido con regex
+- **Password:** Mínimo 8 caracteres, mayúsculas, minúsculas, números y caracteres especiales
+- **Datos de entrada:** Sanitización y validación en todos los endpoints
+- **Archivos:** Tipos y tamaños permitidos para imágenes
 
 ---
 
-## Modelos de Datos
+## 🎭 Sistema de Eventos y Matching
 
-### Usuario (`
+### Flujo de Eventos
+
+1. **Creación de Solicitud** (Organizador)
+   - El organizador crea una solicitud de músico
+   - Se guarda en Firestore con estado `pending_musician`
+   - Se emite notificación en tiempo real a todos los músicos
+
+2. **Visualización de Solicitudes** (Músico)
+   - Los músicos ven las solicitudes disponibles
+   - Pueden filtrar por instrumento, ubicación, fecha
+   - Reciben notificaciones instantáneas de nuevas solicitudes
+
+3. **Aceptación de Solicitud** (Músico)
+   - El músico acepta una solicitud
+   - Se actualiza el estado a `musician_assigned`
+   - Se notifica al organizador en tiempo real
+
+4. **Gestión de Eventos**
+   - Organizadores pueden ver eventos pendientes, asignados y completados
+   - Músicos pueden ver eventos agendados y historial de actuaciones
+
+### Estados de Eventos
+
+- `pending_musician` - Esperando que un músico acepte
+- `musician_assigned` - Un músico ha aceptado
+- `completed` - Evento realizado
+- `cancelled` - Evento cancelado
+
+---
+
+## 🎵 Solicitudes Directas de Músicos
+
+### Características
+
+- **Flujo alternativo** al sistema de eventos tradicional
+- **Solicitudes rápidas** para necesidades inmediatas
+- **Notificaciones instantáneas** a músicos conectados
+- **Primero en llegar, primero en servir**
+
+### Estados de Solicitudes
+
+- `pendiente` - Esperando que un músico acepte
+- `asignada` - Un músico ha aceptado
+- `cancelada` - Solicitud cancelada por el organizador
+- `completada` - Solicitud finalizada
+
+---
+
+## 👨‍💼 Sistema de Administración
+
+### Panel de Administración
+
+- **Gestión de usuarios** - CRUD completo de usuarios
+- **Gestión de eventos** - CRUD completo de eventos
+- **Gestión de imágenes** - Listado y eliminación de imágenes
+- **Gestión de solicitudes** - Listado y eliminación de solicitudes
+
+### Roles Administrativos
+
+- `adminJunior` - Acceso básico a lectura
+- `adminMidLevel` - Acceso a lectura y escritura
+- `adminSenior` - Acceso completo excepto eliminación masiva
+- `superAdmin` - Acceso total, incluyendo eliminación masiva
+
+---
+
+## 🖼️ Gestión de Imágenes
+
+### Características
+
+- **Almacenamiento S3** compatible con idriveE2
+- **URLs firmadas** con expiración temporal
+- **Metadatos personalizables** para cada imagen
+- **Optimización automática** de formatos
+
+### Tipos de Imágenes
+
+- **Galería general** - Imágenes públicas del sistema
+- **Imágenes de perfil** - Fotos de perfil de músicos
+- **Flyers de eventos** - Material promocional de eventos
+
+---
+
+## 📡 Notificaciones en Tiempo Real
+
+### Eventos de Socket.IO
+
+| Evento | Descripción | Emisor | Receptor | Payload |
+|--------|-------------|--------|----------|---------|
+| `new_event_request` | Nueva solicitud de músico | Backend | Músicos | `{ id, userId, eventType, ... }` |
+| `musician_accepted` | Músico aceptó solicitud | Backend | Organizador/Músicos | `{ requestId, musician: { id } }` |
+| `musician_request_taken` | Solicitud tomada | Backend | Músicos | `{ requestId }` |
+| `request_cancelled` | Solicitud cancelada | Backend | Músicos | `{ requestId }` |
+| `notification` | Notificación personalizada | Backend | Usuario específico | `{ title, message, ... }` |
+
+### Configuración de Socket.IO
+
+```typescript
+// Inicialización
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT"]
+  }
+});
+
+// Manejo de conexiones
+io.on("connection", (socket) => {
+  // Registrar usuario
+  socket.on("register", (userEmail: string) => {
+    users[userEmail.toLowerCase()] = socket.id;
+  });
+  
+  // Enviar notificación
+  socket.on("send-notification", ({ toUserId: email, data }) => {
+    const receiverSocket = users[email];
+    if (receiverSocket) {
+      io.to(receiverSocket).emit("notification", data);
+    }
+  });
+});
+```
+
+---
+
+## 📚 Documentación Interactiva
+
+### Swagger UI
+
+- **URL:** `http://localhost:1000/api-docs`
+- **Características:**
+  - Interfaz interactiva para probar endpoints
+  - Generación automática de código
+  - Autenticación integrada
+  - Filtros y búsqueda avanzada
+
+### Redoc
+
+- **URL:** `http://localhost:1000/redoc`
+- **Características:**
+  - Diseño moderno y limpio
+  - Mejor legibilidad
+  - Navegación intuitiva
+  - Responsive design
+
+### Configuración
+
+```typescript
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "MussikOn API",
+      version: "1.0.0",
+      description: "API para gestión de músicos y eventos en MussikOn",
+    },
+    servers: [{ url: "http://localhost:1000" }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [{ bearerAuth: [] }],
+  },
+  apis: ["./src/routes/*.ts", "./src/controllers/*.ts", "./index.ts"],
+};
+```
+
+---
+
+## ⚠️ Manejo de Errores
+
+### Middleware Global de Errores
+
+```typescript
+app.use((err: any, req: Request, res: Response, next: Function) => {
+  console.error(err);
+  res.status(err.status || 500).json({ 
+    msg: err.message || 'Error interno', 
+    error: err 
+  });
+});
+```
+
+### Códigos de Error
+
+- `400` - Bad Request (datos inválidos)
+- `401` - Unauthorized (token inválido o faltante)
+- `403` - Forbidden (rol insuficiente)
+- `404` - Not Found (recurso no encontrado)
+- `409` - Conflict (recurso ya existe)
+- `500` - Internal Server Error (error del servidor)
+
+### Funciones de Manejo
+
+```typescript
+export function handleError(res: Response, error: any, message: string = "Error interno del servidor", status: number = 500) {
+  console.error(error);
+  return res.status(status).json({ msg: message, error });
+}
+
+export function handleSuccess(res: Response, data: any, message: string = "Operación exitosa", status: number = 200) {
+  return res.status(status).json({ msg: message, data });
+}
+```
+
+---
+
+## 🧪 Pruebas y Testing
+
+### Scripts de Pruebas
+
+   ```bash
+npm test              # Ejecutar pruebas
+npm run test:watch    # Pruebas en modo watch
+npm run test:coverage # Pruebas con cobertura
+```
+
+### Tipos de Pruebas
+
+- **Pruebas unitarias** - Funciones individuales
+- **Pruebas de integración** - Endpoints completos
+- **Pruebas de autenticación** - JWT y roles
+- **Pruebas de socket** - Notificaciones en tiempo real
+
+---
+
+## 🚀 Despliegue
+
+### Variables de Producción
+
+   ```bash
+NODE_ENV=production
+PORT=1000
+FIREBASE_CREDENTIALS=path/to/production-credentials.json
+IDRIVE_E2_ENDPOINT=https://production-endpoint.com
+# ... otras variables de producción
+```
+
+### Scripts de Despliegue
+
+   ```bash
+npm run build    # Compilar TypeScript
+npm start        # Iniciar en producción
+```
+
+### Consideraciones de Seguridad
+
+- **HTTPS** obligatorio en producción
+- **CORS** restringido a dominios específicos
+- **Rate limiting** para prevenir abuso
+- **Logging** de errores y acceso
+- **Backup** automático de base de datos
+
+---
+
+## 🗺️ Roadmap y Mejoras
+
+### Funcionalidades Implementadas ✅
+
+- [x] Sistema de autenticación JWT
+- [x] Gestión de usuarios y roles
+- [x] Sistema de eventos con matching
+- [x] Solicitudes directas de músicos
+- [x] Notificaciones en tiempo real
+- [x] Gestión de imágenes con S3
+- [x] Panel de administración
+- [x] Documentación interactiva
+- [x] Validaciones de seguridad
+
+### Funcionalidades Pendientes 🔄
+
+- [ ] Autenticación con Google OAuth
+- [ ] Sistema de pagos integrado
+- [ ] Calificaciones y reseñas
+- [ ] Chat en tiempo real
+- [ ] Geolocalización avanzada
+- [ ] Sistema de notificaciones push
+- [ ] Analytics y métricas
+- [ ] API para aplicaciones móviles
+- [ ] Integración con redes sociales
+- [ ] Sistema de recomendaciones
+
+### Mejoras Técnicas 🔧
+
+- [ ] Cache con Redis
+- [ ] Rate limiting avanzado
+- [ ] Logging estructurado
+- [ ] Monitoreo y alertas
+- [ ] Tests automatizados completos
+- [ ] CI/CD pipeline
+- [ ] Docker containerization
+- [ ] Microservicios
+
+---
+
+## 🤝 Contribución
+
+### Guías de Contribución
+
+1. **Fork** el proyecto
+2. **Crea** una rama para tu feature
+3. **Sigue** las convenciones de código
+4. **Agrega** documentación para nuevas funcionalidades
+5. **Incluye** pruebas para nuevos endpoints
+6. **Actualiza** la documentación Swagger
+7. **Commit** tus cambios con mensajes descriptivos
+8. **Push** a tu rama
+9. **Abre** un Pull Request
+
+### Convenciones de Código
+
+- **TypeScript** estricto
+- **ESLint** para linting
+- **Prettier** para formateo
+- **JSDoc** para documentación
+- **Commits** semánticos
+
+### Estructura de Commits
+
+```
+feat: agregar autenticación con Google
+fix: corregir validación de email
+docs: actualizar documentación de API
+test: agregar pruebas para eventos
+refactor: optimizar consultas de Firestore
+```
+
+---
+
+## 📞 Contacto y Soporte
+
+### Información de Contacto
+
+- **Desarrollador:** Jefry Astacio
+- **Email:** jasbootstudios@gmail.com
+- **GitHub:** [JASBOOTSTUDIOS](https://github.com/JASBOOTSTUDIOS)
+- **Proyecto:** [MusikOn Backend](https://github.com/JASBOOTSTUDIOS/Express_MusikOn_Backend)
+
+### Canales de Soporte
+
+- **Issues:** GitHub Issues para reportar bugs
+- **Discussions:** GitHub Discussions para preguntas
+- **Email:** Contacto directo para consultas urgentes
+- **Documentación:** Documentación completa en `/docs`
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+---
+
+> **"La música conecta lo que las palabras no pueden expresar."** 🎵
