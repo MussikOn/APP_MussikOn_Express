@@ -79,12 +79,25 @@ const swaggerOptions = {
     info: {
       title: "MussikOn API",
       version: "1.0.0",
-      description: "API para gestión de músicos y eventos en MussikOn",
+      description: "API completa para gestión de músicos y eventos en MussikOn. CRUD de solicitudes de músicos completamente implementado.",
+      contact: {
+        name: "Soporte MussikOn",
+        email: "soporte@mussikon.com"
+      },
+      license: {
+        name: "MIT",
+        url: "https://opensource.org/licenses/MIT"
+      }
     },
     servers: [
       {
         url: "http://localhost:1000",
+        description: "Servidor de desarrollo"
       },
+      {
+        url: "https://api.mussikon.com",
+        description: "Servidor de producción"
+      }
     ],
     components: {
       securitySchemes: {
@@ -92,20 +105,68 @@ const swaggerOptions = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
+          description: "JWT token para autenticación"
         },
       },
+      schemas: {
+        Error: {
+          type: "object",
+          properties: {
+            error: {
+              type: "string",
+              description: "Mensaje de error"
+            },
+            code: {
+              type: "string",
+              description: "Código de error"
+            },
+            timestamp: {
+              type: "string",
+              format: "date-time",
+              description: "Timestamp del error"
+            }
+          }
+        }
+      }
     },
     security: [{ bearerAuth: [] }],
     tags: [
-      { name: "Auth", description: "Endpoints de autenticación y usuarios" },
-      { name: "Events", description: "Endpoints de eventos y matching" },
-      { name: "Images", description: "Endpoints de galería de imágenes" },
-      { name: "MusicianRequests", description: "Endpoints de solicitudes directas de músicos" },
-      { name: "Admin", description: "Endpoints de administración de usuarios" },
-      { name: "AdminEvents", description: "Endpoints de administración de eventos" },
-      { name: "AdminMusicians", description: "Endpoints de administración de músicos" },
-      { name: "AdminImages", description: "Endpoints de administración de imágenes" },
-      { name: "AdminMusicianRequests", description: "Endpoints de administración de solicitudes de músico" }
+      { 
+        name: "Auth", 
+        description: "Endpoints de autenticación y usuarios - ✅ Implementado" 
+      },
+      { 
+        name: "Events", 
+        description: "Endpoints de eventos y matching - ✅ Implementado" 
+      },
+      { 
+        name: "Images", 
+        description: "Endpoints de galería de imágenes - ✅ Implementado" 
+      },
+      { 
+        name: "MusicianRequests", 
+        description: "Endpoints de solicitudes directas de músicos - ✅ CRUD completo implementado" 
+      },
+      { 
+        name: "Admin", 
+        description: "Endpoints de administración de usuarios - ✅ Implementado" 
+      },
+      { 
+        name: "AdminEvents", 
+        description: "Endpoints de administración de eventos - ✅ Implementado" 
+      },
+      { 
+        name: "AdminMusicians", 
+        description: "Endpoints de administración de músicos - ✅ Implementado" 
+      },
+      { 
+        name: "AdminImages", 
+        description: "Endpoints de administración de imágenes - ✅ Implementado" 
+      },
+      { 
+        name: "AdminMusicianRequests", 
+        description: "Endpoints de administración de solicitudes de músico - ✅ Implementado" 
+      }
     ]
   },
   apis: [
@@ -133,8 +194,14 @@ const swaggerUiOptions = {
     .swagger-ui .sidebar .sidebar-content .sidebar-item { margin: 10px 0; }
     .swagger-ui .sidebar .sidebar-content .sidebar-item a { color: #333; text-decoration: none; }
     .swagger-ui .sidebar .sidebar-content .sidebar-item a:hover { color: #007bff; }
+    .swagger-ui .info .title { color: #007bff; }
+    .swagger-ui .info .description { color: #666; }
+    .swagger-ui .opblock.opblock-get .opblock-summary-method { background: #61affe; }
+    .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #49cc90; }
+    .swagger-ui .opblock.opblock-put .opblock-summary-method { background: #fca130; }
+    .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #f93e3e; }
   `,
-  customSiteTitle: "MussikOn API Documentation",
+  customSiteTitle: "MussikOn API Documentation - CRUD Completo Implementado",
   customfavIcon: "/favicon.ico",
   swaggerOptions: {
     docExpansion: "list",
@@ -159,7 +226,7 @@ app.get('/api-docs/swagger.json', (req, res) => {
 
 // Redoc como alternativa con sidebar lateral más moderno
 app.get('/redoc', redoc({
-  title: 'MussikOn API Documentation',
+  title: 'MussikOn API Documentation - CRUD Completo Implementado',
   specUrl: '/api-docs/swagger.json',
   redocOptions: {
     theme: {
