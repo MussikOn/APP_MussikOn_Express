@@ -112,4 +112,23 @@ export const completeEventModel = async (eventId: string, completedBy: string) =
   const { id, ...updateFields } = updatedEvent;
   await eventRef.update(updateFields);
   return updatedEvent;
+};
+
+export const deleteEventModel = async (eventId: string, deletedBy: string) => {
+  const eventRef = db.collection("events").doc(eventId);
+  const eventSnap = await eventRef.get();
+  if (!eventSnap.exists) return null;
+  
+  const event = eventSnap.data() as Event;
+  
+  // Verificar que solo el organizador puede eliminar el evento
+  if (event.user !== deletedBy) {
+    throw new Error('Solo el organizador puede eliminar este evento');
+  }
+  
+  // Eliminar el documento completamente
+  await eventRef.delete();
+  console.log('Evento eliminado completamente:', eventId);
+  
+  return { success: true, eventId };
 }; 

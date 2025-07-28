@@ -20,7 +20,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.completeEventModel = exports.cancelEventModel = exports.getEventByIdModel = exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
+exports.deleteEventModel = exports.completeEventModel = exports.cancelEventModel = exports.getEventByIdModel = exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
@@ -115,3 +115,19 @@ const completeEventModel = (eventId, completedBy) => __awaiter(void 0, void 0, v
     return updatedEvent;
 });
 exports.completeEventModel = completeEventModel;
+const deleteEventModel = (eventId, deletedBy) => __awaiter(void 0, void 0, void 0, function* () {
+    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventSnap = yield eventRef.get();
+    if (!eventSnap.exists)
+        return null;
+    const event = eventSnap.data();
+    // Verificar que solo el organizador puede eliminar el evento
+    if (event.user !== deletedBy) {
+        throw new Error('Solo el organizador puede eliminar este evento');
+    }
+    // Eliminar el documento completamente
+    yield eventRef.delete();
+    console.log('Evento eliminado completamente:', eventId);
+    return { success: true, eventId };
+});
+exports.deleteEventModel = deleteEventModel;

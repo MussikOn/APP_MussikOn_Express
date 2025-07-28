@@ -9,7 +9,8 @@ import {
   getEventsByMusician,
   getEventByIdModel,
   cancelEventModel,
-  completeEventModel
+  completeEventModel,
+  deleteEventModel
 } from "../models/eventModel";
 import { Event } from "../utils/DataTypes";
 import { io, users } from "../../index";
@@ -178,15 +179,35 @@ export const cancelEventController = async (req: Request, res: Response): Promis
     const user = (req as any).user;
     const { eventId } = req.params;
     
-    console.log('🔄 Cancelando solicitud:', eventId);
+    console.log('🔄 Cancelando solicitud:', eventId, 'por usuario:', user.userEmail);
     
     // Obtener el evento antes de cancelarlo
     const originalEvent = await getEventByIdModel(eventId);
     
     if (!originalEvent) {
+      console.log('❌ Solicitud no encontrada:', eventId);
       res.status(404).json({ 
         success: false,
         message: 'Solicitud no encontrada' 
+      });
+      return;
+    }
+
+    // Verificar que el usuario puede cancelar esta solicitud
+    if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
+      console.log('❌ Usuario no autorizado para cancelar esta solicitud');
+      res.status(403).json({ 
+        success: false,
+        message: 'No tienes permisos para cancelar esta solicitud' 
+      });
+      return;
+    }
+
+    if (user.roll === 'musico' && originalEvent.assignedMusicianId !== user.userEmail) {
+      console.log('❌ Músico no autorizado para cancelar esta solicitud');
+      res.status(403).json({ 
+        success: false,
+        message: 'No tienes permisos para cancelar esta solicitud' 
       });
       return;
     }
@@ -195,6 +216,7 @@ export const cancelEventController = async (req: Request, res: Response): Promis
     const cancelledEvent = await cancelEventModel(eventId, user.userEmail);
     
     if (!cancelledEvent) {
+      console.log('❌ Error al cancelar solicitud en la base de datos');
       res.status(500).json({ 
         success: false,
         message: 'Error al cancelar la solicitud' 
@@ -202,13 +224,27 @@ export const cancelEventController = async (req: Request, res: Response): Promis
       return;
     }
     
-    console.log('✅ Solicitud cancelada en la base de datos');
+    console.log('✅ Solicitud cancelada exitosamente:', eventId);
 
     // Enviar notificación al músico asignado si existe
-    if (originalEvent.assignedMusicianId) {
+    if (originalEvent.assignedMusicianId && user.roll === 'eventCreator') {
       const musicianSocketId = users[originalEvent.assignedMusicianId];
       if (musicianSocketId) {
+        console.log('📢 Enviando notificación de cancelación al músico:', originalEvent.assignedMusicianId);
         io.to(musicianSocketId).emit('request_cancelled', {
+          eventId: cancelledEvent.id,
+          cancelledBy: user.userEmail,
+          event: cancelledEvent
+        });
+      }
+    }
+
+    // Enviar notificación al organizador si el músico cancela
+    if (user.roll === 'musico' && originalEvent.user) {
+      const organizerSocketId = users[originalEvent.user];
+      if (organizerSocketId) {
+        console.log('📢 Enviando notificación de cancelación al organizador:', originalEvent.user);
+        io.to(organizerSocketId).emit('request_cancelled_by_musician', {
           eventId: cancelledEvent.id,
           cancelledBy: user.userEmail,
           event: cancelledEvent
@@ -220,7 +256,8 @@ export const cancelEventController = async (req: Request, res: Response): Promis
       success: true,
       message: 'Solicitud cancelada correctamente',
       eventId,
-      assignedMusician: originalEvent.assignedMusicianId
+      assignedMusician: originalEvent.assignedMusicianId,
+      cancelledBy: user.userEmail
     };
 
     res.json(response);
@@ -241,15 +278,35 @@ export const completeEventController = async (req: Request, res: Response): Prom
     const user = (req as any).user;
     const { eventId } = req.params;
     
-    console.log('🔄 Completando solicitud:', eventId);
+    console.log('🔄 Completando solicitud:', eventId, 'por usuario:', user.userEmail);
     
     // Obtener el evento antes de completarlo
     const originalEvent = await getEventByIdModel(eventId);
     
     if (!originalEvent) {
+      console.log('❌ Solicitud no encontrada:', eventId);
       res.status(404).json({ 
         success: false,
         message: 'Solicitud no encontrada' 
+      });
+      return;
+    }
+
+    // Verificar que el usuario puede completar esta solicitud
+    if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
+      console.log('❌ Usuario no autorizado para completar esta solicitud');
+      res.status(403).json({ 
+        success: false,
+        message: 'No tienes permisos para completar esta solicitud' 
+      });
+      return;
+    }
+
+    if (user.roll === 'musico' && originalEvent.assignedMusicianId !== user.userEmail) {
+      console.log('❌ Músico no autorizado para completar esta solicitud');
+      res.status(403).json({ 
+        success: false,
+        message: 'No tienes permisos para completar esta solicitud' 
       });
       return;
     }
@@ -258,6 +315,7 @@ export const completeEventController = async (req: Request, res: Response): Prom
     const completedEvent = await completeEventModel(eventId, user.userEmail);
     
     if (!completedEvent) {
+      console.log('❌ Error al completar solicitud en la base de datos');
       res.status(500).json({ 
         success: false,
         message: 'Error al completar la solicitud' 
@@ -265,7 +323,7 @@ export const completeEventController = async (req: Request, res: Response): Prom
       return;
     }
     
-    console.log('✅ Solicitud completada en la base de datos');
+    console.log('✅ Solicitud completada exitosamente:', eventId);
 
     // Enviar notificación al organizador
     const organizerSocketId = users[originalEvent.user];
@@ -290,6 +348,91 @@ export const completeEventController = async (req: Request, res: Response): Prom
     res.status(500).json({ 
       success: false,
       message: 'Error al completar la solicitud',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
+// DELETE /events/:eventId
+export const deleteEventController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    const { eventId } = req.params;
+    
+    console.log('🗑️ Eliminando solicitud:', eventId, 'por usuario:', user.userEmail);
+    
+    // Obtener el evento antes de eliminarlo
+    const originalEvent = await getEventByIdModel(eventId);
+    
+    if (!originalEvent) {
+      console.log('❌ Solicitud no encontrada:', eventId);
+      res.status(404).json({ 
+        success: false,
+        message: 'Solicitud no encontrada' 
+      });
+      return;
+    }
+
+    // Verificar que solo el organizador puede eliminar
+    if (user.roll !== 'eventCreator') {
+      console.log('❌ Solo los organizadores pueden eliminar solicitudes');
+      res.status(403).json({ 
+        success: false,
+        message: 'Solo los organizadores pueden eliminar solicitudes' 
+      });
+      return;
+    }
+
+    if (originalEvent.user !== user.userEmail) {
+      console.log('❌ Usuario no autorizado para eliminar esta solicitud');
+      res.status(403).json({ 
+        success: false,
+        message: 'No tienes permisos para eliminar esta solicitud' 
+      });
+      return;
+    }
+
+    // Eliminar el evento
+    const deleteResult = await deleteEventModel(eventId, user.userEmail);
+    
+    if (!deleteResult) {
+      console.log('❌ Error al eliminar solicitud en la base de datos');
+      res.status(500).json({ 
+        success: false,
+        message: 'Error al eliminar la solicitud' 
+      });
+      return;
+    }
+    
+    console.log('✅ Solicitud eliminada exitosamente:', eventId);
+
+    // Enviar notificación al músico asignado si existe
+    if (originalEvent.assignedMusicianId) {
+      const musicianSocketId = users[originalEvent.assignedMusicianId];
+      if (musicianSocketId) {
+        console.log('📢 Enviando notificación de eliminación al músico:', originalEvent.assignedMusicianId);
+        io.to(musicianSocketId).emit('request_deleted', {
+          eventId: eventId,
+          deletedBy: user.userEmail,
+          event: originalEvent
+        });
+      }
+    }
+
+    const response = {
+      success: true,
+      message: 'Solicitud eliminada correctamente',
+      eventId,
+      deletedBy: user.userEmail
+    };
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('❌ Error al eliminar solicitud:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al eliminar la solicitud',
       error: error instanceof Error ? error.message : 'Error desconocido'
     });
   }

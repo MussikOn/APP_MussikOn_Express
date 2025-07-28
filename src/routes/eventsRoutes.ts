@@ -13,7 +13,8 @@ import {
   myCancelledEventsController,
   getEventByIdController,
   cancelEventController,
-  completeEventController
+  completeEventController,
+  deleteEventController
 } from '../controllers/eventControllers';
 
 const router = express.Router();
@@ -382,5 +383,32 @@ router.patch('/:eventId/cancel', authMiddleware, cancelEventController);
  *         description: Error al completar el evento
  */
 router.patch('/:eventId/complete', authMiddleware, completeEventController);
+
+/**
+ * @swagger
+ * /events/{eventId}:
+ *   delete:
+ *     tags: [Events]
+ *     summary: Eliminar una solicitud de evento completamente
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento a eliminar
+ *     responses:
+ *       200:
+ *         description: Evento eliminado exitosamente
+ *       404:
+ *         description: Evento no encontrado
+ *       403:
+ *         description: No tienes permisos para eliminar este evento
+ *       500:
+ *         description: Error al eliminar el evento
+ */
+router.delete('/:eventId', authMiddleware, deleteEventController);
 
 export default router;
