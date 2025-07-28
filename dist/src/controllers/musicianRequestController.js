@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRequestStatus = exports.cancelRequest = exports.acceptRequest = exports.createRequest = exports.deleteRequest = exports.updateRequest = exports.getRequestById = exports.getRequestsByDate = exports.getRequestsByInstrument = exports.getRequestsByStatus = exports.searchRequests = exports.getAllRequests = exports.setSocketInstance = void 0;
+exports.deleteRequest = exports.updateRequest = exports.getRequestById = exports.getRequestStatus = exports.cancelRequest = exports.acceptRequest = exports.createRequest = exports.setSocketInstance = void 0;
 const firebase_1 = require("../utils/firebase");
 // Asume que tienes acceso a la instancia de io y users (mapa de usuarios conectados)
 let io;
@@ -19,200 +19,6 @@ const setSocketInstance = (_io, _users) => {
     users = _users;
 };
 exports.setSocketInstance = setSocketInstance;
-// Obtener todas las solicitudes con filtros opcionales
-const getAllRequests = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { status, instrument, date } = req.query;
-        let query = firebase_1.db.collection('musicianRequests');
-        // Aplicar filtros si están presentes
-        if (status) {
-            query = query.where('status', '==', status);
-        }
-        if (instrument) {
-            query = query.where('instrument', '==', instrument);
-        }
-        if (date) {
-            query = query.where('date', '==', date);
-        }
-        const snapshot = yield query.get();
-        const requests = [];
-        snapshot.forEach((doc) => {
-            requests.push(Object.assign({ id: doc.id }, doc.data()));
-        });
-        res.status(200).json(requests);
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al obtener solicitudes', details: err });
-    }
-});
-exports.getAllRequests = getAllRequests;
-// Buscar solicitudes por texto
-const searchRequests = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { q } = req.query;
-        if (!q) {
-            return res.status(400).json({ error: 'Término de búsqueda requerido' });
-        }
-        const searchTerm = q.toString().toLowerCase();
-        const snapshot = yield firebase_1.db.collection('musicianRequests').get();
-        const requests = [];
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            const searchableText = `${data.eventType} ${data.location} ${data.instrument} ${data.comments || ''}`.toLowerCase();
-            if (searchableText.includes(searchTerm)) {
-                requests.push(Object.assign({ id: doc.id }, data));
-            }
-        });
-        res.status(200).json(requests);
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error en la búsqueda', details: err });
-    }
-});
-exports.searchRequests = searchRequests;
-// Obtener solicitudes por estado
-const getRequestsByStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { status } = req.params;
-        const snapshot = yield firebase_1.db.collection('musicianRequests')
-            .where('status', '==', status)
-            .get();
-        const requests = [];
-        snapshot.forEach((doc) => {
-            requests.push(Object.assign({ id: doc.id }, doc.data()));
-        });
-        res.status(200).json(requests);
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al obtener solicitudes por estado', details: err });
-    }
-});
-exports.getRequestsByStatus = getRequestsByStatus;
-// Obtener solicitudes por instrumento
-const getRequestsByInstrument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { instrument } = req.params;
-        const snapshot = yield firebase_1.db.collection('musicianRequests')
-            .where('instrument', '==', instrument)
-            .get();
-        const requests = [];
-        snapshot.forEach((doc) => {
-            requests.push(Object.assign({ id: doc.id }, doc.data()));
-        });
-        res.status(200).json(requests);
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al obtener solicitudes por instrumento', details: err });
-    }
-});
-exports.getRequestsByInstrument = getRequestsByInstrument;
-// Obtener solicitudes por fecha
-const getRequestsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { date } = req.params;
-        const snapshot = yield firebase_1.db.collection('musicianRequests')
-            .where('date', '==', date)
-            .get();
-        const requests = [];
-        snapshot.forEach((doc) => {
-            requests.push(Object.assign({ id: doc.id }, doc.data()));
-        });
-        res.status(200).json(requests);
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al obtener solicitudes por fecha', details: err });
-    }
-});
-exports.getRequestsByDate = getRequestsByDate;
-// Obtener solicitud por ID
-const getRequestById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { id } = req.params;
-        const doc = yield firebase_1.db.collection('musicianRequests').doc(id).get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Solicitud no encontrada' });
-        }
-        res.status(200).json(Object.assign({ id: doc.id }, doc.data()));
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al obtener solicitud', details: err });
-    }
-});
-exports.getRequestById = getRequestById;
-// Actualizar solicitud
-const updateRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { id } = req.params;
-        const updateData = req.body;
-        const docRef = firebase_1.db.collection('musicianRequests').doc(id);
-        const doc = yield docRef.get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Solicitud no encontrada' });
-        }
-        // Preparar datos para actualización
-        const updateFields = {
-            updatedAt: new Date()
-        };
-        if (updateData.eventType)
-            updateFields.eventType = updateData.eventType;
-        if (updateData.date)
-            updateFields.date = updateData.date;
-        if (updateData.startTime && updateData.endTime) {
-            updateFields.time = `${updateData.startTime} - ${updateData.endTime}`;
-        }
-        if (updateData.location)
-            updateFields.location = updateData.location;
-        if (updateData.instrument)
-            updateFields.instrument = updateData.instrument;
-        if (updateData.budget !== undefined)
-            updateFields.budget = updateData.budget;
-        if (updateData.comments !== undefined)
-            updateFields.comments = updateData.comments;
-        if (updateData.status)
-            updateFields.status = updateData.status;
-        if (updateData.assignedMusicianId !== undefined) {
-            updateFields.assignedMusicianId = updateData.assignedMusicianId;
-        }
-        yield docRef.update(updateFields);
-        // Emitir evento de actualización
-        if (io) {
-            io.emit('request_updated', Object.assign({ id }, updateFields));
-        }
-        res.status(200).json({
-            success: true,
-            message: 'Solicitud actualizada correctamente',
-            data: Object.assign({ id }, updateFields)
-        });
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al actualizar solicitud', details: err });
-    }
-});
-exports.updateRequest = updateRequest;
-// Eliminar solicitud
-const deleteRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { id } = req.params;
-        const docRef = firebase_1.db.collection('musicianRequests').doc(id);
-        const doc = yield docRef.get();
-        if (!doc.exists) {
-            return res.status(404).json({ error: 'Solicitud no encontrada' });
-        }
-        yield docRef.delete();
-        // Emitir evento de eliminación
-        if (io) {
-            io.emit('request_deleted', { id });
-        }
-        res.status(200).json({
-            success: true,
-            message: 'Solicitud eliminada correctamente'
-        });
-    }
-    catch (err) {
-        res.status(500).json({ error: 'Error al eliminar solicitud', details: err });
-    }
-});
-exports.deleteRequest = deleteRequest;
 // Crear solicitud de músico
 const createRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -306,3 +112,56 @@ const getRequestStatus = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getRequestStatus = getRequestStatus;
+// Obtener solicitud por ID
+const getRequestById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const doc = yield firebase_1.db.collection('musicianRequests').doc(id).get();
+        if (!doc.exists) {
+            res.status(404).json({ error: 'Solicitud no encontrada' });
+            return;
+        }
+        res.status(200).json(Object.assign({ id: doc.id }, doc.data()));
+    }
+    catch (err) {
+        res.status(500).json({ error: 'Error al obtener solicitud', details: err });
+    }
+});
+exports.getRequestById = getRequestById;
+// Actualizar solicitud
+const updateRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const docRef = firebase_1.db.collection('musicianRequests').doc(id);
+        const doc = yield docRef.get();
+        if (!doc.exists) {
+            res.status(404).json({ error: 'Solicitud no encontrada' });
+            return;
+        }
+        yield docRef.update(Object.assign(Object.assign({}, updateData), { updatedAt: new Date() }));
+        res.status(200).json({ success: true, message: 'Solicitud actualizada correctamente' });
+    }
+    catch (err) {
+        res.status(500).json({ error: 'Error al actualizar solicitud', details: err });
+    }
+});
+exports.updateRequest = updateRequest;
+// Eliminar solicitud
+const deleteRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const docRef = firebase_1.db.collection('musicianRequests').doc(id);
+        const doc = yield docRef.get();
+        if (!doc.exists) {
+            res.status(404).json({ error: 'Solicitud no encontrada' });
+            return;
+        }
+        yield docRef.delete();
+        res.status(200).json({ success: true, message: 'Solicitud eliminada correctamente' });
+    }
+    catch (err) {
+        res.status(500).json({ error: 'Error al eliminar solicitud', details: err });
+    }
+});
+exports.deleteRequest = deleteRequest;

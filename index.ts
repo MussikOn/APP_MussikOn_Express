@@ -17,16 +17,17 @@ import swaggerJSDoc from "swagger-jsdoc";
 import redoc from "redoc-express";
 import eventsRouter from "./src/routes/eventsRoutes";
 import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
+import chatRoutes from './src/routes/chatRoutes';
 import { setSocketInstance } from './src/controllers/musicianRequestController';
 import { getUserByEmailModel } from './src/models/authModel';
 import adminRoutes from "./src/routes/adminRoutes";
 const users: Record<string, string> = {};
 dotenv.config();
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://192.168.54.59:5173',
-  'http://192.168.54.59:1000',
-  'http://192.168.100.101:5173'
+  'http://localhost:5173', // Localhost
+  'http://192.168.54.59:5173', // IP de la computadora
+  'http://192.168.54.59:1000', // IP de la computadora
+  'http://192.168.100.101:5173' // IP de la computadora
 ];
 const app = express();
 app.use(cors({
@@ -47,10 +48,84 @@ app.use("/imgs", imgRouter);
 app.use("/media", musician);
 app.use("/events", eventsRouter);
 app.use('/musician-requests', musicianRequestRoutes);
+app.use('/chat', chatRoutes);
 
 // Endpoint de prueba sin autenticación
 app.get('/test', (req, res) => {
   res.json({ message: 'Backend funcionando correctamente' });
+});
+
+// Endpoint para verificar la estructura del token
+app.get('/test/token-info', (req: any, res: any) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      message: 'Token no proporcionado',
+      expectedFormat: 'Bearer <token>',
+      receivedHeader: authHeader 
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const { TOKEN_SECRET } = require('./ENV');
+    const decoded = jwt.verify(token, TOKEN_SECRET);
+    
+    res.json({
+      message: 'Token válido',
+      tokenStructure: {
+        name: decoded.name,
+        lastName: decoded.lastName,
+        userEmail: decoded.userEmail,
+        roll: decoded.roll,
+        iat: decoded.iat,
+        exp: decoded.exp
+      },
+      expectedFields: ['name', 'lastName', 'userEmail', 'roll'],
+      receivedFields: Object.keys(decoded)
+    });
+  } catch (err: any) {
+    res.status(401).json({ 
+      message: 'Token inválido o expirado',
+      error: err.message,
+      tokenReceived: token.substring(0, 20) + '...'
+    });
+  }
+});
+
+// Endpoint para generar un token de prueba
+app.get('/test/generate-token', (req: any, res: any) => {
+  try {
+    const jwt = require('jsonwebtoken');
+    const { TOKEN_SECRET } = require('./ENV');
+    
+    const testToken = jwt.sign({
+      name: 'Admin',
+      lastName: 'Test',
+      userEmail: 'admin@mussikon.com',
+      roll: 'admin'
+    }, TOKEN_SECRET, { expiresIn: '1h' });
+    
+    res.json({
+      message: 'Token de prueba generado',
+      token: testToken,
+      tokenStructure: {
+        name: 'Admin',
+        lastName: 'Test',
+        userEmail: 'admin@mussikon.com',
+        roll: 'admin'
+      },
+      usage: 'Usar en header: Authorization: Bearer <token>'
+    });
+  } catch (err: any) {
+    res.status(500).json({ 
+      message: 'Error generando token',
+      error: err.message
+    });
+  }
 });
 
 // Endpoint de prueba para solicitudes de músicos sin autenticación
@@ -69,8 +144,290 @@ app.get('/test/musician-requests', (req, res) => {
       status: 'pendiente',
       createdAt: new Date(),
       updatedAt: new Date()
+    },
+    {
+      _id: '2',
+      userId: 'admin@mussikon.com',
+      eventType: 'boda',
+      date: '2024-09-20',
+      time: '18:00 - 20:00',
+      location: 'Jardín Botánico',
+      instrument: 'piano',
+      budget: 800,
+      comments: 'Buscamos pianista para ceremonia de boda',
+      status: 'asignada',
+      assignedMusicianId: 'musico1@email.com',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      _id: '3',
+      userId: 'admin@mussikon.com',
+      eventType: 'culto',
+      date: '2024-08-04',
+      time: '10:00 - 12:00',
+      location: 'Iglesia Central',
+      instrument: 'voz',
+      budget: 300,
+      comments: 'Cantante para servicio dominical',
+      status: 'completada',
+      assignedMusicianId: 'musico2@email.com',
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ]);
+});
+
+// Endpoints de prueba para CRUD completo sin autenticación
+app.get('/test/musician-requests/:id', (req, res) => {
+  const { id } = req.params;
+  res.json({
+    _id: id,
+    userId: 'admin@mussikon.com',
+    eventType: 'concierto',
+    date: '2024-08-15',
+    time: '20:00 - 22:00',
+    location: 'Teatro Municipal',
+    instrument: 'guitarra',
+    budget: 500,
+    comments: 'Necesitamos un guitarrista para un concierto de rock',
+    status: 'pendiente',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+});
+
+// Endpoints de prueba CON autenticación para CRUD completo
+app.get('/auth-test/musician-requests', (req: any, res: any) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      message: 'Token requerido para este endpoint',
+      expectedFormat: 'Bearer <token>'
+    });
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const { TOKEN_SECRET } = require('./ENV');
+    const decoded = jwt.verify(token, TOKEN_SECRET);
+    
+    // Verificar que el usuario tenga rol de admin
+    if (decoded.roll !== 'admin' && decoded.roll !== 'superadmin') {
+      return res.status(403).json({ 
+        message: 'Acceso denegado. Se requiere rol de administrador.',
+        userRole: decoded.roll,
+        userEmail: decoded.userEmail
+      });
+    }
+    
+    res.json([
+      {
+        _id: '1',
+        userId: decoded.userEmail,
+        eventType: 'concierto',
+        date: '2024-08-15',
+        time: '20:00 - 22:00',
+        location: 'Teatro Municipal',
+        instrument: 'guitarra',
+        budget: 500,
+        comments: 'Necesitamos un guitarrista para un concierto de rock',
+        status: 'pendiente',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        _id: '2',
+        userId: decoded.userEmail,
+        eventType: 'boda',
+        date: '2024-09-20',
+        time: '18:00 - 20:00',
+        location: 'Jardín Botánico',
+        instrument: 'piano',
+        budget: 800,
+        comments: 'Buscamos pianista para ceremonia de boda',
+        status: 'asignada',
+        assignedMusicianId: 'musico1@email.com',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ]);
+  } catch (err: any) {
+    res.status(401).json({ 
+      message: 'Token inválido o expirado',
+      error: err.message
+    });
+  }
+});
+
+app.post('/test/musician-requests', (req, res) => {
+  const newRequest = {
+    _id: Date.now().toString(),
+    ...req.body,
+    status: 'pendiente',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  res.status(201).json(newRequest);
+});
+
+app.put('/test/musician-requests/:id', (req, res) => {
+  const { id } = req.params;
+  res.json({
+    success: true,
+    message: 'Solicitud actualizada correctamente',
+    data: {
+      id,
+      updatedAt: new Date()
+    }
+  });
+});
+
+app.delete('/test/musician-requests/:id', (req, res) => {
+  const { id } = req.params;
+  res.json({
+    success: true,
+    message: 'Solicitud eliminada correctamente'
+  });
+});
+
+app.post('/test/musician-requests/accept', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Solicitud aceptada correctamente',
+    data: {
+      requestId: req.body.requestId,
+      musicianId: req.body.musicianId,
+      status: 'asignada',
+      assignedAt: new Date()
+    }
+  });
+});
+
+app.post('/test/musician-requests/cancel', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Solicitud cancelada correctamente',
+    data: {
+      requestId: req.body.requestId,
+      status: 'cancelada',
+      cancelledAt: new Date()
+    }
+  });
+});
+
+// Endpoints de prueba para Chat
+app.get('/test/chat/conversations', (req, res) => {
+  res.json([
+    {
+      id: '1',
+      participants: ['admin@mussikon.com', 'musico1@email.com'],
+      lastMessage: {
+        id: 'msg1',
+        conversationId: '1',
+        senderId: 'musico1@email.com',
+        senderName: 'Juan Guitarrista',
+        content: 'Hola, estoy interesado en tu solicitud',
+        timestamp: new Date().toISOString(),
+        status: 'read',
+        type: 'text'
+      },
+      unreadCount: 0,
+      updatedAt: new Date().toISOString(),
+      isActive: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: '2',
+      participants: ['admin@mussikon.com', 'musico2@email.com'],
+      lastMessage: {
+        id: 'msg2',
+        conversationId: '2',
+        senderId: 'admin@mussikon.com',
+        senderName: 'Admin',
+        content: 'Perfecto, te confirmo los detalles',
+        timestamp: new Date().toISOString(),
+        status: 'delivered',
+        type: 'text'
+      },
+      unreadCount: 1,
+      updatedAt: new Date().toISOString(),
+      isActive: true,
+      createdAt: new Date().toISOString()
+    }
+  ]);
+});
+
+app.get('/test/chat/conversations/:conversationId/messages', (req, res) => {
+  const { conversationId } = req.params;
+  res.json([
+    {
+      id: 'msg1',
+      conversationId,
+      senderId: 'musico1@email.com',
+      senderName: 'Juan Guitarrista',
+      content: 'Hola, vi tu solicitud para el concierto',
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      status: 'read',
+      type: 'text'
+    },
+    {
+      id: 'msg2',
+      conversationId,
+      senderId: 'admin@mussikon.com',
+      senderName: 'Admin',
+      content: 'Hola Juan, gracias por tu interés',
+      timestamp: new Date(Date.now() - 1800000).toISOString(),
+      status: 'read',
+      type: 'text'
+    },
+    {
+      id: 'msg3',
+      conversationId,
+      senderId: 'musico1@email.com',
+      senderName: 'Juan Guitarrista',
+      content: '¿Cuál es el repertorio que necesitas?',
+      timestamp: new Date().toISOString(),
+      status: 'delivered',
+      type: 'text'
+    }
+  ]);
+});
+
+app.post('/test/chat/conversations/:conversationId/messages', (req, res) => {
+  const { conversationId } = req.params;
+  const { content, type = 'text' } = req.body;
+  
+  const newMessage = {
+    id: Date.now().toString(),
+    conversationId,
+    senderId: 'admin@mussikon.com',
+    senderName: 'Admin',
+    content,
+    timestamp: new Date().toISOString(),
+    status: 'sent',
+    type
+  };
+  
+  res.status(201).json(newMessage);
+});
+
+app.post('/test/chat/conversations', (req, res) => {
+  const { participants } = req.body;
+  
+  const newConversation = {
+    id: Date.now().toString(),
+    participants: ['admin@mussikon.com', ...participants],
+    unreadCount: 0,
+    updatedAt: new Date().toISOString(),
+    isActive: true,
+    createdAt: new Date().toISOString()
+  };
+  
+  res.status(201).json(newConversation);
 });
 
 const swaggerOptions = {
@@ -166,6 +523,10 @@ const swaggerOptions = {
       { 
         name: "AdminMusicianRequests", 
         description: "Endpoints de administración de solicitudes de músico - ✅ Implementado" 
+      },
+      { 
+        name: "Chat", 
+        description: "Endpoints de chat en tiempo real - ✅ Implementado" 
       }
     ]
   },

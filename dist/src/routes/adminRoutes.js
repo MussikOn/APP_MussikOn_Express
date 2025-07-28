@@ -379,52 +379,6 @@ adminRoutes.delete('/admin/images/:id', adminOnly_1.adminOnly, adminController_1
  *         description: Solicitud no encontrada
  *       403:
  *         description: Acceso solo para administradores
- *   put:
- *     summary: Actualizar solicitud de músico
- *     tags: [AdminMusicianRequests]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               eventType:
- *                 type: string
- *               date:
- *                 type: string
- *               startTime:
- *                 type: string
- *               endTime:
- *                 type: string
- *               location:
- *                 type: string
- *               instrument:
- *                 type: string
- *               budget:
- *                 type: number
- *               comments:
- *                 type: string
- *               status:
- *                 type: string
- *                 enum: [pendiente, asignada, no_asignada, cancelada, completada]
- *               assignedMusicianId:
- *                 type: string
- *     responses:
- *       200:
- *         description: Solicitud actualizada
- *       404:
- *         description: Solicitud no encontrada
- *       403:
- *         description: Acceso solo para administradores
  *   delete:
  *     summary: Eliminar solicitud de músico
  *     tags: [AdminMusicianRequests]
@@ -445,6 +399,5 @@ adminRoutes.delete('/admin/images/:id', adminOnly_1.adminOnly, adminController_1
 // --- Solicitudes de Músico ---
 adminRoutes.get('/admin/musician-requests', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetAll);
 adminRoutes.get('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetById);
-adminRoutes.put('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsUpdate);
 adminRoutes.delete('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsRemove);
 exports.default = adminRoutes;

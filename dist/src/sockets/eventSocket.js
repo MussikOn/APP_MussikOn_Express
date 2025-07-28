@@ -6,6 +6,7 @@
 // - disconnect: Eliminar usuario de la lista de conectados
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.socketHandler = void 0;
+const chatSocket_1 = require("./chatSocket");
 // const users: Record<string, string> = {};
 const socketHandler = (io, socket, users) => {
     console.log("🔌 Usuario conectado:", socket.id);
@@ -40,6 +41,8 @@ const socketHandler = (io, socket, users) => {
         console.log("❌ Usuario desconectado:", socket.id);
         return;
     });
+    // Inicializar el handler de chat
+    (0, chatSocket_1.chatSocketHandler)(io, socket);
     return;
 };
 exports.socketHandler = socketHandler;

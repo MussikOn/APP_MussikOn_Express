@@ -20,7 +20,6 @@ exports.adminImagesRemove = adminImagesRemove;
 exports.adminMusicianRequestsGetAll = adminMusicianRequestsGetAll;
 exports.adminMusicianRequestsGetById = adminMusicianRequestsGetById;
 exports.adminMusicianRequestsRemove = adminMusicianRequestsRemove;
-exports.adminMusicianRequestsUpdate = adminMusicianRequestsUpdate;
 const firebase_1 = require("../utils/firebase");
 // --- Usuarios ---
 function adminUsersGetAll(req, res, next) {
@@ -152,11 +151,5 @@ function adminMusicianRequestsGetById(req, res, next) {
 function adminMusicianRequestsRemove(req, res, next) {
     firebase_1.db.collection('musicianRequests').doc(req.params.id).delete()
         .then(() => { res.status(200).json({ message: 'Solicitud eliminada' }); })
-        .catch(next);
-}
-function adminMusicianRequestsUpdate(req, res, next) {
-    const data = req.body;
-    firebase_1.db.collection('musicianRequests').doc(req.params.id).update(data)
-        .then(() => { res.status(200).json({ message: 'Solicitud actualizada' }); })
         .catch(next);
 }

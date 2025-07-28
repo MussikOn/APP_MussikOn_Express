@@ -94,3 +94,32 @@ export interface FileMetadata {
   mimetype: string;
   originalName: string;
 }
+
+// Chat Types
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
+  status: 'sent' | 'delivered' | 'read';
+  type: 'text' | 'image' | 'audio' | 'file';
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage?: Message;
+  unreadCount: number;
+  updatedAt: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ChatFilters {
+  search?: string;
+  unreadOnly?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
+}

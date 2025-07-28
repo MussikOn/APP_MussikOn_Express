@@ -5,6 +5,7 @@
 // - disconnect: Eliminar usuario de la lista de conectados
 
 import { Server, Socket } from "socket.io";
+import { chatSocketHandler } from "./chatSocket";
 
 // const users: Record<string, string> = {};
 
@@ -48,6 +49,9 @@ export const socketHandler = (io: Server, socket:Socket, users: Record<string, s
       console.log("❌ Usuario desconectado:", socket.id);
       return;
     });
+
+    // Inicializar el handler de chat
+    chatSocketHandler(io, socket);
   return;
 };
 
