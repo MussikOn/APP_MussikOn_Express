@@ -71,4 +71,45 @@ export const getEventsByMusician = async (musicianId: string) => {
     .where("assignedMusicianId", "==", musicianId)
     .get();
   return snapshot.docs.map(doc => doc.data() as Event);
+};
+
+export const getEventByIdModel = async (eventId: string) => {
+  const eventRef = db.collection("events").doc(eventId);
+  const eventSnap = await eventRef.get();
+  if (!eventSnap.exists) return null;
+  return eventSnap.data() as Event;
+};
+
+export const cancelEventModel = async (eventId: string, cancelledBy: string) => {
+  const eventRef = db.collection("events").doc(eventId);
+  const eventSnap = await eventRef.get();
+  if (!eventSnap.exists) return null;
+  
+  const event = eventSnap.data() as Event;
+  const updatedEvent: Event = {
+    ...event,
+    status: 'cancelled',
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const { id, ...updateFields } = updatedEvent;
+  await eventRef.update(updateFields);
+  return updatedEvent;
+};
+
+export const completeEventModel = async (eventId: string, completedBy: string) => {
+  const eventRef = db.collection("events").doc(eventId);
+  const eventSnap = await eventRef.get();
+  if (!eventSnap.exists) return null;
+  
+  const event = eventSnap.data() as Event;
+  const updatedEvent: Event = {
+    ...event,
+    status: 'completed',
+    updatedAt: new Date().toISOString(),
+  };
+  
+  const { id, ...updateFields } = updatedEvent;
+  await eventRef.update(updateFields);
+  return updatedEvent;
 }; 

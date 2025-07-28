@@ -9,7 +9,11 @@ import {
   acceptEventController,
   myScheduledEventsController,
   myPastPerformancesController,
-  myEventsController
+  myEventsController,
+  myCancelledEventsController,
+  getEventByIdController,
+  cancelEventController,
+  completeEventController
 } from '../controllers/eventControllers';
 
 const router = express.Router();
@@ -277,5 +281,106 @@ router.get('/my-past-performances', authMiddleware, myPastPerformancesController
  *                       updatedAt: "2025-08-01T10:00:00.000Z"
  */
 router.get('/my-events', authMiddleware, myEventsController);
+
+/**
+ * @swagger
+ * /events/my-cancelled:
+ *   get:
+ *     tags: [Events]
+ *     summary: Ver eventos/solicitudes canceladas del usuario
+ *     description: |
+ *       Devuelve los eventos/solicitudes canceladas del usuario autenticado. Usado en el tab "Canceladas" de la pantalla "Mis Solicitudes".
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de eventos cancelados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
+ */
+router.get('/my-cancelled', authMiddleware, myCancelledEventsController);
+
+/**
+ * @swagger
+ * /events/{eventId}:
+ *   get:
+ *     tags: [Events]
+ *     summary: Obtener un evento por su ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento a obtener
+ *     responses:
+ *       200:
+ *         description: Evento encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Event'
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error al obtener el evento
+ */
+router.get('/:eventId', authMiddleware, getEventByIdController);
+
+/**
+ * @swagger
+ * /events/{eventId}/cancel:
+ *   patch:
+ *     tags: [Events]
+ *     summary: Cancelar una solicitud de evento
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento a cancelar
+ *     responses:
+ *       200:
+ *         description: Evento cancelado exitosamente
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error al cancelar el evento
+ */
+router.patch('/:eventId/cancel', authMiddleware, cancelEventController);
+
+/**
+ * @swagger
+ * /events/{eventId}/complete:
+ *   patch:
+ *     tags: [Events]
+ *     summary: Marcar una solicitud de evento como completada
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento a completar
+ *     responses:
+ *       200:
+ *         description: Evento marcado como completado exitosamente
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error al completar el evento
+ */
+router.patch('/:eventId/complete', authMiddleware, completeEventController);
 
 export default router;

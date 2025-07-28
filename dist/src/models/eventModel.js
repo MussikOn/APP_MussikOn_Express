@@ -20,7 +20,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
+exports.completeEventModel = exports.cancelEventModel = exports.getEventByIdModel = exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
@@ -83,3 +83,35 @@ const getEventsByMusician = (musicianId) => __awaiter(void 0, void 0, void 0, fu
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByMusician = getEventsByMusician;
+const getEventByIdModel = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
+    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventSnap = yield eventRef.get();
+    if (!eventSnap.exists)
+        return null;
+    return eventSnap.data();
+});
+exports.getEventByIdModel = getEventByIdModel;
+const cancelEventModel = (eventId, cancelledBy) => __awaiter(void 0, void 0, void 0, function* () {
+    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventSnap = yield eventRef.get();
+    if (!eventSnap.exists)
+        return null;
+    const event = eventSnap.data();
+    const updatedEvent = Object.assign(Object.assign({}, event), { status: 'cancelled', updatedAt: new Date().toISOString() });
+    const { id } = updatedEvent, updateFields = __rest(updatedEvent, ["id"]);
+    yield eventRef.update(updateFields);
+    return updatedEvent;
+});
+exports.cancelEventModel = cancelEventModel;
+const completeEventModel = (eventId, completedBy) => __awaiter(void 0, void 0, void 0, function* () {
+    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventSnap = yield eventRef.get();
+    if (!eventSnap.exists)
+        return null;
+    const event = eventSnap.data();
+    const updatedEvent = Object.assign(Object.assign({}, event), { status: 'completed', updatedAt: new Date().toISOString() });
+    const { id } = updatedEvent, updateFields = __rest(updatedEvent, ["id"]);
+    yield eventRef.update(updateFields);
+    return updatedEvent;
+});
+exports.completeEventModel = completeEventModel;

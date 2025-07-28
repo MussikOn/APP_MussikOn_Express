@@ -80,7 +80,7 @@ export interface Event {
   songs: string[];
   recommendations: string[];
   mapsLink: string;
-  status: 'pending_musician' | 'musician_assigned' | 'completed' | 'cancelled';
+  status: 'pending_musician' | 'musician_assigned' | 'completed' | 'cancelled' | 'musician_cancelled';
   assignedMusicianId?: string;
   interestedMusicians?: string[];
   createdAt: string;

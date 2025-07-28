@@ -1,5 +1,16 @@
 import { Request, Response } from "express";
-import { createEventModel, getEventsByUserAndStatus, getAvailableEvents, acceptEventModel, getEventsByMusicianAndStatus, getEventsByUser, getEventsByMusician } from "../models/eventModel";
+import { 
+  createEventModel, 
+  getEventsByUserAndStatus, 
+  getAvailableEvents, 
+  acceptEventModel, 
+  getEventsByMusicianAndStatus, 
+  getEventsByUser, 
+  getEventsByMusician,
+  getEventByIdModel,
+  cancelEventModel,
+  completeEventModel
+} from "../models/eventModel";
 import { Event } from "../utils/DataTypes";
 import { io, users } from "../../index";
 
@@ -26,19 +37,22 @@ export const requestMusicianController = async (req: Request, res: Response): Pr
 export const myPendingEventsController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
   const events = await getEventsByUserAndStatus(user.userEmail, 'pending_musician');
-  res.json(events);
+  res.json({ data: events });
 };
 
 export const myAssignedEventsController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
+  console.log('🔍 Buscando eventos asignados para:', user.userEmail);
   const events = await getEventsByUserAndStatus(user.userEmail, 'musician_assigned');
-  res.json(events);
+  console.log('📦 Eventos asignados encontrados:', events.length);
+  console.log('📦 Eventos:', events);
+  res.json({ data: events });
 };
 
 export const myCompletedEventsController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
   const events = await getEventsByUserAndStatus(user.userEmail, 'completed');
-  res.json(events);
+  res.json({ data: events });
 };
 
 export const availableRequestsController = async (req: Request, res: Response): Promise<void> => {
@@ -90,13 +104,13 @@ export const acceptEventController = async (req: Request, res: Response): Promis
 export const myScheduledEventsController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
   const events = await getEventsByMusicianAndStatus(user.userEmail, 'musician_assigned');
-  res.json(events);
+  res.json({ data: events });
 };
 
 export const myPastPerformancesController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
   const events = await getEventsByMusicianAndStatus(user.userEmail, 'completed');
-  res.json(events);
+  res.json({ data: events });
 };
 
 export const myEventsController = async (req: Request, res: Response): Promise<void> => {
@@ -108,4 +122,175 @@ export const myEventsController = async (req: Request, res: Response): Promise<v
     events = await getEventsByMusician(user.userEmail);
   }
   res.json({ data: events });
+};
+
+export const myCancelledEventsController = async (req: Request, res: Response): Promise<void> => {
+  const user = (req as any).user;
+  let events: Event[] = [];
+  
+  if (user.roll === 'eventCreator') {
+    // Para organizadores: obtener eventos cancelados que ellos crearon
+    events = await getEventsByUserAndStatus(user.userEmail, 'cancelled');
+    const musicianCancelledEvents = await getEventsByUserAndStatus(user.userEmail, 'musician_cancelled');
+    events = [...events, ...musicianCancelledEvents];
+  } else if (user.roll === 'musico') {
+    // Para músicos: obtener eventos cancelados donde están asignados
+    events = await getEventsByMusicianAndStatus(user.userEmail, 'cancelled');
+    const musicianCancelledEvents = await getEventsByMusicianAndStatus(user.userEmail, 'musician_cancelled');
+    events = [...events, ...musicianCancelledEvents];
+  }
+  
+  res.json({ data: events });
+};
+
+// GET /events/:eventId
+export const getEventByIdController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { eventId } = req.params;
+    const event = await getEventByIdModel(eventId);
+    
+    if (!event) {
+      res.status(404).json({ 
+        success: false,
+        message: 'Evento no encontrado' 
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: event,
+      message: 'Evento encontrado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al obtener el evento:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al obtener el evento',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
+// PATCH /events/:eventId/cancel
+export const cancelEventController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    const { eventId } = req.params;
+    
+    console.log('🔄 Cancelando solicitud:', eventId);
+    
+    // Obtener el evento antes de cancelarlo
+    const originalEvent = await getEventByIdModel(eventId);
+    
+    if (!originalEvent) {
+      res.status(404).json({ 
+        success: false,
+        message: 'Solicitud no encontrada' 
+      });
+      return;
+    }
+
+    // Cancelar el evento
+    const cancelledEvent = await cancelEventModel(eventId, user.userEmail);
+    
+    if (!cancelledEvent) {
+      res.status(500).json({ 
+        success: false,
+        message: 'Error al cancelar la solicitud' 
+      });
+      return;
+    }
+    
+    console.log('✅ Solicitud cancelada en la base de datos');
+
+    // Enviar notificación al músico asignado si existe
+    if (originalEvent.assignedMusicianId) {
+      const musicianSocketId = users[originalEvent.assignedMusicianId];
+      if (musicianSocketId) {
+        io.to(musicianSocketId).emit('request_cancelled', {
+          eventId: cancelledEvent.id,
+          cancelledBy: user.userEmail,
+          event: cancelledEvent
+        });
+      }
+    }
+
+    const response = {
+      success: true,
+      message: 'Solicitud cancelada correctamente',
+      eventId,
+      assignedMusician: originalEvent.assignedMusicianId
+    };
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('❌ Error al cancelar solicitud:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al cancelar la solicitud',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
+};
+
+// PATCH /events/:eventId/complete
+export const completeEventController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    const { eventId } = req.params;
+    
+    console.log('🔄 Completando solicitud:', eventId);
+    
+    // Obtener el evento antes de completarlo
+    const originalEvent = await getEventByIdModel(eventId);
+    
+    if (!originalEvent) {
+      res.status(404).json({ 
+        success: false,
+        message: 'Solicitud no encontrada' 
+      });
+      return;
+    }
+
+    // Completar el evento
+    const completedEvent = await completeEventModel(eventId, user.userEmail);
+    
+    if (!completedEvent) {
+      res.status(500).json({ 
+        success: false,
+        message: 'Error al completar la solicitud' 
+      });
+      return;
+    }
+    
+    console.log('✅ Solicitud completada en la base de datos');
+
+    // Enviar notificación al organizador
+    const organizerSocketId = users[originalEvent.user];
+    if (organizerSocketId) {
+      io.to(organizerSocketId).emit('request_completed', {
+        eventId: completedEvent.id,
+        completedBy: user.userEmail,
+        event: completedEvent
+      });
+    }
+
+    const response = {
+      success: true,
+      message: 'Solicitud marcada como completada',
+      eventId
+    };
+
+    res.json(response);
+
+  } catch (error) {
+    console.error('❌ Error al completar solicitud:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error al completar la solicitud',
+      error: error instanceof Error ? error.message : 'Error desconocido'
+    });
+  }
 };
