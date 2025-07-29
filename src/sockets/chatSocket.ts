@@ -100,6 +100,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
 
       console.log(`💬 Mensaje enviado en conversación ${conversationId}:`, savedMessage.content);
     } catch (error: any) {
+      console.log('./src/sockets/chatSocket.ts line 103')
       console.error("Error al enviar mensaje:", error);
       socket.emit("message-error", { error: error.message || "Error al enviar mensaje" });
     }
@@ -116,6 +117,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
       io.to(conversationId).emit("message-read", { messageId });
       console.log(`✅ Mensaje marcado como leído: ${messageId}`);
     } catch (error: any) {
+      console.log('./src/sockets/chatSocket.ts line 120')
       console.error("Error al marcar mensaje como leído:", error);
       socket.emit("message-error", { error: error.message || "Error al marcar mensaje como leído" });
     }

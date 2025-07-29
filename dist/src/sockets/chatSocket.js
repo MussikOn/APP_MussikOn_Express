@@ -80,6 +80,7 @@ const chatSocketHandler = (io, socket) => {
             console.log(`💬 Mensaje enviado en conversación ${conversationId}:`, savedMessage.content);
         }
         catch (error) {
+            console.log('./src/sockets/chatSocket.ts line 103');
             console.error("Error al enviar mensaje:", error);
             socket.emit("message-error", { error: error.message || "Error al enviar mensaje" });
         }
@@ -94,6 +95,7 @@ const chatSocketHandler = (io, socket) => {
             console.log(`✅ Mensaje marcado como leído: ${messageId}`);
         }
         catch (error) {
+            console.log('./src/sockets/chatSocket.ts line 120');
             console.error("Error al marcar mensaje como leído:", error);
             socket.emit("message-error", { error: error.message || "Error al marcar mensaje como leído" });
         }

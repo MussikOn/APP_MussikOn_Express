@@ -42,6 +42,7 @@ const allowedOrigins = [
     'http://localhost:5173', // Localhost
     'http://192.168.54.59:5173', // IP de la computadora
     'http://192.168.54.59:1000', // IP de la computadora
+    'http://172.20.10.2:5173', // IP de la computadora
     'http://192.168.100.101:5173' // IP de la computadora
 ];
 const app = (0, express_1.default)();
@@ -132,6 +133,36 @@ app.get('/test/generate-token', (req, res) => {
     catch (err) {
         res.status(500).json({
             message: 'Error generando token',
+            error: err.message
+        });
+    }
+});
+// Endpoint para generar token de organizador
+app.get('/test/generate-organizer-token', (req, res) => {
+    try {
+        const jwt = require('jsonwebtoken');
+        const { TOKEN_SECRET } = require('./ENV');
+        const organizerToken = jwt.sign({
+            name: 'Organizador',
+            lastName: 'Test',
+            userEmail: 'organizador@mussikon.com',
+            roll: 'eventCreator'
+        }, TOKEN_SECRET, { expiresIn: '1h' });
+        res.json({
+            message: 'Token de organizador generado',
+            token: organizerToken,
+            tokenStructure: {
+                name: 'Organizador',
+                lastName: 'Test',
+                userEmail: 'organizador@mussikon.com',
+                roll: 'eventCreator'
+            },
+            usage: 'Usar en header: Authorization: Bearer <token>'
+        });
+    }
+    catch (err) {
+        res.status(500).json({
+            message: 'Error generando token de organizador',
             error: err.message
         });
     }

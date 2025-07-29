@@ -12,31 +12,52 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventController = exports.completeEventController = exports.cancelEventController = exports.getEventByIdController = exports.myCancelledEventsController = exports.myEventsController = exports.myPastPerformancesController = exports.myScheduledEventsController = exports.acceptEventController = exports.availableRequestsController = exports.myCompletedEventsController = exports.myAssignedEventsController = exports.myPendingEventsController = exports.requestMusicianController = void 0;
 const eventModel_1 = require("../models/eventModel");
 const index_1 = require("../../index");
+const apiService_1 = require("../services/apiService");
 // POST /events/request-musician
 const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const user = req.user;
         if (!user || user.roll !== 'eventCreator') {
-            console.log(user);
-            res.status(403).json({ msg: "Solo los organizadores pueden crear solicitudes." });
-            return;
+            apiService_1.ApiService.logOperation('request_musician_denied', { user }, user === null || user === void 0 ? void 0 : user.userEmail);
+            return apiService_1.ApiService.error(res, "Solo los organizadores pueden crear solicitudes.", 403);
         }
-        const eventData = req.body;
-        console.log('Payload recibido en /events/request-musician:', eventData);
-        const event = yield (0, eventModel_1.createEventModel)(Object.assign(Object.assign({}, eventData), { user: user.userEmail }));
-        index_1.io.emit('new_event_request', event);
-        res.status(201).json({ data: event });
+        // Usar datos validados del middleware
+        const validatedEventData = req.validatedEventData;
+        apiService_1.ApiService.logOperation('request_musician_received', {
+            requestName: validatedEventData.requestName,
+            requestType: validatedEventData.requestType,
+            budget: validatedEventData.budget,
+            imagesCount: ((_a = validatedEventData.images) === null || _a === void 0 ? void 0 : _a.length) || 0
+        }, user.userEmail);
+        // Procesar datos usando el servicio centralizado
+        const processedEventData = apiService_1.ApiService.processEventData(validatedEventData, user.userEmail);
+        const event = yield (0, eventModel_1.createEventModel)(processedEventData);
+        // Emitir evento de socket
+        index_1.io.emit('new_event_request', Object.assign(Object.assign({}, event), { organizer: {
+                name: user.name,
+                email: user.userEmail
+            } }));
+        apiService_1.ApiService.logOperation('request_musician_created', { eventId: event.id }, user.userEmail);
+        return apiService_1.ApiService.success(res, event, "Solicitud creada exitosamente", 201);
     }
     catch (error) {
-        console.error('Error al crear el evento:', error);
-        res.status(500).json({ msg: "Error al crear el evento.", error });
+        const { message, statusCode } = apiService_1.ApiService.handleError(error, 'request_musician');
+        return apiService_1.ApiService.error(res, message, statusCode, error);
     }
 });
 exports.requestMusicianController = requestMusicianController;
 const myPendingEventsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    const events = yield (0, eventModel_1.getEventsByUserAndStatus)(user.userEmail, 'pending_musician');
-    res.json({ data: events });
+    try {
+        const user = req.user;
+        const events = yield (0, eventModel_1.getEventsByUserAndStatus)(user.userEmail, 'pending_musician');
+        apiService_1.ApiService.logOperation('my_pending_events', { count: events.length }, user.userEmail);
+        return apiService_1.ApiService.success(res, events, `Se encontraron ${events.length} solicitudes pendientes`);
+    }
+    catch (error) {
+        const { message, statusCode } = apiService_1.ApiService.handleError(error, 'my_pending_events');
+        return apiService_1.ApiService.error(res, message, statusCode, error);
+    }
 });
 exports.myPendingEventsController = myPendingEventsController;
 const myAssignedEventsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -55,8 +76,15 @@ const myCompletedEventsController = (req, res) => __awaiter(void 0, void 0, void
 });
 exports.myCompletedEventsController = myCompletedEventsController;
 const availableRequestsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const events = yield (0, eventModel_1.getAvailableEvents)();
-    res.json({ data: events });
+    try {
+        const events = yield (0, eventModel_1.getAvailableEvents)();
+        apiService_1.ApiService.logOperation('available_requests', { count: events.length });
+        return apiService_1.ApiService.success(res, events, `Se encontraron ${events.length} solicitudes disponibles`);
+    }
+    catch (error) {
+        const { message, statusCode } = apiService_1.ApiService.handleError(error, 'available_requests');
+        return apiService_1.ApiService.error(res, message, statusCode, error);
+    }
 });
 exports.availableRequestsController = availableRequestsController;
 const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
