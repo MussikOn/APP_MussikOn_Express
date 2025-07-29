@@ -31,10 +31,10 @@ const sendEmail = (to, subject, html) => __awaiter(void 0, void 0, void 0, funct
             subject,
             html,
         });
-        console.log("Correo enviado a:", to);
+        console.log("[src/utils/mailer.ts:21] Correo enviado a:", to);
     }
     catch (error) {
-        console.error("Error al enviar el correo:", error);
+        console.error("[src/utils/mailer.ts:23] Error al enviar el correo:", error);
         throw error;
     }
 });

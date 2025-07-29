@@ -95,6 +95,65 @@ export interface FileMetadata {
   originalName: string;
 }
 
+// Image System Types
+export interface Image {
+  id: string;
+  key: string; // S3 key
+  url: string; // Signed URL
+  originalName: string;
+  fileName: string;
+  size: number;
+  mimetype: string;
+  category: 'profile' | 'post' | 'event' | 'gallery' | 'admin';
+  userId: string; // Owner of the image
+  description?: string;
+  tags?: string[];
+  metadata?: Record<string, any>;
+  isPublic: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt?: string; // For temporary URLs
+}
+
+export interface ImageUploadRequest {
+  category: 'profile' | 'post' | 'event' | 'gallery' | 'admin';
+  description?: string;
+  tags?: string[];
+  isPublic?: boolean;
+  metadata?: Record<string, any>;
+}
+
+export interface ImageUpdateRequest {
+  description?: string;
+  tags?: string[];
+  isPublic?: boolean;
+  metadata?: Record<string, any>;
+  isActive?: boolean;
+}
+
+export interface ImageFilters {
+  category?: 'profile' | 'post' | 'event' | 'gallery' | 'admin';
+  userId?: string;
+  isPublic?: boolean;
+  isActive?: boolean;
+  tags?: string[];
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  metadata?: Record<string, any>;
+}
+
+export interface ImageStats {
+  totalImages: number;
+  totalSize: number;
+  imagesByCategory: Record<string, number>;
+  imagesByUser: Record<string, number>;
+  recentUploads: Image[];
+}
+
 // Chat Types
 export interface Message {
   id: string;

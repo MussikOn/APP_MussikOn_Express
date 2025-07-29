@@ -1,262 +1,203 @@
-import express from "express";
-import multer from "multer";
-import { getAllImagesController, getImageUrlController, uploadImageController, deleteImageController, updateImageMetadataController } from "../controllers/imagesController";
+import { Router } from "express";
+import { authMiddleware } from "../middleware/authMiddleware";
+import { adminOnly } from "../middleware/adminOnly";
+import { imageUpload, handleMulterError, validateImageFile } from "../middleware/uploadMiddleware";
+import {
+  uploadImageController,
+  getImageByIdController,
+  listImagesController,
+  updateImageController,
+  deleteImageController,
+  getImageStatsController,
+  getUserProfileImagesController,
+  getPostImagesController,
+  getEventImagesController,
+  cleanupExpiredImagesController,
+  // Controladores legacy para compatibilidad
+  getAllImagesController,
+  getImageUrlController
+} from "../controllers/imagesController";
 
-const imgRouter = express();
-const upload = multer();
-imgRouter.use(express.json());
-
-/**
- * @swagger
- * tags:
- *   name: Images
- *   description: Endpoints para galería de imágenes
- */
-
-/**
- * @swagger
- * /imgs/getAllImg:
- *   get:
- *     tags: [Images]
- *     summary: Obtiene la galería de imágenes
- *     responses:
- *       200:
- *         description: Galería de imágenes obtenida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 msg:
- *                   type: string
- *                 files:
- *                   type: array
- *                   items:
- *                     type: object
- *       405:
- *         description: Error al extraer las imágenes
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 msg:
- *                   type: string
- */
-imgRouter.get("/getAllImg", getAllImagesController);
+const router = Router();
 
 /**
  * @swagger
- * /imgs/getUrl/{key}:
- *   get:
- *     tags: [Images]
- *     summary: Obtiene la URL firmada de una imagen
- *     parameters:
- *       - in: path
- *         name: key
- *         schema:
+ * components:
+ *   schemas:
+ *     Image:
+ *       type: object
+ *       properties:
+ *         id:
  *           type: string
- *         required: true
- *         description: Clave de la imagen
- *     responses:
- *       200:
- *         description: URL firmada obtenida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 url:
- *                   type: string
- *       400:
- *         description: Missing file key
- */
-imgRouter.get("/getUrl/:key", getImageUrlController);
-
-/**
- * @swagger
- * /imgs/upload:
- *   post:
- *     tags: [Images]
- *     summary: Sube una imagen
- *     consumes:
- *       - multipart/form-data
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Imagen subida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 key:
- *                   type: string
- *                 url:
- *                   type: string
- *       400:
- *         description: No file uploaded
- *       500:
- *         description: Error al subir la imagen
- */
-imgRouter.post("/upload", upload.single("file"), uploadImageController);
-
-/**
- * @swagger
- * /imgs/delete/{key}:
- *   delete:
- *     tags: [Images]
- *     summary: Elimina una imagen
- *     parameters:
- *       - in: path
- *         name: key
- *         schema:
+ *           description: ID único de la imagen
+ *         key:
  *           type: string
- *         required: true
- *         description: Clave de la imagen
- *     responses:
- *       200:
- *         description: Imagen eliminada exitosamente
- *       400:
- *         description: Missing file key
- *       500:
- *         description: Error al eliminar la imagen
- */
-imgRouter.delete("/delete/:key", deleteImageController);
-
-/**
- * @swagger
- * /imgs/update-metadata/{key}:
- *   put:
- *     tags: [Images]
- *     summary: Actualiza los metadatos de una imagen
- *     parameters:
- *       - in: path
- *         name: key
- *         schema:
+ *           description: Clave en S3
+ *         url:
  *           type: string
- *         required: true
- *         description: Clave de la imagen
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       200:
- *         description: Metadatos actualizados exitosamente
- *       400:
- *         description: Missing file key or metadata
- *       500:
- *         description: Error al actualizar metadatos
- */
-imgRouter.put("/update-metadata/:key", updateImageMetadataController);
-
-/**
- * @swagger
- * /media/saveImage:
- *   post:
- *     tags: [Images]
- *     summary: Sube una imagen de perfil de músico
- *     consumes:
- *       - multipart/form-data
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Imagen subida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 url:
- *                   type: string
- *                 key:
- *                   type: string
- *       400:
- *         description: No file uploaded
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Error al subir la imagen
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- */
-
-/**
- * @swagger
- * /media/getImage/{key}:
- *   get:
- *     tags: [Images]
- *     summary: Obtiene la URL firmada de una imagen subida
- *     parameters:
- *       - in: path
- *         name: key
- *         schema:
+ *           description: URL firmada de la imagen
+ *         originalName:
  *           type: string
- *         required: true
- *         description: Clave de la imagen
- *     responses:
- *       200:
- *         description: URL firmada obtenida
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 url:
- *                   type: string
- *       400:
- *         description: Missing file key
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *       500:
- *         description: Error al generar la URL
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
+ *           description: Nombre original del archivo
+ *         fileName:
+ *           type: string
+ *           description: Nombre del archivo en el sistema
+ *         size:
+ *           type: number
+ *           description: Tamaño del archivo en bytes
+ *         mimetype:
+ *           type: string
+ *           description: Tipo MIME del archivo
+ *         category:
+ *           type: string
+ *           enum: [profile, post, event, gallery, admin]
+ *           description: Categoría de la imagen
+ *         userId:
+ *           type: string
+ *           description: Email del propietario
+ *         description:
+ *           type: string
+ *           description: Descripción de la imagen
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Etiquetas de la imagen
+ *         metadata:
+ *           type: object
+ *           description: Metadatos adicionales
+ *         isPublic:
+ *           type: boolean
+ *           description: Si la imagen es pública
+ *         isActive:
+ *           type: boolean
+ *           description: Si la imagen está activa
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de última actualización
+ *         expiresAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de expiración (para URLs temporales)
+ *     ImageStats:
+ *       type: object
+ *       properties:
+ *         totalImages:
+ *           type: number
+ *           description: Total de imágenes
+ *         totalSize:
+ *           type: number
+ *           description: Tamaño total en bytes
+ *         imagesByCategory:
+ *           type: object
+ *           description: Conteo de imágenes por categoría
+ *         imagesByUser:
+ *           type: object
+ *           description: Conteo de imágenes por usuario
+ *         recentUploads:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Image'
+ *           description: Imágenes subidas recientemente
  */
 
-export default imgRouter;
+// ==================== RUTAS PRINCIPALES ====================
+
+/**
+ * POST /images/upload
+ * Subir una nueva imagen
+ */
+router.post(
+  "/upload",
+  authMiddleware,
+  imageUpload.single('image'),
+  validateImageFile,
+  uploadImageController
+);
+
+/**
+ * GET /images
+ * Listar imágenes con filtros
+ */
+router.get("/", listImagesController);
+
+/**
+ * GET /images/:imageId
+ * Obtener imagen por ID
+ */
+router.get("/:imageId", getImageByIdController);
+
+/**
+ * PUT /images/:imageId
+ * Actualizar imagen
+ */
+router.put(
+  "/:imageId",
+  authMiddleware,
+  updateImageController
+);
+
+/**
+ * DELETE /images/:imageId
+ * Eliminar imagen
+ */
+router.delete(
+  "/:imageId",
+  authMiddleware,
+  deleteImageController
+);
+
+// ==================== RUTAS ESPECÍFICAS ====================
+
+/**
+ * GET /images/profile/:userId
+ * Obtener imágenes de perfil de un usuario
+ */
+router.get("/profile/:userId", getUserProfileImagesController);
+
+/**
+ * GET /images/posts
+ * Obtener imágenes de posts
+ */
+router.get("/posts", getPostImagesController);
+
+/**
+ * GET /images/events
+ * Obtener imágenes de eventos
+ */
+router.get("/events", getEventImagesController);
+
+// ==================== RUTAS DE ADMINISTRACIÓN ====================
+
+/**
+ * GET /images/stats
+ * Obtener estadísticas de imágenes (Solo administradores)
+ */
+router.get("/stats", authMiddleware, adminOnly, getImageStatsController);
+
+/**
+ * POST /images/cleanup
+ * Limpiar imágenes expiradas (Solo administradores senior)
+ */
+router.post("/cleanup", authMiddleware, adminOnly, cleanupExpiredImagesController);
+
+// ==================== RUTAS LEGACY (COMPATIBILIDAD) ====================
+
+/**
+ * GET /imgs/getAllImg
+ * Obtener galería de imágenes (Legacy)
+ */
+router.get("/getAllImg", getAllImagesController);
+
+/**
+ * GET /imgs/url/:key
+ * Obtener URL de imagen por clave (Legacy)
+ */
+router.get("/url/:key", getImageUrlController);
+
+export default router;

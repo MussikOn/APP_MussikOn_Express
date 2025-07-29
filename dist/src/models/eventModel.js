@@ -22,34 +22,12 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventModel = exports.completeEventModel = exports.cancelEventModel = exports.getEventByIdModel = exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
 const firebase_1 = require("../utils/firebase");
-const imageService_1 = require("../services/imageService");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const now = new Date().toISOString();
     const eventRef = firebase_1.db.collection("events").doc();
-    // Validar datos requeridos
-    if (!eventData.requestName || !eventData.requestType || !eventData.date || !eventData.time || !((_a = eventData.location) === null || _a === void 0 ? void 0 : _a.address)) {
-        throw new Error('Datos requeridos faltantes');
-    }
-    // Procesar imágenes si existen
-    let processedImages = [];
-    if (eventData.images && eventData.images.length > 0) {
-        try {
-            processedImages = yield imageService_1.imageService.processEventImages(eventData.images, eventRef.id, {
-                maxSize: 5 * 1024 * 1024, // 5MB
-                allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
-                quality: 0.8
-            });
-            console.log(`📸 Procesadas ${processedImages.length} imágenes para el evento ${eventRef.id}`);
-        }
-        catch (error) {
-            console.error('Error processing images:', error);
-            // Continuar sin imágenes si falla el procesamiento
-        }
-    }
-    const event = Object.assign(Object.assign({}, eventData), { images: processedImages, id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, interestedMusicians: [] });
+    const event = Object.assign(Object.assign({}, eventData), { id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, interestedMusicians: [] });
     yield eventRef.set(event);
-    console.log('📢 Nueva solicitud recibida:', event);
+    console.log('[src/models/eventModel.ts:16] Evento guardado:', event);
     return event;
 });
 exports.createEventModel = createEventModel;
@@ -65,7 +43,7 @@ const getAvailableEvents = () => __awaiter(void 0, void 0, void 0, function* () 
     const snapshot = yield firebase_1.db.collection("events")
         .where("status", "==", "pending_musician")
         .get();
-    console.log('Eventos encontrados en BD:', snapshot.docs.length);
+    console.log('[src/models/eventModel.ts:32] Eventos encontrados en BD:', snapshot.docs.length);
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getAvailableEvents = getAvailableEvents;
@@ -149,7 +127,7 @@ const deleteEventModel = (eventId, deletedBy) => __awaiter(void 0, void 0, void 
     }
     // Eliminar el documento completamente
     yield eventRef.delete();
-    console.log('Evento eliminado completamente:', eventId);
+    console.log('[src/models/eventModel.ts:130] Evento eliminado completamente:', eventId);
     return { success: true, eventId };
 });
 exports.deleteEventModel = deleteEventModel;

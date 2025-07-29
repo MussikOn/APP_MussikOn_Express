@@ -17,7 +17,7 @@ export const createConversationModel = async (participants: string[]): Promise<C
   };
 
   await conversationRef.set(conversation);
-  console.log('Conversación creada:', conversation);
+  console.log('[src/models/chatModel.ts:19] Conversación creada:', conversation);
   return conversation;
 };
 
@@ -66,7 +66,7 @@ export const createMessageModel = async (messageData: Omit<Message, 'id' | 'time
   };
 
   await messageRef.set(message);
-  console.log('Mensaje creado:', message);
+  console.log('[src/models/chatModel.ts:68] Mensaje creado:', message);
 
   // Actualizar la conversación con el último mensaje
   await updateConversationLastMessage(message.conversationId, message);

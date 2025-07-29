@@ -7,8 +7,8 @@
 - [Gestión de Eventos](#gestión-de-eventos)
 - [Solicitudes Directas](#solicitudes-directas)
 - [Chat en Tiempo Real](#chat-en-tiempo-real)
+- [Sistema de Imágenes CRUD](#sistema-de-imágenes-crud)
 - [Notificaciones en Tiempo Real](#notificaciones-en-tiempo-real)
-- [Gestión de Imágenes](#gestión-de-imágenes)
 - [Manejo de Errores](#manejo-de-errores)
 - [Ejemplos de Código](#ejemplos-de-código)
 - [Mejores Prácticas](#mejores-prácticas)
@@ -99,13 +99,7 @@ export class SocketManager {
       this.isConnected = false;
     }
   }
-
-  getSocket() {
-    return this.socket;
-  }
 }
-
-export const socketManager = new SocketManager();
 ```
 
 ---
@@ -970,7 +964,616 @@ export const useNotifications = () => {
 
 ---
 
-## 🖼️ Gestión de Imágenes
+## 🖼️ Sistema de Imágenes CRUD
+
+### Servicio de Imágenes Actualizado
+
+```javascript
+// services/imageService.js
+import axios from 'axios';
+import { apiConfig } from '../config/api';
+
+class ImageService {
+  constructor() {
+    this.api = axios.create(apiConfig);
+  }
+
+  // Obtener todas las imágenes con filtros
+  async getAllImages(filters = {}) {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, value);
+        }
+      });
+      
+      const queryString = params.toString();
+      const url = queryString ? `/images?${queryString}` : '/images';
+      
+      const response = await this.api.get(url);
+      return response.data.images || [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener imagen por ID
+  async getImageById(imageId) {
+    try {
+      const response = await this.api.get(`/images/${imageId}`);
+      return response.data.image;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Subir imagen con metadatos
+  async uploadImage(file, category, metadata = {}) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('category', category);
+      
+      if (metadata.description) {
+        formData.append('description', metadata.description);
+      }
+      if (metadata.tags) {
+        formData.append('tags', JSON.stringify(metadata.tags));
+      }
+      if (metadata.isPublic !== undefined) {
+        formData.append('isPublic', String(metadata.isPublic));
+      }
+
+      const response = await this.api.post('/images/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.image;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Actualizar metadatos de imagen
+  async updateImage(imageId, updateData) {
+    try {
+      const response = await this.api.put(`/images/${imageId}`, updateData);
+      return response.data.image;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Eliminar imagen
+  async deleteImage(imageId) {
+    try {
+      const response = await this.api.delete(`/images/${imageId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener estadísticas
+  async getImageStats() {
+    try {
+      const response = await this.api.get('/images/stats');
+      return response.data.stats;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Limpiar imágenes expiradas
+  async cleanupExpiredImages() {
+    try {
+      const response = await this.api.post('/images/cleanup');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener imágenes por categoría
+  async getImagesByCategory(category, filters = {}) {
+    return this.getAllImages({ ...filters, category });
+  }
+
+  // Obtener imágenes de perfil
+  async getProfileImages(userId) {
+    try {
+      const response = await this.api.get(`/images/profile/${userId}`);
+      return response.data.images || [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener imágenes de posts
+  async getPostImages(userId) {
+    try {
+      const response = await this.api.get(`/images/posts${userId ? `?userId=${userId}` : ''}`);
+      return response.data.images || [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // Obtener imágenes de eventos
+  async getEventImages(eventId) {
+    try {
+      const response = await this.api.get(`/images/events${eventId ? `?eventId=${eventId}` : ''}`);
+      return response.data.images || [];
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  handleError(error) {
+    const message = error.response?.data?.message || 'Error de conexión';
+    return new Error(message);
+  }
+}
+
+export const imageService = new ImageService();
+```
+
+### Hook de Imágenes Actualizado (React)
+
+```javascript
+// hooks/useImages.js
+import { useState, useEffect } from 'react';
+import { imageService } from '../services/imageService';
+
+export const useImages = () => {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [filters, setFilters] = useState({});
+
+  useEffect(() => {
+    loadImages();
+    loadStats();
+  }, [filters]);
+
+  const loadImages = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await imageService.getAllImages(filters);
+      setImages(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const data = await imageService.getImageStats();
+      setStats(data);
+    } catch (err) {
+      console.error('Error loading stats:', err);
+    }
+  };
+
+  const uploadImage = async (file, category, metadata = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.uploadImage(file, category, metadata);
+      setImages(prev => [result, ...prev]);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateImage = async (imageId, updateData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.updateImage(imageId, updateData);
+      setImages(prev => prev.map(img => img.id === imageId ? result : img));
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteImage = async (imageId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await imageService.deleteImage(imageId);
+      setImages(prev => prev.filter(img => img.id !== imageId));
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cleanupExpiredImages = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.cleanupExpiredImages();
+      await loadImages(); // Recargar imágenes después de limpieza
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImagesByCategory = async (category) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await imageService.getImagesByCategory(category);
+      setImages(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getProfileImages = async (userId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await imageService.getProfileImages(userId);
+      setImages(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPostImages = async (userId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await imageService.getPostImages(userId);
+      setImages(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getEventImages = async (eventId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await imageService.getEventImages(eventId);
+      setImages(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    images,
+    loading,
+    error,
+    stats,
+    filters,
+    setFilters,
+    uploadImage,
+    updateImage,
+    deleteImage,
+    cleanupExpiredImages,
+    getImagesByCategory,
+    getProfileImages,
+    getPostImages,
+    getEventImages,
+    loadImages
+  };
+};
+```
+
+### Componente de Subida de Imágenes Mejorado (React + Material-UI)
+
+```javascript
+// components/ImageUpload.jsx
+import React, { useState, useRef } from 'react';
+import {
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  Box,
+  Typography,
+  Switch,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Paper,
+  CircularProgress
+} from '@mui/material';
+import { Add as AddIcon, Close as CloseIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
+
+const ImageUpload = ({ onUpload, uploading = false }) => {
+  const [showMetadataDialog, setShowMetadataDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [category, setCategory] = useState('admin');
+  const [description, setDescription] = useState('');
+  const [tags, setTags] = useState([]);
+  const [newTag, setNewTag] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const validateFile = (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Solo se permiten archivos de imagen (JPEG, PNG, GIF, WebP, SVG)');
+      return false;
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError('El archivo es demasiado grande. Máximo 10MB');
+      return false;
+    }
+
+    setError(null);
+    return true;
+  };
+
+  const handleFileSelect = (file) => {
+    if (!validateFile(file)) return;
+    setSelectedFile(file);
+    setShowMetadataDialog(true);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      const metadata = {
+        description: description.trim() || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+        isPublic
+      };
+
+      await onUpload(selectedFile, category, metadata);
+      
+      // Limpiar estado
+      setSelectedFile(null);
+      setCategory('admin');
+      setDescription('');
+      setTags([]);
+      setNewTag('');
+      setIsPublic(true);
+      setShowMetadataDialog(false);
+    } catch (error) {
+      setError('Error al subir la imagen. Inténtalo de nuevo.');
+    }
+  };
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
+  return (
+    <Box>
+      {/* Área de subida */}
+      <Paper
+        elevation={2}
+        sx={{
+          border: '2px dashed',
+          borderColor: 'grey.300',
+          borderRadius: 2,
+          p: 4,
+          textAlign: 'center',
+          cursor: uploading ? 'not-allowed' : 'pointer',
+          '&:hover': {
+            borderColor: 'primary.main',
+            backgroundColor: 'primary.50',
+          }
+        }}
+        onClick={() => !uploading && fileInputRef.current?.click()}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFileSelect(file);
+          }}
+          style={{ display: 'none' }}
+        />
+        
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          {uploading ? (
+            <>
+              <CircularProgress size={60} />
+              <Typography variant="h6" color="primary">
+                Subiendo imagen...
+              </Typography>
+            </>
+          ) : (
+            <>
+              <CloudUploadIcon sx={{ fontSize: 60, color: 'primary.main' }} />
+              <Typography variant="h5" component="h3" gutterBottom>
+                Subir Imagen
+              </Typography>
+              <Typography variant="body1" color="text.secondary" gutterBottom>
+                Arrastra una imagen aquí o haz clic para seleccionar
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 2 }}>
+                <Typography variant="caption" color="text.secondary">
+                  Formatos: JPEG, PNG, GIF, WebP, SVG
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Máximo: 10MB
+                </Typography>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Dialog para metadatos */}
+      <Dialog 
+        open={showMetadataDialog} 
+        onClose={() => setShowMetadataDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          Configurar Imagen
+          <IconButton
+            aria-label="close"
+            onClick={() => setShowMetadataDialog(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            {selectedFile && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Archivo: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </Typography>
+            )}
+            
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Categoría</InputLabel>
+              <Select
+                value={category}
+                label="Categoría"
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <MenuItem value="profile">Perfil</MenuItem>
+                <MenuItem value="post">Post</MenuItem>
+                <MenuItem value="event">Evento</MenuItem>
+                <MenuItem value="gallery">Galería</MenuItem>
+                <MenuItem value="admin">Administración</MenuItem>
+              </Select>
+            </FormControl>
+
+            <TextField
+              fullWidth
+              label="Descripción (opcional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              multiline
+              rows={3}
+              sx={{ mb: 2 }}
+            />
+
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                Etiquetas
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                <TextField
+                  size="small"
+                  placeholder="Agregar etiqueta"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  sx={{ flexGrow: 1 }}
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleAddTag}
+                  startIcon={<AddIcon />}
+                >
+                  Agregar
+                </Button>
+              </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {tags.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onDelete={() => handleRemoveTag(tag)}
+                    size="small"
+                  />
+                ))}
+              </Box>
+            </Box>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                />
+              }
+              label="Imagen pública"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowMetadataDialog(false)}>
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleUpload} 
+            variant="contained"
+            disabled={uploading}
+          >
+            {uploading ? 'Subiendo...' : 'Subir Imagen'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default ImageUpload;
+```
+
+---
+
+## 🖼️ Sistema de Imágenes CRUD
 
 ### Servicio de Imágenes
 
@@ -1059,6 +1662,106 @@ class ImageService {
 }
 
 export const imageService = new ImageService();
+```
+
+### Hook de Imágenes (React)
+
+```javascript
+// hooks/useImages.js
+import { useState, useEffect } from 'react';
+import { imageService } from '../services/imageService';
+
+export const useImages = () => {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await imageService.getAllImages();
+        setImages(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchImages();
+  }, []);
+
+  const uploadImage = async (file) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.uploadImage(file);
+      setImages(prev => [...prev, result]);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const uploadProfileImage = async (file) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.uploadProfileImage(file);
+      setImages(prev => [...prev, result]);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteImage = async (key) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await imageService.deleteImage(key);
+      setImages(prev => prev.filter(img => img.key !== key));
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateImageMetadata = async (key, metadata) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await imageService.updateImageMetadata(key, metadata);
+      setImages(prev => prev.map(img => img.key === key ? { ...img, ...metadata } : img));
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    images,
+    loading,
+    error,
+    uploadImage,
+    uploadProfileImage,
+    deleteImage,
+    updateImageMetadata
+  };
+};
 ```
 
 ### Componente de Subida de Imágenes (React)

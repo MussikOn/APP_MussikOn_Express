@@ -9,7 +9,7 @@ import { db } from "./src/utils/firebase";
 import { URL_API } from "./ENV";
 import routAuth from "./src/routes/authRutes";
 import adm from "./src/routes/superAdminRouter";
-import imgRouter from "./src/routes/imagesRoutes";
+import imagesRouter from "./src/routes/imagesRoutes";
 import express, { Response, Request } from "express";
 import musician from "./src/routes/musicianProfileRoutes";
 import swaggerUi from "swagger-ui-express";
@@ -26,9 +26,10 @@ dotenv.config();
 const allowedOrigins = [
   'http://localhost:5173', // Localhost
   'http://192.168.54.59:5173', // IP de la computadora
+  'http://192.168.100.101:5173', // IP de la computadorahttp://192.168.100.101:3001
   'http://192.168.54.59:1000', // IP de la computadora
+  'http://192.168.54.48:5173', // IP de la computadora
   'http://172.20.10.2:5173', // IP de la computadora
-  'http://192.168.100.101:5173' // IP de la computadora
 ];
 const app = express();
 app.use(cors({
@@ -45,7 +46,8 @@ app.use(express.json());
 app.use("/admin", adminRoutes);
 app.use("/auth", routAuth);
 app.use("/superAdmin", adm);
-app.use("/imgs", imgRouter);
+app.use("/images", imagesRouter);
+app.use("/imgs", imagesRouter); // Legacy route for compatibility
 app.use("/media", musician);
 app.use("/events", eventsRouter);
 app.use('/musician-requests', musicianRequestRoutes);
@@ -755,8 +757,8 @@ app.get('/auth/check-user/:userEmail', async (req: Request, res: Response) => {
 });
 
 server.listen(port, () => {
-  console.log(`🎵 MussikOn API: ${URL_API}${port}`);
-  console.log(`📚 Swagger UI: ${URL_API}${port}/api-docs`);
-  console.log(`🎨 Redoc: ${URL_API}${port}/redoc`);
-  console.log(`🏠 Página de inicio: ${URL_API}${port}/`);
+  console.log(`[index.ts:757] 🎵 MussikOn API: ${URL_API}${port}`);
+  console.log(`[index.ts:758] 📚 Swagger UI: ${URL_API}${port}/api-docs`);
+  console.log(`[index.ts:759] 🎨 Redoc: ${URL_API}${port}/redoc`);
+  console.log(`[index.ts:760] 🏠 Página de inicio: ${URL_API}${port}/`);
 });

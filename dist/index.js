@@ -41,9 +41,10 @@ dotenv_1.default.config();
 const allowedOrigins = [
     'http://localhost:5173', // Localhost
     'http://192.168.54.59:5173', // IP de la computadora
+    'http://192.168.100.101:5173', // IP de la computadorahttp://192.168.100.101:3001
     'http://192.168.54.59:1000', // IP de la computadora
+    'http://192.168.54.48:5173', // IP de la computadora
     'http://172.20.10.2:5173', // IP de la computadora
-    'http://192.168.100.101:5173' // IP de la computadora
 ];
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
@@ -61,7 +62,8 @@ app.use(express_1.default.json());
 app.use("/admin", adminRoutes_1.default);
 app.use("/auth", authRutes_1.default);
 app.use("/superAdmin", superAdminRouter_1.default);
-app.use("/imgs", imagesRoutes_1.default);
+app.use("/images", imagesRoutes_1.default);
+app.use("/imgs", imagesRoutes_1.default); // Legacy route for compatibility
 app.use("/media", musicianProfileRoutes_1.default);
 app.use("/events", eventsRoutes_1.default);
 app.use('/musician-requests', musicianRequestRoutes_1.default);
@@ -722,8 +724,8 @@ app.get('/auth/check-user/:userEmail', (req, res) => __awaiter(void 0, void 0, v
     }
 }));
 server.listen(port, () => {
-    console.log(`🎵 MussikOn API: ${ENV_1.URL_API}${port}`);
-    console.log(`📚 Swagger UI: ${ENV_1.URL_API}${port}/api-docs`);
-    console.log(`🎨 Redoc: ${ENV_1.URL_API}${port}/redoc`);
-    console.log(`🏠 Página de inicio: ${ENV_1.URL_API}${port}/`);
+    console.log(`[index.ts:757] 🎵 MussikOn API: ${ENV_1.URL_API}${port}`);
+    console.log(`[index.ts:758] 📚 Swagger UI: ${ENV_1.URL_API}${port}/api-docs`);
+    console.log(`[index.ts:759] 🎨 Redoc: ${ENV_1.URL_API}${port}/redoc`);
+    console.log(`[index.ts:760] 🏠 Página de inicio: ${ENV_1.URL_API}${port}/`);
 });

@@ -85,7 +85,7 @@ function registerController(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { name, lastName, roll, userEmail, userPassword, status } = req.body;
-            console.log(req.body);
+            console.log("[src/controllers/authController.ts:72] Datos de registro recibidos:", req.body);
             if (!name || !lastName || !roll || !userEmail || !userPassword) {
                 res.status(400).json({ msg: "Error al registrarse, todos los campos deben de ser llenados" });
                 return;
@@ -118,7 +118,7 @@ function registerController(req, res) {
             }
         }
         catch (error) {
-            console.info(`Hubo un error al intentar registar un Usuario: ${error}`);
+            console.info(`[src/controllers/authController.ts:95] Hubo un error al intentar registar un Usuario: ${error}`);
             res.status(400).json({ msg: "Error al registrarse.", error });
             return;
         }
@@ -327,14 +327,14 @@ exports.addEventToUserController = addEventToUserController;
 const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userEmail } = req.body;
-        console.log('[DELETE] userEmail recibido:', userEmail); // LOG de depuración
+        console.log('[src/controllers/authController.ts:270] [DELETE] userEmail recibido:', userEmail); // LOG de depuración
         if (!userEmail) {
             res.status(400).json({ message: 'Falta el email' });
             return;
         }
         const result = yield (0, authModel_1.deleteUserByEmailModel)(userEmail);
-        console.log(result);
-        console.log('[DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+        console.log("[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:", result);
+        console.log('[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
         if (result === false) {
             res.json({ message: 'Usuario eliminado correctamente' });
         }
@@ -349,8 +349,8 @@ const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
         }
     }
     catch (error) {
-        console.log("./src/controllers/authController.ts linea 288");
-        console.error('[DELETE] Error al eliminar usuario:', error); // LOG de error
+        console.log("[src/controllers/authController.ts:288] Error en deleteUserByEmailController");
+        console.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
         res.status(500).json({ message: 'Error al eliminar usuario', error: error.message });
     }
 });

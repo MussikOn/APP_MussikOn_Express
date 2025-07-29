@@ -10,14 +10,14 @@ import { chatSocketHandler } from "./chatSocket";
 // const users: Record<string, string> = {};
 
 export const socketHandler = (io: Server, socket:Socket, users: Record<string, string> ) => {
-    console.log("🔌 Usuario conectado:", socket.id);
+    console.log("[src/sockets/eventSocket.ts:14] 🔌 Usuario conectado:", socket.id);
 
     // Autenticar usuario (nuevo evento)
     socket.on("authenticate", (data: { userEmail: string; userId: string }) => {
       const userEmail = data.userEmail.toLowerCase();
       users[userEmail] = socket.id;
-      console.log("🔐 Usuario autenticado:", userEmail, "Socket ID:", socket.id);
-      console.log("📊 Usuarios conectados:", Object.keys(users));
+      console.log("[src/sockets/eventSocket.ts:20] 🔐 Usuario autenticado:", userEmail, "Socket ID:", socket.id);
+      console.log("[src/sockets/eventSocket.ts:21] 📊 Usuarios conectados:", Object.keys(users));
       
       // Confirmar autenticación
       socket.emit("authenticated", { success: true, userEmail });
@@ -26,15 +26,15 @@ export const socketHandler = (io: Server, socket:Socket, users: Record<string, s
     // Registrar usuario (mantener compatibilidad)
     socket.on("register", (userEmail: string) => {
       users[userEmail.toLowerCase()] = socket.id;
-      console.info("📥 Usuarios registrados:", users);
+      console.info("[src/sockets/eventSocket.ts:29] 📥 Usuarios registrados:", users);
       return;
     });
 
     // Enviar notificación
     socket.on("send-notification", ({ toUserId: email, data }) => {
-        console.info(email);
+        console.info("[src/sockets/eventSocket.ts:35] Email destinatario:", email);
         const receiverSocket = users[email];
-        console.info(receiverSocket);
+        console.info("[src/sockets/eventSocket.ts:37] Socket del destinatario:", receiverSocket);
       if (receiverSocket) {
         io.to(receiverSocket).emit("notification", data);
       }
@@ -43,7 +43,7 @@ export const socketHandler = (io: Server, socket:Socket, users: Record<string, s
     // Unirse a una sala
     socket.on("join", (userId: string) => {
       socket.join(userId);
-      console.log(`🎧 Usuario ${userId} se unió a su sala.`);
+      console.log(`[src/sockets/eventSocket.ts:45] 🎧 Usuario ${userId} se unió a su sala.`);
       return;
     });
 
@@ -55,9 +55,9 @@ export const socketHandler = (io: Server, socket:Socket, users: Record<string, s
         
           if (userEmail) {
             delete users[userEmail];
-            console.log(`🧹 Usuario eliminado: ${userEmail}`);
+            console.log(`[src/sockets/eventSocket.ts:57] 🧹 Usuario eliminado: ${userEmail}`);
           }
-      console.log("❌ Usuario desconectado:", socket.id);
+      console.log("[src/sockets/eventSocket.ts:59] ❌ Usuario desconectado:", socket.id);
       return;
     });
 

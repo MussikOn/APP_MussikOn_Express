@@ -19,9 +19,9 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
       html,
     });
 
-    console.log("Correo enviado a:", to);
+    console.log("[src/utils/mailer.ts:21] Correo enviado a:", to);
   } catch (error) {
-    console.error("Error al enviar el correo:", error);
+    console.error("[src/utils/mailer.ts:23] Error al enviar el correo:", error);
     throw error;
   }
 };

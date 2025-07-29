@@ -14,7 +14,7 @@ export const createEventModel = async (eventData: Omit<Event, 'id' | 'status' | 
     interestedMusicians: [],
   };
   await eventRef.set(event);
-  console.log('Evento guardado:', event);
+  console.log('[src/models/eventModel.ts:16] Evento guardado:', event);
   return event;
 };
 
@@ -30,7 +30,7 @@ export const getAvailableEvents = async () => {
   const snapshot = await db.collection("events")
     .where("status", "==", "pending_musician")
     .get();
-  console.log('Eventos encontrados en BD:', snapshot.docs.length);
+  console.log('[src/models/eventModel.ts:32] Eventos encontrados en BD:', snapshot.docs.length);
   return snapshot.docs.map(doc => doc.data() as Event);
 };
 
@@ -128,7 +128,7 @@ export const deleteEventModel = async (eventId: string, deletedBy: string) => {
   
   // Eliminar el documento completamente
   await eventRef.delete();
-  console.log('Evento eliminado completamente:', eventId);
+  console.log('[src/models/eventModel.ts:130] Evento eliminado completamente:', eventId);
   
   return { success: true, eventId };
 }; 

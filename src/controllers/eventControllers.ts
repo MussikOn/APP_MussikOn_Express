@@ -20,17 +20,17 @@ export const requestMusicianController = async (req: Request, res: Response): Pr
   try {
     const user = (req as any).user;
     if (!user || user.roll !== 'eventCreator') {
-      console.log(user);
+      console.log("[src/controllers/eventControllers.ts:22] Usuario no autorizado:", user);
       res.status(403).json({ msg: "Solo los organizadores pueden crear solicitudes." });
       return;
     }
     const eventData = req.body;
-    console.log('Payload recibido en /events/request-musician:', eventData);
+    console.log('[src/controllers/eventControllers.ts:27] Payload recibido en /events/request-musician:', eventData);
     const event = await createEventModel({ ...eventData, user: user.userEmail });
     io.emit('new_event_request', event);
     res.status(201).json({ data: event });
   } catch (error) {
-    console.error('Error al crear el evento:', error);
+    console.error('[src/controllers/eventControllers.ts:31] Error al crear el evento:', error);
     res.status(500).json({ msg: "Error al crear el evento.", error });
   }
 };
@@ -43,10 +43,10 @@ export const myPendingEventsController = async (req: Request, res: Response): Pr
 
 export const myAssignedEventsController = async (req: Request, res: Response): Promise<void> => {
   const user = (req as any).user;
-  console.log('🔍 Buscando eventos asignados para:', user.userEmail);
+  console.log('[src/controllers/eventControllers.ts:45] 🔍 Buscando eventos asignados para:', user.userEmail);
   const events = await getEventsByUserAndStatus(user.userEmail, 'musician_assigned');
-  console.log('📦 Eventos asignados encontrados:', events.length);
-  console.log('📦 Eventos:', events);
+  console.log('[src/controllers/eventControllers.ts:47] 📦 Eventos asignados encontrados:', events.length);
+  console.log('[src/controllers/eventControllers.ts:48] 📦 Eventos:', events);
   res.json({ data: events });
 };
 
@@ -76,8 +76,8 @@ export const acceptEventController = async (req: Request, res: Response): Promis
     }
     const organizerSocketId = users[updatedEvent.user];
     if (organizerSocketId) {
-      console.log('Mapping actual de usuarios:', users);
-      console.log('Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user, 'payload:', {
+      console.log('[src/controllers/eventControllers.ts:78] Mapping actual de usuarios:', users);
+      console.log('[src/controllers/eventControllers.ts:79] Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user, 'payload:', {
         requestId: updatedEvent.id,
         musician: {
           name: user.name,

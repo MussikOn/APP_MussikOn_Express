@@ -41,7 +41,7 @@ const path_1 = __importDefault(require("path"));
 const admin = __importStar(require("firebase-admin"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS || 'mus1k0n-firebase-adminsdk-fbsvc-d6e712e084.json';
+const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS;
 const serviceAccount = path_1.default.join(__dirname, `../../${FIREBASE_CREDENTIALS}`);
 if (!admin.apps.length) {
     admin.initializeApp({

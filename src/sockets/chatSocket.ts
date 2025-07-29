@@ -15,7 +15,7 @@ interface ConnectedUsers {
 const connectedUsers: ConnectedUsers = {};
 
 export const chatSocketHandler = (io: Server, socket: Socket) => {
-  console.log("💬 Usuario conectado al chat:", socket.id);
+  console.log("[src/sockets/chatSocket.ts:18] 💬 Usuario conectado al chat:", socket.id);
 
   // Registrar usuario en el chat
   socket.on("chat-register", (userData: { userEmail: string; userName: string }) => {
@@ -29,20 +29,20 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
     // Unirse a la sala personal del usuario
     socket.join(userEmail.toLowerCase());
     
-    console.log("📝 Usuario registrado en chat:", userEmail);
-    console.log("👥 Usuarios conectados al chat:", Object.keys(connectedUsers));
+    console.log("[src/sockets/chatSocket.ts:32] 📝 Usuario registrado en chat:", userEmail);
+    console.log("[src/sockets/chatSocket.ts:33] 👥 Usuarios conectados al chat:", Object.keys(connectedUsers));
   });
 
   // Unirse a una conversación
   socket.on("join-conversation", (conversationId: string) => {
     socket.join(conversationId);
-    console.log(`💬 Usuario ${socket.id} se unió a la conversación: ${conversationId}`);
+    console.log(`[src/sockets/chatSocket.ts:40] 💬 Usuario ${socket.id} se unió a la conversación: ${conversationId}`);
   });
 
   // Salir de una conversación
   socket.on("leave-conversation", (conversationId: string) => {
     socket.leave(conversationId);
-    console.log(`💬 Usuario ${socket.id} salió de la conversación: ${conversationId}`);
+    console.log(`[src/sockets/chatSocket.ts:46] 💬 Usuario ${socket.id} salió de la conversación: ${conversationId}`);
   });
 
   // Enviar mensaje en tiempo real
@@ -98,10 +98,10 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
         }
       });
 
-      console.log(`💬 Mensaje enviado en conversación ${conversationId}:`, savedMessage.content);
+      console.log(`[src/sockets/chatSocket.ts:89] 💬 Mensaje enviado en conversación ${conversationId}:`, savedMessage.content);
     } catch (error: any) {
-      console.log('./src/sockets/chatSocket.ts line 103')
-      console.error("Error al enviar mensaje:", error);
+      console.log('[src/sockets/chatSocket.ts:91] Error en send-message')
+      console.error("[src/sockets/chatSocket.ts:92] Error al enviar mensaje:", error);
       socket.emit("message-error", { error: error.message || "Error al enviar mensaje" });
     }
   });
@@ -115,10 +115,10 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
       // Por ahora solo emitimos el evento
       
       io.to(conversationId).emit("message-read", { messageId });
-      console.log(`✅ Mensaje marcado como leído: ${messageId}`);
+      console.log(`[src/sockets/chatSocket.ts:105] ✅ Mensaje marcado como leído: ${messageId}`);
     } catch (error: any) {
-      console.log('./src/sockets/chatSocket.ts line 120')
-      console.error("Error al marcar mensaje como leído:", error);
+      console.log('[src/sockets/chatSocket.ts:107] Error en mark-message-read')
+      console.error("[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:", error);
       socket.emit("message-error", { error: error.message || "Error al marcar mensaje como leído" });
     }
   });
@@ -155,11 +155,11 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
     
     if (disconnectedUser) {
       delete connectedUsers[disconnectedUser];
-      console.log(`❌ Usuario desconectado del chat: ${disconnectedUser}`);
-      console.log("👥 Usuarios conectados al chat:", Object.keys(connectedUsers));
+      console.log(`[src/sockets/chatSocket.ts:135] ❌ Usuario desconectado del chat: ${disconnectedUser}`);
+      console.log("[src/sockets/chatSocket.ts:136] 👥 Usuarios conectados al chat:", Object.keys(connectedUsers));
     }
     
-    console.log("💬 Usuario desconectado del chat:", socket.id);
+    console.log("[src/sockets/chatSocket.ts:140] 💬 Usuario desconectado del chat:", socket.id);
   });
 };
 

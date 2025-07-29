@@ -58,7 +58,7 @@ const createConversationModel = (participants) => __awaiter(void 0, void 0, void
         createdAt: now,
     };
     yield conversationRef.set(conversation);
-    console.log('Conversación creada:', conversation);
+    console.log('[src/models/chatModel.ts:19] Conversación creada:', conversation);
     return conversation;
 });
 exports.createConversationModel = createConversationModel;
@@ -97,7 +97,7 @@ const createMessageModel = (messageData) => __awaiter(void 0, void 0, void 0, fu
     const messageRef = firebase_1.db.collection("messages").doc();
     const message = Object.assign(Object.assign({}, messageData), { id: messageRef.id, timestamp: now });
     yield messageRef.set(message);
-    console.log('Mensaje creado:', message);
+    console.log('[src/models/chatModel.ts:68] Mensaje creado:', message);
     // Actualizar la conversación con el último mensaje
     yield (0, exports.updateConversationLastMessage)(message.conversationId, message);
     return message;

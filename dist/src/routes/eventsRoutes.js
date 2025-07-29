@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const eventValidation_1 = require("../middleware/eventValidation");
 const eventControllers_1 = require("../controllers/eventControllers");
 const router = express_1.default.Router();
 /**
@@ -40,7 +39,7 @@ const router = express_1.default.Router();
  *       500:
  *         description: Error al crear el evento
  */
-router.post('/request-musician', authMiddleware_1.authMiddleware, eventValidation_1.validateEventData, eventControllers_1.requestMusicianController);
+router.post('/request-musician', authMiddleware_1.authMiddleware, eventControllers_1.requestMusicianController);
 /**
  * @swagger
  * /events/my-pending:

@@ -25,7 +25,7 @@ export const registerModel = async (name:string, lastName:string, roll: string, 
         await db.collection('users').doc(userEmail).set(newUser);
         return false;
     }catch(error){
-        console.info("Error al Guardar los datos, \n verificar codigo en C:/programacion/Express/MusikOn/src/models/authModel.ts linea 4."); 
+        console.info("[src/models/authModel.ts:25] Error al Guardar los datos, \n verificar codigo en C:/programacion/Express/MusikOn/src/models/authModel.ts linea 4."); 
         return "Error al Guardar los datos.";
     }
 }
@@ -38,9 +38,9 @@ try{
     return data;
 
 }catch(error){
-    console.log(error);
-    console.log("./src/models/authModel.ts linea 41");
-    console.info(`Error en la peticion getUserByEmail.\n\n`);
+    console.log("[src/models/authModel.ts:40] Error en getUserByEmailModel:", error);
+    console.log("[src/models/authModel.ts:41] Ubicación: ./src/models/authModel.ts linea 41");
+    console.info("[src/models/authModel.ts:42] Error en la peticion getUserByEmail.\n\n");
     return null;
 }
 }
@@ -48,7 +48,7 @@ try{
 export const updateUserByEmailModel = async (userEmail: string, updatedData: Partial<UpdateUser>) => {
     try {
       if (!userEmail || !updatedData) {
-        console.info("Faltan datos para actualizar.");
+        console.info("[src/models/authModel.ts:50] Faltan datos para actualizar.");
         return "Faltan datos para actualizar.";
       }
   
@@ -59,9 +59,9 @@ export const updateUserByEmailModel = async (userEmail: string, updatedData: Par
       
       return false;
     } catch (error) {
-      console.log(error);
-      console.log("./src/models/authModel.ts linea 62");
-      console.info("Error al actualizar los datos.");
+      console.log("[src/models/authModel.ts:61] Error en updateUserByEmailModel:", error);
+      console.log("[src/models/authModel.ts:62] Ubicación: ./src/models/authModel.ts linea 62");
+      console.info("[src/models/authModel.ts:63] Error al actualizar los datos.");
       return "Error al actualizar los datos.";
     }
   };
@@ -79,9 +79,9 @@ export const addEventToUserModel = async (userEmail: string, eventData: any) => 
         });
         return false;
     } catch (error) {
-        console.log(error);
-        console.log("./src/models/authModel.ts linea 82");
-        console.info("Error al guardar el evento en el usuario.");
+        console.log("[src/models/authModel.ts:81] Error en addEventToUserModel:", error);
+        console.log("[src/models/authModel.ts:82] Ubicación: ./src/models/authModel.ts linea 82");
+        console.info("[src/models/authModel.ts:83] Error al guardar el evento en el usuario.");
         return "Error al guardar el evento.";
     }
 }
@@ -94,9 +94,9 @@ export const deleteUserByEmailModel = async (userEmail: string) => {
     await db.collection('users').doc(userEmail.toLowerCase()).delete();
     return false;
   } catch (error) {
-    console.log(error);
-    console.log("./src/models/authModel.ts linea 97");
-    console.info('Error al eliminar el usuario:', error);
+    console.log("[src/models/authModel.ts:96] Error en deleteUserByEmailModel:", error);
+    console.log("[src/models/authModel.ts:97] Ubicación: ./src/models/authModel.ts linea 97");
+    console.info('[src/models/authModel.ts:98] Error al eliminar el usuario:', error);
     return 'Error al eliminar el usuario';
   }
 };
