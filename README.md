@@ -51,8 +51,11 @@
 ### 🔔 Notificaciones en Tiempo Real
 - **Socket.IO** para comunicación instantánea
 - **Notificaciones push** para eventos importantes
-- **Chat en tiempo real** entre usuarios
+- **Chat en tiempo real** entre usuarios ✅ **IMPLEMENTADO**
 - **Estados de conexión** en vivo
+- **Indicadores de escritura** (typing indicators)
+- **Marcado de mensajes leídos**
+- **Conversaciones privadas y grupales**
 
 ### 📊 Sistema Administrativo
 - **Panel de administración** completo
@@ -297,11 +300,20 @@ APP_MussikOn_Express/
 - `request_updated` - Solicitud actualizada
 - `request_deleted` - Solicitud eliminada
 
-### Eventos de Chat
-- `message_sent` - Mensaje enviado
-- `message_received` - Mensaje recibido
-- `typing_start` - Usuario empezó a escribir
-- `typing_stop` - Usuario dejó de escribir
+### Eventos de Chat y Comunicación
+- `chat-register` - Registrar usuario en chat
+- `authenticate` - Autenticar usuario
+- `join-conversation` - Unirse a conversación
+- `leave-conversation` - Salir de conversación
+- `send-message` - Enviar mensaje
+- `new-message` - Nuevo mensaje recibido
+- `mark-message-read` - Marcar mensaje como leído
+- `typing` - Indicador de escritura
+- `user-typing` - Usuario escribiendo
+- `online-status` - Estado de conexión
+- `user-status-changed` - Cambio de estado de usuario
+- `message-notification` - Notificación de mensaje nuevo
+- `notification` - Notificación personalizada
 
 ## 🧪 Testing
 

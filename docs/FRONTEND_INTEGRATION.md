@@ -6,6 +6,7 @@
 - [Autenticación](#autenticación)
 - [Gestión de Eventos](#gestión-de-eventos)
 - [Solicitudes Directas](#solicitudes-directas)
+- [Chat en Tiempo Real](#chat-en-tiempo-real)
 - [Notificaciones en Tiempo Real](#notificaciones-en-tiempo-real)
 - [Gestión de Imágenes](#gestión-de-imágenes)
 - [Manejo de Errores](#manejo-de-errores)
@@ -452,6 +453,297 @@ export const useEvents = () => {
     acceptEvent,
     eventService
   };
+};
+```
+
+---
+
+## 💬 Chat en Tiempo Real
+
+### Servicio de Chat
+
+```javascript
+// services/chatService.js
+import { io } from 'socket.io-client';
+
+class ChatService {
+  constructor() {
+    this.socket = null;
+    this.isConnected = false;
+    this.listeners = new Map();
+  }
+
+  connect(token) {
+    this.socket = io('http://localhost:1000', {
+      auth: { token }
+    });
+
+    this.setupEventListeners();
+    return this.socket;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.isConnected = false;
+    }
+  }
+
+  setupEventListeners() {
+    this.socket.on('connect', () => {
+      console.log('Conectado al chat');
+      this.isConnected = true;
+    });
+
+    this.socket.on('disconnect', () => {
+      console.log('Desconectado del chat');
+      this.isConnected = false;
+    });
+
+    this.socket.on('new-message', (message) => {
+      this.notifyListeners('new-message', message);
+    });
+
+    this.socket.on('message-notification', (notification) => {
+      this.notifyListeners('message-notification', notification);
+    });
+
+    this.socket.on('user-typing', (data) => {
+      this.notifyListeners('user-typing', data);
+    });
+
+    this.socket.on('user-status-changed', (data) => {
+      this.notifyListeners('user-status-changed', data);
+    });
+  }
+
+  registerUser(userEmail, userName) {
+    if (this.socket) {
+      this.socket.emit('chat-register', { userEmail, userName });
+    }
+  }
+
+  joinConversation(conversationId) {
+    if (this.socket) {
+      this.socket.emit('join-conversation', conversationId);
+    }
+  }
+
+  sendMessage(messageData) {
+    if (this.socket) {
+      this.socket.emit('send-message', messageData);
+    }
+  }
+
+  markMessageRead(messageId, conversationId) {
+    if (this.socket) {
+      this.socket.emit('mark-message-read', { messageId, conversationId });
+    }
+  }
+
+  setTyping(conversationId, userEmail, isTyping) {
+    if (this.socket) {
+      this.socket.emit('typing', { conversationId, userEmail, isTyping });
+    }
+  }
+
+  addListener(event, callback) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event).push(callback);
+  }
+
+  removeListener(event, callback) {
+    if (this.listeners.has(event)) {
+      const callbacks = this.listeners.get(event);
+      const index = callbacks.indexOf(callback);
+      if (index > -1) {
+        callbacks.splice(index, 1);
+      }
+    }
+  }
+
+  notifyListeners(event, data) {
+    if (this.listeners.has(event)) {
+      this.listeners.get(event).forEach(callback => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error('Error en listener de chat:', error);
+        }
+      });
+    }
+  }
+}
+
+export const chatService = new ChatService();
+```
+
+### Hook de React para Chat
+
+```javascript
+// hooks/useChat.js
+import { useEffect, useState, useCallback } from 'react';
+import { chatService } from '../services/chatService';
+import { useAuth } from './useAuth';
+
+export const useChat = () => {
+  const { user } = useAuth();
+  const [conversations, setConversations] = useState([]);
+  const [activeConversation, setActiveConversation] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
+
+  useEffect(() => {
+    if (user && user.token) {
+      chatService.connect(user.token);
+      chatService.registerUser(user.userEmail, user.name);
+    }
+
+    return () => {
+      chatService.disconnect();
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const handleNewMessage = (message) => {
+      setMessages(prev => [...prev, message]);
+    };
+
+    const handleTyping = (data) => {
+      if (data.conversationId === activeConversation?.id) {
+        setTypingUsers(prev => {
+          const filtered = prev.filter(u => u.userEmail !== data.userEmail);
+          if (data.isTyping) {
+            return [...filtered, { userEmail: data.userEmail, isTyping: true }];
+          }
+          return filtered;
+        });
+      }
+    };
+
+    chatService.addListener('new-message', handleNewMessage);
+    chatService.addListener('user-typing', handleTyping);
+
+    return () => {
+      chatService.removeListener('new-message', handleNewMessage);
+      chatService.removeListener('user-typing', handleTyping);
+    };
+  }, [activeConversation]);
+
+  const sendMessage = useCallback((content, type = 'text') => {
+    if (!activeConversation) return;
+
+    const messageData = {
+      conversationId: activeConversation.id,
+      senderId: user.userEmail,
+      senderName: user.name,
+      content,
+      type
+    };
+
+    chatService.sendMessage(messageData);
+  }, [activeConversation, user]);
+
+  const joinConversation = useCallback((conversationId) => {
+    chatService.joinConversation(conversationId);
+    setActiveConversation(conversations.find(c => c.id === conversationId));
+  }, [conversations]);
+
+  const setTyping = useCallback((isTyping) => {
+    if (!activeConversation) return;
+    
+    chatService.setTyping(activeConversation.id, user.userEmail, isTyping);
+  }, [activeConversation, user]);
+
+  return {
+    conversations,
+    activeConversation,
+    messages,
+    typingUsers,
+    sendMessage,
+    joinConversation,
+    setTyping
+  };
+};
+```
+
+### Componente de Chat
+
+```javascript
+// components/Chat.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { useChat } from '../hooks/useChat';
+
+export const Chat = ({ conversationId }) => {
+  const { messages, sendMessage, setTyping, typingUsers } = useChat();
+  const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      sendMessage(inputValue);
+      setInputValue('');
+    }
+  };
+
+  const handleTyping = (e) => {
+    setInputValue(e.target.value);
+    setTyping(true);
+    
+    // Clear typing indicator after 2 seconds
+    setTimeout(() => setTyping(false), 2000);
+  };
+
+  return (
+    <div className="chat-container">
+      <div className="messages-container">
+        {messages.map((message) => (
+          <div key={message.id} className={`message ${message.senderId === user.userEmail ? 'own' : 'other'}`}>
+            <div className="message-header">
+              <span className="sender-name">{message.senderName}</span>
+              <span className="timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
+            </div>
+            <div className="message-content">{message.content}</div>
+          </div>
+        ))}
+        
+        {typingUsers.length > 0 && (
+          <div className="typing-indicator">
+            {typingUsers.map(user => (
+              <span key={user.userEmail}>{user.userEmail} está escribiendo...</span>
+            ))}
+          </div>
+        )}
+        
+        <div ref={messagesEndRef} />
+      </div>
+
+      <form onSubmit={handleSendMessage} className="message-input">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleTyping}
+          placeholder="Escribe un mensaje..."
+          className="message-input-field"
+        />
+        <button type="submit" className="send-button">
+          Enviar
+        </button>
+      </form>
+    </div>
+  );
 };
 ```
 

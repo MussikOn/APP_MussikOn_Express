@@ -6,6 +6,7 @@ import {
   adminUsersCreate,
   adminUsersUpdate,
   adminUsersRemove,
+  adminUsersStats,
   adminEventsGetAll,
   adminEventsGetById,
   adminEventsCreate,
@@ -19,8 +20,11 @@ import {
   adminImagesGetById,
   adminImagesRemove,
   adminMusicianRequestsGetAll,
+  adminMusicianRequestsCreate,
   adminMusicianRequestsGetById,
-  adminMusicianRequestsRemove
+  adminMusicianRequestsUpdate,
+  adminMusicianRequestsRemove,
+  adminMusicianRequestsStats
 } from '../controllers/adminController';
 
 const adminRoutes = Router();
@@ -147,6 +151,7 @@ adminRoutes.get('/admin/users/:id', adminOnly, adminUsersGetById);
 adminRoutes.post('/admin/users', adminOnly, adminUsersCreate);
 adminRoutes.put('/admin/users/:id', adminOnly, adminUsersUpdate);
 adminRoutes.delete('/admin/users/:id', adminOnly, adminUsersRemove);
+adminRoutes.get('/admin/users/stats', adminOnly, adminUsersStats);
 
 /**
  * @swagger
@@ -429,7 +434,10 @@ adminRoutes.delete('/admin/images/:id', adminOnly, adminImagesRemove);
 
 // --- Solicitudes de Músico ---
 adminRoutes.get('/admin/musician-requests', adminOnly, adminMusicianRequestsGetAll);
+adminRoutes.post('/admin/musician-requests', adminOnly, adminMusicianRequestsCreate);
 adminRoutes.get('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsGetById);
+adminRoutes.put('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsUpdate);
 adminRoutes.delete('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsRemove);
+adminRoutes.get('/admin/musician-requests/stats', adminOnly, adminMusicianRequestsStats);
 
 export default adminRoutes;

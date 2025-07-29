@@ -71,7 +71,7 @@ export const getEventsByMusician = async (musicianId: string) => {
     .where("assignedMusicianId", "==", musicianId)
     .get();
   return snapshot.docs.map(doc => doc.data() as Event);
-};
+}; 
 
 export const getEventByIdModel = async (eventId: string) => {
   const eventRef = db.collection("events").doc(eventId);

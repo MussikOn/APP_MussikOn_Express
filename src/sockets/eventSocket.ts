@@ -12,7 +12,18 @@ import { chatSocketHandler } from "./chatSocket";
 export const socketHandler = (io: Server, socket:Socket, users: Record<string, string> ) => {
     console.log("🔌 Usuario conectado:", socket.id);
 
-    // Registrar usuario
+    // Autenticar usuario (nuevo evento)
+    socket.on("authenticate", (data: { userEmail: string; userId: string }) => {
+      const userEmail = data.userEmail.toLowerCase();
+      users[userEmail] = socket.id;
+      console.log("🔐 Usuario autenticado:", userEmail, "Socket ID:", socket.id);
+      console.log("📊 Usuarios conectados:", Object.keys(users));
+      
+      // Confirmar autenticación
+      socket.emit("authenticated", { success: true, userEmail });
+    });
+
+    // Registrar usuario (mantener compatibilidad)
     socket.on("register", (userEmail: string) => {
       users[userEmail.toLowerCase()] = socket.id;
       console.info("📥 Usuarios registrados:", users);

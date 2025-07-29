@@ -7,6 +7,7 @@
 - [Autenticación](#autenticación)
 - [Eventos](#eventos)
 - [Solicitudes de Músicos](#solicitudes-de-músicos)
+- [Chat y Comunicación](#chat-y-comunicación)
 - [Usuarios](#usuarios)
 - [Imágenes](#imágenes)
 - [Administración](#administración)
@@ -384,6 +385,109 @@
     "cancelledAt": "2024-01-15T13:00:00Z",
     "reason": "Evento cancelado por el cliente"
   }
+}
+```
+
+## 💬 Chat y Comunicación
+
+### Crear Conversación
+
+**POST** `/chat/conversations`
+
+```json
+{
+  "participants": ["user1@example.com", "user2@example.com"],
+  "title": "Conversación sobre evento",
+  "type": "private"
+}
+```
+
+**Response (201)**
+```json
+{
+  "success": true,
+  "conversation": {
+    "id": "conversation_123",
+    "participants": ["user1@example.com", "user2@example.com"],
+    "title": "Conversación sobre evento",
+    "type": "private",
+    "createdAt": "2024-01-15T12:00:00Z",
+    "lastMessage": null,
+    "unreadCount": 0
+  }
+}
+```
+
+### Obtener Conversaciones del Usuario
+
+**GET** `/chat/conversations`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "conversations": [
+    {
+      "id": "conversation_123",
+      "participants": ["user1@example.com", "user2@example.com"],
+      "title": "Conversación sobre evento",
+      "type": "private",
+      "lastMessage": {
+        "content": "Hola, ¿cómo estás?",
+        "senderName": "Juan Pérez",
+        "timestamp": "2024-01-15T12:00:00Z"
+      },
+      "unreadCount": 2
+    }
+  ]
+}
+```
+
+### Obtener Mensajes de Conversación
+
+**GET** `/chat/conversations/:conversationId/messages?limit=50&offset=0`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "messages": [
+    {
+      "id": "message_456",
+      "conversationId": "conversation_123",
+      "senderId": "user_123",
+      "senderName": "Juan Pérez",
+      "content": "Hola, ¿cómo estás?",
+      "type": "text",
+      "status": "sent",
+      "timestamp": "2024-01-15T12:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "limit": 50,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+### Marcar Mensajes como Leídos
+
+**PUT** `/chat/conversations/:conversationId/messages/read`
+
+```json
+{
+  "messageIds": ["message_456", "message_789"]
+}
+```
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "message": "Mensajes marcados como leídos",
+  "updatedCount": 2
 }
 ```
 
@@ -815,38 +919,128 @@ socket.emit('request_deleted', {
 });
 ```
 
-### Eventos de Chat
+### Eventos de Chat y Comunicación
+
+#### Eventos de Conexión y Registro
 
 ```javascript
-// Mensaje enviado
-socket.emit('message_sent', {
-  id: 'msg_123',
+// Registrar usuario en chat
+socket.emit('chat-register', {
+  userEmail: 'usuario@example.com',
+  userName: 'Juan Pérez'
+});
+
+// Autenticar usuario
+socket.emit('authenticate', {
+  userEmail: 'usuario@example.com',
+  userId: 'user_123'
+});
+
+// Confirmación de autenticación
+socket.on('authenticated', {
+  success: true,
+  userEmail: 'usuario@example.com'
+});
+```
+
+#### Eventos de Conversación
+
+```javascript
+// Unirse a conversación
+socket.emit('join-conversation', 'conversation_123');
+
+// Salir de conversación
+socket.emit('leave-conversation', 'conversation_123');
+```
+
+#### Eventos de Mensajes
+
+```javascript
+// Enviar mensaje
+socket.emit('send-message', {
+  conversationId: 'conversation_123',
   senderId: 'user_123',
-  receiverId: 'user_456',
-  content: 'Hola, ¿estás disponible para el evento?',
-  timestamp: '2024-01-15T10:30:00Z'
+  senderName: 'Juan Pérez',
+  content: 'Hola, ¿cómo estás?',
+  type: 'text' // 'text', 'image', 'audio', 'file'
 });
 
-// Mensaje recibido
-socket.emit('message_received', {
-  id: 'msg_123',
+// Nuevo mensaje recibido
+socket.on('new-message', {
+  id: 'message_456',
+  conversationId: 'conversation_123',
   senderId: 'user_123',
-  receiverId: 'user_456',
-  content: 'Hola, ¿estás disponible para el evento?',
-  timestamp: '2024-01-15T10:30:00Z'
+  senderName: 'Juan Pérez',
+  content: 'Hola, ¿cómo estás?',
+  type: 'text',
+  status: 'sent',
+  timestamp: '2024-01-15T12:00:00Z'
 });
 
-// Usuario empezó a escribir
-socket.emit('typing_start', {
-  userId: 'user_123',
-  chatId: 'chat_456',
-  timestamp: '2024-01-15T10:35:00Z'
+// Marcar mensaje como leído
+socket.emit('mark-message-read', {
+  messageId: 'message_456',
+  conversationId: 'conversation_123'
 });
 
-// Usuario dejó de escribir
-socket.emit('typing_stop', {
-  userId: 'user_123',
-  chatId: 'chat_456',
+// Confirmación de mensaje leído
+socket.on('message-read', {
+  messageId: 'message_456'
+});
+```
+
+#### Eventos de Indicadores
+
+```javascript
+// Indicador de escritura
+socket.emit('typing', {
+  conversationId: 'conversation_123',
+  userEmail: 'usuario@example.com',
+  isTyping: true
+});
+
+// Recibir indicador de escritura
+socket.on('user-typing', {
+  conversationId: 'conversation_123',
+  userEmail: 'usuario@example.com',
+  isTyping: true
+});
+
+// Estado de conexión
+socket.emit('online-status', {
+  userEmail: 'usuario@example.com',
+  isOnline: true
+});
+
+// Cambio de estado de usuario
+socket.on('user-status-changed', {
+  userEmail: 'usuario@example.com',
+  isOnline: true
+});
+```
+
+#### Eventos de Notificación
+
+```javascript
+// Notificación de mensaje nuevo
+socket.on('message-notification', {
+  conversationId: 'conversation_123',
+  message: {
+    id: 'message_456',
+    senderName: 'Juan Pérez',
+    content: 'Hola, ¿cómo estás?'
+  },
+  unreadCount: 3
+});
+
+// Notificación personalizada
+socket.on('notification', {
+  title: 'Nueva solicitud',
+  message: 'Tienes una nueva solicitud de músico',
+  type: 'info',
+  timestamp: '2024-01-15T12:00:00Z'
+});
+```
   timestamp: '2024-01-15T10:40:00Z'
 });
 ```

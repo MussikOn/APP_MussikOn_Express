@@ -484,6 +484,20 @@ export function requireRole(...roles: string[]) {
 | `request_cancelled` | Solicitud cancelada | Backend | Músicos | `{ requestId }` |
 | `notification` | Notificación personalizada | Backend | Usuario específico | `{ title, message, ... }` |
 
+### Eventos de Chat
+
+| Evento | Descripción | Emisor | Receptor | Payload |
+|--------|-------------|--------|----------|---------|
+| `chat-register` | Registrar usuario en chat | Cliente | Servidor | `{ userEmail, userName }` |
+| `authenticate` | Autenticar usuario | Cliente | Servidor | `{ userEmail, userId }` |
+| `join-conversation` | Unirse a conversación | Cliente | Servidor | `conversationId` |
+| `send-message` | Enviar mensaje | Cliente | Servidor | `{ conversationId, senderId, content, type }` |
+| `new-message` | Nuevo mensaje | Servidor | Participantes | `{ id, conversationId, senderId, content, ... }` |
+| `mark-message-read` | Marcar como leído | Cliente | Servidor | `{ messageId, conversationId }` |
+| `typing` | Indicador de escritura | Cliente | Servidor | `{ conversationId, userEmail, isTyping }` |
+| `user-typing` | Usuario escribiendo | Servidor | Participantes | `{ conversationId, userEmail, isTyping }` |
+| `message-notification` | Notificación de mensaje | Servidor | Usuario | `{ conversationId, message, unreadCount }` |
+
 ### Configuración de Socket.IO
 
 ```typescript
@@ -511,6 +525,86 @@ io.on("connection", (socket) => {
   });
 });
 ```
+
+---
+
+## 💬 Sistema de Chat en Tiempo Real
+
+### Características
+
+- **Conversaciones privadas** entre dos usuarios
+- **Conversaciones grupales** para eventos
+- **Múltiples tipos de mensaje**: texto, imagen, audio, archivo
+- **Indicadores de escritura** en tiempo real
+- **Marcado de mensajes leídos**
+- **Notificaciones push** para mensajes nuevos
+- **Estados de conexión** en vivo
+- **Historial persistente** en Firebase
+
+### Arquitectura
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Socket.IO     │    │   Database      │
+│   (React/Vue)   │◄──►│   Server        │◄──►│   (Firebase)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │              ┌─────────────────┐             │
+         └──────────────►│   Chat API      │◄────────────┘
+                        │   (REST)        │
+                        └─────────────────┘
+```
+
+### Modelos de Datos
+
+#### Conversación
+```typescript
+interface Conversation {
+  id: string;
+  participants: string[]; // Array de emails
+  title: string;
+  type: 'private' | 'group';
+  createdAt: Date;
+  updatedAt: Date;
+  lastMessage?: Message;
+  unreadCount: number;
+}
+```
+
+#### Mensaje
+```typescript
+interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  type: 'text' | 'image' | 'audio' | 'file';
+  status: 'sent' | 'delivered' | 'read';
+  timestamp: Date;
+  metadata?: {
+    fileSize?: number;
+    fileName?: string;
+    mimeType?: string;
+    duration?: number; // Para audio
+  };
+}
+```
+
+### Endpoints de Chat
+
+- `POST /chat/conversations` - Crear conversación
+- `GET /chat/conversations` - Obtener conversaciones del usuario
+- `GET /chat/conversations/:id` - Obtener conversación específica
+- `GET /chat/conversations/:id/messages` - Obtener mensajes de conversación
+- `PUT /chat/conversations/:id/messages/read` - Marcar mensajes como leídos
+
+### Casos de Uso
+
+1. **Chat entre Organizador y Músico**: Comunicación directa sobre detalles del evento
+2. **Notificaciones de Solicitudes**: Músicos reciben notificaciones de nuevas solicitudes
+3. **Indicador de Escritura**: Mostrar cuando el otro usuario está escribiendo
+4. **Conversaciones Grupales**: Para eventos con múltiples músicos
 
 ---
 
