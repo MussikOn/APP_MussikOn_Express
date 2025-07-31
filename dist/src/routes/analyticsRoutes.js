@@ -84,7 +84,7 @@ const router = express_1.default.Router();
  *       403:
  *         description: Acceso denegado
  */
-router.get('/events', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getEventAnalyticsController);
+router.get('/events', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getEventAnalyticsController);
 /**
  * @swagger
  * /analytics/requests:
@@ -155,7 +155,7 @@ router.get('/events', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRo
  *       403:
  *         description: Acceso denegado
  */
-router.get('/requests', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getRequestAnalyticsController);
+router.get('/requests', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getRequestAnalyticsController);
 /**
  * @swagger
  * /analytics/users:
@@ -316,7 +316,7 @@ router.get('/users', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRol
  *       403:
  *         description: Acceso denegado
  */
-router.get('/platform', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getPlatformAnalyticsController);
+router.get('/platform', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getPlatformAnalyticsController);
 /**
  * @swagger
  * /analytics/trends:
@@ -383,7 +383,7 @@ router.get('/platform', authMiddleware_1.authMiddleware, (0, adminOnly_1.require
  *       403:
  *         description: Acceso denegado
  */
-router.get('/trends', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getTrendsReportController);
+router.get('/trends', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getTrendsReportController);
 /**
  * @swagger
  * /analytics/location-performance:
@@ -524,7 +524,7 @@ router.get('/top-users', authMiddleware_1.authMiddleware, (0, adminOnly_1.requir
  *       403:
  *         description: Acceso denegado
  */
-router.get('/dashboard', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getDashboardController);
+router.get('/dashboard', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getDashboardController);
 /**
  * @swagger
  * /analytics/export:

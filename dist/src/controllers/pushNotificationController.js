@@ -67,7 +67,7 @@ exports.getUserPushSubscriptions = (0, errorHandler_1.asyncHandler)((req, res) =
             }
         });
     }
-    const subscriptions = yield pushNotificationService_1.pushNotificationService.getUserSubscriptions(userId);
+    const subscriptions = yield pushNotificationService_1.pushNotificationService.getUserSubscriptions();
     res.json({
         success: true,
         data: subscriptions,
@@ -147,14 +147,26 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
         });
     }
     const result = yield pushNotificationService_1.pushNotificationService.sendBulkNotification(bulkRequest);
-    loggerService_1.logger.info('Notificación masiva enviada', {
-        metadata: { success: result.success, failed: result.failed }
-    });
-    res.json({
-        success: true,
-        data: result,
-        message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`
-    });
+    if (result) {
+        loggerService_1.logger.info('Notificación masiva enviada', {
+            metadata: { success: result.success, failed: result.failed }
+        });
+        res.json({
+            success: true,
+            data: result,
+            message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`
+        });
+    }
+    else {
+        loggerService_1.logger.error('Error enviando notificación masiva');
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Error enviando notificación masiva',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
 }));
 /**
  * Crear template de notificación
@@ -171,14 +183,26 @@ exports.createNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res)
         });
     }
     const createdTemplate = yield pushNotificationService_1.pushNotificationService.createNotificationTemplate(template);
-    loggerService_1.logger.info('Template de notificación creado', {
-        metadata: { templateId: createdTemplate.id, name: createdTemplate.name }
-    });
-    res.status(201).json({
-        success: true,
-        data: createdTemplate,
-        message: 'Template de notificación creado exitosamente'
-    });
+    if (createdTemplate) {
+        loggerService_1.logger.info('Template de notificación creado', {
+            metadata: { templateId: createdTemplate.id, name: createdTemplate.name }
+        });
+        res.status(201).json({
+            success: true,
+            data: createdTemplate,
+            message: 'Template de notificación creado exitosamente'
+        });
+    }
+    else {
+        loggerService_1.logger.error('Error creando template de notificación');
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Error creando template de notificación',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
 }));
 /**
  * Obtener template de notificación
@@ -281,7 +305,9 @@ exports.testPushNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             type: 'test'
         },
         requireInteraction: true,
-        priority: 'high'
+        priority: 'high',
+        category: 'test',
+        type: 'test'
     };
     yield pushNotificationService_1.pushNotificationService.sendNotificationToUser(userId, testNotification);
     loggerService_1.logger.info('Notificación de prueba enviada', {

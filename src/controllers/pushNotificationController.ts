@@ -64,7 +64,7 @@ export const getUserPushSubscriptions = asyncHandler(async (req: Request, res: R
     });
   }
 
-  const subscriptions = await pushNotificationService.getUserSubscriptions(userId);
+  const subscriptions = await pushNotificationService.getUserSubscriptions();
 
   res.json({
     success: true,
@@ -159,15 +159,26 @@ export const sendBulkNotification = asyncHandler(async (req: Request, res: Respo
 
   const result = await pushNotificationService.sendBulkNotification(bulkRequest);
 
-  logger.info('Notificación masiva enviada', {
-    metadata: { success: result.success, failed: result.failed }
-  });
+  if (result) {
+    logger.info('Notificación masiva enviada', {
+      metadata: { success: result.success, failed: result.failed }
+    });
 
-  res.json({
-    success: true,
-    data: result,
-    message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`
-  });
+    res.json({
+      success: true,
+      data: result,
+      message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`
+    });
+  } else {
+    logger.error('Error enviando notificación masiva');
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Error enviando notificación masiva',
+        code: 'INTERNAL_ERROR'
+      }
+    });
+  }
 });
 
 /**
@@ -188,15 +199,26 @@ export const createNotificationTemplate = asyncHandler(async (req: Request, res:
 
   const createdTemplate = await pushNotificationService.createNotificationTemplate(template);
 
-  logger.info('Template de notificación creado', {
-    metadata: { templateId: createdTemplate.id, name: createdTemplate.name }
-  });
+  if (createdTemplate) {
+    logger.info('Template de notificación creado', {
+      metadata: { templateId: createdTemplate.id, name: createdTemplate.name }
+    });
 
-  res.status(201).json({
-    success: true,
-    data: createdTemplate,
-    message: 'Template de notificación creado exitosamente'
-  });
+    res.status(201).json({
+      success: true,
+      data: createdTemplate,
+      message: 'Template de notificación creado exitosamente'
+    });
+  } else {
+    logger.error('Error creando template de notificación');
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Error creando template de notificación',
+        code: 'INTERNAL_ERROR'
+      }
+    });
+  }
 });
 
 /**
@@ -318,7 +340,9 @@ export const testPushNotification = asyncHandler(async (req: Request, res: Respo
       type: 'test'
     },
     requireInteraction: true,
-    priority: 'high' as const
+    priority: 'high' as const,
+    category: 'test',
+    type: 'test'
   };
 
   await pushNotificationService.sendNotificationToUser(userId, testNotification);

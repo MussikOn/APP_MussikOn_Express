@@ -92,7 +92,7 @@ const router = express.Router();
  *       403:
  *         description: Acceso denegado
  */
-router.get('/events', authMiddleware, requireRole('admin', 'superadmin'), getEventAnalyticsController);
+router.get('/events', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getEventAnalyticsController);
 
 /**
  * @swagger
@@ -164,7 +164,7 @@ router.get('/events', authMiddleware, requireRole('admin', 'superadmin'), getEve
  *       403:
  *         description: Acceso denegado
  */
-router.get('/requests', authMiddleware, requireRole('admin', 'superadmin'), getRequestAnalyticsController);
+router.get('/requests', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getRequestAnalyticsController);
 
 /**
  * @swagger
@@ -327,7 +327,7 @@ router.get('/users', authMiddleware, requireRole('admin', 'superadmin'), getUser
  *       403:
  *         description: Acceso denegado
  */
-router.get('/platform', authMiddleware, requireRole('admin', 'superadmin'), getPlatformAnalyticsController);
+router.get('/platform', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getPlatformAnalyticsController);
 
 /**
  * @swagger
@@ -395,7 +395,7 @@ router.get('/platform', authMiddleware, requireRole('admin', 'superadmin'), getP
  *       403:
  *         description: Acceso denegado
  */
-router.get('/trends', authMiddleware, requireRole('admin', 'superadmin'), getTrendsReportController);
+router.get('/trends', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getTrendsReportController);
 
 /**
  * @swagger
@@ -539,7 +539,7 @@ router.get('/top-users', authMiddleware, requireRole('admin', 'superadmin'), get
  *       403:
  *         description: Acceso denegado
  */
-router.get('/dashboard', authMiddleware, requireRole('admin', 'superadmin'), getDashboardController);
+router.get('/dashboard', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getDashboardController);
 
 /**
  * @swagger

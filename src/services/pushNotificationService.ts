@@ -1,39 +1,32 @@
-import { db } from '../utils/firebase';
-import { logger } from './loggerService';
-
+// Tipos para notificaciones push
 export interface PushSubscription {
   id: string;
-  userId: string;
   endpoint: string;
   keys: {
     p256dh: string;
     auth: string;
   };
+  userId: string;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  isActive: boolean;
 }
 
 export interface PushNotification {
   id: string;
+  userId: string;
   title: string;
   body: string;
   icon?: string;
   badge?: string;
-  image?: string;
   tag?: string;
   data?: Record<string, any>;
-  actions?: Array<{
-    action: string;
-    title: string;
-    icon?: string;
-  }>;
   requireInteraction?: boolean;
-  silent?: boolean;
-  timestamp: Date;
-  expiresAt?: Date;
   priority?: 'high' | 'normal' | 'low';
-  ttl?: number;
+  timestamp: Date;
+  read: boolean;
+  category: string;
+  type: string;
 }
 
 export interface NotificationTemplate {
@@ -43,440 +36,620 @@ export interface NotificationTemplate {
   body: string;
   icon?: string;
   badge?: string;
-  image?: string;
   tag?: string;
   data?: Record<string, any>;
-  actions?: Array<{
-    action: string;
-    title: string;
-    icon?: string;
-  }>;
-  requireInteraction?: boolean;
-  silent?: boolean;
-  priority?: 'high' | 'normal' | 'low';
-  ttl?: number;
+  category: string;
+  type: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface BulkNotificationRequest {
-  userIds?: string[];
-  userRoles?: string[];
+  userIds: string[];
   templateId?: string;
-  customNotification?: Omit<PushNotification, 'id' | 'timestamp'>;
-  scheduledAt?: Date;
-  expiresAt?: Date;
+  title: string;
+  body: string;
+  data?: Record<string, any>;
+  category?: string;
+  type?: string;
 }
 
-export class PushNotificationService {
-  private readonly vapidKeys = {
-    publicKey: process.env.VAPID_PUBLIC_KEY || 'your-vapid-public-key',
-    privateKey: process.env.VAPID_PRIVATE_KEY || 'your-vapid-private-key'
+export interface NotificationStats {
+  totalSent: number;
+  totalDelivered: number;
+  totalFailed: number;
+  totalRead: number;
+  averageDeliveryTime: number;
+  successRate: number;
+}
+
+export interface NotificationSettings {
+  enabled: boolean;
+  categories: Record<string, boolean>;
+  quietHours: {
+    enabled: boolean;
+    startTime: string;
+    endTime: string;
   };
+  sound: boolean;
+  vibration: boolean;
+}
 
-  /**
-   * Guardar suscripción push de un usuario
-   */
-  async saveSubscription(userId: string, subscription: Omit<PushSubscription, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<PushSubscription> {
+export interface PushNotificationApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface PushNotificationError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+export interface NotificationPermission {
+  granted: boolean;
+  denied: boolean;
+  default: boolean;
+}
+
+// Servicio API básico
+class ApiService {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = '/api') {
+    this.baseUrl = baseUrl;
+  }
+
+  async get<T>(endpoint: string): Promise<PushNotificationApiResponse<T>> {
     try {
-      const subscriptionData: PushSubscription = {
-        id: `${userId}_${Date.now()}`,
-        userId,
-        ...subscription,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true
+      const response = await fetch(`${this.baseUrl}${endpoint}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
+    }
+  }
 
-      await db.collection('pushSubscriptions').doc(subscriptionData.id).set(subscriptionData);
-      
-      logger.info('Suscripción push guardada', {
-        metadata: { userId, subscriptionId: subscriptionData.id }
+  async post<T>(endpoint: string, body: any): Promise<PushNotificationApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
       });
-
-      return subscriptionData;
+      const data = await response.json();
+      return data;
     } catch (error) {
-      logger.error('Error al guardar suscripción push', error as Error);
-      throw new Error('Error al guardar suscripción push');
-    }
-  }
-
-  /**
-   * Obtener suscripciones de un usuario
-   */
-  async getUserSubscriptions(userId: string): Promise<PushSubscription[]> {
-    try {
-      const snapshot = await db.collection('pushSubscriptions')
-        .where('userId', '==', userId)
-        .where('isActive', '==', true)
-        .get();
-
-      return snapshot.docs.map(doc => doc.data() as PushSubscription);
-    } catch (error) {
-      logger.error('Error al obtener suscripciones del usuario', error as Error);
-      throw new Error('Error al obtener suscripciones del usuario');
-    }
-  }
-
-  /**
-   * Eliminar suscripción push
-   */
-  async deleteSubscription(subscriptionId: string): Promise<void> {
-    try {
-      await db.collection('pushSubscriptions').doc(subscriptionId).delete();
-      
-      logger.info('Suscripción push eliminada', {
-        metadata: { subscriptionId }
-      });
-    } catch (error) {
-      logger.error('Error al eliminar suscripción push', error as Error);
-      throw new Error('Error al eliminar suscripción push');
-    }
-  }
-
-  /**
-   * Enviar notificación push a un usuario
-   */
-  async sendNotificationToUser(userId: string, notification: Omit<PushNotification, 'id' | 'timestamp'>): Promise<void> {
-    try {
-      const subscriptions = await this.getUserSubscriptions(userId);
-      
-      if (subscriptions.length === 0) {
-        logger.warn('Usuario sin suscripciones push', {
-          metadata: { userId }
-        });
-        return;
-      }
-
-      const notificationData: PushNotification = {
-        id: `notification_${Date.now()}_${userId}`,
-        ...notification,
-        timestamp: new Date()
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
+    }
+  }
 
-      // Enviar a todas las suscripciones del usuario
-      const promises = subscriptions.map(subscription => 
-        this.sendToSubscription(subscription, notificationData)
-      );
-
-      await Promise.allSettled(promises);
-
-      // Guardar notificación en la base de datos
-      await this.saveNotificationToDatabase(userId, notificationData);
-
-      logger.info('Notificación push enviada al usuario', {
-        metadata: { userId, notificationId: notificationData.id }
+  async delete<T>(endpoint: string): Promise<PushNotificationApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'DELETE',
       });
+      const data = await response.json();
+      return data;
     } catch (error) {
-      logger.error('Error al enviar notificación push al usuario', error as Error);
-      throw new Error('Error al enviar notificación push al usuario');
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async put<T>(endpoint: string, body: any): Promise<PushNotificationApiResponse<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+}
+
+const apiService = new ApiService();
+
+/**
+ * Servicio completo para manejo de notificaciones push
+ * Integra con el backend y maneja la suscripción del dispositivo
+ */
+export class PushNotificationService {
+  private vapidPublicKey: string | null = null;
+  private registration: ServiceWorkerRegistration | null = null;
+  private isInitialized = false;
+
+  /**
+   * Inicializar el servicio de notificaciones push
+   */
+  async initialize(): Promise<boolean> {
+    try {
+      if (this.isInitialized) return true;
+
+      // Verificar soporte
+      if (!this.isSupported()) {
+        throw new Error('Las notificaciones push no están soportadas en este dispositivo');
+      }
+
+      // Obtener VAPID key del backend
+      await this.loadVapidKey();
+
+      // Registrar Service Worker
+      await this.registerServiceWorker();
+
+      this.isInitialized = true;
+      return true;
+    } catch (error) {
+      console.error('Error inicializando PushNotificationService:', error);
+      return false;
     }
   }
 
   /**
-   * Enviar notificación push a múltiples usuarios
+   * Verificar si las notificaciones push están soportadas
    */
-  async sendBulkNotification(request: BulkNotificationRequest): Promise<{ success: number; failed: number }> {
+  isSupported(): boolean {
+    return (
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      'Notification' in window
+    );
+  }
+
+  /**
+   * Obtener el estado actual del permiso
+   */
+  getPermissionStatus(): NotificationPermission {
+    if (!('Notification' in window)) {
+      return { granted: false, denied: false, default: true };
+    }
+
+    const permission = Notification.permission;
+    return {
+      granted: permission === 'granted',
+      denied: permission === 'denied',
+      default: permission === 'default'
+    };
+  }
+
+  /**
+   * Solicitar permiso para notificaciones
+   */
+  async requestPermission(): Promise<boolean> {
     try {
-      let userIds: string[] = [];
-
-      // Obtener usuarios por roles si se especifican
-      if (request.userRoles && request.userRoles.length > 0) {
-        const usersSnapshot = await db.collection('users')
-          .where('roll', 'in', request.userRoles)
-          .get();
-        userIds = usersSnapshot.docs.map(doc => doc.id);
+      if (!this.isSupported()) {
+        throw new Error('Las notificaciones push no están soportadas');
       }
 
-      // Agregar usuarios específicos
-      if (request.userIds) {
-        userIds = [...new Set([...userIds, ...request.userIds])];
-      }
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    } catch (error) {
+      console.error('Error solicitando permiso:', error);
+      return false;
+    }
+  }
 
-      if (userIds.length === 0) {
-        throw new Error('No se encontraron usuarios para enviar notificación');
-      }
-
-      let notification: Omit<PushNotification, 'id' | 'timestamp'>;
-
-      // Usar template si se especifica
-      if (request.templateId) {
-        const template = await this.getNotificationTemplate(request.templateId);
-        notification = {
-          title: template.title,
-          body: template.body,
-          icon: template.icon,
-          badge: template.badge,
-          image: template.image,
-          tag: template.tag,
-          data: template.data,
-          actions: template.actions,
-          requireInteraction: template.requireInteraction,
-          silent: template.silent,
-          priority: template.priority,
-          ttl: template.ttl
-        };
-      } else if (request.customNotification) {
-        notification = request.customNotification;
+  /**
+   * Cargar VAPID key del backend
+   */
+  private async loadVapidKey(): Promise<void> {
+    try {
+      const response = await apiService.get<{ vapidPublicKey: string }>('/push-notifications/vapid-key');
+      if (response.success && response.data) {
+        this.vapidPublicKey = response.data.vapidPublicKey;
       } else {
-        throw new Error('Debe especificar un template o notificación personalizada');
+        throw new Error('No se pudo obtener la VAPID key');
       }
-
-      let success = 0;
-      let failed = 0;
-
-      // Enviar notificaciones a todos los usuarios
-      for (const userId of userIds) {
-        try {
-          await this.sendNotificationToUser(userId, notification);
-          success++;
-        } catch (error) {
-          logger.error('Error al enviar notificación a usuario', error as Error, {
-            metadata: { userId }
-          });
-          failed++;
-        }
-      }
-
-      logger.info('Notificación masiva enviada', {
-        metadata: { total: userIds.length, success, failed }
-      });
-
-      return { success, failed };
     } catch (error) {
-      logger.error('Error al enviar notificación masiva', error as Error);
-      throw new Error('Error al enviar notificación masiva');
-    }
-  }
-
-  /**
-   * Enviar notificación a una suscripción específica
-   */
-  private async sendToSubscription(subscription: PushSubscription, notification: PushNotification): Promise<void> {
-    try {
-      // En un entorno real, aquí usarías web-push para enviar la notificación
-      // Por ahora, simulamos el envío
-      
-      const payload = {
-        title: notification.title,
-        body: notification.body,
-        icon: notification.icon,
-        badge: notification.badge,
-        image: notification.image,
-        tag: notification.tag,
-        data: notification.data,
-        actions: notification.actions,
-        requireInteraction: notification.requireInteraction,
-        silent: notification.silent,
-        priority: notification.priority,
-        ttl: notification.ttl || 86400 // 24 horas por defecto
-      };
-
-      // Simular envío de notificación push
-      console.log(`Enviando notificación push a ${subscription.endpoint}:`, payload);
-      
-      // En producción, usarías:
-      // await webpush.sendNotification(subscription, JSON.stringify(payload));
-      
-    } catch (error) {
-      logger.error('Error al enviar notificación a suscripción', error as Error, {
-        metadata: { subscriptionId: subscription.id, endpoint: subscription.endpoint }
-      });
-      
-      // Marcar suscripción como inactiva si falla
-      await this.markSubscriptionInactive(subscription.id);
-      
+      console.error('Error cargando VAPID key:', error);
       throw error;
     }
   }
 
   /**
-   * Marcar suscripción como inactiva
+   * Registrar Service Worker
    */
-  private async markSubscriptionInactive(subscriptionId: string): Promise<void> {
+  private async registerServiceWorker(): Promise<void> {
     try {
-      await db.collection('pushSubscriptions').doc(subscriptionId).update({
-        isActive: false,
-        updatedAt: new Date()
-      });
+      this.registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker registrado:', this.registration);
     } catch (error) {
-      logger.error('Error al marcar suscripción como inactiva', error as Error);
+      console.error('Error registrando Service Worker:', error);
+      throw error;
     }
   }
 
   /**
-   * Guardar notificación en la base de datos
+   * Suscribirse a notificaciones push
    */
-  private async saveNotificationToDatabase(userId: string, notification: PushNotification): Promise<void> {
+  async subscribeToPushNotifications(): Promise<PushSubscription | null> {
     try {
-      await db.collection('notifications').doc(notification.id).set({
-        ...notification,
-        userId,
-        read: false,
-        createdAt: new Date()
-      });
+      if (!this.isInitialized) {
+        await this.initialize();
+      }
+
+      if (!this.vapidPublicKey) {
+        throw new Error('VAPID key no disponible');
+      }
+
+      if (!this.registration) {
+        throw new Error('Service Worker no registrado');
+      }
+
+      // Verificar permiso
+      const permission = this.getPermissionStatus();
+      if (!permission.granted) {
+        const granted = await this.requestPermission();
+        if (!granted) {
+          throw new Error('Permiso de notificaciones denegado');
+        }
+      }
+
+      // Obtener suscripción existente o crear nueva
+      let subscription = await this.registration.pushManager.getSubscription();
+      
+      if (!subscription) {
+        subscription = await this.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+        });
+      }
+
+      // Guardar suscripción en el backend
+      const subscriptionData = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: this.arrayBufferToBase64(subscription.getKey('p256dh')!),
+          auth: this.arrayBufferToBase64(subscription.getKey('auth')!)
+        }
+      };
+
+      const response = await apiService.post<PushSubscription>('/push-notifications/subscription', subscriptionData);
+      
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error('Error guardando suscripción en el backend');
+      }
     } catch (error) {
-      logger.error('Error al guardar notificación en base de datos', error as Error);
+      console.error('Error suscribiéndose a notificaciones push:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Obtener suscripciones del usuario
+   */
+  async getUserSubscriptions(): Promise<PushSubscription[]> {
+    try {
+      const response = await apiService.get<PushSubscription[]>('/push-notifications/subscriptions');
+      return response.success && response.data ? response.data : [];
+    } catch (error) {
+      console.error('Error obteniendo suscripciones:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Guardar suscripción push
+   */
+  async saveSubscription(userId: string, subscriptionData: {
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    isActive: boolean;
+  }): Promise<PushSubscription> {
+    try {
+      const response = await apiService.post<PushSubscription>('/push-notifications/subscriptions', {
+        userId,
+        ...subscriptionData
+      });
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error('Error guardando suscripción');
+    } catch (error) {
+      console.error('Error guardando suscripción:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener VAPID public key
+   */
+  getVapidPublicKey(): string | null {
+    return this.vapidPublicKey;
+  }
+
+  /**
+   * Eliminar suscripción
+   */
+  async deleteSubscription(subscriptionId: string): Promise<boolean> {
+    try {
+      const response = await apiService.delete(`/push-notifications/subscription/${subscriptionId}`);
+      
+      if (response.success) {
+        // También eliminar suscripción local si existe
+        if (this.registration) {
+          const subscription = await this.registration.pushManager.getSubscription();
+          if (subscription) {
+            await subscription.unsubscribe();
+          }
+        }
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error eliminando suscripción:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Enviar notificación a usuario específico
+   */
+  async sendNotificationToUser(
+    userId: string, 
+    notification: Omit<PushNotification, 'id' | 'userId' | 'timestamp' | 'read'>
+  ): Promise<boolean> {
+    try {
+      const response = await apiService.post(`/push-notifications/send/${userId}`, notification);
+      return response.success;
+    } catch (error) {
+      console.error('Error enviando notificación:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Enviar notificación masiva
+   */
+  async sendBulkNotification(request: BulkNotificationRequest): Promise<{ success: number; failed: number } | null> {
+    try {
+      const response = await apiService.post<{ success: number; failed: number }>('/push-notifications/bulk', request);
+      return response.success && response.data ? response.data : null;
+    } catch (error) {
+      console.error('Error enviando notificación masiva:', error);
+      return null;
     }
   }
 
   /**
    * Crear template de notificación
    */
-  async createNotificationTemplate(template: Omit<NotificationTemplate, 'id' | 'createdAt' | 'updatedAt'>): Promise<NotificationTemplate> {
+  async createNotificationTemplate(
+    template: Omit<NotificationTemplate, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<NotificationTemplate | null> {
     try {
-      const templateData: NotificationTemplate = {
-        id: `template_${Date.now()}`,
-        ...template,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      await db.collection('notificationTemplates').doc(templateData.id).set(templateData);
-      
-      logger.info('Template de notificación creado', {
-        metadata: { templateId: templateData.id, name: template.name }
-      });
-
-      return templateData;
+      const response = await apiService.post<NotificationTemplate>('/push-notifications/templates', template);
+      return response.success && response.data ? response.data : null;
     } catch (error) {
-      logger.error('Error al crear template de notificación', error as Error);
-      throw new Error('Error al crear template de notificación');
+      console.error('Error creando template:', error);
+      return null;
     }
   }
 
   /**
-   * Obtener template de notificación
-   */
-  async getNotificationTemplate(templateId: string): Promise<NotificationTemplate> {
-    try {
-      const doc = await db.collection('notificationTemplates').doc(templateId).get();
-      
-      if (!doc.exists) {
-        throw new Error('Template de notificación no encontrado');
-      }
-
-      return doc.data() as NotificationTemplate;
-    } catch (error) {
-      logger.error('Error al obtener template de notificación', error as Error);
-      throw new Error('Error al obtener template de notificación');
-    }
-  }
-
-  /**
-   * Obtener todos los templates activos
+   * Obtener templates activos
    */
   async getActiveTemplates(): Promise<NotificationTemplate[]> {
     try {
-      const snapshot = await db.collection('notificationTemplates')
-        .where('isActive', '==', true)
-        .get();
-
-      return snapshot.docs.map(doc => doc.data() as NotificationTemplate);
+      const response = await apiService.get<NotificationTemplate[]>('/push-notifications/templates');
+      return response.success && response.data ? response.data : [];
     } catch (error) {
-      logger.error('Error al obtener templates activos', error as Error);
-      throw new Error('Error al obtener templates activos');
+      console.error('Error obteniendo templates:', error);
+      return [];
     }
   }
 
   /**
-   * Actualizar template de notificación
+   * Obtener template específico
    */
-  async updateNotificationTemplate(templateId: string, updates: Partial<NotificationTemplate>): Promise<NotificationTemplate> {
+  async getNotificationTemplate(templateId: string): Promise<NotificationTemplate | null> {
     try {
-      const updateData = {
-        ...updates,
-        updatedAt: new Date()
-      };
-
-      await db.collection('notificationTemplates').doc(templateId).update(updateData);
-      
-      logger.info('Template de notificación actualizado', {
-        metadata: { templateId }
-      });
-
-      return await this.getNotificationTemplate(templateId);
+      const response = await apiService.get<NotificationTemplate>(`/push-notifications/templates/${templateId}`);
+      return response.success && response.data ? response.data : null;
     } catch (error) {
-      logger.error('Error al actualizar template de notificación', error as Error);
-      throw new Error('Error al actualizar template de notificación');
+      console.error('Error obteniendo template:', error);
+      return null;
     }
   }
 
   /**
-   * Eliminar template de notificación
+   * Actualizar template
    */
-  async deleteNotificationTemplate(templateId: string): Promise<void> {
+  async updateNotificationTemplate(
+    templateId: string, 
+    updates: Partial<NotificationTemplate>
+  ): Promise<NotificationTemplate | null> {
     try {
-      await db.collection('notificationTemplates').doc(templateId).delete();
-      
-      logger.info('Template de notificación eliminado', {
-        metadata: { templateId }
-      });
+      const response = await apiService.put<NotificationTemplate>(`/push-notifications/templates/${templateId}`, updates);
+      return response.success && response.data ? response.data : null;
     } catch (error) {
-      logger.error('Error al eliminar template de notificación', error as Error);
-      throw new Error('Error al eliminar template de notificación');
+      console.error('Error actualizando template:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Eliminar template
+   */
+  async deleteNotificationTemplate(templateId: string): Promise<boolean> {
+    try {
+      const response = await apiService.delete(`/push-notifications/templates/${templateId}`);
+      return response.success;
+    } catch (error) {
+      console.error('Error eliminando template:', error);
+      return false;
     }
   }
 
   /**
    * Obtener estadísticas de notificaciones
    */
-  async getNotificationStats(): Promise<{
-    totalSubscriptions: number;
-    activeSubscriptions: number;
-    totalTemplates: number;
-    activeTemplates: number;
-    notificationsSentToday: number;
-    notificationsSentThisWeek: number;
-    notificationsSentThisMonth: number;
-  }> {
+  async getNotificationStats(): Promise<NotificationStats | null> {
     try {
-      const [
-        subscriptionsSnapshot,
-        activeSubscriptionsSnapshot,
-        templatesSnapshot,
-        activeTemplatesSnapshot,
-        todayNotificationsSnapshot,
-        weekNotificationsSnapshot,
-        monthNotificationsSnapshot
-      ] = await Promise.all([
-        db.collection('pushSubscriptions').get(),
-        db.collection('pushSubscriptions').where('isActive', '==', true).get(),
-        db.collection('notificationTemplates').get(),
-        db.collection('notificationTemplates').where('isActive', '==', true).get(),
-        db.collection('notifications')
-          .where('timestamp', '>=', new Date(Date.now() - 24 * 60 * 60 * 1000))
-          .get(),
-        db.collection('notifications')
-          .where('timestamp', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
-          .get(),
-        db.collection('notifications')
-          .where('timestamp', '>=', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
-          .get()
-      ]);
-
-      return {
-        totalSubscriptions: subscriptionsSnapshot.size,
-        activeSubscriptions: activeSubscriptionsSnapshot.size,
-        totalTemplates: templatesSnapshot.size,
-        activeTemplates: activeTemplatesSnapshot.size,
-        notificationsSentToday: todayNotificationsSnapshot.size,
-        notificationsSentThisWeek: weekNotificationsSnapshot.size,
-        notificationsSentThisMonth: monthNotificationsSnapshot.size
-      };
+      const response = await apiService.get<NotificationStats>('/push-notifications/stats');
+      return response.success && response.data ? response.data : null;
     } catch (error) {
-      logger.error('Error al obtener estadísticas de notificaciones', error as Error);
-      throw new Error('Error al obtener estadísticas de notificaciones');
+      console.error('Error obteniendo estadísticas:', error);
+      return null;
     }
   }
 
   /**
-   * Obtener VAPID keys para el frontend
+   * Enviar notificación de prueba
    */
-  getVapidPublicKey(): string {
-    return this.vapidKeys.publicKey;
+  async testPushNotification(): Promise<boolean> {
+    try {
+      const response = await apiService.post('/push-notifications/test', {});
+      return response.success;
+    } catch (error) {
+      console.error('Error enviando notificación de prueba:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Mostrar notificación local (para testing)
+   */
+  showLocalNotification(title: string, options: NotificationOptions = {}): void {
+    if (!('Notification' in window)) {
+      console.warn('Las notificaciones no están soportadas');
+      return;
+    }
+
+    if (Notification.permission === 'granted') {
+      new Notification(title, {
+        icon: '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        tag: 'mussikon-notification',
+        ...options
+      });
+    }
+  }
+
+  /**
+   * Convertir VAPID key de base64 a Uint8Array
+   */
+  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  /**
+   * Convertir ArrayBuffer a base64
+   */
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  }
+
+  /**
+   * Obtener configuración de notificaciones del usuario
+   */
+  async getNotificationSettings(): Promise<NotificationSettings> {
+    try {
+      const response = await apiService.get<NotificationSettings>('/push-notifications/settings');
+      if (response.success && response.data) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error obteniendo configuración:', error);
+    }
+
+    // Configuración por defecto
+    return {
+      enabled: true,
+      categories: {
+        system: true,
+        user: true,
+        event: true,
+        request: true,
+        payment: true,
+        chat: true
+      },
+      quietHours: {
+        enabled: false,
+        startTime: '22:00',
+        endTime: '08:00'
+      },
+      sound: true,
+      vibration: true
+    };
+  }
+
+  /**
+   * Actualizar configuración de notificaciones
+   */
+  async updateNotificationSettings(settings: Partial<NotificationSettings>): Promise<boolean> {
+    try {
+      const response = await apiService.put('/push-notifications/settings', settings);
+      return response.success;
+    } catch (error) {
+      console.error('Error actualizando configuración:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Verificar si está en horas silenciosas
+   */
+  isInQuietHours(settings: NotificationSettings): boolean {
+    if (!settings.quietHours.enabled) return false;
+
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const [startHour, startMinute] = settings.quietHours.startTime.split(':').map(Number);
+    const [endHour, endMinute] = settings.quietHours.endTime.split(':').map(Number);
+    
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+
+    if (startTime <= endTime) {
+      return currentTime >= startTime && currentTime <= endTime;
+    } else {
+      // Horas silenciosas cruzan la medianoche
+      return currentTime >= startTime || currentTime <= endTime;
+    }
   }
 }
 
+// Instancia singleton del servicio
 export const pushNotificationService = new PushNotificationService(); 

@@ -1,8 +1,10 @@
-# 🎵 MussikOn API - Plataforma de Conectividad Musical
+# 🎵 MussikOn API - Backend de Conectividad Musical
 
 ## 📋 Descripción
 
-MussikOn es una plataforma integral que conecta músicos con organizadores de eventos, facilitando la gestión completa del proceso desde la búsqueda hasta el pago. La API proporciona funcionalidades avanzadas de búsqueda, geolocalización, pagos y comunicación en tiempo real.
+MussikOn es una API backend integral que conecta músicos con organizadores de eventos, facilitando la gestión completa del proceso desde la búsqueda hasta el pago. Esta es una **API pura de Node.js/Express** que proporciona funcionalidades avanzadas de búsqueda, geolocalización, pagos y comunicación en tiempo real.
+
+> **⚠️ Importante**: Este proyecto es un **backend puro** sin código de frontend. Todo el código de React/React Native ha sido eliminado para mantener una arquitectura limpia de API.
 
 ## 🚀 Características Principales
 
@@ -59,12 +61,13 @@ MussikOn es una plataforma integral que conecta músicos con organizadores de ev
 
 ## 🛠️ Tecnologías Utilizadas
 
-### Backend
+### Backend (API Pura)
 - **Node.js** - Runtime de JavaScript
 - **Express.js** - Framework web
 - **TypeScript** - Lenguaje de programación tipado
 - **Firebase Firestore** - Base de datos NoSQL
 - **Firebase Admin SDK** - Integración con servicios de Firebase
+- **Socket.io** - Comunicación en tiempo real
 
 ### Autenticación y Seguridad
 - **JWT** - JSON Web Tokens
@@ -102,20 +105,25 @@ APP_MussikOn_Express/
 │   ├── config/                 # Configuraciones
 │   ├── controllers/            # Controladores de la API
 │   │   ├── adminController.ts
+│   │   ├── analyticsController.ts
 │   │   ├── authController.ts
+│   │   ├── authGoogleController.ts
 │   │   ├── chatController.ts
 │   │   ├── eventControllers.ts
-│   │   ├── geolocationController.ts  # 🆕 Geolocalización
+│   │   ├── geolocationController.ts
 │   │   ├── imagesController.ts
 │   │   ├── musicianProfileController.ts
 │   │   ├── musicianRequestController.ts
-│   │   ├── paymentController.ts      # 🆕 Pagos
-│   │   └── registerAuthController.ts
+│   │   ├── notificationController.ts
+│   │   ├── paymentController.ts
+│   │   ├── pushNotificationController.ts
+│   │   ├── registerAuthController.ts
+│   │   └── searchController.ts
 │   ├── middleware/             # Middlewares personalizados
 │   │   ├── adminOnly.ts
 │   │   ├── authMiddleware.ts
 │   │   ├── errorHandler.ts
-│   │   ├── requireRole.ts      # 🆕 Control de roles
+│   │   ├── requireRole.ts
 │   │   ├── uploadMiddleware.ts
 │   │   └── validationMiddleware.ts
 │   ├── models/                 # Modelos de datos
@@ -126,27 +134,35 @@ APP_MussikOn_Express/
 │   │   └── musicianRequestModel.ts
 │   ├── routes/                 # Rutas de la API
 │   │   ├── adminRoutes.ts
-│   │   ├── authRutes.ts
+│   │   ├── analyticsRoutes.ts
+│   │   ├── authRoutes.ts
 │   │   ├── chatRoutes.ts
 │   │   ├── eventsRoutes.ts
-│   │   ├── geolocationRoutes.ts     # 🆕 Rutas de geolocalización
+│   │   ├── geolocationRoutes.ts
 │   │   ├── imagesRoutes.ts
 │   │   ├── musicianProfileRoutes.ts
 │   │   ├── musicianRequestRoutes.ts
-│   │   ├── paymentRoutes.ts          # 🆕 Rutas de pagos
+│   │   ├── notificationRoutes.ts
+│   │   ├── paymentRoutes.ts
+│   │   ├── pushNotificationRoutes.ts
 │   │   ├── searchRoutes.ts
 │   │   └── superAdminRouter.ts
 │   ├── services/               # Servicios de negocio
-│   │   ├── geolocationService.ts    # 🆕 Servicio de geolocalización
+│   │   ├── analyticsService.ts
+│   │   ├── chatService.ts
+│   │   ├── geolocationService.ts
 │   │   ├── imageService.ts
 │   │   ├── loggerService.ts
-│   │   └── paymentService.ts        # 🆕 Servicio de pagos
+│   │   ├── paymentService.ts
+│   │   ├── pushNotificationService.ts
+│   │   └── searchService.ts
 │   ├── types/                  # Definiciones de tipos
-│   │   ├── express.d.ts        # 🆕 Tipos personalizados de Express
-│   │   └── index.d.ts          # 🆕 Referencias de tipos
+│   │   ├── dtos.ts
+│   │   ├── express.d.ts
+│   │   └── index.d.ts
 │   ├── utils/                  # Utilidades
 │   │   ├── DataTypes.ts
-│   │   ├── dtos.ts             # 🆕 DTOs centralizados
+│   │   ├── dtos.ts
 │   │   ├── firebase.ts
 │   │   ├── functions.ts
 │   │   ├── idriveE2.ts
@@ -157,7 +173,7 @@ APP_MussikOn_Express/
 │   └── sockets/                # WebSockets
 │       ├── chatSocket.ts
 │       └── eventSocket.ts
-├── docs/                       # Documentación
+├── docs/                       # Documentación completa
 ├── functions/                  # Firebase Cloud Functions
 ├── dist/                       # Código compilado
 ├── public/                     # Archivos públicos
@@ -166,6 +182,12 @@ APP_MussikOn_Express/
 ├── tsconfig.json
 └── README.md
 ```
+
+> **🧹 Limpieza Completada**: Se eliminaron todos los directorios y archivos relacionados con React/React Native:
+> - ❌ `src/components/` - Componentes de React
+> - ❌ `src/hooks/` - Hooks de React  
+> - ❌ `src/appTypes/` - Tipos específicos de React
+> - ❌ `src/screens/` - Pantallas de React Native
 
 ## 🚀 Instalación y Configuración
 
@@ -357,14 +379,16 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 - [x] Sistema de chat en tiempo real
 - [x] Búsqueda avanzada
 - [x] Analytics y reportes
-- [x] **Geolocalización avanzada** 🆕
-- [x] **Sistema de pagos completo** 🆕
+- [x] Geolocalización avanzada
+- [x] Sistema de pagos completo
+- [x] **Limpieza completa de código React** 🧹
+- [x] **API backend pura** ✅
 
 ### 🔄 En Desarrollo
-- [ ] Notificaciones push móviles
 - [ ] Optimización de performance
 - [ ] Tests unitarios completos
 - [ ] Integración con más gateways de pago
+- [ ] Documentación de API mejorada
 
 ### 📋 Próximas Funcionalidades
 - [ ] Sistema de calificaciones y reseñas

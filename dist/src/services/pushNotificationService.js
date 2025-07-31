@@ -10,233 +10,341 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pushNotificationService = exports.PushNotificationService = void 0;
-const firebase_1 = require("../utils/firebase");
-const loggerService_1 = require("./loggerService");
+// Servicio API básico
+class ApiService {
+    constructor(baseUrl = '/api') {
+        this.baseUrl = baseUrl;
+    }
+    get(endpoint) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield fetch(`${this.baseUrl}${endpoint}`);
+                const data = yield response.json();
+                return data;
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        });
+    }
+    post(endpoint, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield fetch(`${this.baseUrl}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+                const data = yield response.json();
+                return data;
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        });
+    }
+    delete(endpoint) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield fetch(`${this.baseUrl}${endpoint}`, {
+                    method: 'DELETE',
+                });
+                const data = yield response.json();
+                return data;
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        });
+    }
+    put(endpoint, body) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield fetch(`${this.baseUrl}${endpoint}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(body),
+                });
+                const data = yield response.json();
+                return data;
+            }
+            catch (error) {
+                return {
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                };
+            }
+        });
+    }
+}
+const apiService = new ApiService();
+/**
+ * Servicio completo para manejo de notificaciones push
+ * Integra con el backend y maneja la suscripción del dispositivo
+ */
 class PushNotificationService {
     constructor() {
-        this.vapidKeys = {
-            publicKey: process.env.VAPID_PUBLIC_KEY || 'your-vapid-public-key',
-            privateKey: process.env.VAPID_PRIVATE_KEY || 'your-vapid-private-key'
+        this.vapidPublicKey = null;
+        this.registration = null;
+        this.isInitialized = false;
+    }
+    /**
+     * Inicializar el servicio de notificaciones push
+     */
+    initialize() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (this.isInitialized)
+                    return true;
+                // Verificar soporte
+                if (!this.isSupported()) {
+                    throw new Error('Las notificaciones push no están soportadas en este dispositivo');
+                }
+                // Obtener VAPID key del backend
+                yield this.loadVapidKey();
+                // Registrar Service Worker
+                yield this.registerServiceWorker();
+                this.isInitialized = true;
+                return true;
+            }
+            catch (error) {
+                console.error('Error inicializando PushNotificationService:', error);
+                return false;
+            }
+        });
+    }
+    /**
+     * Verificar si las notificaciones push están soportadas
+     */
+    isSupported() {
+        return ('serviceWorker' in navigator &&
+            'PushManager' in window &&
+            'Notification' in window);
+    }
+    /**
+     * Obtener el estado actual del permiso
+     */
+    getPermissionStatus() {
+        if (!('Notification' in window)) {
+            return { granted: false, denied: false, default: true };
+        }
+        const permission = Notification.permission;
+        return {
+            granted: permission === 'granted',
+            denied: permission === 'denied',
+            default: permission === 'default'
         };
     }
     /**
-     * Guardar suscripción push de un usuario
+     * Solicitar permiso para notificaciones
      */
-    saveSubscription(userId, subscription) {
+    requestPermission() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const subscriptionData = Object.assign(Object.assign({ id: `${userId}_${Date.now()}`, userId }, subscription), { createdAt: new Date(), updatedAt: new Date(), isActive: true });
-                yield firebase_1.db.collection('pushSubscriptions').doc(subscriptionData.id).set(subscriptionData);
-                loggerService_1.logger.info('Suscripción push guardada', {
-                    metadata: { userId, subscriptionId: subscriptionData.id }
-                });
-                return subscriptionData;
+                if (!this.isSupported()) {
+                    throw new Error('Las notificaciones push no están soportadas');
+                }
+                const permission = yield Notification.requestPermission();
+                return permission === 'granted';
             }
             catch (error) {
-                loggerService_1.logger.error('Error al guardar suscripción push', error);
-                throw new Error('Error al guardar suscripción push');
+                console.error('Error solicitando permiso:', error);
+                return false;
             }
         });
     }
     /**
-     * Obtener suscripciones de un usuario
+     * Cargar VAPID key del backend
      */
-    getUserSubscriptions(userId) {
+    loadVapidKey() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const snapshot = yield firebase_1.db.collection('pushSubscriptions')
-                    .where('userId', '==', userId)
-                    .where('isActive', '==', true)
-                    .get();
-                return snapshot.docs.map(doc => doc.data());
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener suscripciones del usuario', error);
-                throw new Error('Error al obtener suscripciones del usuario');
-            }
-        });
-    }
-    /**
-     * Eliminar suscripción push
-     */
-    deleteSubscription(subscriptionId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield firebase_1.db.collection('pushSubscriptions').doc(subscriptionId).delete();
-                loggerService_1.logger.info('Suscripción push eliminada', {
-                    metadata: { subscriptionId }
-                });
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al eliminar suscripción push', error);
-                throw new Error('Error al eliminar suscripción push');
-            }
-        });
-    }
-    /**
-     * Enviar notificación push a un usuario
-     */
-    sendNotificationToUser(userId, notification) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const subscriptions = yield this.getUserSubscriptions(userId);
-                if (subscriptions.length === 0) {
-                    loggerService_1.logger.warn('Usuario sin suscripciones push', {
-                        metadata: { userId }
-                    });
-                    return;
-                }
-                const notificationData = Object.assign(Object.assign({ id: `notification_${Date.now()}_${userId}` }, notification), { timestamp: new Date() });
-                // Enviar a todas las suscripciones del usuario
-                const promises = subscriptions.map(subscription => this.sendToSubscription(subscription, notificationData));
-                yield Promise.allSettled(promises);
-                // Guardar notificación en la base de datos
-                yield this.saveNotificationToDatabase(userId, notificationData);
-                loggerService_1.logger.info('Notificación push enviada al usuario', {
-                    metadata: { userId, notificationId: notificationData.id }
-                });
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al enviar notificación push al usuario', error);
-                throw new Error('Error al enviar notificación push al usuario');
-            }
-        });
-    }
-    /**
-     * Enviar notificación push a múltiples usuarios
-     */
-    sendBulkNotification(request) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                let userIds = [];
-                // Obtener usuarios por roles si se especifican
-                if (request.userRoles && request.userRoles.length > 0) {
-                    const usersSnapshot = yield firebase_1.db.collection('users')
-                        .where('roll', 'in', request.userRoles)
-                        .get();
-                    userIds = usersSnapshot.docs.map(doc => doc.id);
-                }
-                // Agregar usuarios específicos
-                if (request.userIds) {
-                    userIds = [...new Set([...userIds, ...request.userIds])];
-                }
-                if (userIds.length === 0) {
-                    throw new Error('No se encontraron usuarios para enviar notificación');
-                }
-                let notification;
-                // Usar template si se especifica
-                if (request.templateId) {
-                    const template = yield this.getNotificationTemplate(request.templateId);
-                    notification = {
-                        title: template.title,
-                        body: template.body,
-                        icon: template.icon,
-                        badge: template.badge,
-                        image: template.image,
-                        tag: template.tag,
-                        data: template.data,
-                        actions: template.actions,
-                        requireInteraction: template.requireInteraction,
-                        silent: template.silent,
-                        priority: template.priority,
-                        ttl: template.ttl
-                    };
-                }
-                else if (request.customNotification) {
-                    notification = request.customNotification;
+                const response = yield apiService.get('/push-notifications/vapid-key');
+                if (response.success && response.data) {
+                    this.vapidPublicKey = response.data.vapidPublicKey;
                 }
                 else {
-                    throw new Error('Debe especificar un template o notificación personalizada');
+                    throw new Error('No se pudo obtener la VAPID key');
                 }
-                let success = 0;
-                let failed = 0;
-                // Enviar notificaciones a todos los usuarios
-                for (const userId of userIds) {
-                    try {
-                        yield this.sendNotificationToUser(userId, notification);
-                        success++;
-                    }
-                    catch (error) {
-                        loggerService_1.logger.error('Error al enviar notificación a usuario', error, {
-                            metadata: { userId }
-                        });
-                        failed++;
-                    }
-                }
-                loggerService_1.logger.info('Notificación masiva enviada', {
-                    metadata: { total: userIds.length, success, failed }
-                });
-                return { success, failed };
             }
             catch (error) {
-                loggerService_1.logger.error('Error al enviar notificación masiva', error);
-                throw new Error('Error al enviar notificación masiva');
-            }
-        });
-    }
-    /**
-     * Enviar notificación a una suscripción específica
-     */
-    sendToSubscription(subscription, notification) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // En un entorno real, aquí usarías web-push para enviar la notificación
-                // Por ahora, simulamos el envío
-                const payload = {
-                    title: notification.title,
-                    body: notification.body,
-                    icon: notification.icon,
-                    badge: notification.badge,
-                    image: notification.image,
-                    tag: notification.tag,
-                    data: notification.data,
-                    actions: notification.actions,
-                    requireInteraction: notification.requireInteraction,
-                    silent: notification.silent,
-                    priority: notification.priority,
-                    ttl: notification.ttl || 86400 // 24 horas por defecto
-                };
-                // Simular envío de notificación push
-                console.log(`Enviando notificación push a ${subscription.endpoint}:`, payload);
-                // En producción, usarías:
-                // await webpush.sendNotification(subscription, JSON.stringify(payload));
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al enviar notificación a suscripción', error, {
-                    metadata: { subscriptionId: subscription.id, endpoint: subscription.endpoint }
-                });
-                // Marcar suscripción como inactiva si falla
-                yield this.markSubscriptionInactive(subscription.id);
+                console.error('Error cargando VAPID key:', error);
                 throw error;
             }
         });
     }
     /**
-     * Marcar suscripción como inactiva
+     * Registrar Service Worker
      */
-    markSubscriptionInactive(subscriptionId) {
+    registerServiceWorker() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield firebase_1.db.collection('pushSubscriptions').doc(subscriptionId).update({
-                    isActive: false,
-                    updatedAt: new Date()
-                });
+                this.registration = yield navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registrado:', this.registration);
             }
             catch (error) {
-                loggerService_1.logger.error('Error al marcar suscripción como inactiva', error);
+                console.error('Error registrando Service Worker:', error);
+                throw error;
             }
         });
     }
     /**
-     * Guardar notificación en la base de datos
+     * Suscribirse a notificaciones push
      */
-    saveNotificationToDatabase(userId, notification) {
+    subscribeToPushNotifications() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield firebase_1.db.collection('notifications').doc(notification.id).set(Object.assign(Object.assign({}, notification), { userId, read: false, createdAt: new Date() }));
+                if (!this.isInitialized) {
+                    yield this.initialize();
+                }
+                if (!this.vapidPublicKey) {
+                    throw new Error('VAPID key no disponible');
+                }
+                if (!this.registration) {
+                    throw new Error('Service Worker no registrado');
+                }
+                // Verificar permiso
+                const permission = this.getPermissionStatus();
+                if (!permission.granted) {
+                    const granted = yield this.requestPermission();
+                    if (!granted) {
+                        throw new Error('Permiso de notificaciones denegado');
+                    }
+                }
+                // Obtener suscripción existente o crear nueva
+                let subscription = yield this.registration.pushManager.getSubscription();
+                if (!subscription) {
+                    subscription = yield this.registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+                    });
+                }
+                // Guardar suscripción en el backend
+                const subscriptionData = {
+                    endpoint: subscription.endpoint,
+                    keys: {
+                        p256dh: this.arrayBufferToBase64(subscription.getKey('p256dh')),
+                        auth: this.arrayBufferToBase64(subscription.getKey('auth'))
+                    }
+                };
+                const response = yield apiService.post('/push-notifications/subscription', subscriptionData);
+                if (response.success && response.data) {
+                    return response.data;
+                }
+                else {
+                    throw new Error('Error guardando suscripción en el backend');
+                }
             }
             catch (error) {
-                loggerService_1.logger.error('Error al guardar notificación en base de datos', error);
+                console.error('Error suscribiéndose a notificaciones push:', error);
+                return null;
+            }
+        });
+    }
+    /**
+     * Obtener suscripciones del usuario
+     */
+    getUserSubscriptions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.get('/push-notifications/subscriptions');
+                return response.success && response.data ? response.data : [];
+            }
+            catch (error) {
+                console.error('Error obteniendo suscripciones:', error);
+                return [];
+            }
+        });
+    }
+    /**
+     * Guardar suscripción push
+     */
+    saveSubscription(userId, subscriptionData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.post('/push-notifications/subscriptions', Object.assign({ userId }, subscriptionData));
+                if (response.success && response.data) {
+                    return response.data;
+                }
+                throw new Error('Error guardando suscripción');
+            }
+            catch (error) {
+                console.error('Error guardando suscripción:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Obtener VAPID public key
+     */
+    getVapidPublicKey() {
+        return this.vapidPublicKey;
+    }
+    /**
+     * Eliminar suscripción
+     */
+    deleteSubscription(subscriptionId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.delete(`/push-notifications/subscription/${subscriptionId}`);
+                if (response.success) {
+                    // También eliminar suscripción local si existe
+                    if (this.registration) {
+                        const subscription = yield this.registration.pushManager.getSubscription();
+                        if (subscription) {
+                            yield subscription.unsubscribe();
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+            catch (error) {
+                console.error('Error eliminando suscripción:', error);
+                return false;
+            }
+        });
+    }
+    /**
+     * Enviar notificación a usuario específico
+     */
+    sendNotificationToUser(userId, notification) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.post(`/push-notifications/send/${userId}`, notification);
+                return response.success;
+            }
+            catch (error) {
+                console.error('Error enviando notificación:', error);
+                return false;
+            }
+        });
+    }
+    /**
+     * Enviar notificación masiva
+     */
+    sendBulkNotification(request) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.post('/push-notifications/bulk', request);
+                return response.success && response.data ? response.data : null;
+            }
+            catch (error) {
+                console.error('Error enviando notificación masiva:', error);
+                return null;
             }
         });
     }
@@ -246,87 +354,72 @@ class PushNotificationService {
     createNotificationTemplate(template) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const templateData = Object.assign(Object.assign({ id: `template_${Date.now()}` }, template), { createdAt: new Date(), updatedAt: new Date() });
-                yield firebase_1.db.collection('notificationTemplates').doc(templateData.id).set(templateData);
-                loggerService_1.logger.info('Template de notificación creado', {
-                    metadata: { templateId: templateData.id, name: template.name }
-                });
-                return templateData;
+                const response = yield apiService.post('/push-notifications/templates', template);
+                return response.success && response.data ? response.data : null;
             }
             catch (error) {
-                loggerService_1.logger.error('Error al crear template de notificación', error);
-                throw new Error('Error al crear template de notificación');
+                console.error('Error creando template:', error);
+                return null;
             }
         });
     }
     /**
-     * Obtener template de notificación
-     */
-    getNotificationTemplate(templateId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const doc = yield firebase_1.db.collection('notificationTemplates').doc(templateId).get();
-                if (!doc.exists) {
-                    throw new Error('Template de notificación no encontrado');
-                }
-                return doc.data();
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener template de notificación', error);
-                throw new Error('Error al obtener template de notificación');
-            }
-        });
-    }
-    /**
-     * Obtener todos los templates activos
+     * Obtener templates activos
      */
     getActiveTemplates() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const snapshot = yield firebase_1.db.collection('notificationTemplates')
-                    .where('isActive', '==', true)
-                    .get();
-                return snapshot.docs.map(doc => doc.data());
+                const response = yield apiService.get('/push-notifications/templates');
+                return response.success && response.data ? response.data : [];
             }
             catch (error) {
-                loggerService_1.logger.error('Error al obtener templates activos', error);
-                throw new Error('Error al obtener templates activos');
+                console.error('Error obteniendo templates:', error);
+                return [];
             }
         });
     }
     /**
-     * Actualizar template de notificación
+     * Obtener template específico
+     */
+    getNotificationTemplate(templateId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.get(`/push-notifications/templates/${templateId}`);
+                return response.success && response.data ? response.data : null;
+            }
+            catch (error) {
+                console.error('Error obteniendo template:', error);
+                return null;
+            }
+        });
+    }
+    /**
+     * Actualizar template
      */
     updateNotificationTemplate(templateId, updates) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const updateData = Object.assign(Object.assign({}, updates), { updatedAt: new Date() });
-                yield firebase_1.db.collection('notificationTemplates').doc(templateId).update(updateData);
-                loggerService_1.logger.info('Template de notificación actualizado', {
-                    metadata: { templateId }
-                });
-                return yield this.getNotificationTemplate(templateId);
+                const response = yield apiService.put(`/push-notifications/templates/${templateId}`, updates);
+                return response.success && response.data ? response.data : null;
             }
             catch (error) {
-                loggerService_1.logger.error('Error al actualizar template de notificación', error);
-                throw new Error('Error al actualizar template de notificación');
+                console.error('Error actualizando template:', error);
+                return null;
             }
         });
     }
     /**
-     * Eliminar template de notificación
+     * Eliminar template
      */
     deleteNotificationTemplate(templateId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield firebase_1.db.collection('notificationTemplates').doc(templateId).delete();
-                loggerService_1.logger.info('Template de notificación eliminado', {
-                    metadata: { templateId }
-                });
+                const response = yield apiService.delete(`/push-notifications/templates/${templateId}`);
+                return response.success;
             }
             catch (error) {
-                loggerService_1.logger.error('Error al eliminar template de notificación', error);
-                throw new Error('Error al eliminar template de notificación');
+                console.error('Error eliminando template:', error);
+                return false;
             }
         });
     }
@@ -336,43 +429,139 @@ class PushNotificationService {
     getNotificationStats() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const [subscriptionsSnapshot, activeSubscriptionsSnapshot, templatesSnapshot, activeTemplatesSnapshot, todayNotificationsSnapshot, weekNotificationsSnapshot, monthNotificationsSnapshot] = yield Promise.all([
-                    firebase_1.db.collection('pushSubscriptions').get(),
-                    firebase_1.db.collection('pushSubscriptions').where('isActive', '==', true).get(),
-                    firebase_1.db.collection('notificationTemplates').get(),
-                    firebase_1.db.collection('notificationTemplates').where('isActive', '==', true).get(),
-                    firebase_1.db.collection('notifications')
-                        .where('timestamp', '>=', new Date(Date.now() - 24 * 60 * 60 * 1000))
-                        .get(),
-                    firebase_1.db.collection('notifications')
-                        .where('timestamp', '>=', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
-                        .get(),
-                    firebase_1.db.collection('notifications')
-                        .where('timestamp', '>=', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
-                        .get()
-                ]);
-                return {
-                    totalSubscriptions: subscriptionsSnapshot.size,
-                    activeSubscriptions: activeSubscriptionsSnapshot.size,
-                    totalTemplates: templatesSnapshot.size,
-                    activeTemplates: activeTemplatesSnapshot.size,
-                    notificationsSentToday: todayNotificationsSnapshot.size,
-                    notificationsSentThisWeek: weekNotificationsSnapshot.size,
-                    notificationsSentThisMonth: monthNotificationsSnapshot.size
-                };
+                const response = yield apiService.get('/push-notifications/stats');
+                return response.success && response.data ? response.data : null;
             }
             catch (error) {
-                loggerService_1.logger.error('Error al obtener estadísticas de notificaciones', error);
-                throw new Error('Error al obtener estadísticas de notificaciones');
+                console.error('Error obteniendo estadísticas:', error);
+                return null;
             }
         });
     }
     /**
-     * Obtener VAPID keys para el frontend
+     * Enviar notificación de prueba
      */
-    getVapidPublicKey() {
-        return this.vapidKeys.publicKey;
+    testPushNotification() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.post('/push-notifications/test', {});
+                return response.success;
+            }
+            catch (error) {
+                console.error('Error enviando notificación de prueba:', error);
+                return false;
+            }
+        });
+    }
+    /**
+     * Mostrar notificación local (para testing)
+     */
+    showLocalNotification(title, options = {}) {
+        if (!('Notification' in window)) {
+            console.warn('Las notificaciones no están soportadas');
+            return;
+        }
+        if (Notification.permission === 'granted') {
+            new Notification(title, Object.assign({ icon: '/icon-192x192.png', badge: '/badge-72x72.png', tag: 'mussikon-notification' }, options));
+        }
+    }
+    /**
+     * Convertir VAPID key de base64 a Uint8Array
+     */
+    urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+    /**
+     * Convertir ArrayBuffer a base64
+     */
+    arrayBufferToBase64(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+    /**
+     * Obtener configuración de notificaciones del usuario
+     */
+    getNotificationSettings() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.get('/push-notifications/settings');
+                if (response.success && response.data) {
+                    return response.data;
+                }
+            }
+            catch (error) {
+                console.error('Error obteniendo configuración:', error);
+            }
+            // Configuración por defecto
+            return {
+                enabled: true,
+                categories: {
+                    system: true,
+                    user: true,
+                    event: true,
+                    request: true,
+                    payment: true,
+                    chat: true
+                },
+                quietHours: {
+                    enabled: false,
+                    startTime: '22:00',
+                    endTime: '08:00'
+                },
+                sound: true,
+                vibration: true
+            };
+        });
+    }
+    /**
+     * Actualizar configuración de notificaciones
+     */
+    updateNotificationSettings(settings) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield apiService.put('/push-notifications/settings', settings);
+                return response.success;
+            }
+            catch (error) {
+                console.error('Error actualizando configuración:', error);
+                return false;
+            }
+        });
+    }
+    /**
+     * Verificar si está en horas silenciosas
+     */
+    isInQuietHours(settings) {
+        if (!settings.quietHours.enabled)
+            return false;
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [startHour, startMinute] = settings.quietHours.startTime.split(':').map(Number);
+        const [endHour, endMinute] = settings.quietHours.endTime.split(':').map(Number);
+        const startTime = startHour * 60 + startMinute;
+        const endTime = endHour * 60 + endMinute;
+        if (startTime <= endTime) {
+            return currentTime >= startTime && currentTime <= endTime;
+        }
+        else {
+            // Horas silenciosas cruzan la medianoche
+            return currentTime >= startTime || currentTime <= endTime;
+        }
     }
 }
 exports.PushNotificationService = PushNotificationService;
+// Instancia singleton del servicio
 exports.pushNotificationService = new PushNotificationService();
