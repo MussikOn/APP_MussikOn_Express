@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logger = exports.LoggerService = exports.LogLevel = void 0;
+exports.logger = exports.LogLevel = void 0;
 var LogLevel;
 (function (LogLevel) {
     LogLevel["ERROR"] = "error";
@@ -9,143 +9,105 @@ var LogLevel;
     LogLevel["DEBUG"] = "debug";
 })(LogLevel || (exports.LogLevel = LogLevel = {}));
 class LoggerService {
-    constructor(config = {}) {
-        this.logs = [];
-        this.config = Object.assign({ level: LogLevel.INFO, enableConsole: true, enableFile: false }, config);
+    constructor() {
+        this.isDevelopment = process.env.NODE_ENV === 'development';
     }
-    shouldLog(level) {
-        const levels = Object.values(LogLevel);
-        const configIndex = levels.indexOf(this.config.level);
-        const messageIndex = levels.indexOf(level);
-        return messageIndex <= configIndex;
+    formatLog(entry) {
+        const base = `[${entry.timestamp}] ${entry.level.toUpperCase()}: ${entry.message}`;
+        const context = entry.context ? ` [${entry.context}]` : '';
+        const user = entry.userId ? ` [User: ${entry.userId}]` : '';
+        const request = entry.requestId ? ` [Request: ${entry.requestId}]` : '';
+        const duration = entry.duration ? ` [${entry.duration}ms]` : '';
+        return `${base}${context}${user}${request}${duration}`;
     }
-    formatMessage(entry) {
-        const timestamp = entry.timestamp.toISOString();
-        const level = entry.level.toUpperCase().padEnd(5);
-        const context = entry.context ? `[${entry.context}]` : '';
-        const message = entry.message;
-        const data = entry.data ? ` | ${JSON.stringify(entry.data)}` : '';
-        const error = entry.error ? ` | Error: ${entry.error.message}` : '';
-        return `${timestamp} ${level} ${context} ${message}${data}${error}`;
+    log(level, message, options = {}) {
+        const entry = Object.assign({ timestamp: new Date().toISOString(), level,
+            message }, options);
+        const formattedLog = this.formatLog(entry);
+        switch (level) {
+            case LogLevel.ERROR:
+                console.error(formattedLog);
+                if (entry.error) {
+                    console.error('Stack:', entry.error.stack);
+                }
+                break;
+            case LogLevel.WARN:
+                console.warn(formattedLog);
+                break;
+            case LogLevel.INFO:
+                console.info(formattedLog);
+                break;
+            case LogLevel.DEBUG:
+                if (this.isDevelopment) {
+                    console.debug(formattedLog);
+                }
+                break;
+        }
+        // En producción, aquí se podría enviar a un servicio de logging externo
+        // como Winston, Pino, o un servicio cloud como CloudWatch, Loggly, etc.
     }
-    log(level, message, context, data, error) {
-        if (!this.shouldLog(level))
-            return;
-        const entry = {
-            timestamp: new Date(),
-            level,
-            message,
-            context,
-            data,
-            error,
-        };
-        this.logs.push(entry);
-        if (this.config.enableConsole) {
-            const formattedMessage = this.formatMessage(entry);
-            switch (level) {
-                case LogLevel.ERROR:
-                    console.error(formattedMessage);
-                    break;
-                case LogLevel.WARN:
-                    console.warn(formattedMessage);
-                    break;
-                case LogLevel.INFO:
-                    console.info(formattedMessage);
-                    break;
-                case LogLevel.DEBUG:
-                    console.debug(formattedMessage);
-                    break;
+    error(message, error, options = {}) {
+        this.log(LogLevel.ERROR, message, Object.assign(Object.assign({}, options), { error }));
+    }
+    warn(message, options = {}) {
+        this.log(LogLevel.WARN, message, options);
+    }
+    info(message, options = {}) {
+        this.log(LogLevel.INFO, message, options);
+    }
+    debug(message, options = {}) {
+        this.log(LogLevel.DEBUG, message, options);
+    }
+    // Métodos específicos para logging de requests
+    logRequest(req, res, duration) {
+        var _a;
+        const userId = ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail) || 'anonymous';
+        const requestId = req.headers['x-request-id'] || 'unknown';
+        this.info('Request completed', {
+            context: 'HTTP',
+            userId,
+            requestId,
+            method: req.method,
+            url: req.originalUrl,
+            ip: req.ip,
+            userAgent: req.get('User-Agent'),
+            duration,
+            metadata: {
+                statusCode: res.statusCode,
+                contentLength: res.get('Content-Length')
             }
-        }
-    }
-    error(message, context, data, error) {
-        this.log(LogLevel.ERROR, message, context, data, error);
-    }
-    warn(message, context, data) {
-        this.log(LogLevel.WARN, message, context, data);
-    }
-    info(message, context, data) {
-        this.log(LogLevel.INFO, message, context, data);
-    }
-    debug(message, context, data) {
-        this.log(LogLevel.DEBUG, message, context, data);
-    }
-    // Métodos específicos para eventos
-    logEventCreation(eventId, userEmail, eventData) {
-        this.info('Evento creado', 'EventService', {
-            eventId,
-            userEmail,
-            eventData,
         });
     }
-    logEventCancellation(eventId, cancelledBy, assignedMusician) {
-        this.info('Evento cancelado', 'EventService', {
-            eventId,
-            cancelledBy,
-            assignedMusician,
+    logError(error, req, context) {
+        var _a;
+        const userId = req ? (((_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail) || 'anonymous') : 'unknown';
+        const requestId = req ? (req.headers['x-request-id'] || 'unknown') : 'unknown';
+        this.error(error.message, error, {
+            context: context || 'Application',
+            userId,
+            requestId,
+            method: req === null || req === void 0 ? void 0 : req.method,
+            url: req === null || req === void 0 ? void 0 : req.originalUrl,
+            ip: req === null || req === void 0 ? void 0 : req.ip,
+            userAgent: req === null || req === void 0 ? void 0 : req.get('User-Agent')
         });
     }
-    logEventCompletion(eventId, completedBy) {
-        this.info('Evento completado', 'EventService', {
-            eventId,
-            completedBy,
-        });
+    // Métodos específicos para diferentes contextos
+    logAuth(message, userId, options = {}) {
+        this.info(message, Object.assign({ context: 'Auth', userId }, options));
     }
-    logMusicianAcceptance(eventId, musicianEmail, organizerEmail) {
-        this.info('Músico aceptó evento', 'EventService', {
-            eventId,
-            musicianEmail,
-            organizerEmail,
-        });
+    logEvent(message, eventId, userId, options = {}) {
+        this.info(message, Object.assign({ context: 'Event', userId, metadata: Object.assign({ eventId }, options.metadata) }, options));
     }
-    logNotificationSent(userEmail, notificationType, eventId) {
-        this.info('Notificación enviada', 'NotificationService', {
-            userEmail,
-            notificationType,
-            eventId,
-        });
+    logImage(message, imageId, userId, options = {}) {
+        this.info(message, Object.assign({ context: 'Image', userId, metadata: Object.assign({ imageId }, options.metadata) }, options));
     }
-    logSocketConnection(socketId, userEmail) {
-        this.debug('Socket conectado', 'SocketService', {
-            socketId,
-            userEmail,
-        });
+    logChat(message, conversationId, userId, options = {}) {
+        this.info(message, Object.assign({ context: 'Chat', userId, metadata: Object.assign({ conversationId }, options.metadata) }, options));
     }
-    logSocketDisconnection(socketId, userEmail) {
-        this.debug('Socket desconectado', 'SocketService', {
-            socketId,
-            userEmail,
-        });
-    }
-    // Métodos para errores específicos
-    logDatabaseError(operation, error, context) {
-        this.error(`Error de base de datos en ${operation}`, 'DatabaseService', context, error);
-    }
-    logAuthenticationError(userEmail, error) {
-        this.error('Error de autenticación', 'AuthService', { userEmail }, error);
-    }
-    logValidationError(field, value, error) {
-        this.error('Error de validación', 'ValidationService', { field, value }, error);
-    }
-    // Obtener logs para debugging
-    getLogs(level, limit) {
-        let filteredLogs = this.logs;
-        if (level) {
-            filteredLogs = filteredLogs.filter(log => log.level === level);
-        }
-        if (limit) {
-            filteredLogs = filteredLogs.slice(-limit);
-        }
-        return filteredLogs;
-    }
-    // Limpiar logs antiguos
-    clearLogs() {
-        this.logs = [];
+    logAdmin(message, adminId, action, options = {}) {
+        this.info(message, Object.assign({ context: 'Admin', userId: adminId, metadata: Object.assign({ action }, options.metadata) }, options));
     }
 }
-exports.LoggerService = LoggerService;
-// Instancia singleton del logger
-exports.logger = new LoggerService({
-    level: process.env.NODE_ENV === 'production' ? LogLevel.INFO : LogLevel.DEBUG,
-    enableConsole: true,
-});
+// Exportar una instancia singleton
+exports.logger = new LoggerService();

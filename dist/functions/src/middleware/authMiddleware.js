@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = authMiddleware;
 exports.requireRole = requireRole;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const ENV_1 = require("../../ENV");
+const ENV_1 = require("../config/ENV");
 function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,7 +16,7 @@ function authMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, ENV_1.TOKEN_SECRET);
-        // Agregar el usuario decodificado en req.user
+        // Agregar el usuario decodificado en req.user en vez de sobrescribir req.body
         req.user = decoded;
         next();
     }

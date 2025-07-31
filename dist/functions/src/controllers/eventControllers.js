@@ -11,12 +11,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventController = exports.completeEventController = exports.cancelEventController = exports.getEventByIdController = exports.myCancelledEventsController = exports.myEventsController = exports.myPastPerformancesController = exports.myScheduledEventsController = exports.acceptEventController = exports.availableRequestsController = exports.myCompletedEventsController = exports.myAssignedEventsController = exports.myPendingEventsController = exports.requestMusicianController = void 0;
 const eventModel_1 = require("../models/eventModel");
-// Comentado temporalmente para evitar dependencias circulares
+// Comentado temporalmente para Cloud Functions
 // import { io, users } from "../../index";
 // POST /events/request-musician
 const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
+        if (!user || user.roll !== 'eventCreator') {
+            console.log("[src/controllers/eventControllers.ts:22] Usuario no autorizado:", user);
+            res.status(403).json({ msg: "Solo los organizadores pueden crear solicitudes." });
+            return;
+        }
         const eventData = req.body;
         console.log('[src/controllers/eventControllers.ts:27] Payload recibido en /events/request-musician:', eventData);
         const event = yield (0, eventModel_1.createEventModel)(Object.assign(Object.assign({}, eventData), { user: user.userEmail }));
@@ -24,8 +29,8 @@ const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0
         res.status(201).json({ data: event });
     }
     catch (error) {
-        console.error('Error al crear solicitud:', error);
-        res.status(500).json({ msg: "Error al crear solicitud" });
+        console.error('[src/controllers/eventControllers.ts:31] Error al crear el evento:', error);
+        res.status(500).json({ msg: "Error al crear el evento.", error });
     }
 });
 exports.requestMusicianController = requestMusicianController;
@@ -58,7 +63,7 @@ exports.availableRequestsController = availableRequestsController;
 const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        if (user.roll !== 'musico') {
+        if (!user || user.roll !== 'musico') {
             res.status(403).json({ msg: "Solo los músicos pueden aceptar eventos." });
             return;
         }
@@ -68,12 +73,32 @@ const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             res.status(400).json({ msg: "No se pudo aceptar el evento." });
             return;
         }
-        // Comentado temporalmente - notificaciones por socket
+        // const organizerSocketId = users[updatedEvent.user]; // Comentado temporalmente
+        // if (organizerSocketId) {
+        //   console.log('[src/controllers/eventControllers.ts:78] Mapping actual de usuarios:', users);
+        //   console.log('[src/controllers/eventControllers.ts:79] Emitiendo musician_accepted a socket:', organizerSocketId, 'para usuario:', updatedEvent.user, 'payload:', {
+        //     requestId: updatedEvent.id,
+        //     musician: {
+        //       name: user.name,
+        //       email: user.userEmail,
+        //       instrument: updatedEvent.instrument,
+        //     },
+        //     event: updatedEvent
+        //   });
+        //   io.to(organizerSocketId).emit('musician_accepted', {
+        //     requestId: updatedEvent.id,
+        //     musician: {
+        //       name: user.name,
+        //       email: user.userEmail,
+        //       instrument: updatedEvent.instrument,
+        //     },
+        //     event: updatedEvent
+        //   });
+        // }
         res.json(updatedEvent);
     }
     catch (error) {
-        console.error('Error al aceptar evento:', error);
-        res.status(500).json({ msg: "Error al aceptar evento" });
+        res.status(500).json({ msg: "Error al aceptar el evento.", error });
     }
 });
 exports.acceptEventController = acceptEventController;
@@ -119,6 +144,7 @@ const myCancelledEventsController = (req, res) => __awaiter(void 0, void 0, void
     res.json({ data: events });
 });
 exports.myCancelledEventsController = myCancelledEventsController;
+// GET /events/:eventId
 const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { eventId } = req.params;
@@ -132,7 +158,8 @@ const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
         }
         res.json({
             success: true,
-            data: event
+            data: event,
+            message: 'Evento encontrado exitosamente'
         });
     }
     catch (error) {
@@ -145,6 +172,7 @@ const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.getEventByIdController = getEventByIdController;
+// PATCH /events/:eventId/cancel
 const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
@@ -160,7 +188,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
             return;
         }
-        // Verificar permisos
+        // Verificar que el usuario puede cancelar esta solicitud
         if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
             console.log('❌ Usuario no autorizado para cancelar esta solicitud');
             res.status(403).json({
@@ -188,12 +216,38 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return;
         }
         console.log('✅ Solicitud cancelada exitosamente:', eventId);
-        // Comentado temporalmente - notificaciones por socket
-        res.json({
+        // Enviar notificación al músico asignado si existe
+        if (originalEvent.assignedMusicianId && user.roll === 'eventCreator') {
+            // const musicianSocketId = users[originalEvent.assignedMusicianId]; // Comentado temporalmente
+            // if (musicianSocketId) {
+            //   console.log('📢 Enviando notificación de cancelación al músico:', originalEvent.assignedMusicianId);
+            //   io.to(musicianSocketId).emit('request_cancelled', {
+            //     eventId: cancelledEvent.id,
+            //     cancelledBy: user.userEmail,
+            //     event: cancelledEvent
+            //   });
+            // }
+        }
+        // Enviar notificación al organizador si el músico cancela
+        if (user.roll === 'musico' && originalEvent.user) {
+            // const organizerSocketId = users[originalEvent.user]; // Comentado temporalmente
+            // if (organizerSocketId) {
+            //   console.log('📢 Enviando notificación de cancelación al organizador:', originalEvent.user);
+            //   io.to(organizerSocketId).emit('request_cancelled_by_musician', {
+            //     eventId: cancelledEvent.id,
+            //     cancelledBy: user.userEmail,
+            //     event: cancelledEvent
+            //   });
+            // }
+        }
+        const response = {
             success: true,
-            message: 'Solicitud cancelada exitosamente',
-            data: cancelledEvent
-        });
+            message: 'Solicitud cancelada correctamente',
+            eventId,
+            assignedMusician: originalEvent.assignedMusicianId,
+            cancelledBy: user.userEmail
+        };
+        res.json(response);
     }
     catch (error) {
         console.error('❌ Error al cancelar solicitud:', error);
@@ -205,6 +259,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.cancelEventController = cancelEventController;
+// PATCH /events/:eventId/complete
 const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
@@ -220,7 +275,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
             });
             return;
         }
-        // Verificar permisos
+        // Verificar que el usuario puede completar esta solicitud
         if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
             console.log('❌ Usuario no autorizado para completar esta solicitud');
             res.status(403).json({
@@ -248,11 +303,19 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
             return;
         }
         console.log('✅ Solicitud completada exitosamente:', eventId);
-        // Comentado temporalmente - notificaciones por socket
+        // Enviar notificación al organizador
+        // const organizerSocketId = users[originalEvent.user]; // Comentado temporalmente
+        // if (organizerSocketId) {
+        //   io.to(organizerSocketId).emit('request_completed', {
+        //     eventId: completedEvent.id,
+        //     completedBy: user.userEmail,
+        //     event: completedEvent
+        //   });
+        // }
         const response = {
             success: true,
-            message: 'Solicitud completada exitosamente',
-            data: completedEvent
+            message: 'Solicitud marcada como completada',
+            eventId
         };
         res.json(response);
     }
@@ -266,6 +329,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.completeEventController = completeEventController;
+// DELETE /events/:eventId
 const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
@@ -281,7 +345,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
             return;
         }
-        // Verificar permisos
+        // Verificar que solo el organizador puede eliminar
         if (user.roll !== 'eventCreator') {
             console.log('❌ Solo los organizadores pueden eliminar solicitudes');
             res.status(403).json({
@@ -309,11 +373,25 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return;
         }
         console.log('✅ Solicitud eliminada exitosamente:', eventId);
-        // Comentado temporalmente - notificaciones por socket
-        res.json({
+        // Enviar notificación al músico asignado si existe
+        if (originalEvent.assignedMusicianId) {
+            // const musicianSocketId = users[originalEvent.assignedMusicianId]; // Comentado temporalmente
+            // if (musicianSocketId) {
+            //   console.log('📢 Enviando notificación de eliminación al músico:', originalEvent.assignedMusicianId);
+            //   io.to(musicianSocketId).emit('request_deleted', {
+            //     eventId: eventId,
+            //     deletedBy: user.userEmail,
+            //     event: originalEvent
+            //   });
+            // }
+        }
+        const response = {
             success: true,
-            message: 'Solicitud eliminada exitosamente'
-        });
+            message: 'Solicitud eliminada correctamente',
+            eventId,
+            deletedBy: user.userEmail
+        };
+        res.json(response);
     }
     catch (error) {
         console.error('❌ Error al eliminar solicitud:', error);
