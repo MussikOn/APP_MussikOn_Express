@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../utils/firebase';
+import { asyncHandler } from '../middleware/errorHandler';
+import { OperationalError } from '../middleware/errorHandler';
+import { logger } from '../services/loggerService';
 
 // --- Usuarios ---
 export function adminUsersGetAll(req: Request, res: Response, next: NextFunction): void {
@@ -365,3 +368,431 @@ function getUsersByMonth(users: any[]): Array<{ month: string; count: number }> 
     .map(([month, count]) => ({ month, count }))
     .sort((a, b) => a.month.localeCompare(b.month));
 } 
+
+// ===== NUEVOS CONTROLADORES PARA ADMIN SYSTEM =====
+
+/**
+ * Búsqueda global en toda la plataforma
+ */
+export const adminGlobalSearch = asyncHandler(async (req: Request, res: Response) => {
+  const { query, types, page = 1, limit = 20 } = req.query;
+  const { userId } = req.user!;
+
+  logger.info('Búsqueda global iniciada', { userId, metadata: { query, types } });
+
+  if (!query || typeof query !== 'string') {
+    throw new OperationalError('Query de búsqueda requerida', 400);
+  }
+
+  const searchTypes = types ? (types as string).split(',') : ['users', 'events', 'requests'];
+  const results: any = {};
+
+  // Búsqueda en usuarios
+  if (searchTypes.includes('users')) {
+    const users = await db.collection('users')
+      .where('name', '>=', query)
+      .where('name', '<=', query + '\uf8ff')
+      .limit(parseInt(limit as string))
+      .get();
+    
+    results.users = users.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  // Búsqueda en eventos
+  if (searchTypes.includes('events')) {
+    const events = await db.collection('events')
+      .where('name', '>=', query)
+      .where('name', '<=', query + '\uf8ff')
+      .limit(parseInt(limit as string))
+      .get();
+    
+    results.events = events.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  // Búsqueda en solicitudes
+  if (searchTypes.includes('requests')) {
+    const requests = await db.collection('musicianRequests')
+      .where('description', '>=', query)
+      .where('description', '<=', query + '\uf8ff')
+      .limit(parseInt(limit as string))
+      .get();
+    
+    results.requests = requests.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+
+  logger.info('Búsqueda global completada', { userId, metadata: { resultsCount: Object.keys(results).length } });
+
+  res.status(200).json({
+    success: true,
+    data: results,
+    message: 'Búsqueda global completada'
+  });
+});
+
+/**
+ * Analytics del dashboard
+ */
+export const adminDashboardAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.user!;
+
+  logger.info('Obteniendo analytics del dashboard', { userId });
+
+  // Estadísticas de usuarios
+  const usersSnapshot = await db.collection('users').get();
+  const totalUsers = usersSnapshot.size;
+  const activeUsers = usersSnapshot.docs.filter(doc => doc.data().status === true).length;
+
+  // Estadísticas de eventos
+  const eventsSnapshot = await db.collection('events').get();
+  const totalEvents = eventsSnapshot.size;
+  const activeEvents = eventsSnapshot.docs.filter(doc => doc.data().status === 'active').length;
+
+  // Estadísticas de solicitudes
+  const requestsSnapshot = await db.collection('musicianRequests').get();
+  const totalRequests = requestsSnapshot.size;
+  const pendingRequests = requestsSnapshot.docs.filter(doc => doc.data().status === 'pending').length;
+
+  // Estadísticas de imágenes
+  const imagesSnapshot = await db.collection('images').get();
+  const totalImages = imagesSnapshot.size;
+
+  // Cálculo de crecimiento (últimos 30 días)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const recentUsers = usersSnapshot.docs.filter(doc => {
+    const createdAt = doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt);
+    return createdAt >= thirtyDaysAgo;
+  }).length;
+
+  const recentEvents = eventsSnapshot.docs.filter(doc => {
+    const createdAt = doc.data().createdAt?.toDate?.() || new Date(doc.data().createdAt);
+    return createdAt >= thirtyDaysAgo;
+  }).length;
+
+  const analytics = {
+    users: {
+      total: totalUsers,
+      active: activeUsers,
+      recent: recentUsers,
+      growth: recentUsers > 0 ? ((recentUsers / totalUsers) * 100).toFixed(1) : '0'
+    },
+    events: {
+      total: totalEvents,
+      active: activeEvents,
+      recent: recentEvents,
+      growth: recentEvents > 0 ? ((recentEvents / totalEvents) * 100).toFixed(1) : '0'
+    },
+    requests: {
+      total: totalRequests,
+      pending: pendingRequests,
+      completionRate: totalRequests > 0 ? (((totalRequests - pendingRequests) / totalRequests) * 100).toFixed(1) : '0'
+    },
+    images: {
+      total: totalImages
+    },
+    system: {
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      timestamp: new Date().toISOString()
+    }
+  };
+
+  logger.info('Analytics del dashboard obtenidos', { userId, metadata: { analytics } });
+
+  res.status(200).json({
+    success: true,
+    data: analytics,
+    message: 'Analytics del dashboard obtenidos'
+  });
+});
+
+/**
+ * Analytics de usuarios
+ */
+export const adminUserAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const { period = 'week', groupBy = 'role' } = req.query;
+  const { userId } = req.user!;
+
+  logger.info('Obteniendo analytics de usuarios', { userId, metadata: { period, groupBy } });
+
+  const usersSnapshot = await db.collection('users').get();
+  const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  let analytics: any = {};
+
+  if (groupBy === 'role') {
+    const roleStats = users.reduce((acc: any, user: any) => {
+      const role = user.roll || 'user';
+      acc[role] = (acc[role] || 0) + 1;
+      return acc;
+    }, {});
+
+    analytics = {
+      byRole: roleStats,
+      total: users.length,
+      active: users.filter((u: any) => u.status === true).length,
+      inactive: users.filter((u: any) => u.status === false).length
+    };
+  } else if (groupBy === 'status') {
+    analytics = {
+      active: users.filter((u: any) => u.status === true).length,
+      inactive: users.filter((u: any) => u.status === false).length,
+      total: users.length
+    };
+  }
+
+  // Datos por período
+  const now = new Date();
+  let startDate: Date;
+
+  switch (period) {
+    case 'day':
+      startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'month':
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  }
+
+  const recentUsers = users.filter((user: any) => {
+    const createdAt = user.createdAt?.toDate?.() || new Date(user.createdAt);
+    return createdAt >= startDate;
+  });
+
+  analytics.recent = recentUsers.length;
+  analytics.period = period;
+
+  logger.info('Analytics de usuarios obtenidos', { userId, metadata: { analytics } });
+
+  res.status(200).json({
+    success: true,
+    data: analytics,
+    message: 'Analytics de usuarios obtenidos'
+  });
+});
+
+/**
+ * Analytics de eventos
+ */
+export const adminEventAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const { period = 'month', groupBy = 'status' } = req.query;
+  const { userId } = req.user!;
+
+  logger.info('Obteniendo analytics de eventos', { userId, metadata: { period, groupBy } });
+
+  const eventsSnapshot = await db.collection('events').get();
+  const events = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  let analytics: any = {};
+
+  if (groupBy === 'status') {
+    const statusStats = events.reduce((acc: any, event: any) => {
+      const status = event.status || 'draft';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    analytics = {
+      byStatus: statusStats,
+      total: events.length,
+      active: events.filter((e: any) => e.status === 'active').length,
+      completed: events.filter((e: any) => e.status === 'completed').length,
+      cancelled: events.filter((e: any) => e.status === 'cancelled').length
+    };
+  } else if (groupBy === 'category') {
+    const categoryStats = events.reduce((acc: any, event: any) => {
+      const category = event.category || 'other';
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {});
+
+    analytics = {
+      byCategory: categoryStats,
+      total: events.length
+    };
+  }
+
+  // Datos por período
+  const now = new Date();
+  let startDate: Date;
+
+  switch (period) {
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'month':
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case 'quarter':
+      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  }
+
+  const recentEvents = events.filter((event: any) => {
+    const createdAt = event.createdAt?.toDate?.() || new Date(event.createdAt);
+    return createdAt >= startDate;
+  });
+
+  analytics.recent = recentEvents.length;
+  analytics.period = period;
+
+  logger.info('Analytics de eventos obtenidos', { userId, metadata: { analytics } });
+
+  res.status(200).json({
+    success: true,
+    data: analytics,
+    message: 'Analytics de eventos obtenidos'
+  });
+});
+
+/**
+ * Analytics de solicitudes
+ */
+export const adminRequestAnalytics = asyncHandler(async (req: Request, res: Response) => {
+  const { period = 'quarter', groupBy = 'instrument' } = req.query;
+  const { userId } = req.user!;
+
+  logger.info('Obteniendo analytics de solicitudes', { userId, metadata: { period, groupBy } });
+
+  const requestsSnapshot = await db.collection('musicianRequests').get();
+  const requests = requestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  let analytics: any = {};
+
+  if (groupBy === 'instrument') {
+    const instrumentStats = requests.reduce((acc: any, request: any) => {
+      const instrument = request.instrument || 'other';
+      acc[instrument] = (acc[instrument] || 0) + 1;
+      return acc;
+    }, {});
+
+    analytics = {
+      byInstrument: instrumentStats,
+      total: requests.length,
+      pending: requests.filter((r: any) => r.status === 'pending').length,
+      assigned: requests.filter((r: any) => r.status === 'assigned').length,
+      completed: requests.filter((r: any) => r.status === 'completed').length,
+      cancelled: requests.filter((r: any) => r.status === 'cancelled').length
+    };
+  } else if (groupBy === 'status') {
+    analytics = {
+      pending: requests.filter((r: any) => r.status === 'pending').length,
+      assigned: requests.filter((r: any) => r.status === 'assigned').length,
+      completed: requests.filter((r: any) => r.status === 'completed').length,
+      cancelled: requests.filter((r: any) => r.status === 'cancelled').length,
+      total: requests.length
+    };
+  }
+
+  // Datos por período
+  const now = new Date();
+  let startDate: Date;
+
+  switch (period) {
+    case 'week':
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'month':
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      break;
+    case 'quarter':
+      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      break;
+    default:
+      startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  }
+
+  const recentRequests = requests.filter((request: any) => {
+    const createdAt = request.createdAt?.toDate?.() || new Date(request.createdAt);
+    return createdAt >= startDate;
+  });
+
+  analytics.recent = recentRequests.length;
+  analytics.period = period;
+
+  // Tasa de completitud
+  const completedRequests = requests.filter((r: any) => r.status === 'completed').length;
+  analytics.completionRate = requests.length > 0 ? ((completedRequests / requests.length) * 100).toFixed(1) : '0';
+
+  logger.info('Analytics de solicitudes obtenidos', { userId, metadata: { analytics } });
+
+  res.status(200).json({
+    success: true,
+    data: analytics,
+    message: 'Analytics de solicitudes obtenidos'
+  });
+});
+
+/**
+ * Exportar reportes
+ */
+export const adminExportReport = asyncHandler(async (req: Request, res: Response) => {
+  const { type, filters, format = 'csv' } = req.query;
+  const { userId } = req.user!;
+
+  logger.info('Exportando reporte', { userId, metadata: { type, format } });
+
+  let data: any[] = [];
+
+  switch (type) {
+    case 'users':
+      const usersSnapshot = await db.collection('users').get();
+      data = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      break;
+    case 'events':
+      const eventsSnapshot = await db.collection('events').get();
+      data = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      break;
+    case 'requests':
+      const requestsSnapshot = await db.collection('musicianRequests').get();
+      data = requestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      break;
+    default:
+      throw new OperationalError('Tipo de reporte no válido', 400);
+  }
+
+  // Aplicar filtros si se proporcionan
+  if (filters) {
+    const filterObj = JSON.parse(filters as string);
+    data = data.filter(item => {
+      return Object.keys(filterObj).every(key => {
+        return item[key] === filterObj[key];
+      });
+    });
+  }
+
+  let reportContent: string;
+
+  if (format === 'csv') {
+    // Convertir a CSV
+    const headers = Object.keys(data[0] || {});
+    const csvRows = [headers.join(',')];
+    
+    data.forEach(item => {
+      const values = headers.map(header => {
+        const value = item[header];
+        return typeof value === 'string' ? `"${value}"` : value;
+      });
+      csvRows.push(values.join(','));
+    });
+    
+    reportContent = csvRows.join('\n');
+  } else {
+    // JSON por defecto
+    reportContent = JSON.stringify(data, null, 2);
+  }
+
+  logger.info('Reporte exportado exitosamente', { userId, metadata: { dataCount: data.length } });
+
+  res.setHeader('Content-Type', format === 'csv' ? 'text/csv' : 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="${type}_report.${format}"`);
+  res.status(200).send(reportContent);
+}); 

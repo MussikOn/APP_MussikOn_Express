@@ -27,6 +27,7 @@ import searchRoutes from './src/routes/searchRoutes';
 import analyticsRoutes from './src/routes/analyticsRoutes';
 import geolocationRoutes from './src/routes/geolocationRoutes';
 import paymentRoutes from './src/routes/paymentRoutes';
+import notificationRoutes from './src/routes/notificationRoutes';
 
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
@@ -355,6 +356,7 @@ app.use('/search', searchRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/geolocation', geolocationRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/notifications', notificationRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -400,6 +402,7 @@ app.get('/', (req, res) => {
                analytics: '/analytics',
                geolocation: '/geolocation',
                payments: '/payments',
+               notifications: '/notifications',
                documentation: '/api-docs'
              }
   });

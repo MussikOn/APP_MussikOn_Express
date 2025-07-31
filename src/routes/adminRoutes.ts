@@ -24,7 +24,14 @@ import {
   adminMusicianRequestsGetById,
   adminMusicianRequestsUpdate,
   adminMusicianRequestsRemove,
-  adminMusicianRequestsStats
+  adminMusicianRequestsStats,
+  // Nuevos controladores para admin system
+  adminGlobalSearch,
+  adminDashboardAnalytics,
+  adminUserAnalytics,
+  adminEventAnalytics,
+  adminRequestAnalytics,
+  adminExportReport
 } from '../controllers/adminController';
 
 const adminRoutes = Router();
@@ -439,5 +446,187 @@ adminRoutes.get('/admin/musician-requests/:id', adminOnly, adminMusicianRequests
 adminRoutes.put('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsUpdate);
 adminRoutes.delete('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsRemove);
 adminRoutes.get('/admin/musician-requests/stats', adminOnly, adminMusicianRequestsStats);
+
+// ===== NUEVAS RUTAS PARA ADMIN SYSTEM =====
+
+/**
+ * @swagger
+ * /admin/search/global:
+ *   get:
+ *     summary: Búsqueda global en toda la plataforma
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Término de búsqueda
+ *       - in: query
+ *         name: types
+ *         schema:
+ *           type: string
+ *         description: Tipos de contenido a buscar (users,events,requests)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Límite de resultados
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ *       400:
+ *         description: Query de búsqueda requerida
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/search/global', adminOnly, adminGlobalSearch);
+
+/**
+ * @swagger
+ * /admin/analytics/dashboard:
+ *   get:
+ *     summary: Analytics del dashboard
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Analytics del dashboard
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/analytics/dashboard', adminOnly, adminDashboardAnalytics);
+
+/**
+ * @swagger
+ * /admin/analytics/users:
+ *   get:
+ *     summary: Analytics de usuarios
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [day, week, month]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [role, status]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de usuarios
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/analytics/users', adminOnly, adminUserAnalytics);
+
+/**
+ * @swagger
+ * /admin/analytics/events:
+ *   get:
+ *     summary: Analytics de eventos
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [status, category]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de eventos
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/analytics/events', adminOnly, adminEventAnalytics);
+
+/**
+ * @swagger
+ * /admin/analytics/requests:
+ *   get:
+ *     summary: Analytics de solicitudes
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [instrument, status]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de solicitudes
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/analytics/requests', adminOnly, adminRequestAnalytics);
+
+/**
+ * @swagger
+ * /admin/analytics/export:
+ *   get:
+ *     summary: Exportar reportes
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [users, events, requests]
+ *         required: true
+ *         description: Tipo de reporte
+ *       - in: query
+ *         name: filters
+ *         schema:
+ *           type: string
+ *         description: Filtros en formato JSON
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [csv, json]
+ *         description: Formato de exportación
+ *     responses:
+ *       200:
+ *         description: Reporte exportado
+ *       400:
+ *         description: Tipo de reporte no válido
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/admin/analytics/export', adminOnly, adminExportReport);
 
 export default adminRoutes;
