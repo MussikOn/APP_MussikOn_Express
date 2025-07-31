@@ -9,7 +9,7 @@ import { db } from "./src/utils/firebase";
 import { URL_API } from "./ENV";
 import routAuth from "./src/routes/authRutes";
 import adm from "./src/routes/superAdminRouter";
-import imagesRouter from "./src/routes/imagesRoutes";
+import imgRouter from "./src/routes/imagesRoutes";
 import express, { Response, Request } from "express";
 import musician from "./src/routes/musicianProfileRoutes";
 import swaggerUi from "swagger-ui-express";
@@ -26,10 +26,9 @@ dotenv.config();
 const allowedOrigins = [
   'http://localhost:5173', // Localhost
   'http://192.168.54.59:5173', // IP de la computadora
-  'http://192.168.100.101:5173', // IP de la computadorahttp://192.168.100.101:3001
   'http://192.168.54.59:1000', // IP de la computadora
-  'http://192.168.54.48:5173', // IP de la computadora
   'http://172.20.10.2:5173', // IP de la computadora
+  'http://192.168.100.101:5173' // IP de la computadora
 ];
 const app = express();
 app.use(cors({
@@ -46,8 +45,7 @@ app.use(express.json());
 app.use("/admin", adminRoutes);
 app.use("/auth", routAuth);
 app.use("/superAdmin", adm);
-app.use("/images", imagesRouter);
-app.use("/imgs", imagesRouter); // Legacy route for compatibility
+app.use("/imgs", imgRouter);
 app.use("/media", musician);
 app.use("/events", eventsRouter);
 app.use('/musician-requests', musicianRequestRoutes);
@@ -471,7 +469,7 @@ const swaggerOptions = {
     info: {
       title: "MussikOn API",
       version: "1.0.0",
-      description: "API completa para gestión de músicos y eventos en MussikOn. CRUD de solicitudes de músicos completamente implementado.",
+      description: "API completa para gestión de músicos y eventos en MussikOn. Incluye autenticación, gestión de eventos, chat en tiempo real, gestión de imágenes y administración completa.",
       contact: {
         name: "Soporte MussikOn",
         email: "soporte@mussikon.com"
@@ -497,10 +495,118 @@ const swaggerOptions = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
-          description: "JWT token para autenticación"
+          description: "JWT token para autenticación. Incluir en header: Authorization: Bearer <token>"
         },
       },
       schemas: {
+        User: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            lastName: { type: "string" },
+            userEmail: { type: "string", format: "email" },
+            userPassword: { type: "string" },
+            roll: { type: "string", enum: ["admin", "superadmin", "eventCreator", "musician"] },
+            create_at: { type: "string", format: "date-time" },
+            update_at: { type: "string", format: "date-time" },
+            delete_at: { type: "string", format: "date-time" },
+            status: { type: "boolean" }
+          }
+        },
+        Event: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            user: { type: "string" },
+            eventName: { type: "string" },
+            eventType: { type: "string", enum: ["concierto", "boda", "culto", "evento_corporativo", "festival", "fiesta_privada", "graduacion", "cumpleanos", "otro"] },
+            date: { type: "string", format: "date" },
+            time: { type: "string" },
+            location: { type: "string" },
+            duration: { type: "string" },
+            instrument: { type: "string", enum: ["guitarra", "piano", "bajo", "bateria", "saxofon", "trompeta", "violin", "canto", "teclado", "flauta", "otro"] },
+            bringInstrument: { type: "boolean" },
+            comment: { type: "string" },
+            budget: { type: "string" },
+            flyerUrl: { type: "string" },
+            songs: { type: "array", items: { type: "string" } },
+            recommendations: { type: "array", items: { type: "string" } },
+            mapsLink: { type: "string" },
+            status: { type: "string", enum: ["pending_musician", "musician_assigned", "completed", "cancelled", "musician_cancelled"] },
+            assignedMusicianId: { type: "string" },
+            interestedMusicians: { type: "array", items: { type: "string" } },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        MusicianRequest: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            userId: { type: "string" },
+            eventType: { type: "string", enum: ["concierto", "boda", "culto", "evento_corporativo", "festival", "fiesta_privada", "graduacion", "cumpleanos", "otro"] },
+            date: { type: "string", format: "date" },
+            time: { type: "string" },
+            location: { type: "string" },
+            instrument: { type: "string", enum: ["guitarra", "piano", "bajo", "bateria", "saxofon", "trompeta", "violin", "canto", "teclado", "flauta", "otro"] },
+            budget: { type: "number" },
+            status: { type: "string", enum: ["pendiente", "asignada", "cancelada", "completada", "no_asignada"] },
+            assignedMusicianId: { type: "string" },
+            description: { type: "string" },
+            requirements: { type: "string" },
+            contactPhone: { type: "string" },
+            contactEmail: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        Image: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            key: { type: "string" },
+            url: { type: "string" },
+            originalName: { type: "string" },
+            fileName: { type: "string" },
+            size: { type: "number" },
+            mimetype: { type: "string" },
+            category: { type: "string", enum: ["profile", "post", "event", "gallery", "admin"] },
+            userId: { type: "string" },
+            description: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            metadata: { type: "object" },
+            isPublic: { type: "boolean" },
+            isActive: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+            expiresAt: { type: "string", format: "date-time" }
+          }
+        },
+        Message: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            conversationId: { type: "string" },
+            senderId: { type: "string" },
+            senderName: { type: "string" },
+            content: { type: "string" },
+            timestamp: { type: "string", format: "date-time" },
+            status: { type: "string", enum: ["sent", "delivered", "read"] },
+            type: { type: "string", enum: ["text", "image", "audio", "file"] }
+          }
+        },
+        Conversation: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            participants: { type: "array", items: { type: "string" } },
+            lastMessage: { $ref: "#/components/schemas/Message" },
+            unreadCount: { type: "number" },
+            updatedAt: { type: "string", format: "date-time" },
+            isActive: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" }
+          }
+        },
         Error: {
           type: "object",
           properties: {
@@ -525,19 +631,27 @@ const swaggerOptions = {
     tags: [
       { 
         name: "Auth", 
-        description: "Endpoints de autenticación y usuarios - ✅ Implementado" 
+        description: "Endpoints de autenticación y gestión de usuarios - ✅ Implementado" 
       },
       { 
         name: "Events", 
-        description: "Endpoints de eventos y matching - ✅ Implementado" 
-      },
-      { 
-        name: "Images", 
-        description: "Endpoints de galería de imágenes - ✅ Implementado" 
+        description: "Endpoints de eventos y matching entre organizadores y músicos - ✅ Implementado" 
       },
       { 
         name: "MusicianRequests", 
         description: "Endpoints de solicitudes directas de músicos - ✅ CRUD completo implementado" 
+      },
+      { 
+        name: "Chat", 
+        description: "Endpoints de chat en tiempo real - ✅ Implementado" 
+      },
+      { 
+        name: "Images", 
+        description: "Endpoints de gestión de imágenes con idriveE2 - ✅ Implementado" 
+      },
+      { 
+        name: "Media", 
+        description: "Endpoints de gestión de imágenes de perfil de músico - ✅ Implementado" 
       },
       { 
         name: "Admin", 
@@ -558,10 +672,6 @@ const swaggerOptions = {
       { 
         name: "AdminMusicianRequests", 
         description: "Endpoints de administración de solicitudes de músico - ✅ Implementado" 
-      },
-      { 
-        name: "Chat", 
-        description: "Endpoints de chat en tiempo real - ✅ Implementado" 
       }
     ]
   },
@@ -597,7 +707,7 @@ const swaggerUiOptions = {
     .swagger-ui .opblock.opblock-put .opblock-summary-method { background: #fca130; }
     .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #f93e3e; }
   `,
-  customSiteTitle: "MussikOn API Documentation - CRUD Completo Implementado",
+  customSiteTitle: "MussikOn API Documentation - Sistema Completo de Gestión Musical",
   customfavIcon: "/favicon.ico",
   swaggerOptions: {
     docExpansion: "list",
@@ -622,7 +732,7 @@ app.get('/api-docs/swagger.json', (req, res) => {
 
 // Redoc como alternativa con sidebar lateral más moderno
 app.get('/redoc', redoc({
-  title: 'MussikOn API Documentation - CRUD Completo Implementado',
+  title: 'MussikOn API Documentation - Sistema Completo de Gestión Musical',
   specUrl: '/api-docs/swagger.json',
   redocOptions: {
     theme: {
@@ -757,8 +867,8 @@ app.get('/auth/check-user/:userEmail', async (req: Request, res: Response) => {
 });
 
 server.listen(port, () => {
-  console.log(`[index.ts:757] 🎵 MussikOn API: ${URL_API}${port}`);
-  console.log(`[index.ts:758] 📚 Swagger UI: ${URL_API}${port}/api-docs`);
-  console.log(`[index.ts:759] 🎨 Redoc: ${URL_API}${port}/redoc`);
-  console.log(`[index.ts:760] 🏠 Página de inicio: ${URL_API}${port}/`);
+  console.log(`🎵 MussikOn API: ${URL_API}${port}`);
+  console.log(`📚 Swagger UI: ${URL_API}${port}/api-docs`);
+  console.log(`🎨 Redoc: ${URL_API}${port}/redoc`);
+  console.log(`🏠 Página de inicio: ${URL_API}${port}/`);
 });
