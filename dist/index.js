@@ -30,6 +30,7 @@ const searchRoutes_1 = __importDefault(require("./src/routes/searchRoutes"));
 const analyticsRoutes_1 = __importDefault(require("./src/routes/analyticsRoutes"));
 const geolocationRoutes_1 = __importDefault(require("./src/routes/geolocationRoutes"));
 const paymentRoutes_1 = __importDefault(require("./src/routes/paymentRoutes"));
+const notificationRoutes_1 = __importDefault(require("./src/routes/notificationRoutes"));
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
 // import { setupEventSocket } from './src/sockets/eventSocket';
@@ -48,6 +49,7 @@ const io = new socket_io_1.Server(server, {
             'http://192.168.54.59:5173',
             'http://192.168.54.59:1000',
             'http://172.20.10.2:5173',
+            'http://192.168.54.131:5173',
             'http://192.168.100.101:5173',
             'https://mussikon.web.app',
             'https://mussikon.firebaseapp.com'
@@ -60,6 +62,7 @@ exports.io = io;
 const allowedOrigins = [
     'http://localhost:5173',
     'http://192.168.54.59:5173',
+    'http://192.168.54.131:5173',
     'http://192.168.54.59:1000',
     'http://172.20.10.2:5173',
     'http://192.168.100.101:5173',
@@ -345,6 +348,7 @@ app.use('/search', searchRoutes_1.default);
 app.use('/analytics', analyticsRoutes_1.default);
 app.use('/geolocation', geolocationRoutes_1.default);
 app.use('/payments', paymentRoutes_1.default);
+app.use('/notifications', notificationRoutes_1.default);
 // Configurar documentación
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs, swaggerUiOptions));
 app.use("/redoc", (0, redoc_express_1.default)({
@@ -387,6 +391,7 @@ app.get('/', (req, res) => {
             analytics: '/analytics',
             geolocation: '/geolocation',
             payments: '/payments',
+            notifications: '/notifications',
             documentation: '/api-docs'
         }
     });
@@ -408,10 +413,11 @@ process.on('uncaughtException', (error) => {
     loggerService_1.logger.error('Uncaught Exception:', error);
     process.exit(1);
 });
+const URL = ENV_1.URL_API;
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    loggerService_1.logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${PORT}`, {
+    loggerService_1.logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
         metadata: {
             port: PORT,
             environment: process.env.NODE_ENV || 'development',

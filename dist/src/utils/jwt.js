@@ -11,12 +11,14 @@ function createToken(name, lastName, userEmail, roll) {
         if (!userEmail || !name || !lastName || !roll) {
             return false;
         }
-        if (roll === "admin") {
-            return jsonwebtoken_1.default.sign({ "name": name, "lastName": lastName, "userEmail": userEmail, "roll": roll }, ENV_1.TOKEN_SECRET, { expiresIn: "1h" });
-        }
-        else {
-            return jsonwebtoken_1.default.sign({ name, lastName, userEmail, roll }, ENV_1.TOKEN_SECRET);
-        }
+        // Generar token con expiración consistente para todos los roles
+        // 24 horas para desarrollo, se puede ajustar según necesidades
+        return jsonwebtoken_1.default.sign({
+            name: name,
+            lastName: lastName,
+            userEmail: userEmail,
+            roll: roll
+        }, ENV_1.TOKEN_SECRET, { expiresIn: "24h" });
     }
     catch (error) {
         return false;

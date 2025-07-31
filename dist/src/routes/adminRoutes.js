@@ -119,12 +119,12 @@ const adminRoutes = (0, express_1.Router)();
  *         description: Acceso solo para administradores
  */
 // --- Usuarios ---
-adminRoutes.get('/admin/users', adminOnly_1.adminOnly, adminController_1.adminUsersGetAll);
-adminRoutes.get('/admin/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersGetById);
-adminRoutes.post('/admin/users', adminOnly_1.adminOnly, adminController_1.adminUsersCreate);
-adminRoutes.put('/admin/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersUpdate);
-adminRoutes.delete('/admin/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersRemove);
-adminRoutes.get('/admin/users/stats', adminOnly_1.adminOnly, adminController_1.adminUsersStats);
+adminRoutes.get('/users', adminOnly_1.adminOnly, adminController_1.adminUsersGetAll);
+adminRoutes.get('/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersGetById);
+adminRoutes.post('/users', adminOnly_1.adminOnly, adminController_1.adminUsersCreate);
+adminRoutes.put('/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersUpdate);
+adminRoutes.delete('/users/:id', adminOnly_1.adminOnly, adminController_1.adminUsersRemove);
+adminRoutes.get('/users/stats', adminOnly_1.adminOnly, adminController_1.adminUsersStats);
 /**
  * @swagger
  * /admin/events:
@@ -214,11 +214,11 @@ adminRoutes.get('/admin/users/stats', adminOnly_1.adminOnly, adminController_1.a
  *         description: Acceso solo para administradores
  */
 // --- Eventos ---
-adminRoutes.get('/admin/events', adminOnly_1.adminOnly, adminController_1.adminEventsGetAll);
-adminRoutes.get('/admin/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsGetById);
-adminRoutes.post('/admin/events', adminOnly_1.adminOnly, adminController_1.adminEventsCreate);
-adminRoutes.put('/admin/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsUpdate);
-adminRoutes.delete('/admin/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsRemove);
+adminRoutes.get('/events', adminOnly_1.adminOnly, adminController_1.adminEventsGetAll);
+adminRoutes.get('/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsGetById);
+adminRoutes.post('/events', adminOnly_1.adminOnly, adminController_1.adminEventsCreate);
+adminRoutes.put('/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsUpdate);
+adminRoutes.delete('/events/:id', adminOnly_1.adminOnly, adminController_1.adminEventsRemove);
 /**
  * @swagger
  * /admin/musicians:
@@ -291,10 +291,10 @@ adminRoutes.delete('/admin/events/:id', adminOnly_1.adminOnly, adminController_1
  *         description: Acceso solo para administradores
  */
 // --- Músicos ---
-adminRoutes.get('/admin/musicians', adminOnly_1.adminOnly, adminController_1.adminMusiciansGetAll);
-adminRoutes.get('/admin/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansGetById);
-adminRoutes.put('/admin/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansUpdate);
-adminRoutes.delete('/admin/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansRemove);
+adminRoutes.get('/musicians', adminOnly_1.adminOnly, adminController_1.adminMusiciansGetAll);
+adminRoutes.get('/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansGetById);
+adminRoutes.put('/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansUpdate);
+adminRoutes.delete('/musicians/:id', adminOnly_1.adminOnly, adminController_1.adminMusiciansRemove);
 /**
  * @swagger
  * /admin/images:
@@ -345,9 +345,9 @@ adminRoutes.delete('/admin/musicians/:id', adminOnly_1.adminOnly, adminControlle
  *         description: Acceso solo para administradores
  */
 // --- Imágenes ---
-adminRoutes.get('/admin/images', adminOnly_1.adminOnly, adminController_1.adminImagesGetAll);
-adminRoutes.get('/admin/images/:id', adminOnly_1.adminOnly, adminController_1.adminImagesGetById);
-adminRoutes.delete('/admin/images/:id', adminOnly_1.adminOnly, adminController_1.adminImagesRemove);
+adminRoutes.get('/images', adminOnly_1.adminOnly, adminController_1.adminImagesGetAll);
+adminRoutes.get('/images/:id', adminOnly_1.adminOnly, adminController_1.adminImagesGetById);
+adminRoutes.delete('/images/:id', adminOnly_1.adminOnly, adminController_1.adminImagesRemove);
 /**
  * @swagger
  * /admin/musician-requests:
@@ -398,10 +398,185 @@ adminRoutes.delete('/admin/images/:id', adminOnly_1.adminOnly, adminController_1
  *         description: Acceso solo para administradores
  */
 // --- Solicitudes de Músico ---
-adminRoutes.get('/admin/musician-requests', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetAll);
-adminRoutes.post('/admin/musician-requests', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsCreate);
-adminRoutes.get('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetById);
-adminRoutes.put('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsUpdate);
-adminRoutes.delete('/admin/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsRemove);
-adminRoutes.get('/admin/musician-requests/stats', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsStats);
+adminRoutes.get('/musician-requests', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetAll);
+adminRoutes.post('/musician-requests', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsCreate);
+adminRoutes.get('/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsGetById);
+adminRoutes.put('/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsUpdate);
+adminRoutes.delete('/musician-requests/:id', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsRemove);
+adminRoutes.get('/musician-requests/stats', adminOnly_1.adminOnly, adminController_1.adminMusicianRequestsStats);
+// ===== NUEVAS RUTAS PARA ADMIN SYSTEM =====
+/**
+ * @swagger
+ * /admin/search/global:
+ *   get:
+ *     summary: Búsqueda global en toda la plataforma
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Término de búsqueda
+ *       - in: query
+ *         name: types
+ *         schema:
+ *           type: string
+ *         description: Tipos de contenido a buscar (users,events,requests)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Límite de resultados
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ *       400:
+ *         description: Query de búsqueda requerida
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/search/global', adminOnly_1.adminOnly, adminController_1.adminGlobalSearch);
+/**
+ * @swagger
+ * /admin/analytics/dashboard:
+ *   get:
+ *     summary: Analytics del dashboard
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Analytics del dashboard
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/analytics/dashboard', adminOnly_1.adminOnly, adminController_1.adminDashboardAnalytics);
+/**
+ * @swagger
+ * /admin/analytics/users:
+ *   get:
+ *     summary: Analytics de usuarios
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [day, week, month]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [role, status]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de usuarios
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/analytics/users', adminOnly_1.adminOnly, adminController_1.adminUserAnalytics);
+/**
+ * @swagger
+ * /admin/analytics/events:
+ *   get:
+ *     summary: Analytics de eventos
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [status, category]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de eventos
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/analytics/events', adminOnly_1.adminOnly, adminController_1.adminEventAnalytics);
+/**
+ * @swagger
+ * /admin/analytics/requests:
+ *   get:
+ *     summary: Analytics de solicitudes
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter]
+ *         description: Período de análisis
+ *       - in: query
+ *         name: groupBy
+ *         schema:
+ *           type: string
+ *           enum: [instrument, status]
+ *         description: Agrupación de datos
+ *     responses:
+ *       200:
+ *         description: Analytics de solicitudes
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/analytics/requests', adminOnly_1.adminOnly, adminController_1.adminRequestAnalytics);
+/**
+ * @swagger
+ * /admin/analytics/export:
+ *   get:
+ *     summary: Exportar reportes
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [users, events, requests]
+ *         required: true
+ *         description: Tipo de reporte
+ *       - in: query
+ *         name: filters
+ *         schema:
+ *           type: string
+ *         description: Filtros en formato JSON
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           enum: [csv, json]
+ *         description: Formato de exportación
+ *     responses:
+ *       200:
+ *         description: Reporte exportado
+ *       400:
+ *         description: Tipo de reporte no válido
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/analytics/export', adminOnly_1.adminOnly, adminController_1.adminExportReport);
 exports.default = adminRoutes;

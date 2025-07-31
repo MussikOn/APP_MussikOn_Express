@@ -254,4 +254,112 @@ router.delete("/delete/:userEmail", authMiddleware_1.authMiddleware, (0, errorHa
     yield (0, authController_1.deleteUserByEmailController)(req, res);
     loggerService_1.logger.logAuth('Usuario eliminado exitosamente', userEmail);
 })));
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Solicitar recuperación de contraseña (solo superadmin)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Código de verificación enviado
+ *       400:
+ *         description: Email inválido
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/forgot-password", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.body.userEmail;
+    loggerService_1.logger.logAuth('Solicitud de recuperación de contraseña', userEmail);
+    yield (0, authController_1.forgotPasswordController)(req, res);
+    loggerService_1.logger.logAuth('Código de verificación enviado', userEmail);
+})));
+/**
+ * @swagger
+ * /auth/verify-code:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verificar código de recuperación
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *     responses:
+ *       200:
+ *         description: Código verificado correctamente
+ *       400:
+ *         description: Código inválido o expirado
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/verify-code", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.body.userEmail;
+    const code = req.body.code;
+    loggerService_1.logger.logAuth('Verificación de código solicitada', userEmail, { metadata: { code } });
+    yield (0, authController_1.verifyCodeController)(req, res);
+    loggerService_1.logger.logAuth('Código verificado exitosamente', userEmail);
+})));
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Restablecer contraseña
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente
+ *       400:
+ *         description: Código inválido o contraseña débil
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/reset-password", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userEmail = req.body.userEmail;
+    loggerService_1.logger.logAuth('Restablecimiento de contraseña solicitado', userEmail);
+    yield (0, authController_1.resetPasswordController)(req, res);
+    loggerService_1.logger.logAuth('Contraseña restablecida exitosamente', userEmail);
+})));
 exports.default = router;
