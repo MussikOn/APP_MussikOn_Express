@@ -1,503 +1,665 @@
-# Seguridad en MusikOn API
+# 🔒 Seguridad en MusikOn API
 
-## 1. Autenticación y Autorización (JWT)
-- Todos los endpoints protegidos requieren un token JWT en el header `Authorization: Bearer <token>`.
-- El token incluye información básica del usuario y su rol.
-- Ejemplo de uso en frontend:
-```js
-fetch('/events/my-pending', { headers: { Authorization: 'Bearer <token>' } })
+> **Sistema completo de seguridad con autenticación, autorización, validaciones, middlewares y protección de datos**
+
+## 📋 Tabla de Contenidos
+
+- [Autenticación y Autorización](#autenticación-y-autorización)
+- [Roles y Permisos](#roles-y-permisos)
+- [Validaciones con DTOs](#validaciones-con-dtos) ✅ **NUEVO**
+- [Middlewares de Seguridad](#middlewares-de-seguridad) ✅ **NUEVO**
+- [Rate Limiting](#rate-limiting) ✅ **NUEVO**
+- [Protección de Datos](#protección-de-datos)
+- [HTTPS y CORS](#https-y-cors)
+- [Cabeceras de Seguridad](#cabeceras-de-seguridad)
+- [Reglas de Firestore](#reglas-de-firestore)
+- [Logging de Seguridad](#logging-de-seguridad) ✅ **NUEVO**
+- [Buenas Prácticas](#buenas-prácticas)
+
+## 🔐 Autenticación y Autorización (JWT)
+
+### Implementación Principal
+
+Todos los endpoints protegidos requieren un token JWT en el header `Authorization: Bearer <token>`.
+
+```typescript
+// src/middleware/authMiddleware.ts
+export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+      throw new OperationalError('Token no proporcionado', 401, 'TOKEN_MISSING');
+    }
+
+    const decoded = jwt.verify(token, TOKEN_SECRET) as JwtPayload;
+    req.user = decoded;
+    
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new OperationalError('Token inválido', 401, 'INVALID_TOKEN');
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new OperationalError('Token expirado', 401, 'TOKEN_EXPIRED');
+    }
+    throw new OperationalError('Error de autenticación', 401, 'AUTHENTICATION_ERROR');
+  }
+};
 ```
-- Los middlewares validan el token y el rol antes de permitir el acceso.
 
-## 2. Roles y Permisos
-- Los roles principales ahora son:
-  - `musico`
-  - `eventCreator` (organizador)
-  - `usuario` (usuario general)
-  - `adminJunior`
-  - `adminMidLevel`
-  - `adminSenior`
-  - `superAdmin`
-- Los endpoints pueden requerir uno o varios roles específicos para acceder.
-- Ejemplo de middleware:
-```ts
-import { requireRole } from './src/middleware/authMiddleware';
+### Ejemplo de Uso en Frontend
 
+```javascript
+// Para todas las peticiones autenticadas
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.getItem('token')}`
+};
+
+fetch('/events/my-pending', { headers })
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+### Google OAuth ✅
+
+```typescript
+// src/controllers/authGoogleController.ts
+export const googleAuthController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { idToken } = req.body;
+    
+    // Verificar token con Google
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID
+    });
+    
+    const payload = ticket.getPayload();
+    const userEmail = payload?.email;
+    
+    // Buscar o crear usuario
+    let user = await findUserByEmail(userEmail);
+    
+    if (!user) {
+      user = await createUserFromGoogle(payload);
+    }
+    
+    // Generar JWT
+    const token = generateToken(user);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Autenticación con Google exitosa',
+      token,
+      user
+    });
+  } catch (error) {
+    throw new OperationalError('Error en autenticación con Google', 401, 'GOOGLE_AUTH_ERROR');
+  }
+};
+```
+
+## 👥 Roles y Permisos
+
+### Sistema de Roles Jerárquico
+
+Los roles principales son (en orden de privilegios ascendentes):
+
+1. **`usuario`** - Usuario general
+2. **`musico`** - Músico registrado
+3. **`eventCreator`** - Organizador de eventos
+4. **`adminJunior`** - Administrador junior
+5. **`adminMidLevel`** - Administrador medio
+6. **`adminSenior`** - Administrador senior
+7. **`superAdmin`** - Super administrador
+
+### Middleware de Autorización
+
+```typescript
+// src/middleware/adminOnly.ts
+export const requireRole = (...allowedRoles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      throw new OperationalError('Usuario no autenticado', 401, 'NOT_AUTHENTICATED');
+    }
+
+    if (!allowedRoles.includes(req.user.roll)) {
+      throw new OperationalError('No autorizado. Rol insuficiente.', 403, 'INSUFFICIENT_ROLE');
+    }
+
+    next();
+  };
+};
+
+// Uso específico para administradores
+export const adminOnly = requireRole('adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin');
+```
+
+### Ejemplos de Uso
+
+```typescript
 // Solo organizadores pueden crear eventos
-router.post('/request-musician', authMiddleware, requireRole('eventCreator'), requestMusicianController);
+router.post('/events', 
+  authMiddleware, 
+  requireRole('eventCreator'), 
+  validate(createEventDTO),
+  asyncHandler(createEventController)
+);
 
 // Solo músicos pueden aceptar eventos
-router.post('/:eventId/accept', authMiddleware, requireRole('musico'), acceptEventController);
+router.post('/musician-requests/accept', 
+  authMiddleware, 
+  requireRole('musico'), 
+  validate(acceptRequestDTO),
+  asyncHandler(acceptRequestController)
+);
 
-// Permitir acceso a varios roles
-router.get('/admin-data', authMiddleware, requireRole('adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'), adminDataController);
+// Solo administradores pueden acceder a analytics
+router.get('/analytics/dashboard', 
+  authMiddleware, 
+  requireRole('adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'),
+  asyncHandler(getDashboardController)
+);
+
+// Solo super admin puede eliminar usuarios
+router.delete('/admin/users/:id', 
+  authMiddleware, 
+  requireRole('superAdmin'),
+  asyncHandler(deleteUserController)
+);
 ```
-- Si el usuario no tiene el rol requerido, recibe un 403 Forbidden con el mensaje: `{ msg: 'No autorizado. Rol insuficiente.' }`
 
-## 3. HTTPS y CORS
-- En producción, la API debe estar detrás de HTTPS (usa un proxy o configura SSL en el servidor).
-- CORS debe estar restringido a los dominios de la app en producción:
-```js
-app.use(cors({ origin: ['https://tudominio.com'] }));
+## ✅ Validaciones con DTOs ✅ **NUEVO**
+
+### Implementación con Joi
+
+```typescript
+// src/types/dtos.ts
+import Joi from 'joi';
+
+export const registerDTO = Joi.object({
+  name: Joi.string().required().min(2).max(50),
+  lastName: Joi.string().required().min(2).max(50),
+  userEmail: Joi.string().email().required(),
+  userPassword: Joi.string().required().min(8).pattern(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
+  ).message('La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'),
+  roll: Joi.string().valid('usuario', 'musico', 'eventCreator').required()
+});
+
+export const loginDTO = Joi.object({
+  userEmail: Joi.string().email().required(),
+  userPassword: Joi.string().required()
+});
+
+export const createEventDTO = Joi.object({
+  eventName: Joi.string().required().min(3).max(100),
+  eventType: Joi.string().valid('boda', 'concierto', 'evento_corporativo', 'festival', 'culto').required(),
+  date: Joi.date().iso().required().min('now'),
+  time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+  location: Joi.string().required().min(5).max(200),
+  instrument: Joi.string().required(),
+  budget: Joi.number().positive().required(),
+  description: Joi.string().optional().max(500)
+});
 ```
 
-## 4. Cabeceras de Seguridad (helmet)
-- Usa helmet para agregar cabeceras HTTP seguras:
-```js
+### Middleware de Validación
+
+```typescript
+// src/middleware/validationMiddleware.ts
+export const validate = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    if (error) {
+      const details = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }));
+
+      throw new OperationalError('Datos de entrada inválidos', 400, 'VALIDATION_ERROR', details);
+    }
+
+    req.body = value;
+    next();
+  };
+};
+```
+
+### Uso en Rutas
+
+```typescript
+// src/routes/authRoutes.ts
+router.post('/register', 
+  validate(registerDTO),
+  asyncHandler(registerController)
+);
+
+router.post('/login', 
+  validate(loginDTO),
+  asyncHandler(loginController)
+);
+
+// src/routes/eventsRoutes.ts
+router.post('/events', 
+  authMiddleware,
+  requireRole('eventCreator'),
+  validate(createEventDTO),
+  asyncHandler(createEventController)
+);
+```
+
+## 🛡️ Middlewares de Seguridad ✅ **NUEVO**
+
+### Helmet - Cabeceras HTTP Seguras
+
+```typescript
+// index.ts
 import helmet from 'helmet';
-app.use(helmet());
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
 ```
 
-## 5. Reglas de Firestore
-- Solo los usuarios autenticados pueden leer/escribir sus propios datos.
-- Ejemplo de regla:
+### CORS Configurado
+
+```typescript
+// index.ts
+import cors from 'cors';
+
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://mussikon.com', 'https://www.mussikon.com']
+    : ['http://localhost:3000', 'http://localhost:3001'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
+};
+
+app.use(cors(corsOptions));
+```
+
+### Rate Limiting
+
+```typescript
+// src/middleware/rateLimiter.ts
+import rateLimit from 'express-rate-limit';
+
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // máximo 5 intentos
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMIT_ERROR',
+      message: 'Demasiados intentos de autenticación. Intenta de nuevo en 15 minutos.',
+      timestamp: new Date().toISOString()
+    }
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por IP
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMIT_ERROR',
+      message: 'Demasiadas peticiones. Intenta de nuevo en 15 minutos.',
+      timestamp: new Date().toISOString()
+    }
+  }
+});
+```
+
+### Aplicación de Rate Limiting
+
+```typescript
+// index.ts
+app.use('/auth', authLimiter); // Rate limiting específico para autenticación
+app.use('/api', apiLimiter);   // Rate limiting general para API
+```
+
+## 🔒 Protección de Datos
+
+### Sanitización de Inputs
+
+```typescript
+// src/middleware/sanitizationMiddleware.ts
+import DOMPurify from 'isomorphic-dompurify';
+
+export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.body) {
+    Object.keys(req.body).forEach(key => {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = DOMPurify.sanitize(req.body[key]);
+      }
+    });
+  }
+  
+  next();
+};
+```
+
+### Validación de Tipos de Archivo
+
+```typescript
+// src/middleware/uploadMiddleware.ts
+const allowedMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp'
+];
+
+const fileFilter = (req: Request, file: Express.Multer.File, cb: Function) => {
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new OperationalError('Tipo de archivo no permitido', 400, 'INVALID_FILE_TYPE'), false);
+  }
+};
+
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 1
+  },
+  fileFilter
+});
+```
+
+### Encriptación de Contraseñas
+
+```typescript
+// src/utils/functions.ts
+import bcrypt from 'bcrypt';
+
+export const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 12;
+  return await bcrypt.hash(password, saltRounds);
+};
+
+export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
+  return await bcrypt.compare(password, hash);
+};
+```
+
+## 🌐 HTTPS y CORS
+
+### Configuración de Producción
+
+```typescript
+// En producción, la API debe estar detrás de HTTPS
+if (process.env.NODE_ENV === 'production') {
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+```
+
+### CORS Restringido en Producción
+
+```typescript
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        'https://mussikon.com',
+        'https://www.mussikon.com',
+        'https://app.mussikon.com'
+      ]
+    : ['http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Request-ID',
+    'X-Client-Version'
+  ],
+  exposedHeaders: ['X-Total-Count', 'X-Page-Count']
+};
+```
+
+## 🔒 Cabeceras de Seguridad
+
+### Configuración de Helmet
+
+```typescript
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  noSniff: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  frameguard: { action: 'deny' },
+  xssFilter: true
+}));
+```
+
+## 🔥 Reglas de Firestore
+
+### Reglas de Seguridad
+
 ```json
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Usuarios - Solo pueden leer/escribir sus propios datos
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.token.email == userId;
+      allow read, write: if request.auth != null && 
+        (request.auth.token.email == userId || 
+         request.auth.token.roll in ['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']);
+    }
+    
+    // Eventos - Solo el creador o admins pueden modificar
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.token.roll in ['eventCreator', 'adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'];
+      allow update, delete: if request.auth != null && 
+        (resource.data.user == request.auth.token.email || 
+         request.auth.token.roll in ['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']);
+    }
+    
+    // Solicitudes de músicos
+    match /musicianRequests/{requestId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && 
+        (resource.data.userId == request.auth.token.email || 
+         request.auth.token.roll in ['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']);
+    }
+    
+    // Chat - Solo participantes pueden acceder
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in resource.data.participants;
+    }
+    
+    // Imágenes - Solo propietario o admins
+    match /images/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (resource.data.uploadedBy == request.auth.token.email || 
+         request.auth.token.roll in ['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']);
     }
   }
 }
 ```
 
-## 6. Campo status en usuarios
-- El campo `status` indica si el usuario está activo (`true`) o inactivo (`false`).
-- Al crear o actualizar un usuario, puedes enviar el campo `status` (booleano). Si no se envía, será `true` por defecto.
-- Ejemplo de registro:
-```json
-{
-  "name": "Juan",
-  "lastName": "Pérez",
-  "roll": "musico",
-  "userEmail": "juan@example.com",
-  "userPassword": "Password*123",
-  "status": false
-}
-```
-- Ejemplo de actualización:
-```json
-{
-  "name": "Juan",
-  "status": false
-}
-```
+## 📝 Logging de Seguridad ✅ **NUEVO**
 
-## 7. Estructura y tipado de endpoints de administración
-- Todos los endpoints de administración usan funciones sueltas exportadas desde `adminController.ts` (no métodos de objeto).
-- Los handlers tienen la firma:
-  ```ts
-  export function adminUsersGetAll(req: Request, res: Response, next: NextFunction): void {
-    // ...
-    res.status(200).json(...); // nunca return res.status(...).json(...)
-    return; // si necesitas cortar la ejecución
+### Logging de Eventos de Seguridad
+
+```typescript
+// src/services/loggerService.ts
+export class SecurityLogger {
+  static logAuthAttempt(userEmail: string, success: boolean, ip: string): void {
+    loggerService.info('Intento de autenticación', {
+      userEmail,
+      success,
+      ip,
+      timestamp: new Date().toISOString(),
+      type: 'AUTH_ATTEMPT'
+    });
   }
-  ```
-- Las promesas se manejan con `.then(...).catch(next)` para asegurar que el handler siempre retorna void.
-- El middleware `adminOnly` protege todos los endpoints admin:
-  ```ts
-  router.get('/admin/users', adminOnly, adminUsersGetAll);
-  ```
-- Así, el tipado es robusto, seguro y compatible con Express y TypeScript.
 
-### Ejemplo de endpoints admin en Swagger/OpenAPI
+  static logUnauthorizedAccess(userId: string, endpoint: string, ip: string): void {
+    loggerService.warn('Acceso no autorizado', {
+      userId,
+      endpoint,
+      ip,
+      timestamp: new Date().toISOString(),
+      type: 'UNAUTHORIZED_ACCESS'
+    });
+  }
 
-```yaml
-paths:
-  /admin/users:
-    get:
-      summary: Obtener todos los usuarios (solo admin)
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de usuarios
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    _id:
-                      type: string
-                    name:
-                      type: string
-                    lastName:
-                      type: string
-                    userEmail:
-                      type: string
-                    roll:
-                      type: string
-                    status:
-                      type: boolean
-        403:
-          description: Acceso solo para administradores
-  /admin/users/{id}:
-    get:
-      summary: Obtener usuario por ID (solo admin)
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: ID del usuario
-      responses:
-        200:
-          description: Usuario encontrado
-        404:
-          description: Usuario no encontrado
-        403:
-          description: Acceso solo para administradores
+  static logRateLimitExceeded(ip: string, endpoint: string): void {
+    loggerService.warn('Rate limit excedido', {
+      ip,
+      endpoint,
+      timestamp: new Date().toISOString(),
+      type: 'RATE_LIMIT_EXCEEDED'
+    });
+  }
+
+  static logSuspiciousActivity(userId: string, activity: string, details: any): void {
+    loggerService.error('Actividad sospechosa detectada', {
+      userId,
+      activity,
+      details,
+      timestamp: new Date().toISOString(),
+      type: 'SUSPICIOUS_ACTIVITY'
+    });
+  }
+}
 ```
 
-- Todos los endpoints admin siguen este patrón y están protegidos por el middleware `adminOnly`.
+### Integración en Middlewares
 
-### Documentación Swagger/OpenAPI de rutas admin
+```typescript
+// En authMiddleware
+try {
+  // ... validación de token
+  SecurityLogger.logAuthAttempt(req.body.userEmail, true, req.ip);
+} catch (error) {
+  SecurityLogger.logAuthAttempt(req.body.userEmail, false, req.ip);
+  throw error;
+}
 
-```yaml
-paths:
-  # --- Usuarios ---
-  /admin/users:
-    get:
-      summary: Obtener todos los usuarios
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de usuarios
-        403:
-          description: Acceso solo para administradores
-    post:
-      summary: Crear usuario
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: { type: string }
-                lastName: { type: string }
-                userEmail: { type: string }
-                roll: { type: string }
-                status: { type: boolean }
-      responses:
-        201:
-          description: Usuario creado
-        403:
-          description: Acceso solo para administradores
-  /admin/users/{id}:
-    get:
-      summary: Obtener usuario por ID
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-          description: ID del usuario
-      responses:
-        200:
-          description: Usuario encontrado
-        404:
-          description: Usuario no encontrado
-        403:
-          description: Acceso solo para administradores
-    put:
-      summary: Actualizar usuario
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        200:
-          description: Usuario actualizado
-        403:
-          description: Acceso solo para administradores
-    delete:
-      summary: Eliminar usuario
-      tags: [Admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Usuario eliminado
-        403:
-          description: Acceso solo para administradores
-
-  # --- Eventos ---
-  /admin/events:
-    get:
-      summary: Obtener todos los eventos
-      tags: [AdminEvents]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de eventos
-        403:
-          description: Acceso solo para administradores
-    post:
-      summary: Crear evento
-      tags: [AdminEvents]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        201:
-          description: Evento creado
-        403:
-          description: Acceso solo para administradores
-  /admin/events/{id}:
-    get:
-      summary: Obtener evento por ID
-      tags: [AdminEvents]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Evento encontrado
-        404:
-          description: Evento no encontrado
-        403:
-          description: Acceso solo para administradores
-    put:
-      summary: Actualizar evento
-      tags: [AdminEvents]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        200:
-          description: Evento actualizado
-        403:
-          description: Acceso solo para administradores
-    delete:
-      summary: Eliminar evento
-      tags: [AdminEvents]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Evento eliminado
-        403:
-          description: Acceso solo para administradores
-
-  # --- Músicos ---
-  /admin/musicians:
-    get:
-      summary: Obtener todos los músicos
-      tags: [AdminMusicians]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de músicos
-        403:
-          description: Acceso solo para administradores
-  /admin/musicians/{id}:
-    get:
-      summary: Obtener músico por ID
-      tags: [AdminMusicians]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Músico encontrado
-        404:
-          description: Músico no encontrado
-        403:
-          description: Acceso solo para administradores
-    put:
-      summary: Actualizar músico
-      tags: [AdminMusicians]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        200:
-          description: Músico actualizado
-        403:
-          description: Acceso solo para administradores
-    delete:
-      summary: Eliminar músico
-      tags: [AdminMusicians]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Músico eliminado
-        403:
-          description: Acceso solo para administradores
-
-  # --- Imágenes ---
-  /admin/images:
-    get:
-      summary: Obtener todas las imágenes
-      tags: [AdminImages]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de imágenes
-        403:
-          description: Acceso solo para administradores
-  /admin/images/{id}:
-    get:
-      summary: Obtener imagen por ID
-      tags: [AdminImages]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Imagen encontrada
-        404:
-          description: Imagen no encontrada
-        403:
-          description: Acceso solo para administradores
-    delete:
-      summary: Eliminar imagen
-      tags: [AdminImages]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Imagen eliminada
-        403:
-          description: Acceso solo para administradores
-
-  # --- Solicitudes de Músico ---
-  /admin/musician-requests:
-    get:
-      summary: Obtener todas las solicitudes de músico
-      tags: [AdminMusicianRequests]
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: Lista de solicitudes
-        403:
-          description: Acceso solo para administradores
-  /admin/musician-requests/{id}:
-    get:
-      summary: Obtener solicitud de músico por ID
-      tags: [AdminMusicianRequests]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Solicitud encontrada
-        404:
-          description: Solicitud no encontrada
-        403:
-          description: Acceso solo para administradores
-    delete:
-      summary: Eliminar solicitud de músico
-      tags: [AdminMusicianRequests]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema: { type: string }
-          required: true
-      responses:
-        200:
-          description: Solicitud eliminada
-        403:
-          description: Acceso solo para administradores
+// En requireRole
+if (!allowedRoles.includes(req.user.roll)) {
+  SecurityLogger.logUnauthorizedAccess(req.user.id, req.url, req.ip);
+  throw new OperationalError('No autorizado. Rol insuficiente.', 403, 'INSUFFICIENT_ROLE');
+}
 ```
 
-- Cada bloque está separado por su respectivo tag: Admin, AdminEvents, AdminMusicians, AdminImages, AdminMusicianRequests.
-- Todos los endpoints están protegidos por el middleware `adminOnly` y requieren autenticación JWT.
+## 🛡️ Buenas Prácticas
+
+### 1. Validación de Entrada
+
+```typescript
+// ✅ Siempre validar entrada con DTOs
+router.post('/events', validate(createEventDTO), createEventController);
+
+// ❌ Nunca confiar en datos de entrada sin validar
+router.post('/events', createEventController);
+```
+
+### 2. Manejo de Errores Seguro
+
+```typescript
+// ✅ No exponer información sensible en errores
+throw new OperationalError('Credenciales inválidas', 401, 'INVALID_CREDENTIALS');
+
+// ❌ No exponer detalles internos
+throw new Error('Password hash mismatch: abc123 vs def456');
+```
+
+### 3. Logging Seguro
+
+```typescript
+// ✅ Logging sin información sensible
+loggerService.info('Usuario autenticado', { userId: user.id, timestamp: new Date() });
+
+// ❌ No loggear contraseñas o tokens
+loggerService.info('Login exitoso', { userEmail, password, token });
+```
+
+### 4. Sanitización de Datos
+
+```typescript
+// ✅ Sanitizar datos antes de procesar
+const cleanName = DOMPurify.sanitize(req.body.name);
+
+// ❌ Usar datos sin sanitizar
+const name = req.body.name;
+```
+
+### 5. Rate Limiting
+
+```typescript
+// ✅ Aplicar rate limiting en endpoints sensibles
+app.use('/auth', authLimiter);
+app.use('/api', apiLimiter);
+
+// ❌ Sin protección contra abuso
+app.use('/auth', authRoutes);
+```
+
+### 6. Validación de Roles
+
+```typescript
+// ✅ Validar roles en cada endpoint
+router.get('/admin/users', authMiddleware, requireRole('admin'), getUsersController);
+
+// ❌ Confiar en validación del frontend
+router.get('/admin/users', getUsersController);
+```
 
 ---
 
-Consulta los archivos específicos en esta carpeta para detalles de cada mecanismo de seguridad implementado. 
+**Documentación actualizada al**: $(date)
+
+**Versión**: 2.0.0 - Sistema completo de seguridad implementado ✅ 

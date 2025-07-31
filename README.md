@@ -1,6 +1,6 @@
 # 🎵 MussikOn API - Backend
 
-> **API RESTful completa para conectar músicos y organizadores de eventos**
+> **API RESTful completa para conectar músicos y organizadores de eventos con búsqueda avanzada, analytics y chat en tiempo real**
 
 ## 📋 Tabla de Contenidos
 
@@ -22,8 +22,9 @@
 - **JWT (JSON Web Tokens)** para autenticación segura
 - **Google OAuth** para autenticación con Google ✅
 - **Roles de usuario**: `musico`, `eventCreator`, `usuario`, `adminJunior`, `adminMidLevel`, `adminSenior`, `superAdmin`
-- **Middleware de autorización** por roles
+- **Middleware de autorización** por roles con `requireRole`
 - **Sesiones persistentes** con refresh tokens
+- **Validación robusta** con Joi DTOs
 
 ### 🎵 Gestión de Eventos
 - **CRUD completo** de eventos
@@ -31,13 +32,30 @@
 - **Estados de eventos**: `borrador`, `publicado`, `cancelado`, `completado`
 - **Categorías**: concierto, boda, culto, evento corporativo, festival, etc.
 
+### 🔍 Búsqueda Avanzada ✅ **NUEVO**
+- **Búsqueda global** en eventos, solicitudes y usuarios
+- **Filtros por ubicación** y geolocalización
+- **Búsqueda por instrumento** y especialidades
+- **Filtros por fecha** y disponibilidad
+- **Búsqueda de músicos disponibles** para eventos específicos
+- **Búsqueda de eventos disponibles** para músicos específicos
+
+### 📊 Analytics y Reportes ✅ **NUEVO**
+- **Métricas de eventos** (creación, aceptación, cancelación)
+- **Analytics de solicitudes** (tendencias, tasas de aceptación)
+- **Estadísticas de usuarios** (registros, actividad)
+- **Reportes de ubicación** y rendimiento geográfico
+- **Tendencias temporales** y análisis de patrones
+- **Dashboard administrativo** con métricas en tiempo real
+- **Exportación de reportes** en CSV
+
 ### 🎼 Solicitudes de Músicos ✅ **IMPLEMENTADO**
 - **CRUD completo** de solicitudes de músicos
 - **Estados**: `pendiente`, `asignada`, `cancelada`, `completada`, `no_asignada`
 - **Aceptación automática** (primer músico que acepta)
 - **Notificaciones en tiempo real**
 
-### 💬 Sistema de Chat en Tiempo Real ✅ **IMPLEMENTADO**
+### 💬 Sistema de Chat en Tiempo Real ✅ **MEJORADO**
 - **Chat privado** entre dos usuarios
 - **Conversaciones grupales** para eventos
 - **Mensajes en tiempo real** con Socket.IO
@@ -46,12 +64,14 @@
 - **Estado de mensajes**: enviado, entregado, leído
 - **Notificaciones push** para mensajes nuevos
 - **Historial persistente** de conversaciones
+- **Búsqueda de mensajes** y conversaciones
+- **Gestión de participantes** en grupos
 
 ### 👥 Gestión de Usuarios
 - **CRUD completo** de usuarios
 - **Perfiles de músicos** con especialidades
 - **Sistema de roles** jerárquico
-- **Validación de datos** robusta
+- **Validación de datos** robusta con DTOs
 
 ### 🖼️ Gestión de Imágenes
 - **Almacenamiento en AWS S3** (idriveE2)
@@ -74,6 +94,14 @@
 - **Gestión de usuarios** avanzada
 - **Logs de auditoría** detallados
 
+### 🛡️ Middlewares y Validaciones ✅ **NUEVO**
+- **Middleware de autenticación** robusto
+- **Validación de entrada** con Joi DTOs
+- **Manejo global de errores** estructurado
+- **Logging centralizado** con niveles
+- **Rate limiting** y protección contra abuso
+- **Sanitización** de datos de entrada
+
 ## 🛠️ Tecnologías
 
 ### Backend
@@ -86,15 +114,19 @@
 - **AWS S3** - Almacenamiento de archivos
 - **Nodemailer** - Envío de emails
 - **bcrypt** - Hash de contraseñas
+- **Joi** - Validación de esquemas
+- **Helmet** - Seguridad HTTP
+- **Morgan** - Logging de requests
 
 ### Documentación
-- **Swagger/OpenAPI** - Documentación interactiva
+- **Swagger/OpenAPI 3.0.0** - Documentación interactiva
 - **Redoc** - Documentación legible
 - **JSDoc** - Documentación de código
 
 ### Desarrollo
 - **ESLint** - Linting de código
 - **Prettier** - Formateo de código
+- **Jest** - Testing framework
 - **Nodemon** - Hot reloading
 
 ## 🚀 Instalación
@@ -142,11 +174,15 @@ npm start
 ## 📡 Endpoints Principales
 
 ### 🔐 Autenticación (`/auth`)
-- `POST /auth/register` - Registro de usuario
-- `POST /auth/login` - Inicio de sesión
+- `POST /auth/register` - Registro de usuario (con validación DTO)
+- `POST /auth/login` - Inicio de sesión (con validación DTO)
 - `POST /auth/google` - Autenticación con Google ✅
 - `POST /auth/logout` - Cerrar sesión
 - `GET /auth/verify` - Verificar token
+- `POST /auth/email-register` - Registro por email
+- `GET /auth/validate-number/{userEmail}` - Validar número
+- `POST /auth/add-event/{userEmail}` - Agregar evento
+- `DELETE /auth/delete/{userEmail}` - Eliminar usuario
 
 ### 🎵 Eventos (`/events`)
 - `GET /events` - Listar eventos
@@ -154,6 +190,26 @@ npm start
 - `GET /events/:id` - Obtener evento
 - `PUT /events/:id` - Actualizar evento
 - `DELETE /events/:id` - Eliminar evento
+
+### 🔍 Búsqueda (`/search`) ✅ **NUEVO**
+- `GET /search/events` - Búsqueda avanzada de eventos
+- `GET /search/musician-requests` - Búsqueda de solicitudes
+- `GET /search/users` - Búsqueda de usuarios
+- `GET /search/global` - Búsqueda global
+- `GET /search/location` - Búsqueda por ubicación
+- `GET /search/available-events` - Eventos disponibles para músico
+- `GET /search/available-musicians` - Músicos disponibles para evento
+
+### 📊 Analytics (`/analytics`) ✅ **NUEVO**
+- `GET /analytics/events` - Métricas de eventos
+- `GET /analytics/requests` - Métricas de solicitudes
+- `GET /analytics/users` - Métricas de usuarios
+- `GET /analytics/platform` - Métricas de plataforma
+- `GET /analytics/trends` - Reporte de tendencias
+- `GET /analytics/location-performance` - Rendimiento por ubicación
+- `GET /analytics/top-users` - Usuarios más activos
+- `GET /analytics/dashboard` - Dashboard administrativo
+- `GET /analytics/export` - Exportar reportes
 
 ### 🎼 Solicitudes de Músicos (`/musician-requests`)
 - `POST /musician-requests` - Crear solicitud ✅
@@ -168,7 +224,15 @@ npm start
 - `GET /chat/conversations` - Obtener conversaciones ✅
 - `GET /chat/conversations/:id` - Obtener conversación ✅
 - `GET /chat/conversations/:id/messages` - Obtener mensajes ✅
+- `POST /chat/conversations/:id/messages` - Enviar mensaje ✅
 - `PUT /chat/conversations/:id/messages/read` - Marcar como leído ✅
+- `GET /chat/unread-count` - Contar mensajes no leídos ✅
+- `GET /chat/search-conversations` - Buscar conversaciones ✅
+- `GET /chat/search-messages` - Buscar mensajes ✅
+- `DELETE /chat/messages/:id` - Eliminar mensaje ✅
+- `POST /chat/conversations/:id/participants` - Agregar participante ✅
+- `DELETE /chat/conversations/:id/participants/:userId` - Remover participante ✅
+- `GET /chat/stats` - Estadísticas de chat ✅
 
 ### 👥 Usuarios (`/users`)
 - `GET /users` - Listar usuarios
@@ -224,19 +288,37 @@ npm start
 APP_MussikOn_Express/
 ├── src/
 │   ├── controllers/          # Controladores de la API
+│   │   ├── analyticsController.ts  # ✅ NUEVO - Analytics
+│   │   ├── searchController.ts     # ✅ NUEVO - Búsqueda
+│   │   └── ...
 │   ├── middleware/           # Middleware personalizado
+│   │   ├── authMiddleware.ts       # Autenticación JWT
+│   │   ├── adminOnly.ts            # Autorización admin
+│   │   ├── validationMiddleware.ts # ✅ NUEVO - Validaciones
+│   │   └── errorHandler.ts         # ✅ NUEVO - Manejo de errores
 │   ├── models/              # Modelos de datos
 │   ├── routes/              # Rutas de la API
+│   │   ├── analyticsRoutes.ts      # ✅ NUEVO - Analytics
+│   │   ├── searchRoutes.ts         # ✅ NUEVO - Búsqueda
+│   │   └── ...
 │   ├── services/            # Lógica de negocio
+│   │   ├── analyticsService.ts     # ✅ NUEVO - Analytics
+│   │   ├── searchService.ts        # ✅ NUEVO - Búsqueda
+│   │   ├── chatService.ts          # ✅ MEJORADO - Chat
+│   │   └── loggerService.ts        # ✅ NUEVO - Logging
 │   ├── sockets/             # Eventos de Socket.IO
 │   ├── types/               # Tipos TypeScript
+│   │   └── dtos.ts                 # ✅ NUEVO - DTOs
 │   └── utils/               # Utilidades y helpers
 ├── docs/                    # Documentación completa
 ├── ENV_example.ts          # Variables de entorno de ejemplo
 ├── ENV.ts                  # Variables de entorno (no commitear)
 ├── index.ts                # Punto de entrada
 ├── package.json            # Dependencias y scripts
-└── tsconfig.json           # Configuración TypeScript
+├── tsconfig.json           # Configuración TypeScript
+├── .eslintrc.js            # ✅ NUEVO - Configuración ESLint
+├── .prettierrc.json        # ✅ NUEVO - Configuración Prettier
+└── jest.config.ts          # ✅ NUEVO - Configuración Jest
 ```
 
 ## 🔒 Seguridad
@@ -249,32 +331,50 @@ APP_MussikOn_Express/
 
 ### Autorización
 - **Roles granulares** (7 niveles de acceso)
-- **Middleware de autorización** por ruta
+- **Middleware de autorización** por ruta con `requireRole`
 - **Validación de permisos** en tiempo real
 
 ### Protección de Datos
-- **Sanitización** de inputs
+- **Sanitización** de inputs con Joi
 - **Validación** de tipos de archivo
 - **Límites** de tamaño de archivos
 - **Encriptación** de contraseñas con bcrypt
+- **Rate limiting** y protección contra abuso
+- **Logging estructurado** para auditoría
+
+### Middlewares de Seguridad
+- **Helmet** - Cabeceras HTTP seguras
+- **CORS** - Control de acceso entre dominios
+- **Rate Limiting** - Protección contra spam
+- **Request Logging** - Auditoría de requests
 
 ## 🧪 Testing
 
 ### Scripts Disponibles
 ```bash
-npm run build      # Compilar TypeScript
-npm start          # Iniciar servidor
-npm run dev        # Modo desarrollo
-npm run lint       # Linting de código
+npm run build          # Compilar TypeScript
+npm start              # Iniciar servidor
+npm run dev            # Modo desarrollo
+npm run lint           # Linting de código
+npm run lint:fix       # Corregir errores de linting
+npm run format         # Formatear código
+npm run test           # Ejecutar tests
+npm run test:watch     # Tests en modo watch
+npm run test:coverage  # Tests con cobertura
+npm run type-check     # Verificar tipos TypeScript
+npm run clean          # Limpiar archivos generados
 ```
 
 ### Pruebas Manuales
-1. **Autenticación** - Probar login/registro con Postman
+1. **Autenticación** - Probar login/registro con validación DTO
 2. **CRUD de Eventos** - Crear, leer, actualizar, eliminar eventos
 3. **CRUD de Solicitudes** - Probar todas las operaciones de solicitudes
-4. **Socket.IO** - Verificar comunicación en tiempo real
-5. **Chat System** - Probar chat en tiempo real ✅
-6. **Documentación** - Validar Swagger UI
+4. **Búsqueda Avanzada** - Probar filtros y búsqueda ✅
+5. **Analytics** - Verificar métricas y reportes ✅
+6. **Chat System** - Probar chat en tiempo real ✅
+7. **Validaciones** - Probar middlewares de validación ✅
+8. **Manejo de Errores** - Verificar respuestas de error estructuradas ✅
+9. **Documentación** - Validar Swagger UI actualizado
 
 ## 📚 Documentación
 
@@ -290,6 +390,8 @@ npm run lint       # Linting de código
 - **[API de Eventos](./docs/EVENTS_API.md)** - Gestión de eventos
 - **[API de Imágenes](./docs/IMAGES_API.md)** - Gestión de archivos
 - **[Sistema Administrativo](./docs/ADMIN_SYSTEM.md)** - Panel de admin
+- **[Búsqueda Avanzada](./docs/SEARCH_API.md)** - ✅ NUEVO - Sistema de búsqueda
+- **[Analytics y Reportes](./docs/ANALYTICS_API.md)** - ✅ NUEVO - Métricas y reportes
 
 ### Integración y Desarrollo
 - **[Integración Frontend](./docs/FRONTEND_INTEGRATION.md)** - Guías de integración
@@ -300,21 +402,25 @@ npm run lint       # Linting de código
 ## 📊 Estado de Implementación
 
 ### ✅ Funcionalidades Completadas
-- **Autenticación**: 100% ✅ (JWT + Google OAuth)
+- **Autenticación**: 100% ✅ (JWT + Google OAuth + Validaciones)
 - **Eventos**: 100% ✅
 - **Solicitudes de Músicos**: 100% ✅
-- **Chat System**: 100% ✅
+- **Chat System**: 100% ✅ (Mejorado con búsqueda y gestión de grupos)
 - **Imágenes**: 100% ✅
 - **Administración**: 100% ✅
 - **Socket.IO**: 100% ✅
-- **Documentación**: 100% ✅
+- **Búsqueda Avanzada**: 100% ✅ (NUEVO)
+- **Analytics y Reportes**: 100% ✅ (NUEVO)
+- **Middlewares y Validaciones**: 100% ✅ (NUEVO)
+- **Logging Estructurado**: 100% ✅ (NUEVO)
+- **Manejo de Errores**: 100% ✅ (NUEVO)
+- **Documentación**: 100% ✅ (Actualizada)
 
 ### 🔄 Funcionalidades en Desarrollo
-- **Búsqueda Avanzada** - Filtros y búsqueda compleja
-- **Analytics y Reportes** - Métricas de uso
 - **Notificaciones Push Móviles** - Alertas para dispositivos móviles
 - **Sistema de Pagos** - Integración con pasarelas de pago
-- **Geolocalización** - Búsqueda por ubicación
+- **Geolocalización Avanzada** - Búsqueda por ubicación con mapas
+- **Optimización de Performance** - Caching y optimizaciones
 
 ## 🤝 Contribución
 
@@ -332,6 +438,8 @@ npm run lint       # Linting de código
 - **Prettier** para formateo
 - **JSDoc** para documentación
 - **Commits** semánticos
+- **Validación** con DTOs
+- **Logging** estructurado
 
 ## 📞 Soporte
 
@@ -346,7 +454,7 @@ npm run lint       # Linting de código
 
 ---
 
-**Última actualización**: Sistema de chat en tiempo real completamente implementado ✅
+**Última actualización**: Búsqueda avanzada, analytics, chat mejorado, middlewares, validaciones, DTOs y logging estructurado completamente implementados ✅
 
 **Documentación actualizada al**: $(date)
 

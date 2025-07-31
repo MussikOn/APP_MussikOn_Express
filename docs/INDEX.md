@@ -1,11 +1,11 @@
 # 📚 Índice de Documentación - MusikOn API
 
-> **Navegación rápida y completa de toda la documentación del proyecto**
+> **Navegación rápida y completa de toda la documentación del proyecto actualizada**
 
 ## 🎯 Documentación Principal
 
 ### 📖 [README Principal](./README.md)
-Documentación general del proyecto con estado actual, tecnologías, endpoints y roadmap.
+Documentación general del proyecto con estado actual, tecnologías, endpoints y roadmap actualizado.
 
 ### 📋 [Resumen Ejecutivo](./EXECUTIVE_SUMMARY.md)
 Resumen ejecutivo del proyecto con métricas, funcionalidades implementadas y próximos pasos.
@@ -15,18 +15,37 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 
 ## 🔧 APIs Específicas
 
+### 🔍 [API de Búsqueda Avanzada](./SEARCH_API.md) ✅ **NUEVO**
+- Búsqueda global en eventos, solicitudes y usuarios
+- Filtros por ubicación y geolocalización
+- Búsqueda por instrumento y especialidades
+- Filtros por fecha y disponibilidad
+- Búsqueda de músicos disponibles para eventos específicos
+- Búsqueda de eventos disponibles para músicos específicos
+
+### 📊 [API de Analytics y Reportes](./ANALYTICS_API.md) ✅ **NUEVO**
+- Métricas de eventos (creación, aceptación, cancelación)
+- Analytics de solicitudes (tendencias, tasas de aceptación)
+- Estadísticas de usuarios (registros, actividad)
+- Reportes de ubicación y rendimiento geográfico
+- Tendencias temporales y análisis de patrones
+- Dashboard administrativo con métricas en tiempo real
+- Exportación de reportes en CSV
+
 ### 🎼 [API de Solicitudes de Músicos](./MUSICIAN_REQUESTS_API.md) ✅ **IMPLEMENTADO**
 - CRUD completo de solicitudes
 - Estados de solicitud (pendiente, asignada, cancelada, completada)
 - Aceptación automática de músicos
 - Notificaciones en tiempo real
 
-### 💬 [Sistema de Chat](./CHAT_SYSTEM.md) ✅ **IMPLEMENTADO**
+### 💬 [Sistema de Chat](./CHAT_SYSTEM.md) ✅ **MEJORADO**
 - Chat privado y grupal
 - Mensajes en tiempo real con Socket.IO
 - Múltiples tipos de mensaje (texto, imagen, audio, archivo)
 - Indicadores de escritura y estado de mensajes
 - Notificaciones push
+- Búsqueda de mensajes y conversaciones ✅ **NUEVO**
+- Gestión de participantes en grupos ✅ **NUEVO**
 
 ### 🎵 [API de Eventos](./EVENTS_API.md) ✅ **IMPLEMENTADO**
 - Gestión completa de eventos
@@ -54,19 +73,26 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - Manejo de estados y autenticación
 - Sistema de imágenes CRUD en frontend
 
-### 🔒 [Seguridad](./SECURITY.md) ✅ **IMPLEMENTADO**
+### 🔒 [Seguridad](./SECURITY.md) ✅ **MEJORADO**
 - Autenticación JWT y Google OAuth
-- Roles y permisos
-- Validaciones y protección
+- Roles y permisos con `requireRole`
+- Validaciones con Joi DTOs ✅ **NUEVO**
+- Middlewares de seguridad ✅ **NUEVO**
+- Rate limiting y protección ✅ **NUEVO**
 
-### ⚠️ [Manejo de Errores](./ERROR_HANDLING.md) ✅ **IMPLEMENTADO**
-- Códigos de error
+### ⚠️ [Manejo de Errores](./ERROR_HANDLING.md) ✅ **MEJORADO**
+- Middleware global de errores estructurado ✅ **NUEVO**
+- Códigos de error estandarizados ✅ **NUEVO**
+- Logging centralizado ✅ **NUEVO**
 - Debugging y troubleshooting
 - Logs y monitoreo
 
-### 📡 [API Documentation UI](./API_DOCUMENTATION_UI.md) ✅ **IMPLEMENTADO**
+### 📡 [API Documentation UI](./API_DOCUMENTATION_UI.md) ✅ **ACTUALIZADO**
 - Documentación interactiva con Swagger
-- Ejemplos de endpoints
+- Ejemplos de endpoints actualizados
+- Nuevas secciones de búsqueda y analytics ✅ **NUEVO**
+- Middlewares y validaciones ✅ **NUEVO**
+- Manejo de errores ✅ **NUEVO**
 - Testing de API
 
 ## 🚀 Estado Actual del Proyecto
@@ -84,31 +110,39 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 | **Sistema de Imágenes** | ✅ Completo | [IMAGES_API](./IMAGES_API.md) | ✅ | ✅ |
 | **Sistema Administrativo** | ✅ Completo | [ADMIN_SYSTEM](./ADMIN_SYSTEM.md) | ✅ | ✅ |
 | **Socket.IO** | ✅ Completo | [CHAT_SYSTEM](./CHAT_SYSTEM.md) | ✅ | ✅ |
+| **Búsqueda Avanzada** | ✅ Completo | [SEARCH_API](./SEARCH_API.md) | ✅ | ✅ |
+| **Analytics y Reportes** | ✅ Completo | [ANALYTICS_API](./ANALYTICS_API.md) | ✅ | ✅ |
+| **Middlewares y Validaciones** | ✅ Completo | [SECURITY](./SECURITY.md) | ✅ | ✅ |
+| **Logging Estructurado** | ✅ Completo | [ERROR_HANDLING](./ERROR_HANDLING.md) | ✅ | ✅ |
+| **Manejo de Errores** | ✅ Completo | [ERROR_HANDLING](./ERROR_HANDLING.md) | ✅ | ✅ |
 | **Documentación** | ✅ Completo | Todos los archivos | ✅ | ✅ |
 
 ### 🔄 Funcionalidades en Desarrollo
 
 | Funcionalidad | Estado | Prioridad | Documentación |
 |---------------|--------|-----------|---------------|
-| **Búsqueda Avanzada** | 🚧 En desarrollo | Alta | [README](./README.md) |
-| **Analytics y Reportes** | 🚧 En desarrollo | Media | [README](./README.md) |
 | **Notificaciones Push Móviles** | 🚧 En desarrollo | Media | [README](./README.md) |
 | **Sistema de Pagos** | 📋 Pendiente | Alta | [README](./README.md) |
-| **Geolocalización** | 📋 Pendiente | Baja | [README](./README.md) |
+| **Geolocalización Avanzada** | 📋 Pendiente | Baja | [README](./README.md) |
+| **Optimización de Performance** | 📋 Pendiente | Media | [README](./README.md) |
 
 ## 📊 Métricas del Proyecto
 
 ### Código
-- **Líneas de código**: ~8,000+
-- **Archivos TypeScript**: ~60
-- **Endpoints API**: ~40
-- **Eventos Socket.IO**: ~20
+- **Líneas de código**: ~12,000+
+- **Archivos TypeScript**: ~80
+- **Endpoints API**: ~60
+- **Eventos Socket.IO**: ~25
+- **Middlewares**: ~8
+- **Servicios**: ~10
 
 ### Funcionalidades
-- **CRUDs completos**: 5 (usuarios, eventos, solicitudes, chat, imágenes)
+- **CRUDs completos**: 7 (usuarios, eventos, solicitudes, chat, imágenes, búsqueda, analytics)
 - **Sistemas de autenticación**: 2 (JWT, Google OAuth)
 - **Integraciones externas**: 4 (Firebase, AWS S3, idriveE2, Email)
-- **Documentación**: 13 archivos detallados
+- **Documentación**: 15 archivos detallados
+- **Middlewares**: 8 tipos diferentes
+- **Validaciones**: DTOs completos con Joi
 
 ### Estado de Implementación
 - **Autenticación**: 100% ✅
@@ -118,24 +152,53 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - **Sistema de Imágenes**: 100% ✅
 - **Administración**: 100% ✅
 - **Socket.IO**: 100% ✅
+- **Búsqueda Avanzada**: 100% ✅
+- **Analytics y Reportes**: 100% ✅
+- **Middlewares y Validaciones**: 100% ✅
+- **Logging Estructurado**: 100% ✅
+- **Manejo de Errores**: 100% ✅
 - **Frontend Integration**: 100% ✅
 - **Documentación**: 100% ✅
 
 ## 🔌 Endpoints Principales
 
 ### Autenticación (`/auth`)
-- `POST /auth/register` - Registro de usuario
-- `POST /auth/login` - Inicio de sesión
+- `POST /auth/register` - Registro de usuario (con validación DTO)
+- `POST /auth/login` - Inicio de sesión (con validación DTO)
 - `POST /auth/google` - Autenticación con Google ✅
 - `POST /auth/logout` - Cerrar sesión
 - `GET /auth/verify` - Verificar token
+- `POST /auth/email-register` - Registro por email ✅ **NUEVO**
+- `GET /auth/validate-number/{userEmail}` - Validar número ✅ **NUEVO**
+- `POST /auth/add-event/{userEmail}` - Agregar evento ✅ **NUEVO**
+- `DELETE /auth/delete/{userEmail}` - Eliminar usuario ✅ **NUEVO**
 
 ### Eventos (`/events`)
 - `GET /events` - Listar eventos
-- `POST /events` - Crear evento
+- `POST /events` - Crear evento (con validación DTO)
 - `GET /events/:id` - Obtener evento
 - `PUT /events/:id` - Actualizar evento
 - `DELETE /events/:id` - Eliminar evento
+
+### Búsqueda (`/search`) ✅ **NUEVO**
+- `GET /search/events` - Búsqueda avanzada de eventos
+- `GET /search/musician-requests` - Búsqueda de solicitudes
+- `GET /search/users` - Búsqueda de usuarios
+- `GET /search/global` - Búsqueda global
+- `GET /search/location` - Búsqueda por ubicación
+- `GET /search/available-events` - Eventos disponibles para músico
+- `GET /search/available-musicians` - Músicos disponibles para evento
+
+### Analytics (`/analytics`) ✅ **NUEVO**
+- `GET /analytics/events` - Métricas de eventos
+- `GET /analytics/requests` - Métricas de solicitudes
+- `GET /analytics/users` - Métricas de usuarios
+- `GET /analytics/platform` - Métricas de plataforma
+- `GET /analytics/trends` - Reporte de tendencias
+- `GET /analytics/location-performance` - Rendimiento por ubicación
+- `GET /analytics/top-users` - Usuarios más activos
+- `GET /analytics/dashboard` - Dashboard administrativo
+- `GET /analytics/export` - Exportar reportes
 
 ### Solicitudes de Músicos (`/musician-requests`)
 - `POST /musician-requests` - Crear solicitud ✅
@@ -150,9 +213,17 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - `GET /chat/conversations` - Obtener conversaciones ✅
 - `GET /chat/conversations/:id` - Obtener conversación ✅
 - `GET /chat/conversations/:id/messages` - Obtener mensajes ✅
+- `POST /chat/conversations/:id/messages` - Enviar mensaje ✅ **NUEVO**
 - `PUT /chat/conversations/:id/messages/read` - Marcar como leído ✅
+- `GET /chat/unread-count` - Contar mensajes no leídos ✅ **NUEVO**
+- `GET /chat/search-conversations` - Buscar conversaciones ✅ **NUEVO**
+- `GET /chat/search-messages` - Buscar mensajes ✅ **NUEVO**
+- `DELETE /chat/messages/:id` - Eliminar mensaje ✅ **NUEVO**
+- `POST /chat/conversations/:id/participants` - Agregar participante ✅ **NUEVO**
+- `DELETE /chat/conversations/:id/participants/:userId` - Remover participante ✅ **NUEVO**
+- `GET /chat/stats` - Estadísticas de chat ✅ **NUEVO**
 
-### Imágenes (`/images`) ✅ **NUEVO**
+### Imágenes (`/images`) ✅ **IMPLEMENTADO**
 - `POST /images/upload` - Subir imagen ✅
 - `GET /images` - Listar imágenes con filtros ✅
 - `GET /images/:id` - Obtener imagen por ID ✅
@@ -203,6 +274,9 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - **Nodemailer** - Envío de emails
 - **bcrypt** - Hash de contraseñas
 - **Multer** - Procesamiento de archivos
+- **Joi** - Validación de esquemas ✅ **NUEVO**
+- **Helmet** - Seguridad HTTP ✅ **NUEVO**
+- **Morgan** - Logging de requests ✅ **NUEVO**
 
 ### Frontend
 - **React** - Biblioteca de UI
@@ -213,13 +287,14 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - **Vite** - Build tool
 
 ### Documentación
-- **Swagger/OpenAPI** - Documentación interactiva
+- **Swagger/OpenAPI 3.0.0** - Documentación interactiva
 - **Redoc** - Documentación legible
 - **JSDoc** - Documentación de código
 
 ### Desarrollo
 - **ESLint** - Linting de código
 - **Prettier** - Formateo de código
+- **Jest** - Testing framework ✅ **NUEVO**
 - **Nodemon** - Hot reloading
 
 ## 🚀 Instalación Rápida
@@ -249,6 +324,8 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 - **API Documentation**: [docs/API_DOCUMENTATION_UI.md](./API_DOCUMENTATION_UI.md)
 - **Guías de Integración**: [docs/FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)
 - **Sistema de Imágenes**: [docs/IMAGES_API.md](./IMAGES_API.md)
+- **Búsqueda Avanzada**: [docs/SEARCH_API.md](./SEARCH_API.md) ✅ **NUEVO**
+- **Analytics y Reportes**: [docs/ANALYTICS_API.md](./ANALYTICS_API.md) ✅ **NUEVO**
 
 ### Contacto
 - **Issues**: [GitHub Issues](https://github.com/tu-usuario/APP_MussikOn_Express/issues)
@@ -256,6 +333,6 @@ Guía completa para desplegar la aplicación en diferentes entornos.
 
 ---
 
-**Última actualización**: Sistema de imágenes CRUD con idriveE2 completamente implementado ✅
+**Última actualización**: Búsqueda avanzada, analytics, chat mejorado, middlewares, validaciones, DTOs y logging estructurado completamente implementados ✅
 
 **Documentación actualizada al**: $(date) 

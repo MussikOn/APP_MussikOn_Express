@@ -1,21 +1,25 @@
 # 📚 API Documentation UI
 
-> **Documentación completa de endpoints con ejemplos y casos de uso**
+> **Documentación completa de endpoints con ejemplos y casos de uso actualizada**
 
 ## 📋 Tabla de Contenidos
 
 - [Autenticación](#autenticación)
 - [Eventos](#eventos)
+- [Búsqueda Avanzada](#búsqueda-avanzada) ✅ **NUEVO**
+- [Analytics y Reportes](#analytics-y-reportes) ✅ **NUEVO**
 - [Solicitudes de Músicos](#solicitudes-de-músicos)
 - [Chat y Comunicación](#chat-y-comunicación)
 - [Usuarios](#usuarios)
 - [Imágenes](#imágenes)
 - [Administración](#administración)
 - [Socket.IO Events](#socketio-events)
+- [Middlewares y Validaciones](#middlewares-y-validaciones) ✅ **NUEVO**
+- [Manejo de Errores](#manejo-de-errores) ✅ **NUEVO**
 
 ## 🔐 Autenticación
 
-### Registro de Usuario
+### Registro de Usuario (con validación DTO)
 
 **POST** `/auth/register`
 
@@ -45,7 +49,7 @@
 }
 ```
 
-### Login de Usuario
+### Login de Usuario (con validación DTO)
 
 **POST** `/auth/login`
 
@@ -72,29 +76,163 @@
 }
 ```
 
-### Verificar Token
+## 🔍 Búsqueda Avanzada ✅ **NUEVO**
 
-**GET** `/auth/verify`
+### Búsqueda de Eventos
 
-**Headers**: `Authorization: Bearer <token>`
+**GET** `/search/events?query=boda&location=Madrid&dateFrom=2024-01-01&dateTo=2024-12-31&instrument=piano&limit=20&offset=0`
 
 **Response (200)**
 ```json
 {
-  "valid": true,
-  "user": {
-    "id": "user_123",
-    "name": "Juan",
-    "lastName": "Pérez",
-    "userEmail": "juan@example.com",
-    "roll": "eventCreator"
+  "success": true,
+  "data": {
+    "events": [
+      {
+        "id": "event_123",
+        "eventName": "Boda de María y Juan",
+        "eventType": "boda",
+        "date": "2024-12-25",
+        "time": "18:00",
+        "location": "Madrid, España",
+        "instrument": "piano",
+        "budget": 50000,
+        "status": "pending_musician"
+      }
+    ],
+    "total": 1,
+    "filters": {
+      "query": "boda",
+      "location": "Madrid",
+      "dateFrom": "2024-01-01",
+      "dateTo": "2024-12-31",
+      "instrument": "piano"
+    }
+  }
+}
+```
+
+### Búsqueda Global
+
+**GET** `/search/global?query=piano&type=all&limit=10`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "events": [...],
+    "musicianRequests": [...],
+    "users": [...],
+    "total": {
+      "events": 5,
+      "musicianRequests": 3,
+      "users": 2
+    }
+  }
+}
+```
+
+### Búsqueda por Ubicación
+
+**GET** `/search/location?lat=40.4168&lng=-3.7038&radius=50&type=events`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "results": [...],
+    "location": {
+      "lat": 40.4168,
+      "lng": -3.7038,
+      "radius": 50
+    }
+  }
+}
+```
+
+## 📊 Analytics y Reportes ✅ **NUEVO**
+
+### Métricas de Eventos
+
+**GET** `/analytics/events?period=month&dateFrom=2024-01-01&dateTo=2024-12-31`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "totalEvents": 150,
+    "eventsByStatus": {
+      "pending_musician": 45,
+      "musician_assigned": 80,
+      "completed": 20,
+      "cancelled": 5
+    },
+    "eventsByType": {
+      "boda": 60,
+      "concierto": 30,
+      "evento_corporativo": 40,
+      "festival": 20
+    },
+    "revenue": {
+      "total": 7500000,
+      "average": 50000,
+      "byMonth": [...]
+    }
+  }
+}
+```
+
+### Dashboard Administrativo
+
+**GET** `/analytics/dashboard`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "overview": {
+      "totalUsers": 1250,
+      "totalEvents": 450,
+      "totalRequests": 320,
+      "activeConversations": 89
+    },
+    "trends": {
+      "userGrowth": 15.5,
+      "eventGrowth": 8.2,
+      "requestGrowth": 12.1
+    },
+    "topPerformers": {
+      "musicians": [...],
+      "locations": [...],
+      "eventTypes": [...]
+    }
+  }
+}
+```
+
+### Exportar Reporte
+
+**GET** `/analytics/export?type=events&format=csv&dateFrom=2024-01-01&dateTo=2024-12-31`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "data": {
+    "downloadUrl": "https://api.mussikon.com/exports/events_2024.csv",
+    "expiresAt": "2024-01-16T10:30:00Z",
+    "recordCount": 150
   }
 }
 ```
 
 ## 🎵 Eventos
 
-### Crear Evento
+### Crear Evento (con validación DTO)
 
 **POST** `/events`
 
@@ -415,6 +553,56 @@
     "lastMessage": null,
     "unreadCount": 0
   }
+}
+```
+
+### Enviar Mensaje ✅ **NUEVO**
+
+**POST** `/chat/conversations/:conversationId/messages`
+
+```json
+{
+  "content": "Hola, ¿cómo estás?",
+  "type": "text"
+}
+```
+
+**Response (201)**
+```json
+{
+  "success": true,
+  "message": {
+    "id": "message_456",
+    "conversationId": "conversation_123",
+    "senderId": "user_123",
+    "senderName": "Juan Pérez",
+    "content": "Hola, ¿cómo estás?",
+    "type": "text",
+    "status": "sent",
+    "timestamp": "2024-01-15T12:00:00Z"
+  }
+}
+```
+
+### Buscar Conversaciones ✅ **NUEVO**
+
+**GET** `/chat/search-conversations?query=evento&limit=10`
+
+**Response (200)**
+```json
+{
+  "success": true,
+  "conversations": [
+    {
+      "id": "conversation_123",
+      "title": "Conversación sobre evento",
+      "participants": ["user1@example.com", "user2@example.com"],
+      "lastMessage": {
+        "content": "Hola, ¿cómo estás?",
+        "timestamp": "2024-01-15T12:00:00Z"
+      }
+    }
+  ]
 }
 ```
 
@@ -1045,6 +1233,137 @@ socket.on('notification', {
 });
 ```
 
+## 🛡️ Middlewares y Validaciones ✅ **NUEVO**
+
+### Ejemplo de Uso de Middlewares
+
+```typescript
+// Autenticación requerida
+router.get('/events', authMiddleware, getEventsController);
+
+// Solo administradores
+router.get('/admin/users', authMiddleware, requireRole('admin'), getUsersController);
+
+// Validación de entrada con DTO
+router.post('/events', 
+  authMiddleware, 
+  validate(createEventDTO), 
+  createEventController
+);
+
+// Múltiples roles permitidos
+router.get('/analytics', 
+  authMiddleware, 
+  requireRole('admin', 'superadmin'), 
+  getAnalyticsController
+);
+```
+
+### DTOs de Validación
+
+```typescript
+// Ejemplo de DTO para crear evento
+const createEventDTO = Joi.object({
+  eventName: Joi.string().required().min(3).max(100),
+  eventType: Joi.string().valid('boda', 'concierto', 'evento_corporativo').required(),
+  date: Joi.date().iso().required(),
+  time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+  location: Joi.string().required(),
+  instrument: Joi.string().required(),
+  budget: Joi.number().positive().required(),
+  description: Joi.string().optional()
+});
+```
+
+## ⚠️ Manejo de Errores ✅ **NUEVO**
+
+### Estructura de Error Estándar
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Datos de entrada inválidos",
+    "details": [
+      {
+        "field": "email",
+        "message": "El email debe ser válido"
+      }
+    ],
+    "timestamp": "2024-01-15T10:30:00Z",
+    "requestId": "req_123456"
+  }
+}
+```
+
+### Códigos de Error
+
+| Código | Descripción | HTTP Status |
+|--------|-------------|-------------|
+| `VALIDATION_ERROR` | Error de validación de datos | 400 |
+| `AUTHENTICATION_ERROR` | Error de autenticación | 401 |
+| `AUTHORIZATION_ERROR` | Error de autorización | 403 |
+| `NOT_FOUND_ERROR` | Recurso no encontrado | 404 |
+| `CONFLICT_ERROR` | Conflicto con estado actual | 409 |
+| `INTERNAL_ERROR` | Error interno del servidor | 500 |
+
+### Ejemplo de Error de Validación
+
+**POST** `/auth/register` (con datos inválidos)
+
+**Response (400)**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Datos de entrada inválidos",
+    "details": [
+      {
+        "field": "userEmail",
+        "message": "El email debe ser válido"
+      },
+      {
+        "field": "userPassword",
+        "message": "La contraseña debe tener al menos 8 caracteres"
+      }
+    ],
+    "timestamp": "2024-01-15T10:30:00Z",
+    "requestId": "req_123456"
+  }
+}
+```
+
+## 🔌 Socket.IO Events
+
+### Eventos de Chat ✅ **IMPLEMENTADO**
+- `chat-register` - Registrar usuario en chat
+- `join-conversation` - Unirse a conversación
+- `leave-conversation` - Salir de conversación
+- `send-message` - Enviar mensaje
+- `new-message` - Nuevo mensaje recibido
+- `message-notification` - Notificación de mensaje
+- `mark-message-read` - Marcar mensaje como leído
+- `message-read` - Mensaje marcado como leído
+- `typing` - Usuario escribiendo
+- `user-typing` - Indicador de escritura
+- `online-status` - Estado de conexión
+- `user-status-changed` - Cambio de estado de usuario
+
+### Eventos de Eventos
+- `event_created` - Nuevo evento creado
+- `event_updated` - Evento actualizado
+- `event_deleted` - Evento eliminado
+- `event_status_changed` - Estado de evento cambiado
+
+### Eventos de Solicitudes
+- `new_event_request` - Nueva solicitud de músico
+- `musician_accepted` - Músico aceptó solicitud
+- `request_cancelled` - Solicitud cancelada
+- `request_updated` - Solicitud actualizada
+- `request_deleted` - Solicitud eliminada
+
 ## 🔧 Configuración de Cliente
 
 ### Headers Requeridos
@@ -1095,6 +1414,13 @@ axios.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    
+    // Manejo de errores estructurados
+    if (error.response?.data?.error) {
+      const { code, message, details } = error.response.data.error;
+      console.error(`Error ${code}: ${message}`, details);
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -1122,12 +1448,12 @@ axios.interceptors.response.use(
 - Refresh tokens próximamente
 
 ### Autorización
-- Validación de roles en cada endpoint
+- Validación de roles en cada endpoint con `requireRole`
 - Solo el propietario puede modificar sus recursos
 - Administradores tienen acceso completo
 
 ### Validación de Datos
-- Sanitización de inputs
+- Sanitización de inputs con Joi DTOs
 - Validación de tipos y formatos
 - Límites de tamaño para archivos
 - Protección contra inyección
@@ -1137,10 +1463,15 @@ axios.interceptors.response.use(
 - Protección contra spam y abuso
 - Timeouts configurables
 
+### Logging
+- Logging estructurado para auditoría
+- Niveles de log configurables
+- Información de requests y errores
+
 ---
 
 **Documentación actualizada al: $(date)**
 
-**Versión de la API**: 1.0.0
+**Versión de la API**: 2.0.0
 
-**Estado**: ✅ PRODUCCIÓN - CRUD completo implementado 
+**Estado**: ✅ PRODUCCIÓN - Búsqueda avanzada, analytics, chat mejorado, middlewares, validaciones y logging implementados 
