@@ -11,7 +11,10 @@ import {
   updateUserByEmailController, 
   validNumberGetByEmail, 
   addEventToUserController, 
-  deleteUserByEmailController 
+  deleteUserByEmailController,
+  forgotPasswordController,
+  verifyCodeController,
+  resetPasswordController
 } from "../controllers/authController";
 
 const router = Router();
@@ -277,6 +280,123 @@ router.delete("/delete/:userEmail",
     });
     await deleteUserByEmailController(req, res);
     logger.logAuth('Usuario eliminado exitosamente', userEmail);
+  })
+);
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Solicitar recuperación de contraseña (solo superadmin)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Código de verificación enviado
+ *       400:
+ *         description: Email inválido
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/forgot-password", 
+  asyncHandler(async (req: Request, res: Response) => {
+    const userEmail = req.body.userEmail;
+    logger.logAuth('Solicitud de recuperación de contraseña', userEmail);
+    await forgotPasswordController(req, res);
+    logger.logAuth('Código de verificación enviado', userEmail);
+  })
+);
+
+/**
+ * @swagger
+ * /auth/verify-code:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verificar código de recuperación
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *     responses:
+ *       200:
+ *         description: Código verificado correctamente
+ *       400:
+ *         description: Código inválido o expirado
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/verify-code", 
+  asyncHandler(async (req: Request, res: Response) => {
+    const userEmail = req.body.userEmail;
+    const code = req.body.code;
+    logger.logAuth('Verificación de código solicitada', userEmail, { metadata: { code } });
+    await verifyCodeController(req, res);
+    logger.logAuth('Código verificado exitosamente', userEmail);
+  })
+);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Restablecer contraseña
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente
+ *       400:
+ *         description: Código inválido o contraseña débil
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ *       404:
+ *         description: Usuario no encontrado
+ */
+router.post("/reset-password", 
+  asyncHandler(async (req: Request, res: Response) => {
+    const userEmail = req.body.userEmail;
+    logger.logAuth('Restablecimiento de contraseña solicitado', userEmail);
+    await resetPasswordController(req, res);
+    logger.logAuth('Contraseña restablecida exitosamente', userEmail);
   })
 );
 

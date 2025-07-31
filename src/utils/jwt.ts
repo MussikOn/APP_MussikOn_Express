@@ -6,11 +6,19 @@ try{
     if(!userEmail || !name || !lastName || !roll){
         return false;
     }
-    if(roll === "admin"){
-        return jwt.sign({"name":name,"lastName":lastName,"userEmail":userEmail,"roll":roll}, TOKEN_SECRET, {expiresIn: "1h"});
-    }else{
-        return jwt.sign({name,lastName,userEmail,roll}, TOKEN_SECRET);
-    }
+    
+    // Generar token con expiración consistente para todos los roles
+    // 24 horas para desarrollo, se puede ajustar según necesidades
+    return jwt.sign(
+        {
+            name: name,
+            lastName: lastName,
+            userEmail: userEmail,
+            roll: roll
+        }, 
+        TOKEN_SECRET, 
+        { expiresIn: "24h" }
+    );
     
 }catch(error){
     return false;

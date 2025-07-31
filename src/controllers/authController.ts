@@ -291,3 +291,370 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
     res.status(500).json({ message: 'Error al eliminar usuario', error: (error as Error).message });
   }
 };
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Solicitar recuperación de contraseña (solo superadmin)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Código de verificación enviado
+ *       404:
+ *         description: Usuario no encontrado
+ *       403:
+ *         description: Solo superadmin puede recuperar contraseña
+ * 
+ * /auth/verify-code:
+ *   post:
+ *     summary: Verificar código de recuperación
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Código verificado correctamente
+ *       400:
+ *         description: Código inválido o expirado
+ * 
+ * /auth/reset-password:
+ *   post:
+ *     summary: Restablecer contraseña
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente
+ *       400:
+ *         description: Código inválido o contraseña débil
+ */
+
+// Almacén temporal para códigos de verificación (en producción usar Redis)
+const verificationCodes = new Map<string, { code: string; expiresAt: number }>();
+
+// Función para generar código de verificación
+function generateVerificationCode(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Función para limpiar códigos expirados
+function cleanupExpiredCodes() {
+  const now = Date.now();
+  for (const [email, data] of verificationCodes.entries()) {
+    if (data.expiresAt < now) {
+      verificationCodes.delete(email);
+    }
+  }
+}
+
+// Ejecutar limpieza cada 5 minutos
+setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
+
+// Solicitar recuperación de contraseña (solo superadmin)
+export const forgotPasswordController = async (req: Request, res: Response) => {
+  try {
+    const { userEmail } = req.body;
+    
+    if (!userEmail) {
+      res.status(400).json({ msg: "Email es requerido" });
+      return;
+    }
+
+    if (!validarEmail(userEmail)) {
+      res.status(400).json({ msg: "Email inválido" });
+      return;
+    }
+
+    // Buscar usuario
+    const user = await getUserByEmailModel(userEmail);
+    if (!user) {
+      res.status(404).json({ msg: "Usuario no encontrado" });
+      return;
+    }
+
+    // Verificar que sea superadmin
+    if (user.roll !== "superadmin") {
+      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+      return;
+    }
+
+    // Generar código de verificación
+    const verificationCode = generateVerificationCode();
+    const expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutos
+
+    // Guardar código temporalmente
+    verificationCodes.set(userEmail.toLowerCase(), {
+      code: verificationCode,
+      expiresAt
+    });
+
+    // Enviar email con código
+    const html = `<!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Recuperar Contraseña - MusikOn</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', sans-serif;">
+      <table align="center" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #004aad; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <!-- Logo -->
+              <tr>
+                <td style="padding: 30px 0; text-align: center; background-color: #ffffff;">
+                  <img src="https://lh3.googleusercontent.com/a/ACg8ocLSs4B7UmP4bKLb26G-puyYjCURVh0Qnf9yHD_zxbCfRJTd3DFOovBly95OzJTWk34hnBf1RhigsdCnM0Wwg3TKCgsJ3rs=s288-c-no" alt="MusikOn Logo" width="120" style="border-radius: 50%;" />
+                </td>
+              </tr>
+
+              <!-- Título -->
+              <tr>
+                <td style="padding: 30px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 26px; color: #fff;">Recuperar Contraseña</h2>
+                  <p style="font-size: 16px; color: hsl(246, 100%, 92%);">Hola ${user.name}, has solicitado restablecer tu contraseña.</p>
+                </td>
+              </tr>
+
+              <!-- Código de Verificación -->
+              <tr>
+                <td style="text-align: center; padding: 20px;">
+                  <h1 style="display: inline-block; padding: 15px 30px; background-color: #004aad; color: #fff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 50px;">
+                    ${verificationCode}
+                  </h1>
+                </td>
+              </tr>
+
+              <!-- Instrucciones -->
+              <tr>
+                <td style="padding: 20px 40px; text-align: center;">
+                  <p style="font-size: 16px; color: #fff; margin-bottom: 10px;">
+                    <strong>Instrucciones:</strong>
+                  </p>
+                  <p style="font-size: 14px; color: #b6c9ff; margin: 5px 0;">
+                    1. Copia el código de 6 dígitos de arriba
+                  </p>
+                  <p style="font-size: 14px; color: #b6c9ff; margin: 5px 0;">
+                    2. Ve a la página de recuperación de contraseña
+                  </p>
+                  <p style="font-size: 14px; color: #b6c9ff; margin: 5px 0;">
+                    3. Ingresa el código y tu nueva contraseña
+                  </p>
+                  <p style="font-size: 14px; color: #b6c9ff; margin: 5px 0;">
+                    4. El código expira en 10 minutos
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Mensaje de seguridad -->
+              <tr>
+                <td style="padding: 20px 40px; text-align: center; font-size: 14px; color: #b6c9ff;">
+                  <p style="margin: 0;">
+                    <strong>⚠️ Importante:</strong> Si no solicitaste este cambio, puedes ignorar este mensaje. 
+                    Tu contraseña actual permanecerá sin cambios.
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="text-align: center; padding: 30px; background-color: #f0f0f0; font-size: 12px; color: #0041f3;">
+                  &copy; 2025 MusikOn. Todos los derechos reservados.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>`;
+
+    try {
+      await sendEmail(
+        userEmail,
+        "Recuperar Contraseña - MusikOn",
+        html
+      );
+
+      res.status(200).json({ 
+        msg: "Código de verificación enviado al email",
+        userEmail: userEmail 
+      });
+    } catch (emailError) {
+      console.error("Error al enviar email:", emailError);
+      res.status(500).json({ msg: "Error al enviar email de verificación" });
+    }
+
+  } catch (error) {
+    console.error("Error en forgotPasswordController:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};
+
+// Verificar código de recuperación
+export const verifyCodeController = async (req: Request, res: Response) => {
+  try {
+    const { userEmail, code } = req.body;
+    
+    if (!userEmail || !code) {
+      res.status(400).json({ msg: "Email y código son requeridos" });
+      return;
+    }
+
+    if (!validarEmail(userEmail)) {
+      res.status(400).json({ msg: "Email inválido" });
+      return;
+    }
+
+    // Buscar usuario
+    const user = await getUserByEmailModel(userEmail);
+    if (!user) {
+      res.status(404).json({ msg: "Usuario no encontrado" });
+      return;
+    }
+
+    // Verificar que sea superadmin
+    if (user.roll !== "superadmin") {
+      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+      return;
+    }
+
+    // Verificar código
+    const storedData = verificationCodes.get(userEmail.toLowerCase());
+    if (!storedData) {
+      res.status(400).json({ msg: "Código no encontrado o expirado" });
+      return;
+    }
+
+    if (storedData.expiresAt < Date.now()) {
+      verificationCodes.delete(userEmail.toLowerCase());
+      res.status(400).json({ msg: "Código expirado" });
+      return;
+    }
+
+    if (storedData.code !== code) {
+      res.status(400).json({ msg: "Código inválido" });
+      return;
+    }
+
+    res.status(200).json({ 
+      msg: "Código verificado correctamente",
+      userEmail: userEmail 
+    });
+
+  } catch (error) {
+    console.error("Error en verifyCodeController:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};
+
+// Restablecer contraseña
+export const resetPasswordController = async (req: Request, res: Response) => {
+  try {
+    const { userEmail, code, newPassword } = req.body;
+    
+    if (!userEmail || !code || !newPassword) {
+      res.status(400).json({ msg: "Email, código y nueva contraseña son requeridos" });
+      return;
+    }
+
+    if (!validarEmail(userEmail)) {
+      res.status(400).json({ msg: "Email inválido" });
+      return;
+    }
+
+    if (!validarPassword(newPassword)) {
+      res.status(400).json({ msg: "La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales" });
+      return;
+    }
+
+    // Buscar usuario
+    const user = await getUserByEmailModel(userEmail);
+    if (!user) {
+      res.status(404).json({ msg: "Usuario no encontrado" });
+      return;
+    }
+
+    // Verificar que sea superadmin
+    if (user.roll !== "superadmin") {
+      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+      return;
+    }
+
+    // Verificar código
+    const storedData = verificationCodes.get(userEmail.toLowerCase());
+    if (!storedData) {
+      res.status(400).json({ msg: "Código no encontrado o expirado" });
+      return;
+    }
+
+    if (storedData.expiresAt < Date.now()) {
+      verificationCodes.delete(userEmail.toLowerCase());
+      res.status(400).json({ msg: "Código expirado" });
+      return;
+    }
+
+    if (storedData.code !== code) {
+      res.status(400).json({ msg: "Código inválido" });
+      return;
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Actualizar contraseña en la base de datos
+    const updateData = {
+      userPassword: hashedPassword,
+      update_at: new Date().toString()
+    };
+
+    const updateResult = await updateUserByEmailModel(userEmail, updateData);
+    if (updateResult) {
+      res.status(400).json({ msg: updateResult });
+      return;
+    }
+
+    // Eliminar código usado
+    verificationCodes.delete(userEmail.toLowerCase());
+
+    res.status(200).json({ 
+      msg: "Contraseña actualizada correctamente",
+      userEmail: userEmail 
+    });
+
+  } catch (error) {
+    console.error("Error en resetPasswordController:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};
