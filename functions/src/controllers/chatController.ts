@@ -15,15 +15,7 @@ import {
 } from "../models/chatModel";
 import { ChatFilters } from "../utils/DataTypes";
 
-// Extender la interfaz Request para incluir el usuario
-interface AuthenticatedRequest extends Request {
-  user?: {
-    userEmail: string;
-    name: string;
-    lastName: string;
-    roll: string;
-  };
-}
+// Usar la interfaz global extendida de Express
 
 // Tipo para las funciones del controlador
 type ChatControllerFunction = (req: any, res: Response) => Promise<void>;

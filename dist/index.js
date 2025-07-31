@@ -28,6 +28,8 @@ const musicianRequestRoutes_1 = __importDefault(require("./src/routes/musicianRe
 const chatRoutes_1 = __importDefault(require("./src/routes/chatRoutes"));
 const searchRoutes_1 = __importDefault(require("./src/routes/searchRoutes"));
 const analyticsRoutes_1 = __importDefault(require("./src/routes/analyticsRoutes"));
+const geolocationRoutes_1 = __importDefault(require("./src/routes/geolocationRoutes"));
+const paymentRoutes_1 = __importDefault(require("./src/routes/paymentRoutes"));
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
 // import { setupEventSocket } from './src/sockets/eventSocket';
@@ -307,6 +309,14 @@ const swaggerOptions = {
             {
                 name: "Analytics",
                 description: "Analytics, reportes y métricas de la plataforma"
+            },
+            {
+                name: "Geolocation",
+                description: "Servicios de geolocalización y búsqueda por proximidad"
+            },
+            {
+                name: "Payments",
+                description: "Sistema de pagos, facturación y gestión financiera"
             }
         ]
     },
@@ -333,6 +343,8 @@ app.use('/musician-requests', musicianRequestRoutes_1.default);
 app.use('/chat', chatRoutes_1.default);
 app.use('/search', searchRoutes_1.default);
 app.use('/analytics', analyticsRoutes_1.default);
+app.use('/geolocation', geolocationRoutes_1.default);
+app.use('/payments', paymentRoutes_1.default);
 // Configurar documentación
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs, swaggerUiOptions));
 app.use("/redoc", (0, redoc_express_1.default)({
@@ -373,6 +385,8 @@ app.get('/', (req, res) => {
             chat: '/chat',
             search: '/search',
             analytics: '/analytics',
+            geolocation: '/geolocation',
+            payments: '/payments',
             documentation: '/api-docs'
         }
     });

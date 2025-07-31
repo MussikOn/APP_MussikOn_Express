@@ -212,7 +212,7 @@ router.get('/events', authMiddleware, validatePagination, searchEventsController
  *         name: sortBy
  *         schema:
  *           type: string
- *           enum: [createdAt, updatedAt, date, budget]
+ *           enum: [createdAt, updatedAt, date, eventName]
  *           default: createdAt
  *         description: Campo por el cual ordenar
  *       - in: query
@@ -269,11 +269,22 @@ router.get('/musician-requests', authMiddleware, validatePagination, searchMusic
  *           type: string
  *         description: Término de búsqueda en texto
  *       - in: query
- *         name: userRole
+ *         name: role
  *         schema:
  *           type: string
- *           enum: [musico, eventCreator, usuario, adminJunior, adminMidLevel, adminSenior, superAdmin]
+ *           enum: [user, musician, admin, super_admin]
  *         description: Rol del usuario
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento (solo para músicos)
  *       - in: query
  *         name: limit
  *         schema:
@@ -288,10 +299,10 @@ router.get('/musician-requests', authMiddleware, validatePagination, searchMusic
  *         description: Número de resultados a omitir
  *       - in: query
  *         name: sortBy
- *           schema:
- *             type: string
- *             enum: [createdAt, updatedAt, name, userEmail]
- *             default: createdAt
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, name, email]
+ *           default: createdAt
  *         description: Campo por el cual ordenar
  *       - in: query
  *         name: sortOrder
@@ -337,7 +348,7 @@ router.get('/users', authMiddleware, validatePagination, searchUsersController);
  * /search/global:
  *   get:
  *     tags: [Search]
- *     summary: Búsqueda global en todas las colecciones
+ *     summary: Búsqueda global en toda la plataforma
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -345,50 +356,22 @@ router.get('/users', authMiddleware, validatePagination, searchUsersController);
  *         name: query
  *         schema:
  *           type: string
- *         description: Término de búsqueda en texto
+ *         required: true
+ *         description: Término de búsqueda
  *       - in: query
- *         name: status
+ *         name: types
  *         schema:
- *           type: string
- *         description: Estado (para eventos y solicitudes)
- *       - in: query
- *         name: eventType
- *         schema:
- *           type: string
- *         description: Tipo de evento
- *       - in: query
- *         name: instrument
- *         schema:
- *           type: string
- *         description: Instrumento
- *       - in: query
- *         name: dateFrom
- *         schema:
- *           type: string
- *           format: date
- *         description: Fecha desde
- *       - in: query
- *         name: dateTo
- *         schema:
- *           type: string
- *           format: date
- *         description: Fecha hasta
- *       - in: query
- *         name: location
- *         schema:
- *           type: string
- *         description: Ubicación
- *       - in: query
- *         name: userRole
- *         schema:
- *           type: string
- *         description: Rol de usuario
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [events, users, musician-requests]
+ *         description: Tipos de contenido a buscar
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           default: 10
- *         description: Número de resultados por colección
+ *           default: 20
+ *         description: Número de resultados por página
  *       - in: query
  *         name: offset
  *         schema:
@@ -399,7 +382,8 @@ router.get('/users', authMiddleware, validatePagination, searchUsersController);
  *         name: sortBy
  *         schema:
  *           type: string
- *           default: createdAt
+ *           enum: [relevance, createdAt, updatedAt]
+ *           default: relevance
  *         description: Campo por el cual ordenar
  *       - in: query
  *         name: sortOrder
@@ -425,23 +409,25 @@ router.get('/users', authMiddleware, validatePagination, searchUsersController);
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Event'
- *                     requests:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/MusicianRequest'
  *                     users:
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/User'
- *                 summary:
+ *                     musicianRequests:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/MusicianRequest'
+ *                 pagination:
  *                   type: object
  *                   properties:
- *                     totalEvents:
+ *                     total:
  *                       type: integer
- *                     totalRequests:
+ *                     page:
  *                       type: integer
- *                     totalUsers:
+ *                     limit:
  *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  *       401:
  *         description: No autorizado
  *       400:
@@ -454,22 +440,67 @@ router.get('/global', authMiddleware, validatePagination, globalSearchController
  * /search/location:
  *   get:
  *     tags: [Search]
- *     summary: Búsqueda por ubicación
+ *     summary: Búsqueda por ubicación geográfica
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: location
+ *         name: latitude
  *         schema:
- *           type: string
+ *           type: number
+ *           minimum: -90
+ *           maximum: 90
  *         required: true
- *         description: Ubicación a buscar
+ *         description: Latitud
+ *       - in: query
+ *         name: longitude
+ *         schema:
+ *           type: number
+ *           minimum: -180
+ *           maximum: 180
+ *         required: true
+ *         description: Longitud
  *       - in: query
  *         name: radius
  *         schema:
- *           type: integer
- *           default: 50
+ *           type: number
+ *           minimum: 0.1
+ *           maximum: 100
+ *           default: 10
  *         description: Radio de búsqueda en kilómetros
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [events, users, all]
+ *           default: all
+ *         description: Tipo de contenido a buscar
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [distance, createdAt, updatedAt]
+ *           default: distance
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Orden de clasificación
  *     responses:
  *       200:
  *         description: Resultados de búsqueda por ubicación
@@ -487,48 +518,43 @@ router.get('/global', authMiddleware, validatePagination, globalSearchController
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Event'
- *                     requests:
+ *                     users:
  *                       type: array
  *                       items:
- *                         $ref: '#/components/schemas/MusicianRequest'
- *                 location:
+ *                         $ref: '#/components/schemas/User'
+ *                 pagination:
  *                   type: object
  *                   properties:
- *                     searchLocation:
- *                       type: string
- *                     radius:
+ *                     total:
  *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
  *       401:
  *         description: No autorizado
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/location', authMiddleware, searchByLocationController);
+router.get('/location', authMiddleware, validatePagination, searchByLocationController);
 
 /**
  * @swagger
  * /search/available-events:
  *   get:
  *     tags: [Search]
- *     summary: Búsqueda de eventos disponibles para músicos
+ *     summary: Buscar eventos disponibles para un músico
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: query
- *         schema:
- *           type: string
- *         description: Término de búsqueda en texto
- *       - in: query
- *         name: eventType
- *         schema:
- *           type: string
- *         description: Tipo de evento
- *       - in: query
  *         name: instrument
  *         schema:
  *           type: string
- *         description: Instrumento requerido
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento del músico
  *       - in: query
  *         name: dateFrom
  *         schema:
@@ -552,11 +578,6 @@ router.get('/location', authMiddleware, searchByLocationController);
  *           type: number
  *         description: Presupuesto mínimo
  *       - in: query
- *         name: budgetMax
- *         schema:
- *           type: number
- *         description: Presupuesto máximo
- *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
@@ -572,6 +593,7 @@ router.get('/location', authMiddleware, searchByLocationController);
  *         name: sortBy
  *         schema:
  *           type: string
+ *           enum: [date, budget, createdAt]
  *           default: date
  *         description: Campo por el cual ordenar
  *       - in: query
@@ -615,24 +637,30 @@ router.get('/available-events', authMiddleware, validatePagination, searchAvaila
 
 /**
  * @swagger
- * /search/available-musicians/{eventId}:
+ * /search/available-musicians:
  *   get:
  *     tags: [Search]
- *     summary: Búsqueda de músicos disponibles para un evento
+ *     summary: Buscar músicos disponibles para un evento
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
+ *       - in: query
  *         name: eventId
- *         required: true
  *         schema:
  *           type: string
+ *         required: true
  *         description: ID del evento
  *       - in: query
- *         name: query
+ *         name: instrument
  *         schema:
  *           type: string
- *         description: Término de búsqueda en texto
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento requerido
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación preferida
  *       - in: query
  *         name: limit
  *         schema:
@@ -649,14 +677,15 @@ router.get('/available-events', authMiddleware, validatePagination, searchAvaila
  *         name: sortBy
  *         schema:
  *           type: string
- *           default: name
+ *           enum: [rating, experience, distance]
+ *           default: rating
  *         description: Campo por el cual ordenar
  *       - in: query
  *         name: sortOrder
  *         schema:
  *           type: string
  *           enum: [asc, desc]
- *           default: asc
+ *           default: desc
  *         description: Orden de clasificación
  *     responses:
  *       200:
@@ -687,9 +716,7 @@ router.get('/available-events', authMiddleware, validatePagination, searchAvaila
  *         description: No autorizado
  *       400:
  *         description: Parámetros de búsqueda inválidos
- *       404:
- *         description: Evento no encontrado
  */
-router.get('/available-musicians/:eventId', authMiddleware, validatePagination, searchAvailableMusiciansForEventController);
+router.get('/available-musicians', authMiddleware, validatePagination, searchAvailableMusiciansForEventController);
 
 export default router; 

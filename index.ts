@@ -25,6 +25,8 @@ import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
 import chatRoutes from './src/routes/chatRoutes';
 import searchRoutes from './src/routes/searchRoutes';
 import analyticsRoutes from './src/routes/analyticsRoutes';
+import geolocationRoutes from './src/routes/geolocationRoutes';
+import paymentRoutes from './src/routes/paymentRoutes';
 
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
@@ -275,12 +277,12 @@ const swaggerOptions = {
       }
     },
     tags: [
-      {
-        name: "Auth",
+      { 
+        name: "Auth", 
         description: "Endpoints de autenticación y gestión de usuarios"
       },
-      {
-        name: "Events",
+      { 
+        name: "Events", 
         description: "Gestión de eventos y solicitudes de músicos"
       },
       {
@@ -311,10 +313,18 @@ const swaggerOptions = {
                name: "Search",
                description: "Búsqueda avanzada y filtros"
              },
-             {
-               name: "Analytics",
-               description: "Analytics, reportes y métricas de la plataforma"
-             }
+                   {
+        name: "Analytics",
+        description: "Analytics, reportes y métricas de la plataforma"
+      },
+      {
+        name: "Geolocation",
+        description: "Servicios de geolocalización y búsqueda por proximidad"
+      },
+      {
+        name: "Payments",
+        description: "Sistema de pagos, facturación y gestión financiera"
+      }
     ]
   },
   apis: ["./src/routes/*.ts", "./src/controllers/*.ts"]
@@ -343,6 +353,8 @@ app.use('/musician-requests', musicianRequestRoutes);
 app.use('/chat', chatRoutes);
 app.use('/search', searchRoutes);
 app.use('/analytics', analyticsRoutes);
+app.use('/geolocation', geolocationRoutes);
+app.use('/payments', paymentRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -386,6 +398,8 @@ app.get('/', (req, res) => {
                chat: '/chat',
                search: '/search',
                analytics: '/analytics',
+               geolocation: '/geolocation',
+               payments: '/payments',
                documentation: '/api-docs'
              }
   });
