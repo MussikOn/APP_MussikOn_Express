@@ -26,6 +26,8 @@ const musicianProfileRoutes_1 = __importDefault(require("./src/routes/musicianPr
 const eventsRoutes_1 = __importDefault(require("./src/routes/eventsRoutes"));
 const musicianRequestRoutes_1 = __importDefault(require("./src/routes/musicianRequestRoutes"));
 const chatRoutes_1 = __importDefault(require("./src/routes/chatRoutes"));
+const searchRoutes_1 = __importDefault(require("./src/routes/searchRoutes"));
+const analyticsRoutes_1 = __importDefault(require("./src/routes/analyticsRoutes"));
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
 // import { setupEventSocket } from './src/sockets/eventSocket';
@@ -297,6 +299,14 @@ const swaggerOptions = {
             {
                 name: "Media",
                 description: "Endpoints para gestión de archivos multimedia"
+            },
+            {
+                name: "Search",
+                description: "Búsqueda avanzada y filtros"
+            },
+            {
+                name: "Analytics",
+                description: "Analytics, reportes y métricas de la plataforma"
             }
         ]
     },
@@ -321,6 +331,8 @@ app.use("/media", musicianProfileRoutes_1.default);
 app.use("/events", eventsRoutes_1.default);
 app.use('/musician-requests', musicianRequestRoutes_1.default);
 app.use('/chat', chatRoutes_1.default);
+app.use('/search', searchRoutes_1.default);
+app.use('/analytics', analyticsRoutes_1.default);
 // Configurar documentación
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs, swaggerUiOptions));
 app.use("/redoc", (0, redoc_express_1.default)({
@@ -359,6 +371,8 @@ app.get('/', (req, res) => {
             admin: '/admin',
             images: '/imgs',
             chat: '/chat',
+            search: '/search',
+            analytics: '/analytics',
             documentation: '/api-docs'
         }
     });

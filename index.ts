@@ -23,6 +23,8 @@ import musicianProfileRoutes from './src/routes/musicianProfileRoutes';
 import eventsRoutes from './src/routes/eventsRoutes';
 import musicianRequestRoutes from './src/routes/musicianRequestRoutes';
 import chatRoutes from './src/routes/chatRoutes';
+import searchRoutes from './src/routes/searchRoutes';
+import analyticsRoutes from './src/routes/analyticsRoutes';
 
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
@@ -301,10 +303,18 @@ const swaggerOptions = {
         name: "Musician Profile",
         description: "Gestión de perfiles de músicos"
       },
-      {
-        name: "Media",
-        description: "Endpoints para gestión de archivos multimedia"
-      }
+                   {
+               name: "Media",
+               description: "Endpoints para gestión de archivos multimedia"
+             },
+             {
+               name: "Search",
+               description: "Búsqueda avanzada y filtros"
+             },
+             {
+               name: "Analytics",
+               description: "Analytics, reportes y métricas de la plataforma"
+             }
     ]
   },
   apis: ["./src/routes/*.ts", "./src/controllers/*.ts"]
@@ -331,6 +341,8 @@ app.use("/media", musicianProfileRoutes);
 app.use("/events", eventsRoutes);
 app.use('/musician-requests', musicianRequestRoutes);
 app.use('/chat', chatRoutes);
+app.use('/search', searchRoutes);
+app.use('/analytics', analyticsRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -366,14 +378,16 @@ app.get('/', (req, res) => {
     status: 'online',
     documentation: '/api-docs',
     timestamp: new Date().toISOString(),
-    endpoints: {
-      auth: '/auth',
-      events: '/events',
-      admin: '/admin',
-      images: '/imgs',
-      chat: '/chat',
-      documentation: '/api-docs'
-    }
+                 endpoints: {
+               auth: '/auth',
+               events: '/events',
+               admin: '/admin',
+               images: '/imgs',
+               chat: '/chat',
+               search: '/search',
+               analytics: '/analytics',
+               documentation: '/api-docs'
+             }
   });
 });
 
