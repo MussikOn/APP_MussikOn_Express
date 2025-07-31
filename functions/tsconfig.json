@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": false,
+    "target": "es2017",
+    "skipLibCheck": true,
+    "noUnusedParameters": false,
+    "moduleResolution": "node"
+  },
+  "compileOnSave": true,
+  "include": [
+    "src"
+  ]
+}

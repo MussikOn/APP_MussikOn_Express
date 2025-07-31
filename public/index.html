@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 MussikOn API - Conectando Músicos con Organizadores</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+
+        .api-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .endpoints {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .endpoints h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .endpoint-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .method-get { background: #61affe; color: white; }
+        .method-post { background: #49cc90; color: white; }
+        .method-put { background: #fca130; color: white; }
+        .method-delete { background: #f93e3e; color: white; }
+
+        .links {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .status {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 2rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 MussikOn API</h1>
+            <p>Conectando músicos con organizadores de eventos</p>
+        </div>
+
+        <div class="content">
+            <div class="status">
+                <span class="status-indicator"></span>
+                <strong>API Status: Online</strong>
+            </div>
+
+            <div class="api-info">
+                <div class="info-card">
+                    <h3>📚 Documentación</h3>
+                    <p>Accede a la documentación completa de la API con ejemplos y pruebas interactivas.</p>
+                </div>
+                <div class="info-card">
+                    <h3>🔐 Autenticación</h3>
+                    <p>API protegida con JWT Bearer Token. Todos los endpoints requieren autenticación.</p>
+                </div>
+                <div class="info-card">
+                    <h3>⚡ Rendimiento</h3>
+                    <p>Desplegada en Firebase Cloud Functions con alta disponibilidad y escalabilidad.</p>
+                </div>
+            </div>
+
+            <div class="endpoints">
+                <h3>🚀 Endpoints Principales</h3>
+                <div class="endpoint-list">
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <strong>/auth/Register</strong>
+                        <p>Registro de usuarios</p>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <strong>/auth/login</strong>
+                        <p>Inicio de sesión</p>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <strong>/events/request-musician</strong>
+                        <p>Crear solicitud de músico</p>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-get">GET</span>
+                        <strong>/events/available-requests</strong>
+                        <p>Solicitudes disponibles</p>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <strong>/chat/conversations</strong>
+                        <p>Chat en tiempo real</p>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="endpoint-method method-post">POST</span>
+                        <strong>/images/upload</strong>
+                        <p>Subir imágenes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="links">
+                <a href="/api-docs" class="btn">📖 Swagger UI</a>
+                <a href="/redoc" class="btn btn-secondary">📋 Redoc</a>
+                <a href="/test" class="btn btn-secondary">🧪 Test API</a>
+                <a href="https://github.com/MussikOn/APP_MussikOn_Express" class="btn btn-secondary">📦 GitHub</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 MussikOn API - Desarrollado con ❤️ por Jefry Astacio</p>
+            <p>Versión 1.0.0 | Firebase Cloud Functions</p>
+        </div>
+    </div>
+
+    <script>
+        // Verificar estado de la API
+        fetch('/test')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Status:', data);
+            })
+            .catch(error => {
+                console.error('Error checking API status:', error);
+            });
+    </script>
+</body>
+</html>
