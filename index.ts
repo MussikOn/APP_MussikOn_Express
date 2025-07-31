@@ -28,6 +28,7 @@ import analyticsRoutes from './src/routes/analyticsRoutes';
 import geolocationRoutes from './src/routes/geolocationRoutes';
 import paymentRoutes from './src/routes/paymentRoutes';
 import notificationRoutes from './src/routes/notificationRoutes';
+import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
 
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
@@ -45,6 +46,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:5173',
+      'http://localhost:5173/analytics',
       'http://192.168.54.59:5173',
       'http://192.168.54.59:1000',
       'http://172.20.10.2:5173',
@@ -359,6 +361,7 @@ app.use('/analytics', analyticsRoutes);
 app.use('/geolocation', geolocationRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/push-notifications', pushNotificationRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -405,6 +408,7 @@ app.get('/', (req, res) => {
                geolocation: '/geolocation',
                payments: '/payments',
                notifications: '/notifications',
+               pushNotifications: '/push-notifications',
                documentation: '/api-docs'
              }
   });
