@@ -1,532 +1,206 @@
-# ⚠️ Manejo de Errores en MussikOn API
+# Error Handling Documentation
 
-> **Sistema completo de manejo de errores con middleware global, logging estructurado y respuestas estandarizadas**
+## Overview
+This document describes the error handling strategy implemented in the MussikOn API backend.
 
-## 📋 Tabla de Contenidos
+## Error Types
 
-- [Middleware Global de Errores](#middleware-global-de-errores)
-- [Estructura de Errores](#estructura-de-errores)
-- [Códigos de Error](#códigos-de-error)
-- [Logging Estructurado](#logging-estructurado)
-- [Ejemplos de Uso](#ejemplos-de-uso)
-- [Buenas Prácticas](#buenas-prácticas)
-- [Debugging y Troubleshooting](#debugging-y-troubleshooting)
+### Operational Errors
+Operational errors are expected errors that occur during normal operation:
+- Validation errors
+- Authentication errors
+- Authorization errors
+- Resource not found errors
+- Business logic errors
 
-## 🛡️ Middleware Global de Errores
+### Programming Errors
+Programming errors are unexpected errors that indicate bugs:
+- Syntax errors
+- Type errors
+- Runtime errors
+- Database connection errors
 
-### Implementación Principal
+## Error Classes
 
-El sistema utiliza un middleware global de errores implementado en `src/middleware/errorHandler.ts` que captura todos los errores no manejados y proporciona respuestas estructuradas.
+### AppError
+Base error class for all application errors.
 
-```typescript
-// src/middleware/errorHandler.ts
-export const errorHandler = (
-  err: Error | OperationalError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  const statusCode = err instanceof OperationalError ? err.statusCode : 500;
-  const message = err.message || 'Error interno del servidor';
-  
-  // Logging estructurado
-  loggerService.error('Error no manejado', {
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    userId: req.user?.id,
-    requestId: req.headers['x-request-id']
-  });
+### OperationalError
+Extends AppError for operational errors with additional context.
 
-  res.status(statusCode).json({
-    success: false,
-    error: {
-      code: err instanceof OperationalError ? err.code : 'INTERNAL_ERROR',
-      message,
-      timestamp: new Date().toISOString(),
-      requestId: req.headers['x-request-id'] || 'unknown',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
-  });
-};
-```
+## Error Handler Middleware
 
-### Clase de Error Personalizada
+### Global Error Handler
+The global error handler (`errorHandler`) catches all errors and:
+- Logs the error with context
+- Sends appropriate HTTP status codes
+- Returns structured error responses
+- Handles different error types appropriately
 
-```typescript
-// src/middleware/errorHandler.ts
-export class OperationalError extends Error {
-  public readonly statusCode: number;
-  public readonly code: string;
-  public readonly isOperational: boolean;
+### Async Handler
+The `asyncHandler` wraps async route handlers to:
+- Catch unhandled promise rejections
+- Pass errors to the global error handler
+- Prevent unhandled promise rejections from crashing the server
 
-  constructor(message: string, statusCode: number = 500, code: string = 'INTERNAL_ERROR') {
-    super(message);
-    this.statusCode = statusCode;
-    this.code = code;
-    this.isOperational = true;
-    
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-```
-
-### Wrapper para Controladores Asíncronos
-
-```typescript
-// src/middleware/errorHandler.ts
-export const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-};
-```
-
-## 📊 Estructura de Errores
-
-### Respuesta de Error Estándar
-
-Todas las respuestas de error siguen una estructura consistente:
+## Error Response Format
 
 ```json
 {
   "success": false,
   "error": {
+    "message": "Error description",
+    "status": 400,
     "code": "VALIDATION_ERROR",
-    "message": "Datos de entrada inválidos",
-    "details": [
-      {
-        "field": "email",
-        "message": "El email debe ser válido"
-      }
-    ],
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456",
-    "stack": "Error: Validation failed..." // Solo en desarrollo
+    "details": {}
   }
 }
 ```
 
-### Campos de la Respuesta de Error
+## Logging
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `success` | boolean | Siempre `false` para errores |
-| `error.code` | string | Código único del error |
-| `error.message` | string | Mensaje descriptivo del error |
-| `error.details` | array | Detalles específicos (opcional) |
-| `error.timestamp` | string | Timestamp ISO del error |
-| `error.requestId` | string | ID único de la request |
-| `error.stack` | string | Stack trace (solo en desarrollo) |
+### Structured Logging
+All errors are logged with structured information:
+- Error message and stack trace
+- Request details (URL, method, IP, user agent)
+- User context (if authenticated)
+- Timestamp
+- Request ID for tracing
 
-## 🏷️ Códigos de Error
+### Log Levels
+- **ERROR**: For all errors that need attention
+- **WARN**: For warnings that don't break functionality
+- **INFO**: For informational messages
+- **DEBUG**: For detailed debugging information
 
-### Códigos Estándar
+## Recent Fixes
 
-| Código | Descripción | HTTP Status | Ejemplo de Uso |
-|--------|-------------|-------------|----------------|
-| `VALIDATION_ERROR` | Error de validación de datos | 400 | DTOs inválidos |
-| `AUTHENTICATION_ERROR` | Error de autenticación | 401 | Token inválido |
-| `AUTHORIZATION_ERROR` | Error de autorización | 403 | Rol insuficiente |
-| `NOT_FOUND_ERROR` | Recurso no encontrado | 404 | Usuario inexistente |
-| `CONFLICT_ERROR` | Conflicto con estado actual | 409 | Email duplicado |
-| `RATE_LIMIT_ERROR` | Límite de requests excedido | 429 | Demasiadas peticiones |
-| `INTERNAL_ERROR` | Error interno del servidor | 500 | Error de base de datos |
+### Date Validation in Analytics Service
+**Issue**: `RangeError: Invalid time value` errors occurring in analytics endpoints when processing dates.
 
-### Ejemplos de Códigos Específicos
+**Root Cause**: The analytics service was trying to convert invalid dates to ISO strings without validation.
 
+**Solution**: 
+- Added date validation before calling `toISOString()`
+- Implemented try-catch blocks around date operations
+- Added fallback to current date for invalid dates
+- Fixed variable scope issues with `month` variables
+
+**Files Modified**:
+- `src/services/analyticsService.ts`
+
+**Code Example**:
 ```typescript
-// Errores de validación
-throw new OperationalError('Email inválido', 400, 'INVALID_EMAIL');
-throw new OperationalError('Contraseña muy débil', 400, 'WEAK_PASSWORD');
+// Before (causing errors)
+const month = new Date(request.createdAt).toISOString().substring(0, 7);
 
-// Errores de autenticación
-throw new OperationalError('Token expirado', 401, 'TOKEN_EXPIRED');
-throw new OperationalError('Credenciales inválidas', 401, 'INVALID_CREDENTIALS');
-
-// Errores de autorización
-throw new OperationalError('Rol insuficiente', 403, 'INSUFFICIENT_ROLE');
-throw new OperationalError('Acceso denegado', 403, 'ACCESS_DENIED');
-
-// Errores de recursos
-throw new OperationalError('Usuario no encontrado', 404, 'USER_NOT_FOUND');
-throw new OperationalError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
-
-// Errores de conflicto
-throw new OperationalError('Email ya registrado', 409, 'EMAIL_EXISTS');
-throw new OperationalError('Evento ya asignado', 409, 'EVENT_ALREADY_ASSIGNED');
-```
-
-## 📝 Logging Estructurado
-
-### Servicio de Logging
-
-El sistema utiliza un servicio de logging centralizado (`src/services/loggerService.ts`) con diferentes niveles:
-
-```typescript
-// src/services/loggerService.ts
-export class LoggerService {
-  error(message: string, context?: any): void {
-    console.error(`[ERROR] ${message}`, {
-      timestamp: new Date().toISOString(),
-      level: 'ERROR',
-      ...context
-    });
+// After (with validation)
+let month: string;
+try {
+  const createdAt = request.createdAt ? new Date(request.createdAt) : new Date();
+  if (isNaN(createdAt.getTime())) {
+    console.warn('Fecha inválida en request:', request.id, request.createdAt);
+    month = new Date().toISOString().substring(0, 7);
+  } else {
+    month = createdAt.toISOString().substring(0, 7);
   }
-
-  warn(message: string, context?: any): void {
-    console.warn(`[WARN] ${message}`, {
-      timestamp: new Date().toISOString(),
-      level: 'WARN',
-      ...context
-    });
-  }
-
-  info(message: string, context?: any): void {
-    console.info(`[INFO] ${message}`, {
-      timestamp: new Date().toISOString(),
-      level: 'INFO',
-      ...context
-    });
-  }
-
-  debug(message: string, context?: any): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(`[DEBUG] ${message}`, {
-        timestamp: new Date().toISOString(),
-        level: 'DEBUG',
-        ...context
-      });
-    }
-  }
+} catch (error) {
+  console.warn('Error al procesar fecha de request:', request.id, error);
+  month = new Date().toISOString().substring(0, 7);
 }
 ```
 
-### Logging de Requests
+## Best Practices
 
-```typescript
-// Middleware de logging de requests
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const requestId = req.headers['x-request-id'] || generateRequestId();
-  req.headers['x-request-id'] = requestId;
+### 1. Always Validate Input
+- Validate all user inputs
+- Check data types and formats
+- Handle edge cases
 
-  loggerService.info('Request recibida', {
-    requestId,
-    method: req.method,
-    url: req.url,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
-  });
+### 2. Use Try-Catch Appropriately
+- Wrap operations that might fail
+- Provide meaningful error messages
+- Log errors with context
 
-  next();
-});
-```
+### 3. Return Consistent Error Responses
+- Use standard error format
+- Include appropriate HTTP status codes
+- Provide helpful error messages
 
-### Logging de Errores
+### 4. Log Errors Properly
+- Include request context
+- Log at appropriate levels
+- Use structured logging
 
-```typescript
-// En el middleware de errores
-loggerService.error('Error no manejado', {
-  requestId: req.headers['x-request-id'],
-  error: err.message,
-  stack: err.stack,
-  url: req.url,
-  method: req.method,
-  userId: req.user?.id,
-  userEmail: req.user?.userEmail
-});
-```
+### 5. Handle Async Operations
+- Use asyncHandler for route handlers
+- Handle promise rejections
+- Prevent unhandled rejections
 
-## 💡 Ejemplos de Uso
+## Common Error Scenarios
 
-### 1. Error de Validación
+### Authentication Errors
+- Invalid tokens
+- Expired tokens
+- Missing authentication headers
 
-**Request inválida:**
-```json
-POST /auth/register
-{
-  "name": "Juan",
-  "userEmail": "invalid-email",
-  "userPassword": "123"
-}
-```
+### Validation Errors
+- Invalid input data
+- Missing required fields
+- Invalid data formats
 
-**Response (400):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Datos de entrada inválidos",
-    "details": [
-      {
-        "field": "userEmail",
-        "message": "El email debe ser válido"
-      },
-      {
-        "field": "userPassword",
-        "message": "La contraseña debe tener al menos 8 caracteres"
-      }
-    ],
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
-  }
-}
-```
+### Database Errors
+- Connection failures
+- Query errors
+- Constraint violations
 
-### 2. Error de Autenticación
+### File Upload Errors
+- Invalid file types
+- File size limits
+- Storage errors
 
-**Token inválido:**
-```json
-GET /events
-Authorization: Bearer invalid-token
-```
+## Monitoring and Alerting
 
-**Response (401):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "AUTHENTICATION_ERROR",
-    "message": "Token inválido o expirado",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
-  }
-}
-```
+### Error Monitoring
+- Monitor error rates
+- Track error trends
+- Alert on critical errors
 
-### 3. Error de Autorización
+### Performance Monitoring
+- Monitor response times
+- Track resource usage
+- Alert on performance issues
 
-**Usuario sin permisos:**
-```json
-GET /admin/users
-Authorization: Bearer valid-token-of-regular-user
-```
+## Testing Error Handling
 
-**Response (403):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "AUTHORIZATION_ERROR",
-    "message": "No autorizado. Rol insuficiente.",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
-  }
-}
-```
+### Unit Tests
+- Test error scenarios
+- Verify error responses
+- Test error logging
 
-### 4. Error de Recurso No Encontrado
+### Integration Tests
+- Test error handling in real scenarios
+- Verify error propagation
+- Test error recovery
 
-**Usuario inexistente:**
-```json
-GET /users/non-existent-id
-Authorization: Bearer valid-token
-```
+## Future Improvements
 
-**Response (404):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "NOT_FOUND_ERROR",
-    "message": "Usuario no encontrado",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
-  }
-}
-```
+### 1. Enhanced Error Tracking
+- Implement error tracking service
+- Add error correlation IDs
+- Improve error analytics
 
-### 5. Error de Conflicto
+### 2. Better Error Messages
+- Localize error messages
+- Provide more helpful guidance
+- Add error codes for clients
 
-**Email duplicado:**
-```json
-POST /auth/register
-{
-  "name": "Juan",
-  "userEmail": "existing@example.com",
-  "userPassword": "Password123!"
-}
-```
+### 3. Error Recovery
+- Implement retry mechanisms
+- Add circuit breakers
+- Improve fault tolerance
 
-**Response (409):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "CONFLICT_ERROR",
-    "message": "El email ya está registrado",
-    "timestamp": "2024-01-15T10:30:00Z",
-    "requestId": "req_123456"
-  }
-}
-```
-
-## 🛡️ Buenas Prácticas
-
-### 1. Uso de asyncHandler
-
-Siempre envuelve los controladores asíncronos con `asyncHandler`:
-
-```typescript
-// ✅ Correcto
-router.get('/events', asyncHandler(async (req: Request, res: Response) => {
-  const events = await eventService.getEvents();
-  res.json({ success: true, events });
-}));
-
-// ❌ Incorrecto - Puede causar errores no manejados
-router.get('/events', async (req: Request, res: Response) => {
-  const events = await eventService.getEvents();
-  res.json({ success: true, events });
-});
-```
-
-### 2. Lanzar Errores Operacionales
-
-Usa `OperationalError` para errores conocidos:
-
-```typescript
-// ✅ Correcto
-if (!user) {
-  throw new OperationalError('Usuario no encontrado', 404, 'USER_NOT_FOUND');
-}
-
-// ❌ Incorrecto
-if (!user) {
-  throw new Error('Usuario no encontrado');
-}
-```
-
-### 3. Logging Contextual
-
-Incluye contexto relevante en los logs:
-
-```typescript
-// ✅ Correcto
-loggerService.error('Error al crear evento', {
-  userId: req.user?.id,
-  eventData: req.body,
-  error: err.message
-});
-
-// ❌ Incorrecto
-console.error('Error:', err.message);
-```
-
-### 4. Validación de Entrada
-
-Usa DTOs para validación:
-
-```typescript
-// ✅ Correcto
-router.post('/events', 
-  validate(createEventDTO), 
-  asyncHandler(createEventController)
-);
-
-// ❌ Incorrecto
-router.post('/events', asyncHandler(createEventController));
-```
-
-## 🔍 Debugging y Troubleshooting
-
-### 1. Identificar Errores
-
-Usa el `requestId` para rastrear errores:
-
-```bash
-# Buscar en logs por requestId
-grep "req_123456" logs/app.log
-```
-
-### 2. Logs de Desarrollo
-
-En desarrollo, los errores incluyen stack traces:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INTERNAL_ERROR",
-    "message": "Error interno del servidor",
-    "stack": "Error: Cannot read property 'id' of undefined\n    at createEventController (/app/src/controllers/eventController.ts:25:15)\n    ..."
-  }
-}
-```
-
-### 3. Monitoreo de Errores
-
-Configura alertas para errores críticos:
-
-```typescript
-// En el middleware de errores
-if (statusCode >= 500) {
-  // Enviar alerta a sistema de monitoreo
-  monitoringService.alert('Error crítico detectado', {
-    statusCode,
-    message,
-    requestId
-  });
-}
-```
-
-### 4. Métricas de Errores
-
-```typescript
-// Contar errores por tipo
-const errorMetrics = {
-  validation: 0,
-  authentication: 0,
-  authorization: 0,
-  notFound: 0,
-  conflict: 0,
-  internal: 0
-};
-
-// En el middleware de errores
-errorMetrics[err.code] = (errorMetrics[err.code] || 0) + 1;
-```
-
-## 🔧 Configuración
-
-### Variables de Entorno
-
-```typescript
-// ENV.ts
-export const ERROR_CONFIG = {
-  SHOW_STACK_TRACE: process.env.NODE_ENV === 'development',
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-  REQUEST_TIMEOUT: parseInt(process.env.REQUEST_TIMEOUT || '30000'),
-  MAX_LOG_SIZE: parseInt(process.env.MAX_LOG_SIZE || '10485760') // 10MB
-};
-```
-
-### Middleware de Timeout
-
-```typescript
-// Timeout para requests largas
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const timeout = setTimeout(() => {
-    res.status(408).json({
-      success: false,
-      error: {
-        code: 'TIMEOUT_ERROR',
-        message: 'Request timeout',
-        timestamp: new Date().toISOString(),
-        requestId: req.headers['x-request-id']
-      }
-    });
-  }, ERROR_CONFIG.REQUEST_TIMEOUT);
-
-  res.on('finish', () => clearTimeout(timeout));
-  next();
-});
-```
-
----
-
-**Documentación actualizada al**: $(date)
-
-**Versión**: 2.0.0 - Sistema completo de manejo de errores implementado ✅ 
+### 4. Monitoring Enhancements
+- Add real-time error dashboards
+- Implement error alerting
+- Add performance metrics 
