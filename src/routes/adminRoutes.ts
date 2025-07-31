@@ -153,12 +153,12 @@ const adminRoutes = Router();
  */
 
 // --- Usuarios ---
-adminRoutes.get('/admin/users', adminOnly, adminUsersGetAll);
-adminRoutes.get('/admin/users/:id', adminOnly, adminUsersGetById);
-adminRoutes.post('/admin/users', adminOnly, adminUsersCreate);
-adminRoutes.put('/admin/users/:id', adminOnly, adminUsersUpdate);
-adminRoutes.delete('/admin/users/:id', adminOnly, adminUsersRemove);
-adminRoutes.get('/admin/users/stats', adminOnly, adminUsersStats);
+adminRoutes.get('/users', adminOnly, adminUsersGetAll);
+adminRoutes.get('/users/:id', adminOnly, adminUsersGetById);
+adminRoutes.post('/users', adminOnly, adminUsersCreate);
+adminRoutes.put('/users/:id', adminOnly, adminUsersUpdate);
+adminRoutes.delete('/users/:id', adminOnly, adminUsersRemove);
+adminRoutes.get('/users/stats', adminOnly, adminUsersStats);
 
 /**
  * @swagger
@@ -250,11 +250,11 @@ adminRoutes.get('/admin/users/stats', adminOnly, adminUsersStats);
  */
 
 // --- Eventos ---
-adminRoutes.get('/admin/events', adminOnly, adminEventsGetAll);
-adminRoutes.get('/admin/events/:id', adminOnly, adminEventsGetById);
-adminRoutes.post('/admin/events', adminOnly, adminEventsCreate);
-adminRoutes.put('/admin/events/:id', adminOnly, adminEventsUpdate);
-adminRoutes.delete('/admin/events/:id', adminOnly, adminEventsRemove);
+adminRoutes.get('/events', adminOnly, adminEventsGetAll);
+adminRoutes.get('/events/:id', adminOnly, adminEventsGetById);
+adminRoutes.post('/events', adminOnly, adminEventsCreate);
+adminRoutes.put('/events/:id', adminOnly, adminEventsUpdate);
+adminRoutes.delete('/events/:id', adminOnly, adminEventsRemove);
 
 /**
  * @swagger
@@ -329,10 +329,10 @@ adminRoutes.delete('/admin/events/:id', adminOnly, adminEventsRemove);
  */
 
 // --- Músicos ---
-adminRoutes.get('/admin/musicians', adminOnly, adminMusiciansGetAll);
-adminRoutes.get('/admin/musicians/:id', adminOnly, adminMusiciansGetById);
-adminRoutes.put('/admin/musicians/:id', adminOnly, adminMusiciansUpdate);
-adminRoutes.delete('/admin/musicians/:id', adminOnly, adminMusiciansRemove);
+adminRoutes.get('/musicians', adminOnly, adminMusiciansGetAll);
+adminRoutes.get('/musicians/:id', adminOnly, adminMusiciansGetById);
+adminRoutes.put('/musicians/:id', adminOnly, adminMusiciansUpdate);
+adminRoutes.delete('/musicians/:id', adminOnly, adminMusiciansRemove);
 
 /**
  * @swagger
@@ -385,9 +385,9 @@ adminRoutes.delete('/admin/musicians/:id', adminOnly, adminMusiciansRemove);
  */
 
 // --- Imágenes ---
-adminRoutes.get('/admin/images', adminOnly, adminImagesGetAll);
-adminRoutes.get('/admin/images/:id', adminOnly, adminImagesGetById);
-adminRoutes.delete('/admin/images/:id', adminOnly, adminImagesRemove);
+adminRoutes.get('/images', adminOnly, adminImagesGetAll);
+adminRoutes.get('/images/:id', adminOnly, adminImagesGetById);
+adminRoutes.delete('/images/:id', adminOnly, adminImagesRemove);
 
 /**
  * @swagger
@@ -440,12 +440,12 @@ adminRoutes.delete('/admin/images/:id', adminOnly, adminImagesRemove);
  */
 
 // --- Solicitudes de Músico ---
-adminRoutes.get('/admin/musician-requests', adminOnly, adminMusicianRequestsGetAll);
-adminRoutes.post('/admin/musician-requests', adminOnly, adminMusicianRequestsCreate);
-adminRoutes.get('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsGetById);
-adminRoutes.put('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsUpdate);
-adminRoutes.delete('/admin/musician-requests/:id', adminOnly, adminMusicianRequestsRemove);
-adminRoutes.get('/admin/musician-requests/stats', adminOnly, adminMusicianRequestsStats);
+adminRoutes.get('/musician-requests', adminOnly, adminMusicianRequestsGetAll);
+adminRoutes.post('/musician-requests', adminOnly, adminMusicianRequestsCreate);
+adminRoutes.get('/musician-requests/:id', adminOnly, adminMusicianRequestsGetById);
+adminRoutes.put('/musician-requests/:id', adminOnly, adminMusicianRequestsUpdate);
+adminRoutes.delete('/musician-requests/:id', adminOnly, adminMusicianRequestsRemove);
+adminRoutes.get('/musician-requests/stats', adminOnly, adminMusicianRequestsStats);
 
 // ===== NUEVAS RUTAS PARA ADMIN SYSTEM =====
 
@@ -487,7 +487,7 @@ adminRoutes.get('/admin/musician-requests/stats', adminOnly, adminMusicianReques
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/search/global', adminOnly, adminGlobalSearch);
+adminRoutes.get('/search/global', adminOnly, adminGlobalSearch);
 
 /**
  * @swagger
@@ -503,7 +503,7 @@ adminRoutes.get('/admin/search/global', adminOnly, adminGlobalSearch);
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/analytics/dashboard', adminOnly, adminDashboardAnalytics);
+adminRoutes.get('/analytics/dashboard', adminOnly, adminDashboardAnalytics);
 
 /**
  * @swagger
@@ -532,7 +532,7 @@ adminRoutes.get('/admin/analytics/dashboard', adminOnly, adminDashboardAnalytics
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/analytics/users', adminOnly, adminUserAnalytics);
+adminRoutes.get('/analytics/users', adminOnly, adminUserAnalytics);
 
 /**
  * @swagger
@@ -561,7 +561,7 @@ adminRoutes.get('/admin/analytics/users', adminOnly, adminUserAnalytics);
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/analytics/events', adminOnly, adminEventAnalytics);
+adminRoutes.get('/analytics/events', adminOnly, adminEventAnalytics);
 
 /**
  * @swagger
@@ -590,7 +590,7 @@ adminRoutes.get('/admin/analytics/events', adminOnly, adminEventAnalytics);
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/analytics/requests', adminOnly, adminRequestAnalytics);
+adminRoutes.get('/analytics/requests', adminOnly, adminRequestAnalytics);
 
 /**
  * @swagger
@@ -627,6 +627,6 @@ adminRoutes.get('/admin/analytics/requests', adminOnly, adminRequestAnalytics);
  *       403:
  *         description: Acceso solo para administradores
  */
-adminRoutes.get('/admin/analytics/export', adminOnly, adminExportReport);
+adminRoutes.get('/analytics/export', adminOnly, adminExportReport);
 
 export default adminRoutes;

@@ -432,11 +432,11 @@ process.on('uncaughtException', (error) => {
 
 // Exportar para uso en tests
 export { app, server, io };
-
+const URL = URL_API;
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${PORT}`, {
+  logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
     metadata: {
       port: PORT,
       environment: process.env.NODE_ENV || 'development',

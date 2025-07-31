@@ -1,8 +1,4 @@
-// Creadenciales de google.
-
-// Client ID: 52548761937-0nh2fu5rpv4tamjv41dvabje2kru5a6v.apps.googleusercontent.com
-// Secreto del Cliente: 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
-
+// Configuración de la API
 import os from "os";
 // export const IP = req.ip
 function obtenerIpLocal(): string {
