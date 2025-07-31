@@ -111,25 +111,41 @@ export class AnalyticsService {
       let completedEvents = 0;
       let cancelledEvents = 0;
 
-      events.forEach((event: any) => {
-        // Contar por estado
-        eventsByStatus[event.status] = (eventsByStatus[event.status] || 0) + 1;
-        
-        // Contar por tipo
-        eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1;
-        
-        // Contar por mes
-        const month = new Date(event.createdAt).toISOString().substring(0, 7);
-        eventsByMonth[month] = (eventsByMonth[month] || 0) + 1;
-        
-        // Calcular presupuesto
-        const budget = parseFloat(event.budget || '0');
-        totalBudget += budget;
-        
-        // Contar eventos completados y cancelados
-        if (event.status === 'completed') completedEvents++;
-        if (event.status === 'cancelled' || event.status === 'musician_cancelled') cancelledEvents++;
-      });
+              events.forEach((event: any) => {
+          // Contar por estado
+          eventsByStatus[event.status] = (eventsByStatus[event.status] || 0) + 1;
+          
+          // Contar por tipo
+          eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1;
+          
+          // Contar por mes - Validar fecha antes de convertir
+          let month: string;
+          try {
+            const createdAt = event.createdAt ? new Date(event.createdAt) : new Date();
+            if (isNaN(createdAt.getTime())) {
+              console.info('./src/services/analyticsService.ts line 126')
+              console.warn('Fecha inválida en event:', event.id, event.createdAt);
+              month = new Date().toISOString().substring(0, 7);
+            } else {
+              month = createdAt.toISOString().substring(0, 7);
+            }
+          } catch (error) {
+            console.info('./src/services/analyticsService.ts line 133')
+            console.warn('Error al procesar fecha de event:', event.id, error);
+            month = new Date().toISOString().substring(0, 7);
+          }
+          
+          eventsByMonth[month] = (eventsByMonth[month] || 0) + 1;
+          
+          // Calcular presupuesto
+          totalBudget += event.budget || 0;
+          
+          // Contar eventos completados
+          if (event.status === 'completado') completedEvents++;
+          
+          // Contar eventos cancelados
+          if (event.status === 'cancelado') cancelledEvents++;
+        });
 
       const averageBudget = events.length > 0 ? totalBudget / events.length : 0;
       const completionRate = events.length > 0 ? (completedEvents / events.length) * 100 : 0;
@@ -184,8 +200,23 @@ export class AnalyticsService {
         // Contar por tipo
         requestsByType[request.eventType] = (requestsByType[request.eventType] || 0) + 1;
         
-        // Contar por mes
-        const month = new Date(request.createdAt).toISOString().substring(0, 7);
+        // Contar por mes - Validar fecha antes de convertir
+        let month: string;
+        try {
+          const createdAt = request.createdAt ? new Date(request.createdAt) : new Date();
+          if (isNaN(createdAt.getTime())) {
+            console.info('./src/services/analyticsService.ts line 208')
+            console.warn('Fecha inválida en request:', request.id, request.createdAt);
+            month = new Date().toISOString().substring(0, 7);
+          } else {
+            month = createdAt.toISOString().substring(0, 7);
+          }
+        } catch (error) {
+          console.info('./src/services/analyticsService.ts line 215')
+          console.warn('Error al procesar fecha de request:', request.id, error);
+          month = new Date().toISOString().substring(0, 7);
+        }
+        
         requestsByMonth[month] = (requestsByMonth[month] || 0) + 1;
         
         // Calcular presupuesto
@@ -194,12 +225,20 @@ export class AnalyticsService {
         // Contar solicitudes aceptadas
         if (request.status === 'asignada') acceptedRequests++;
         
-        // Calcular tiempo de respuesta
+        // Calcular tiempo de respuesta - Validar fechas
         if (request.assignedMusicianId && request.updatedAt) {
-          const created = new Date(request.createdAt).getTime();
-          const updated = new Date(request.updatedAt).getTime();
-          totalResponseTime += updated - created;
-          responseTimeCount++;
+          try {
+            const created = request.createdAt ? new Date(request.createdAt) : new Date();
+            const updated = new Date(request.updatedAt);
+            
+            if (!isNaN(created.getTime()) && !isNaN(updated.getTime())) {
+              totalResponseTime += updated.getTime() - created.getTime();
+              responseTimeCount++;
+            }
+          } catch (error) {
+            console.info('./src/services/analyticsService.ts line 239')
+            console.warn('Error al calcular tiempo de respuesta:', request.id, error);
+          }
         }
       });
 
@@ -245,20 +284,35 @@ export class AnalyticsService {
       const currentMonth = new Date().toISOString().substring(0, 7);
       const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 7);
 
-      users.forEach((user: any) => {
-        // Contar por rol
-        usersByRole[user.roll] = (usersByRole[user.roll] || 0) + 1;
-        
-        // Contar por mes
-        const month = new Date(user.create_at || new Date()).toISOString().substring(0, 7);
-        usersByMonth[month] = (usersByMonth[month] || 0) + 1;
-        
-        // Contar usuarios activos (creados en el último mes)
-        if (month >= lastMonth) activeUsers++;
-        
-        // Contar nuevos usuarios este mes
-        if (month === currentMonth) newUsersThisMonth++;
-      });
+              users.forEach((user: any) => {
+          // Contar por rol
+          usersByRole[user.roll] = (usersByRole[user.roll] || 0) + 1;
+          
+          // Contar por mes - Validar fecha antes de convertir
+          let month: string;
+          try {
+            const createAt = user.create_at ? new Date(user.create_at) : new Date();
+            if (isNaN(createAt.getTime())) {
+              console.info('./src/services/analyticsService.ts line 296')
+              console.warn('Fecha inválida en user:', user.id, user.create_at);
+              month = new Date().toISOString().substring(0, 7);
+            } else {
+              month = createAt.toISOString().substring(0, 7);
+            }
+          } catch (error) {
+            console.info('./src/services/analyticsService.ts line 303')
+            console.warn('Error al procesar fecha de user:', user.id, error);
+            month = new Date().toISOString().substring(0, 7);
+          }
+          
+          usersByMonth[month] = (usersByMonth[month] || 0) + 1;
+          
+          // Contar usuarios activos (creados en el último mes)
+          if (month >= lastMonth) activeUsers++;
+          
+          // Contar nuevos usuarios este mes
+          if (month === currentMonth) newUsersThisMonth++;
+        });
 
       // Calcular tasa de crecimiento
       const previousMonthUsers = usersByMonth[lastMonth] || 0;
@@ -402,6 +456,7 @@ export class AnalyticsService {
 
       return trends;
     } catch (error) {
+      console.info('./src/services/analyticsService.ts line 459')
       console.error('Error al obtener reporte de tendencias:', error);
       throw new Error('Error al obtener reporte de tendencias');
     }
@@ -444,6 +499,7 @@ export class AnalyticsService {
         acceptanceRate: Math.random() * 40 + 50
       }));
     } catch (error) {
+      console.info('./src/services/analyticsService.ts line 502')
       console.error('Error al obtener reporte de rendimiento por ubicación:', error);
       throw new Error('Error al obtener reporte de rendimiento por ubicación');
     }
@@ -475,6 +531,7 @@ export class AnalyticsService {
         totalRevenue: Math.floor(Math.random() * 5000) + 500
       })).sort((a, b) => b.totalRevenue - a.totalRevenue);
     } catch (error) {
+      console.info('./src/services/analyticsService.ts line 534')
       console.error('Error al obtener reporte de usuarios más activos:', error);
       throw new Error('Error al obtener reporte de usuarios más activos');
     }
