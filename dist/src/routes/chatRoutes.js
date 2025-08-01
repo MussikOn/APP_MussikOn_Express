@@ -15,6 +15,8 @@ router.get('/conversations', chatController_1.getConversations);
 router.get('/conversations/search', chatController_1.searchConversations);
 // Obtener estadísticas de chat
 router.get('/stats', chatController_1.getChatStats);
+// Obtener usuarios disponibles para chat
+router.get('/users/available', chatController_1.getAvailableUsers);
 // Crear una nueva conversación
 router.post('/conversations', chatController_1.createConversation);
 // Obtener conversación por ID

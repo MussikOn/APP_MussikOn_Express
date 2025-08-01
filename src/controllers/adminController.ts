@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcrypt';
 import { db } from '../utils/firebase';
 import { asyncHandler } from '../middleware/errorHandler';
 import { OperationalError } from '../middleware/errorHandler';
@@ -82,33 +83,44 @@ export function adminUsersGetById(
     .catch(next);
 }
 
-export function adminUsersCreate(
+export async function adminUsersCreate(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
-  const data = req.body;
-  db.collection('users')
-    .add(data)
-    .then(ref => {
-      res.status(201).json({ _id: ref.id, ...data });
-    })
-    .catch(next);
+): Promise<void> {
+  try {
+    const data = req.body;
+    
+    // Encriptar la contraseña si se proporciona
+    if (data.userPassword) {
+      data.userPassword = await bcrypt.hash(data.userPassword, 10);
+    }
+    
+    const ref = await db.collection('users').add(data);
+    res.status(201).json({ _id: ref.id, ...data });
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function adminUsersUpdate(
+export async function adminUsersUpdate(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
-  const data = req.body;
-  db.collection('users')
-    .doc(req.params.id)
-    .update(data)
-    .then(() => {
-      res.status(200).json({ message: 'Usuario actualizado' });
-    })
-    .catch(next);
+): Promise<void> {
+  try {
+    const data = req.body;
+    
+    // Encriptar la contraseña si se proporciona
+    if (data.userPassword) {
+      data.userPassword = await bcrypt.hash(data.userPassword, 10);
+    }
+    
+    await db.collection('users').doc(req.params.id).update(data);
+    res.status(200).json({ message: 'Usuario actualizado' });
+  } catch (error) {
+    next(error);
+  }
 }
 
 export function adminUsersRemove(

@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminExportReport = exports.adminRequestAnalytics = exports.adminEventAnalytics = exports.adminUserAnalytics = exports.adminDashboardAnalytics = exports.adminGlobalSearch = void 0;
 exports.adminUsersGetAll = adminUsersGetAll;
@@ -34,6 +37,7 @@ exports.adminMusicianRequestsGetById = adminMusicianRequestsGetById;
 exports.adminMusicianRequestsUpdate = adminMusicianRequestsUpdate;
 exports.adminMusicianRequestsRemove = adminMusicianRequestsRemove;
 exports.adminMusicianRequestsStats = adminMusicianRequestsStats;
+const bcrypt_1 = __importDefault(require("bcrypt"));
 const firebase_1 = require("../utils/firebase");
 const errorHandler_1 = require("../middleware/errorHandler");
 const errorHandler_2 = require("../middleware/errorHandler");
@@ -97,23 +101,36 @@ function adminUsersGetById(req, res, next) {
         .catch(next);
 }
 function adminUsersCreate(req, res, next) {
-    const data = req.body;
-    firebase_1.db.collection('users')
-        .add(data)
-        .then(ref => {
-        res.status(201).json(Object.assign({ _id: ref.id }, data));
-    })
-        .catch(next);
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const data = req.body;
+            // Encriptar la contraseña si se proporciona
+            if (data.userPassword) {
+                data.userPassword = yield bcrypt_1.default.hash(data.userPassword, 10);
+            }
+            const ref = yield firebase_1.db.collection('users').add(data);
+            res.status(201).json(Object.assign({ _id: ref.id }, data));
+        }
+        catch (error) {
+            next(error);
+        }
+    });
 }
 function adminUsersUpdate(req, res, next) {
-    const data = req.body;
-    firebase_1.db.collection('users')
-        .doc(req.params.id)
-        .update(data)
-        .then(() => {
-        res.status(200).json({ message: 'Usuario actualizado' });
-    })
-        .catch(next);
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const data = req.body;
+            // Encriptar la contraseña si se proporciona
+            if (data.userPassword) {
+                data.userPassword = yield bcrypt_1.default.hash(data.userPassword, 10);
+            }
+            yield firebase_1.db.collection('users').doc(req.params.id).update(data);
+            res.status(200).json({ message: 'Usuario actualizado' });
+        }
+        catch (error) {
+            next(error);
+        }
+    });
 }
 function adminUsersRemove(req, res, next) {
     firebase_1.db.collection('users')

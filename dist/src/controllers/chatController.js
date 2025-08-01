@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChatStats = exports.getConversationById = exports.archiveConversation = exports.deleteConversation = exports.searchConversations = exports.createConversation = exports.markAsRead = exports.sendMessage = exports.getMessages = exports.getConversations = void 0;
+exports.getAvailableUsers = exports.getChatStats = exports.getConversationById = exports.archiveConversation = exports.deleteConversation = exports.searchConversations = exports.createConversation = exports.markAsRead = exports.sendMessage = exports.getMessages = exports.getConversations = void 0;
 const chatModel_1 = require("../models/chatModel");
 // Obtener todas las conversaciones del usuario
 const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -380,3 +380,55 @@ const getChatStats = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getChatStats = getChatStats;
+// Obtener usuarios disponibles para chat
+const getAvailableUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        const { search } = req.query;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        // Importar db aquí para evitar dependencias circulares
+        const { db } = require('../utils/firebase');
+        // Obtener todos los usuarios
+        const usersSnapshot = yield db.collection('users').get();
+        let users = [];
+        usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            // Excluir al usuario actual
+            if (userData.userEmail !== userEmail) {
+                users.push({
+                    email: userData.userEmail,
+                    name: userData.name || 'Usuario',
+                    lastName: userData.lastName || '',
+                    online: userData.online || false,
+                    lastSeen: userData.lastSeen || null
+                });
+            }
+        });
+        // Aplicar filtro de búsqueda si se proporciona
+        if (search) {
+            const searchTerm = search.toString().toLowerCase();
+            users = users.filter(user => user.name.toLowerCase().includes(searchTerm) ||
+                user.lastName.toLowerCase().includes(searchTerm) ||
+                user.email.toLowerCase().includes(searchTerm));
+        }
+        res.json({
+            success: true,
+            data: users,
+        });
+    }
+    catch (error) {
+        console.error('Error al obtener usuarios disponibles:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.getAvailableUsers = getAvailableUsers;

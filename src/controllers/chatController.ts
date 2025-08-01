@@ -414,3 +414,61 @@ export const getChatStats = async (req: any, res: Response) => {
     });
   }
 };
+
+// Obtener usuarios disponibles para chat
+export const getAvailableUsers = async (req: any, res: Response) => {
+  try {
+    const userEmail = req.user?.userEmail;
+    const { search } = req.query;
+
+    if (!userEmail) {
+      res.status(401).json({
+        success: false,
+        error: 'Usuario no autenticado',
+      });
+      return;
+    }
+
+    // Importar db aquí para evitar dependencias circulares
+    const { db } = require('../utils/firebase');
+    
+    // Obtener todos los usuarios
+    const usersSnapshot = await db.collection('users').get();
+    let users: any[] = [];
+    
+    usersSnapshot.forEach((doc: any) => {
+      const userData = doc.data();
+      // Excluir al usuario actual
+      if (userData.userEmail !== userEmail) {
+        users.push({
+          email: userData.userEmail,
+          name: userData.name || 'Usuario',
+          lastName: userData.lastName || '',
+          online: userData.online || false,
+          lastSeen: userData.lastSeen || null
+        });
+      }
+    });
+
+    // Aplicar filtro de búsqueda si se proporciona
+    if (search) {
+      const searchTerm = search.toString().toLowerCase();
+      users = users.filter(user => 
+        user.name.toLowerCase().includes(searchTerm) ||
+        user.lastName.toLowerCase().includes(searchTerm) ||
+        user.email.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    res.json({
+      success: true,
+      data: users,
+    });
+  } catch (error: any) {
+    console.error('Error al obtener usuarios disponibles:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Error interno del servidor',
+    });
+  }
+};

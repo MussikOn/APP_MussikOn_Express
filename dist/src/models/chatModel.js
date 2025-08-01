@@ -64,13 +64,37 @@ const createConversationModel = (participants) => __awaiter(void 0, void 0, void
 exports.createConversationModel = createConversationModel;
 // Obtener conversaciones de un usuario
 const getConversationsByUserModel = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db
-        .collection('conversations')
-        .where('participants', 'array-contains', userEmail)
-        .where('isActive', '==', true)
-        .orderBy('updatedAt', 'desc')
-        .get();
-    return snapshot.docs.map(doc => doc.data());
+    try {
+        // Primero intentar con la consulta optimizada
+        const snapshot = yield firebase_1.db
+            .collection('conversations')
+            .where('participants', 'array-contains', userEmail)
+            .where('isActive', '==', true)
+            .orderBy('updatedAt', 'desc')
+            .get();
+        return snapshot.docs.map(doc => doc.data());
+    }
+    catch (error) {
+        // Si falla por índice faltante, usar consulta alternativa
+        if (error.code === 9 && error.message.includes('requires an index')) {
+            console.warn('Índice compuesto faltante, usando consulta alternativa');
+            // Consulta alternativa sin ordenamiento
+            const snapshot = yield firebase_1.db
+                .collection('conversations')
+                .where('participants', 'array-contains', userEmail)
+                .where('isActive', '==', true)
+                .get();
+            const conversations = snapshot.docs.map(doc => doc.data());
+            // Ordenar en memoria
+            return conversations.sort((a, b) => {
+                const dateA = new Date(a.updatedAt || a.createdAt || 0);
+                const dateB = new Date(b.updatedAt || b.createdAt || 0);
+                return dateB.getTime() - dateA.getTime();
+            });
+        }
+        // Si es otro tipo de error, relanzarlo
+        throw error;
+    }
 });
 exports.getConversationsByUserModel = getConversationsByUserModel;
 // Obtener conversación por ID

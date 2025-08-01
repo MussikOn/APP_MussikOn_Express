@@ -11,6 +11,7 @@ import {
   archiveConversation,
   getConversationById,
   getChatStats,
+  getAvailableUsers,
 } from '../controllers/chatController';
 
 const router = express.Router();
@@ -26,6 +27,9 @@ router.get('/conversations/search', searchConversations);
 
 // Obtener estadísticas de chat
 router.get('/stats', getChatStats);
+
+// Obtener usuarios disponibles para chat
+router.get('/users/available', getAvailableUsers);
 
 // Crear una nueva conversación
 router.post('/conversations', createConversation);
