@@ -49,10 +49,13 @@ class SearchService {
                 if (filters.query) {
                     const searchTerm = filters.query.toLowerCase();
                     filteredEvents = events.filter((event) => {
-                        var _a;
-                        return event.eventName.toLowerCase().includes(searchTerm) ||
-                            event.location.toLowerCase().includes(searchTerm) ||
-                            ((_a = event.comment) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm));
+                        // Función auxiliar para verificar si un valor es string y hacer búsqueda
+                        const searchInField = (field) => {
+                            return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+                        };
+                        return (searchInField(event.eventName) ||
+                            searchInField(event.location) ||
+                            searchInField(event.comment));
                     });
                 }
                 // Filtrado por presupuesto si se especifica
@@ -70,7 +73,7 @@ class SearchService {
                     total: filteredEvents.length,
                     page: Math.floor((filters.offset || 0) / limit) + 1,
                     limit,
-                    hasMore: filteredEvents.length === limit
+                    hasMore: filteredEvents.length === limit,
                 };
             }
             catch (error) {
@@ -116,10 +119,13 @@ class SearchService {
                 if (filters.query) {
                     const searchTerm = filters.query.toLowerCase();
                     filteredRequests = requests.filter((request) => {
-                        var _a, _b;
-                        return ((_a = request.description) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm)) ||
-                            request.location.toLowerCase().includes(searchTerm) ||
-                            ((_b = request.requirements) === null || _b === void 0 ? void 0 : _b.toLowerCase().includes(searchTerm));
+                        // Función auxiliar para verificar si un valor es string y hacer búsqueda
+                        const searchInField = (field) => {
+                            return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+                        };
+                        return (searchInField(request.description) ||
+                            searchInField(request.location) ||
+                            searchInField(request.requirements));
                     });
                 }
                 // Filtrado por presupuesto si se especifica
@@ -137,7 +143,7 @@ class SearchService {
                     total: filteredRequests.length,
                     page: Math.floor((filters.offset || 0) / limit) + 1,
                     limit,
-                    hasMore: filteredRequests.length === limit
+                    hasMore: filteredRequests.length === limit,
                 };
             }
             catch (error) {
@@ -170,16 +176,22 @@ class SearchService {
                 let filteredUsers = users;
                 if (filters.query) {
                     const searchTerm = filters.query.toLowerCase();
-                    filteredUsers = users.filter((user) => user.name.toLowerCase().includes(searchTerm) ||
-                        user.lastName.toLowerCase().includes(searchTerm) ||
-                        user.userEmail.toLowerCase().includes(searchTerm));
+                    filteredUsers = users.filter((user) => {
+                        // Función auxiliar para verificar si un valor es string y hacer búsqueda
+                        const searchInField = (field) => {
+                            return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+                        };
+                        return (searchInField(user.name) ||
+                            searchInField(user.lastName) ||
+                            searchInField(user.userEmail));
+                    });
                 }
                 return {
                     data: filteredUsers,
                     total: filteredUsers.length,
                     page: Math.floor((filters.offset || 0) / limit) + 1,
                     limit,
-                    hasMore: filteredUsers.length === limit
+                    hasMore: filteredUsers.length === limit,
                 };
             }
             catch (error) {
@@ -197,12 +209,12 @@ class SearchService {
                 const [eventsResult, requestsResult, usersResult] = yield Promise.all([
                     this.searchEvents(filters),
                     this.searchMusicianRequests(filters),
-                    this.searchUsers(filters)
+                    this.searchUsers(filters),
                 ]);
                 return {
                     events: eventsResult.data,
                     requests: requestsResult.data,
-                    users: usersResult.data
+                    users: usersResult.data,
                 };
             }
             catch (error) {
@@ -222,7 +234,7 @@ class SearchService {
                 const requestsResult = yield this.searchMusicianRequests({ location });
                 return {
                     events: eventsResult.data,
-                    requests: requestsResult.data
+                    requests: requestsResult.data,
                 };
             }
             catch (error) {

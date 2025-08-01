@@ -14,7 +14,7 @@ const handleMulterError = (error, req, res, next) => {
             res.status(400).json({
                 error: 'El archivo es demasiado grande',
                 details: 'El tamaño máximo permitido es 10MB',
-                code: 'FILE_TOO_LARGE'
+                code: 'FILE_TOO_LARGE',
             });
             return;
         }
@@ -22,14 +22,14 @@ const handleMulterError = (error, req, res, next) => {
             res.status(400).json({
                 error: 'Demasiados archivos',
                 details: 'Solo se permite un archivo por vez',
-                code: 'TOO_MANY_FILES'
+                code: 'TOO_MANY_FILES',
             });
             return;
         }
         res.status(400).json({
             error: 'Error en la subida del archivo',
             details: error.message,
-            code: 'UPLOAD_ERROR'
+            code: 'UPLOAD_ERROR',
         });
         return;
     }
@@ -37,7 +37,7 @@ const handleMulterError = (error, req, res, next) => {
         res.status(400).json({
             error: 'Tipo de archivo no permitido',
             details: 'Solo se permiten imágenes (JPEG, PNG, GIF, WebP, SVG)',
-            code: 'INVALID_FILE_TYPE'
+            code: 'INVALID_FILE_TYPE',
         });
         return;
     }
@@ -45,7 +45,7 @@ const handleMulterError = (error, req, res, next) => {
     res.status(500).json({
         error: 'Error interno del servidor',
         details: 'Error al procesar el archivo',
-        code: 'INTERNAL_ERROR'
+        code: 'INTERNAL_ERROR',
     });
     return;
 };
@@ -57,7 +57,7 @@ const validateImageFile = (req, res, next) => {
     if (!req.file) {
         res.status(400).json({
             error: 'No se proporcionó ningún archivo',
-            code: 'NO_FILE'
+            code: 'NO_FILE',
         });
         return;
     }
@@ -67,7 +67,7 @@ const validateImageFile = (req, res, next) => {
         res.status(400).json({
             error: 'El archivo es demasiado grande',
             details: `Tamaño máximo: ${maxSize / 1024 / 1024}MB`,
-            code: 'FILE_TOO_LARGE'
+            code: 'FILE_TOO_LARGE',
         });
         return;
     }
@@ -77,13 +77,13 @@ const validateImageFile = (req, res, next) => {
         'image/png',
         'image/gif',
         'image/webp',
-        'image/svg+xml'
+        'image/svg+xml',
     ];
     if (!allowedMimeTypes.includes(req.file.mimetype)) {
         res.status(400).json({
             error: 'Tipo de archivo no permitido',
             details: 'Solo se permiten imágenes (JPEG, PNG, GIF, WebP, SVG)',
-            code: 'INVALID_FILE_TYPE'
+            code: 'INVALID_FILE_TYPE',
         });
         return;
     }
@@ -97,7 +97,7 @@ exports.imageUpload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
-        files: 1 // Solo un archivo
+        files: 1, // Solo un archivo
     },
     fileFilter: (req, file, cb) => {
         const allowedMimeTypes = [
@@ -105,7 +105,7 @@ exports.imageUpload = (0, multer_1.default)({
             'image/png',
             'image/gif',
             'image/webp',
-            'image/svg+xml'
+            'image/svg+xml',
         ];
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
@@ -113,5 +113,5 @@ exports.imageUpload = (0, multer_1.default)({
         else {
             cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes'));
         }
-    }
+    },
 });

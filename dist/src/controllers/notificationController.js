@@ -21,7 +21,10 @@ const firestore_1 = require("firebase-admin/firestore");
 exports.getNotifications = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const { page = 1, limit = 20, unreadOnly = false } = req.query;
-    loggerService_1.logger.info('Obteniendo notificaciones', { userId, metadata: { page, limit, unreadOnly } });
+    loggerService_1.logger.info('Obteniendo notificaciones', {
+        userId,
+        metadata: { page, limit, unreadOnly },
+    });
     let query = firebase_1.db.collection('notifications').where('userId', '==', userId);
     if (unreadOnly === 'true') {
         query = query.where('isRead', '==', false);
@@ -35,7 +38,10 @@ exports.getNotifications = (0, errorHandler_1.asyncHandler)((req, res) => __awai
     // Obtener total de notificaciones
     const totalSnapshot = yield query.count().get();
     const total = totalSnapshot.data().count;
-    loggerService_1.logger.info('Notificaciones obtenidas', { userId, metadata: { count: notifications.length, total } });
+    loggerService_1.logger.info('Notificaciones obtenidas', {
+        userId,
+        metadata: { count: notifications.length, total },
+    });
     res.status(200).json({
         success: true,
         data: {
@@ -44,10 +50,10 @@ exports.getNotifications = (0, errorHandler_1.asyncHandler)((req, res) => __awai
                 page: parseInt(page),
                 limit: parseInt(limit),
                 total,
-                totalPages: Math.ceil(total / parseInt(limit))
-            }
+                totalPages: Math.ceil(total / parseInt(limit)),
+            },
         },
-        message: 'Notificaciones obtenidas exitosamente'
+        message: 'Notificaciones obtenidas exitosamente',
     });
 }));
 /**
@@ -56,7 +62,10 @@ exports.getNotifications = (0, errorHandler_1.asyncHandler)((req, res) => __awai
 exports.markNotificationAsRead = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const { notificationId } = req.params;
-    loggerService_1.logger.info('Marcando notificación como leída', { userId, metadata: { notificationId } });
+    loggerService_1.logger.info('Marcando notificación como leída', {
+        userId,
+        metadata: { notificationId },
+    });
     const notificationRef = firebase_1.db.collection('notifications').doc(notificationId);
     const notification = yield notificationRef.get();
     if (!notification.exists) {
@@ -68,12 +77,15 @@ exports.markNotificationAsRead = (0, errorHandler_1.asyncHandler)((req, res) => 
     }
     yield notificationRef.update({
         isRead: true,
-        updatedAt: firestore_1.FieldValue.serverTimestamp()
+        updatedAt: firestore_1.FieldValue.serverTimestamp(),
     });
-    loggerService_1.logger.info('Notificación marcada como leída', { userId, metadata: { notificationId } });
+    loggerService_1.logger.info('Notificación marcada como leída', {
+        userId,
+        metadata: { notificationId },
+    });
     res.status(200).json({
         success: true,
-        message: 'Notificación marcada como leída'
+        message: 'Notificación marcada como leída',
     });
 }));
 /**
@@ -83,21 +95,25 @@ exports.markAllNotificationsAsRead = (0, errorHandler_1.asyncHandler)((req, res)
     const { userId } = req.user;
     loggerService_1.logger.info('Marcando todas las notificaciones como leídas', { userId });
     const batch = firebase_1.db.batch();
-    const notificationsRef = firebase_1.db.collection('notifications')
+    const notificationsRef = firebase_1.db
+        .collection('notifications')
         .where('userId', '==', userId)
         .where('isRead', '==', false);
     const snapshot = yield notificationsRef.get();
     snapshot.docs.forEach(doc => {
         batch.update(doc.ref, {
             isRead: true,
-            updatedAt: firestore_1.FieldValue.serverTimestamp()
+            updatedAt: firestore_1.FieldValue.serverTimestamp(),
         });
     });
     yield batch.commit();
-    loggerService_1.logger.info('Todas las notificaciones marcadas como leídas', { userId, metadata: { count: snapshot.docs.length } });
+    loggerService_1.logger.info('Todas las notificaciones marcadas como leídas', {
+        userId,
+        metadata: { count: snapshot.docs.length },
+    });
     res.status(200).json({
         success: true,
-        message: `${snapshot.docs.length} notificaciones marcadas como leídas`
+        message: `${snapshot.docs.length} notificaciones marcadas como leídas`,
     });
 }));
 /**
@@ -106,7 +122,10 @@ exports.markAllNotificationsAsRead = (0, errorHandler_1.asyncHandler)((req, res)
 exports.deleteNotification = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const { notificationId } = req.params;
-    loggerService_1.logger.info('Eliminando notificación', { userId, metadata: { notificationId } });
+    loggerService_1.logger.info('Eliminando notificación', {
+        userId,
+        metadata: { notificationId },
+    });
     const notificationRef = firebase_1.db.collection('notifications').doc(notificationId);
     const notification = yield notificationRef.get();
     if (!notification.exists) {
@@ -117,10 +136,13 @@ exports.deleteNotification = (0, errorHandler_1.asyncHandler)((req, res) => __aw
         throw new errorHandler_2.OperationalError('No autorizado para eliminar esta notificación', 403);
     }
     yield notificationRef.delete();
-    loggerService_1.logger.info('Notificación eliminada', { userId, metadata: { notificationId } });
+    loggerService_1.logger.info('Notificación eliminada', {
+        userId,
+        metadata: { notificationId },
+    });
     res.status(200).json({
         success: true,
-        message: 'Notificación eliminada exitosamente'
+        message: 'Notificación eliminada exitosamente',
     });
 }));
 /**
@@ -129,17 +151,21 @@ exports.deleteNotification = (0, errorHandler_1.asyncHandler)((req, res) => __aw
 exports.getUnreadCount = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     loggerService_1.logger.info('Obteniendo contador de notificaciones no leídas', { userId });
-    const snapshot = yield firebase_1.db.collection('notifications')
+    const snapshot = yield firebase_1.db
+        .collection('notifications')
         .where('userId', '==', userId)
         .where('isRead', '==', false)
         .count()
         .get();
     const count = snapshot.data().count;
-    loggerService_1.logger.info('Contador de notificaciones no leídas obtenido', { userId, metadata: { count } });
+    loggerService_1.logger.info('Contador de notificaciones no leídas obtenido', {
+        userId,
+        metadata: { count },
+    });
     res.status(200).json({
         success: true,
         data: { count },
-        message: 'Contador de notificaciones no leídas obtenido'
+        message: 'Contador de notificaciones no leídas obtenido',
     });
 }));
 /**
@@ -148,8 +174,13 @@ exports.getUnreadCount = (0, errorHandler_1.asyncHandler)((req, res) => __awaite
 exports.createNotification = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const notificationData = req.body;
-    loggerService_1.logger.info('Creando notificación', { userId, metadata: { notificationData } });
-    if (!notificationData.userId || !notificationData.title || !notificationData.message) {
+    loggerService_1.logger.info('Creando notificación', {
+        userId,
+        metadata: { notificationData },
+    });
+    if (!notificationData.userId ||
+        !notificationData.title ||
+        !notificationData.message) {
         throw new errorHandler_2.OperationalError('Datos de notificación incompletos', 400);
     }
     const notification = {
@@ -161,14 +192,17 @@ exports.createNotification = (0, errorHandler_1.asyncHandler)((req, res) => __aw
         isRead: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        metadata: notificationData.metadata || {}
+        metadata: notificationData.metadata || {},
     };
     const docRef = yield firebase_1.db.collection('notifications').add(notification);
-    loggerService_1.logger.info('Notificación creada', { userId, metadata: { notificationId: docRef.id } });
+    loggerService_1.logger.info('Notificación creada', {
+        userId,
+        metadata: { notificationId: docRef.id },
+    });
     res.status(201).json({
         success: true,
         data: Object.assign({ id: docRef.id }, notification),
-        message: 'Notificación creada exitosamente'
+        message: 'Notificación creada exitosamente',
     });
 }));
 /**
@@ -177,7 +211,10 @@ exports.createNotification = (0, errorHandler_1.asyncHandler)((req, res) => __aw
 exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const { title, message, type, category, targetUsers, metadata } = req.body;
-    loggerService_1.logger.info('Enviando notificación masiva', { userId, metadata: { title, targetUsers } });
+    loggerService_1.logger.info('Enviando notificación masiva', {
+        userId,
+        metadata: { title, targetUsers },
+    });
     if (!title || !message || !targetUsers || !Array.isArray(targetUsers)) {
         throw new errorHandler_2.OperationalError('Datos de notificación masiva incompletos', 400);
     }
@@ -194,17 +231,20 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             isRead: false,
             createdAt: new Date(),
             updatedAt: new Date(),
-            metadata: metadata || {}
+            metadata: metadata || {},
         };
         batch.set(notificationRef, notification);
         notifications.push(Object.assign({ id: notificationRef.id }, notification));
     });
     yield batch.commit();
-    loggerService_1.logger.info('Notificación masiva enviada', { userId, metadata: { count: targetUsers.length } });
+    loggerService_1.logger.info('Notificación masiva enviada', {
+        userId,
+        metadata: { count: targetUsers.length },
+    });
     res.status(201).json({
         success: true,
         data: { notifications },
-        message: `Notificación enviada a ${targetUsers.length} usuarios`
+        message: `Notificación enviada a ${targetUsers.length} usuarios`,
     });
 }));
 /**
@@ -213,7 +253,10 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
 exports.getNotificationStats = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId } = req.user;
     const { period = 'week' } = req.query;
-    loggerService_1.logger.info('Obteniendo estadísticas de notificaciones', { userId, metadata: { period } });
+    loggerService_1.logger.info('Obteniendo estadísticas de notificaciones', {
+        userId,
+        metadata: { period },
+    });
     // Calcular fecha de inicio según el período
     const now = new Date();
     let startDate;
@@ -231,7 +274,8 @@ exports.getNotificationStats = (0, errorHandler_1.asyncHandler)((req, res) => __
             startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
     // Obtener todas las notificaciones del usuario
-    const snapshot = yield firebase_1.db.collection('notifications')
+    const snapshot = yield firebase_1.db
+        .collection('notifications')
         .where('userId', '==', userId)
         .where('createdAt', '>=', startDate)
         .get();
@@ -245,21 +289,24 @@ exports.getNotificationStats = (0, errorHandler_1.asyncHandler)((req, res) => __
             info: notifications.filter(n => n.type === 'info').length,
             success: notifications.filter(n => n.type === 'success').length,
             warning: notifications.filter(n => n.type === 'warning').length,
-            error: notifications.filter(n => n.type === 'error').length
+            error: notifications.filter(n => n.type === 'error').length,
         },
         byCategory: {
             system: notifications.filter(n => n.category === 'system').length,
             user: notifications.filter(n => n.category === 'user').length,
             event: notifications.filter(n => n.category === 'event').length,
             request: notifications.filter(n => n.category === 'request').length,
-            payment: notifications.filter(n => n.category === 'payment').length
+            payment: notifications.filter(n => n.category === 'payment').length,
         },
-        period
+        period,
     };
-    loggerService_1.logger.info('Estadísticas de notificaciones obtenidas', { userId, metadata: { stats } });
+    loggerService_1.logger.info('Estadísticas de notificaciones obtenidas', {
+        userId,
+        metadata: { stats },
+    });
     res.status(200).json({
         success: true,
         data: stats,
-        message: 'Estadísticas de notificaciones obtenidas'
+        message: 'Estadísticas de notificaciones obtenidas',
     });
 }));

@@ -31,7 +31,7 @@ const ALLOWED_MIME_TYPES = [
     'image/png',
     'image/gif',
     'image/webp',
-    'image/svg+xml'
+    'image/svg+xml',
 ];
 /**
  * Validar archivo antes de subir
@@ -67,15 +67,15 @@ const uploadImageToS3 = (file, key) => __awaiter(void 0, void 0, void 0, functio
             Metadata: {
                 originalName: file.originalname,
                 uploadedBy: 'mussikon-system',
-                uploadedAt: new Date().toISOString()
-            }
+                uploadedAt: new Date().toISOString(),
+            },
         });
         yield s3Client.send(command);
         console.log(`[src/models/imagesModel.ts:uploadImageToS3] Imagen subida a idriveE2: ${key}`);
         return {
             key,
             size: file.size,
-            mimetype: file.mimetype
+            mimetype: file.mimetype,
         };
     }
     catch (error) {
@@ -91,7 +91,7 @@ const generateSignedUrl = (key_1, ...args_1) => __awaiter(void 0, [key_1, ...arg
     try {
         const command = new client_s3_1.GetObjectCommand({
             Bucket: BUCKET_NAME,
-            Key: key
+            Key: key,
         });
         const signedUrl = yield (0, s3_request_presigner_1.getSignedUrl)(s3Client, command, { expiresIn });
         return signedUrl;
@@ -108,7 +108,7 @@ exports.generateSignedUrl = generateSignedUrl;
 const createImageRecord = (imageData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date().toISOString();
-        const imageRef = firebase_1.db.collection("images").doc();
+        const imageRef = firebase_1.db.collection('images').doc();
         const image = Object.assign(Object.assign({ id: imageRef.id }, imageData), { createdAt: now, updatedAt: now });
         yield imageRef.set(image);
         console.log(`[src/models/imagesModel.ts:createImageRecord] Registro de imagen creado en Firestore: ${image.id}`);
@@ -145,7 +145,7 @@ const uploadImage = (file_1, userId_1, category_1, ...args_1) => __awaiter(void 
             tags: metadata.tags || [],
             metadata: metadata.customMetadata || {},
             isPublic: metadata.isPublic !== undefined ? metadata.isPublic : true,
-            isActive: true
+            isActive: true,
         };
         const image = yield (0, exports.createImageRecord)(imageData);
         console.log(`[src/models/imagesModel.ts:uploadImage] Imagen subida exitosamente: ${image.id}`);
@@ -162,7 +162,7 @@ exports.uploadImage = uploadImage;
  */
 const getImageById = (imageId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const imageDoc = yield firebase_1.db.collection("images").doc(imageId).get();
+        const imageDoc = yield firebase_1.db.collection('images').doc(imageId).get();
         if (!imageDoc.exists) {
             return null;
         }
@@ -173,16 +173,23 @@ const getImageById = (imageId) => __awaiter(void 0, void 0, void 0, function* ()
             if (expiresMatch) {
                 const expiresAt = parseInt(expiresMatch[1]);
                 const now = Math.floor(Date.now() / 1000);
-                if (expiresAt <= now + 300) { // Regenerar si expira en menos de 5 minutos
+                if (expiresAt <= now + 300) {
+                    // Regenerar si expira en menos de 5 minutos
                     image.url = yield (0, exports.generateSignedUrl)(image.key);
-                    yield imageDoc.ref.update({ url: image.url, updatedAt: new Date().toISOString() });
+                    yield imageDoc.ref.update({
+                        url: image.url,
+                        updatedAt: new Date().toISOString(),
+                    });
                 }
             }
         }
         else {
             // Si no tiene URL firmada, generarla
             image.url = yield (0, exports.generateSignedUrl)(image.key);
-            yield imageDoc.ref.update({ url: image.url, updatedAt: new Date().toISOString() });
+            yield imageDoc.ref.update({
+                url: image.url,
+                updatedAt: new Date().toISOString(),
+            });
         }
         return image;
     }
@@ -197,27 +204,27 @@ exports.getImageById = getImageById;
  */
 const listImages = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (filters = {}) {
     try {
-        let query = firebase_1.db.collection("images");
+        let query = firebase_1.db.collection('images');
         // Aplicar filtros
         if (filters.category) {
-            query = query.where("category", "==", filters.category);
+            query = query.where('category', '==', filters.category);
         }
         if (filters.userId) {
-            query = query.where("userId", "==", filters.userId);
+            query = query.where('userId', '==', filters.userId);
         }
         if (filters.isPublic !== undefined) {
-            query = query.where("isPublic", "==", filters.isPublic);
+            query = query.where('isPublic', '==', filters.isPublic);
         }
         if (filters.isActive !== undefined) {
-            query = query.where("isActive", "==", filters.isActive);
+            query = query.where('isActive', '==', filters.isActive);
         }
         if (filters.metadata) {
             Object.entries(filters.metadata).forEach(([key, value]) => {
-                query = query.where(`metadata.${key}`, "==", value);
+                query = query.where(`metadata.${key}`, '==', value);
             });
         }
         // Ordenar por fecha de creación (más reciente primero)
-        query = query.orderBy("createdAt", "desc");
+        query = query.orderBy('createdAt', 'desc');
         // Aplicar límites
         if (filters.limit) {
             query = query.limit(filters.limit);
@@ -235,11 +242,12 @@ const listImages = (...args_1) => __awaiter(void 0, [...args_1], void 0, functio
                     if (expiresMatch) {
                         const expiresAt = parseInt(expiresMatch[1]);
                         const now = Math.floor(Date.now() / 1000);
-                        if (expiresAt <= now + 300) { // Regenerar si expira en menos de 5 minutos
+                        if (expiresAt <= now + 300) {
+                            // Regenerar si expira en menos de 5 minutos
                             image.url = yield (0, exports.generateSignedUrl)(image.key);
-                            yield firebase_1.db.collection("images").doc(image.id).update({
+                            yield firebase_1.db.collection('images').doc(image.id).update({
                                 url: image.url,
-                                updatedAt: new Date().toISOString()
+                                updatedAt: new Date().toISOString(),
                             });
                         }
                     }
@@ -247,9 +255,9 @@ const listImages = (...args_1) => __awaiter(void 0, [...args_1], void 0, functio
                 else {
                     // Si no tiene URL firmada, generarla
                     image.url = yield (0, exports.generateSignedUrl)(image.key);
-                    yield firebase_1.db.collection("images").doc(image.id).update({
+                    yield firebase_1.db.collection('images').doc(image.id).update({
                         url: image.url,
-                        updatedAt: new Date().toISOString()
+                        updatedAt: new Date().toISOString(),
                     });
                 }
                 return image;
@@ -273,7 +281,7 @@ exports.listImages = listImages;
  */
 const updateImage = (imageId, updateData) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const imageRef = firebase_1.db.collection("images").doc(imageId);
+        const imageRef = firebase_1.db.collection('images').doc(imageId);
         const imageDoc = yield imageRef.get();
         if (!imageDoc.exists) {
             throw new Error('Imagen no encontrada');
@@ -298,7 +306,7 @@ exports.updateImage = updateImage;
 const deleteImage = (imageId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const imageRef = firebase_1.db.collection("images").doc(imageId);
+        const imageRef = firebase_1.db.collection('images').doc(imageId);
         const imageDoc = yield imageRef.get();
         if (!imageDoc.exists) {
             throw new Error('Imagen no encontrada');
@@ -307,7 +315,7 @@ const deleteImage = (imageId, userId) => __awaiter(void 0, void 0, void 0, funct
         // Verificar permisos (solo el propietario o admin puede eliminar)
         if (image.userId !== userId) {
             // Verificar si el usuario es admin
-            const userDoc = yield firebase_1.db.collection("users").doc(userId).get();
+            const userDoc = yield firebase_1.db.collection('users').doc(userId).get();
             if (!userDoc.exists || ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.roll) !== 'admin') {
                 throw new Error('No tienes permisos para eliminar esta imagen');
             }
@@ -315,7 +323,7 @@ const deleteImage = (imageId, userId) => __awaiter(void 0, void 0, void 0, funct
         // Soft delete - marcar como inactiva
         yield imageRef.update({
             isActive: false,
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
         });
         console.log(`[src/models/imagesModel.ts:deleteImage] Imagen marcada como eliminada: ${imageId}`);
         return true;
@@ -333,7 +341,7 @@ const deleteImageFromS3 = (key) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const command = new client_s3_1.DeleteObjectCommand({
             Bucket: BUCKET_NAME,
-            Key: key
+            Key: key,
         });
         yield s3Client.send(command);
         console.log(`[src/models/imagesModel.ts:deleteImageFromS3] Imagen eliminada de idriveE2: ${key}`);
@@ -350,14 +358,18 @@ exports.deleteImageFromS3 = deleteImageFromS3;
  */
 const getImageStats = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const snapshot = yield firebase_1.db.collection("images").where("isActive", "==", true).get();
+        const snapshot = yield firebase_1.db
+            .collection('images')
+            .where('isActive', '==', true)
+            .get();
         const images = snapshot.docs.map(doc => doc.data());
         const totalImages = images.length;
         const totalSize = images.reduce((sum, img) => sum + img.size, 0);
         const imagesByCategory = {};
         const imagesByUser = {};
         images.forEach(image => {
-            imagesByCategory[image.category] = (imagesByCategory[image.category] || 0) + 1;
+            imagesByCategory[image.category] =
+                (imagesByCategory[image.category] || 0) + 1;
             imagesByUser[image.userId] = (imagesByUser[image.userId] || 0) + 1;
         });
         const recentUploads = images
@@ -368,7 +380,7 @@ const getImageStats = () => __awaiter(void 0, void 0, void 0, function* () {
             totalSize,
             imagesByCategory,
             imagesByUser,
-            recentUploads
+            recentUploads,
         };
         console.log(`[src/models/imagesModel.ts:getImageStats] Estadísticas generadas: ${totalImages} imágenes, ${totalSize} bytes`);
         return stats;
@@ -443,9 +455,10 @@ exports.getEventImages = getEventImages;
 const cleanupExpiredImages = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
-        const snapshot = yield firebase_1.db.collection("images")
-            .where("expiresAt", "<=", now.toISOString())
-            .where("isActive", "==", true)
+        const snapshot = yield firebase_1.db
+            .collection('images')
+            .where('expiresAt', '<=', now.toISOString())
+            .where('isActive', '==', true)
             .get();
         let deletedCount = 0;
         for (const doc of snapshot.docs) {

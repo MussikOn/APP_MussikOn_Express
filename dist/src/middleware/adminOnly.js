@@ -17,23 +17,23 @@ function adminOnly(req, res, next) {
         // Luego verificar rol de administrador
         const user = req.user;
         if (!user) {
-            res.status(401).json({ message: "Usuario no autenticado" });
+            res.status(401).json({ message: 'Usuario no autenticado' });
             return;
         }
-        if (user.roll === "admin" ||
-            user.roll === "superadmin" ||
-            user.roll === "adminJunior" ||
-            user.roll === "adminMidLevel" ||
-            user.roll === "adminSenior" ||
-            user.roll === "superAdmin" ||
-            user.roll === "organizador" ||
-            user.roll === "eventCreator" ||
-            user.roll === "musico" // Temporalmente permitido para testing
+        if (user.roll === 'admin' ||
+            user.roll === 'superadmin' ||
+            user.roll === 'adminJunior' ||
+            user.roll === 'adminMidLevel' ||
+            user.roll === 'adminSenior' ||
+            user.roll === 'superAdmin' ||
+            user.roll === 'organizador' ||
+            user.roll === 'eventCreator' ||
+            user.roll === 'musico' // Temporalmente permitido para testing
         ) {
             next();
         }
         else {
-            res.status(403).json({ message: "Acceso solo para administradores" });
+            res.status(403).json({ message: 'Acceso solo para administradores' });
         }
     });
 }

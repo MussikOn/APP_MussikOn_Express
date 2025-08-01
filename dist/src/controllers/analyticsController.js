@@ -23,21 +23,21 @@ exports.getEventAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res
         dateTo: req.query.dateTo,
         eventType: req.query.eventType,
         status: req.query.status,
-        location: req.query.location
+        location: req.query.location,
     };
     loggerService_1.logger.info('Solicitud de analytics de eventos', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const analytics = yield analyticsService_1.analyticsService.getEventAnalytics(filters);
     loggerService_1.logger.info('Analytics de eventos completado', {
         metadata: {
             totalEvents: analytics.totalEvents,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: analytics
+        data: analytics,
     });
 }));
 /**
@@ -50,21 +50,21 @@ exports.getRequestAnalyticsController = (0, errorHandler_1.asyncHandler)((req, r
         dateTo: req.query.dateTo,
         eventType: req.query.eventType,
         status: req.query.status,
-        location: req.query.location
+        location: req.query.location,
     };
     loggerService_1.logger.info('Solicitud de analytics de solicitudes', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const analytics = yield analyticsService_1.analyticsService.getRequestAnalytics(filters);
     loggerService_1.logger.info('Analytics de solicitudes completado', {
         metadata: {
             totalRequests: analytics.totalRequests,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: analytics
+        data: analytics,
     });
 }));
 /**
@@ -75,21 +75,21 @@ exports.getUserAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res)
     const filters = {
         dateFrom: req.query.dateFrom,
         dateTo: req.query.dateTo,
-        userRole: req.query.userRole
+        userRole: req.query.userRole,
     };
     loggerService_1.logger.info('Solicitud de analytics de usuarios', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const analytics = yield analyticsService_1.analyticsService.getUserAnalytics(filters);
     loggerService_1.logger.info('Analytics de usuarios completado', {
         metadata: {
             totalUsers: analytics.totalUsers,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: analytics
+        data: analytics,
     });
 }));
 /**
@@ -103,21 +103,21 @@ exports.getPlatformAnalyticsController = (0, errorHandler_1.asyncHandler)((req, 
         eventType: req.query.eventType,
         status: req.query.status,
         userRole: req.query.userRole,
-        location: req.query.location
+        location: req.query.location,
     };
     loggerService_1.logger.info('Solicitud de analytics de plataforma', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const analytics = yield analyticsService_1.analyticsService.getPlatformAnalytics(filters);
     loggerService_1.logger.info('Analytics de plataforma completado', {
         metadata: {
             totalRevenue: analytics.totalRevenue,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: analytics
+        data: analytics,
     });
 }));
 /**
@@ -127,18 +127,18 @@ exports.getTrendsReportController = (0, errorHandler_1.asyncHandler)((req, res) 
     var _a, _b;
     const months = parseInt(req.query.months) || 6;
     loggerService_1.logger.info('Solicitud de reporte de tendencias', {
-        metadata: { months, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { months, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const trends = yield analyticsService_1.analyticsService.getTrendsReport(months);
     loggerService_1.logger.info('Reporte de tendencias completado', {
         metadata: {
             months,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: trends
+        data: trends,
     });
 }));
 /**
@@ -147,18 +147,18 @@ exports.getTrendsReportController = (0, errorHandler_1.asyncHandler)((req, res) 
 exports.getLocationPerformanceReportController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     loggerService_1.logger.info('Solicitud de reporte de rendimiento por ubicación', {
-        metadata: { userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const performance = yield analyticsService_1.analyticsService.getLocationPerformanceReport();
     loggerService_1.logger.info('Reporte de rendimiento por ubicación completado', {
         metadata: {
             locationsCount: performance.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: performance
+        data: performance,
     });
 }));
 /**
@@ -168,18 +168,18 @@ exports.getTopActiveUsersReportController = (0, errorHandler_1.asyncHandler)((re
     var _a, _b;
     const limit = parseInt(req.query.limit) || 10;
     loggerService_1.logger.info('Solicitud de reporte de usuarios más activos', {
-        metadata: { limit, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { limit, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const users = yield analyticsService_1.analyticsService.getTopActiveUsersReport(limit);
     loggerService_1.logger.info('Reporte de usuarios más activos completado', {
         metadata: {
             usersCount: users.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
-        data: users
+        data: users,
     });
 }));
 /**
@@ -189,25 +189,25 @@ exports.getDashboardController = (0, errorHandler_1.asyncHandler)((req, res) => 
     var _a, _b;
     const filters = {
         dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo
+        dateTo: req.query.dateTo,
     };
     loggerService_1.logger.info('Solicitud de dashboard de analytics', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
-    const [eventAnalytics, requestAnalytics, userAnalytics, platformAnalytics, trends] = yield Promise.all([
+    const [eventAnalytics, requestAnalytics, userAnalytics, platformAnalytics, trends,] = yield Promise.all([
         analyticsService_1.analyticsService.getEventAnalytics(filters),
         analyticsService_1.analyticsService.getRequestAnalytics(filters),
         analyticsService_1.analyticsService.getUserAnalytics(filters),
         analyticsService_1.analyticsService.getPlatformAnalytics(filters),
-        analyticsService_1.analyticsService.getTrendsReport(6)
+        analyticsService_1.analyticsService.getTrendsReport(6),
     ]);
     loggerService_1.logger.info('Dashboard de analytics completado', {
         metadata: {
             totalEvents: eventAnalytics.totalEvents,
             totalRequests: requestAnalytics.totalRequests,
             totalUsers: userAnalytics.totalUsers,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
@@ -216,8 +216,8 @@ exports.getDashboardController = (0, errorHandler_1.asyncHandler)((req, res) => 
             requests: requestAnalytics,
             users: userAnalytics,
             platform: platformAnalytics,
-            trends
-        }
+            trends,
+        },
     });
 }));
 /**
@@ -232,10 +232,10 @@ exports.exportReportController = (0, errorHandler_1.asyncHandler)((req, res) => 
         eventType: req.query.eventType,
         status: req.query.status,
         userRole: req.query.userRole,
-        location: req.query.location
+        location: req.query.location,
     };
     loggerService_1.logger.info('Solicitud de exportación de reporte', {
-        metadata: { type, format, filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { type, format, filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     let data;
     let filename;
@@ -274,8 +274,8 @@ exports.exportReportController = (0, errorHandler_1.asyncHandler)((req, res) => 
             type,
             format,
             filename,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

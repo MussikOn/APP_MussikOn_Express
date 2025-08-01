@@ -23,7 +23,7 @@ class ImageService {
             return yield (0, imagesModel_1.uploadImage)(file, userId, 'profile', {
                 description: description || 'Foto de perfil',
                 tags: ['profile', 'user'],
-                isPublic: true
+                isPublic: true,
             });
         });
     }
@@ -35,7 +35,7 @@ class ImageService {
             return yield (0, imagesModel_1.uploadImage)(file, userId, 'post', {
                 description: description || 'Imagen de post',
                 tags: tags || ['post'],
-                isPublic: true
+                isPublic: true,
             });
         });
     }
@@ -48,7 +48,7 @@ class ImageService {
                 description: description || 'Imagen de evento',
                 tags: ['event', eventId],
                 isPublic: true,
-                customMetadata: { eventId }
+                customMetadata: { eventId },
             });
         });
     }
@@ -60,7 +60,7 @@ class ImageService {
             return yield (0, imagesModel_1.uploadImage)(file, userId, 'gallery', {
                 description: description || 'Imagen de galería',
                 tags: tags || ['gallery'],
-                isPublic: true
+                isPublic: true,
             });
         });
     }
@@ -72,7 +72,7 @@ class ImageService {
             return yield (0, imagesModel_1.uploadImage)(file, userId, 'admin', {
                 description: description || 'Imagen administrativa',
                 tags: tags || ['admin'],
-                isPublic: false
+                isPublic: false,
             });
         });
     }
@@ -108,7 +108,7 @@ class ImageService {
                 page,
                 totalPages,
                 hasNext: page < totalPages,
-                hasPrev: page > 1
+                hasPrev: page > 1,
             };
         });
     }
@@ -208,7 +208,7 @@ class ImageService {
             'image/png',
             'image/gif',
             'image/webp',
-            'image/svg+xml'
+            'image/svg+xml',
         ];
         return allowedMimeTypes.includes(file.mimetype);
     }
@@ -243,7 +243,7 @@ class ImageService {
                 mimetype: image.mimetype,
                 category: image.category,
                 createdAt: image.createdAt,
-                isPublic: image.isPublic
+                isPublic: image.isPublic,
             };
         });
     }

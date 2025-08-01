@@ -24,5 +24,14 @@ exports.requireRole = requireRole;
 // Middleware específicos para roles comunes
 exports.requireAdmin = (0, exports.requireRole)(['admin', 'super_admin']);
 exports.requireSuperAdmin = (0, exports.requireRole)(['super_admin']);
-exports.requireMusician = (0, exports.requireRole)(['musician', 'admin', 'super_admin']);
-exports.requireUser = (0, exports.requireRole)(['user', 'musician', 'admin', 'super_admin']);
+exports.requireMusician = (0, exports.requireRole)([
+    'musician',
+    'admin',
+    'super_admin',
+]);
+exports.requireUser = (0, exports.requireRole)([
+    'user',
+    'musician',
+    'admin',
+    'super_admin',
+]);

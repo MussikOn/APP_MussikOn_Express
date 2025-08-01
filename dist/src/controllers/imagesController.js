@@ -63,16 +63,17 @@ const uploadImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         if (!user) {
-            res.status(401).json({ error: "Usuario no autenticado" });
+            res.status(401).json({ error: 'Usuario no autenticado' });
             return;
         }
         if (!req.file) {
-            res.status(400).json({ error: "No se proporcionó ningún archivo" });
+            res.status(400).json({ error: 'No se proporcionó ningún archivo' });
             return;
         }
         const { category, description, tags, isPublic } = req.body;
-        if (!category || !['profile', 'post', 'event', 'gallery', 'admin'].includes(category)) {
-            res.status(400).json({ error: "Categoría inválida" });
+        if (!category ||
+            !['profile', 'post', 'event', 'gallery', 'admin'].includes(category)) {
+            res.status(400).json({ error: 'Categoría inválida' });
             return;
         }
         const metadata = {
@@ -84,15 +85,15 @@ const uploadImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         console.log(`[src/controllers/imagesController.ts:uploadImageController] Imagen subida por ${user.userEmail}:`, image.id);
         res.status(201).json({
             success: true,
-            message: "Imagen subida exitosamente",
-            image
+            message: 'Imagen subida exitosamente',
+            image,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:', error);
         res.status(500).json({
-            error: "Error al subir imagen",
-            details: error.message
+            error: 'Error al subir imagen',
+            details: error.message,
         });
     }
 });
@@ -129,25 +130,25 @@ const getImageByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
     try {
         const { imageId } = req.params;
         if (!imageId) {
-            res.status(400).json({ error: "ID de imagen requerido" });
+            res.status(400).json({ error: 'ID de imagen requerido' });
             return;
         }
         const image = yield (0, imagesModel_1.getImageById)(imageId);
         if (!image) {
-            res.status(404).json({ error: "Imagen no encontrada" });
+            res.status(404).json({ error: 'Imagen no encontrada' });
             return;
         }
         console.log(`[src/controllers/imagesController.ts:getImageByIdController] Imagen obtenida:`, imageId);
         res.status(200).json({
             success: true,
-            image
+            image,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:', error);
         res.status(500).json({
-            error: "Error al obtener imagen",
-            details: error.message
+            error: 'Error al obtener imagen',
+            details: error.message,
         });
     }
 });
@@ -211,7 +212,7 @@ exports.getImageByIdController = getImageByIdController;
  */
 const listImagesController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { category, userId, isPublic, search, limit = 20, offset = 0 } = req.query;
+        const { category, userId, isPublic, search, limit = 20, offset = 0, } = req.query;
         const filters = {};
         if (category)
             filters.category = category;
@@ -231,14 +232,14 @@ const listImagesController = (req, res) => __awaiter(void 0, void 0, void 0, fun
             success: true,
             images,
             total: images.length,
-            filters
+            filters,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:', error);
         res.status(500).json({
-            error: "Error al listar imágenes",
-            details: error.message
+            error: 'Error al listar imágenes',
+            details: error.message,
         });
     }
 });
@@ -292,38 +293,40 @@ const updateImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         if (!user) {
-            res.status(401).json({ error: "Usuario no autenticado" });
+            res.status(401).json({ error: 'Usuario no autenticado' });
             return;
         }
         const { imageId } = req.params;
         const updateData = req.body;
         if (!imageId) {
-            res.status(400).json({ error: "ID de imagen requerido" });
+            res.status(400).json({ error: 'ID de imagen requerido' });
             return;
         }
         // Verificar que la imagen existe y pertenece al usuario
         const existingImage = yield (0, imagesModel_1.getImageById)(imageId);
         if (!existingImage) {
-            res.status(404).json({ error: "Imagen no encontrada" });
+            res.status(404).json({ error: 'Imagen no encontrada' });
             return;
         }
         if (existingImage.userId !== user.userEmail) {
-            res.status(403).json({ error: "No tienes permisos para actualizar esta imagen" });
+            res
+                .status(403)
+                .json({ error: 'No tienes permisos para actualizar esta imagen' });
             return;
         }
         const updatedImage = yield (0, imagesModel_1.updateImage)(imageId, updateData);
         console.log(`[src/controllers/imagesController.ts:updateImageController] Imagen actualizada por ${user.userEmail}:`, imageId);
         res.status(200).json({
             success: true,
-            message: "Imagen actualizada exitosamente",
-            image: updatedImage
+            message: 'Imagen actualizada exitosamente',
+            image: updatedImage,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:', error);
         res.status(500).json({
-            error: "Error al actualizar imagen",
-            details: error.message
+            error: 'Error al actualizar imagen',
+            details: error.message,
         });
     }
 });
@@ -360,26 +363,26 @@ const deleteImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         if (!user) {
-            res.status(401).json({ error: "Usuario no autenticado" });
+            res.status(401).json({ error: 'Usuario no autenticado' });
             return;
         }
         const { imageId } = req.params;
         if (!imageId) {
-            res.status(400).json({ error: "ID de imagen requerido" });
+            res.status(400).json({ error: 'ID de imagen requerido' });
             return;
         }
         yield (0, imagesModel_1.deleteImage)(imageId, user.userEmail);
         console.log(`[src/controllers/imagesController.ts:deleteImageController] Imagen eliminada por ${user.userEmail}:`, imageId);
         res.status(200).json({
             success: true,
-            message: "Imagen eliminada exitosamente"
+            message: 'Imagen eliminada exitosamente',
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:', error);
         res.status(500).json({
-            error: "Error al eliminar imagen",
-            details: error.message
+            error: 'Error al eliminar imagen',
+            details: error.message,
         });
     }
 });
@@ -408,22 +411,25 @@ exports.deleteImageController = deleteImageController;
 const getImageStatsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        if (!user || !['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'].includes(user.roll)) {
-            res.status(403).json({ error: "Acceso denegado. Se requieren permisos de administrador" });
+        if (!user ||
+            !['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'].includes(user.roll)) {
+            res.status(403).json({
+                error: 'Acceso denegado. Se requieren permisos de administrador',
+            });
             return;
         }
         const stats = yield (0, imagesModel_1.getImageStats)();
         console.log(`[src/controllers/imagesController.ts:getImageStatsController] Estadísticas obtenidas por ${user.userEmail}`);
         res.status(200).json({
             success: true,
-            stats
+            stats,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:', error);
         res.status(500).json({
-            error: "Error al obtener estadísticas",
-            details: error.message
+            error: 'Error al obtener estadísticas',
+            details: error.message,
         });
     }
 });
@@ -460,21 +466,21 @@ const getUserProfileImagesController = (req, res) => __awaiter(void 0, void 0, v
     try {
         const { userId } = req.params;
         if (!userId) {
-            res.status(400).json({ error: "ID de usuario requerido" });
+            res.status(400).json({ error: 'ID de usuario requerido' });
             return;
         }
         const images = yield (0, imagesModel_1.getUserProfileImages)(userId);
         console.log(`[src/controllers/imagesController.ts:getUserProfileImagesController] Imágenes de perfil obtenidas para ${userId}`);
         res.status(200).json({
             success: true,
-            images
+            images,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:', error);
         res.status(500).json({
-            error: "Error al obtener imágenes de perfil",
-            details: error.message
+            error: 'Error al obtener imágenes de perfil',
+            details: error.message,
         });
     }
 });
@@ -513,14 +519,14 @@ const getPostImagesController = (req, res) => __awaiter(void 0, void 0, void 0, 
         console.log(`[src/controllers/imagesController.ts:getPostImagesController] ${images.length} imágenes de posts obtenidas`);
         res.status(200).json({
             success: true,
-            images
+            images,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:', error);
         res.status(500).json({
-            error: "Error al obtener imágenes de posts",
-            details: error.message
+            error: 'Error al obtener imágenes de posts',
+            details: error.message,
         });
     }
 });
@@ -559,14 +565,14 @@ const getEventImagesController = (req, res) => __awaiter(void 0, void 0, void 0,
         console.log(`[src/controllers/imagesController.ts:getEventImagesController] ${images.length} imágenes de eventos obtenidas`);
         res.status(200).json({
             success: true,
-            images
+            images,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:', error);
         res.status(500).json({
-            error: "Error al obtener imágenes de eventos",
-            details: error.message
+            error: 'Error al obtener imágenes de eventos',
+            details: error.message,
         });
     }
 });
@@ -598,7 +604,9 @@ const cleanupExpiredImagesController = (req, res) => __awaiter(void 0, void 0, v
     try {
         const user = req.user;
         if (!user || !['adminSenior', 'superAdmin'].includes(user.roll)) {
-            res.status(403).json({ error: "Acceso denegado. Se requieren permisos de administrador senior" });
+            res.status(403).json({
+                error: 'Acceso denegado. Se requieren permisos de administrador senior',
+            });
             return;
         }
         const deletedCount = yield (0, imagesModel_1.cleanupExpiredImages)();
@@ -606,14 +614,14 @@ const cleanupExpiredImagesController = (req, res) => __awaiter(void 0, void 0, v
         res.status(200).json({
             success: true,
             deletedCount,
-            message: `${deletedCount} imágenes expiradas eliminadas`
+            message: `${deletedCount} imágenes expiradas eliminadas`,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:', error);
         res.status(500).json({
-            error: "Error en limpieza de imágenes",
-            details: error.message
+            error: 'Error en limpieza de imágenes',
+            details: error.message,
         });
     }
 });
@@ -624,15 +632,15 @@ const getAllImagesController = (req, res) => __awaiter(void 0, void 0, void 0, f
         const images = yield (0, imagesModel_1.listImages)();
         res.status(200).json({
             success: true,
-            message: "Galería de fotos obtenida",
-            images
+            message: 'Galería de fotos obtenida',
+            images,
         });
     }
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:', error);
         res.status(500).json({
-            error: "Error al obtener galería de imágenes",
-            details: error.message
+            error: 'Error al obtener galería de imágenes',
+            details: error.message,
         });
     }
 });
@@ -641,12 +649,12 @@ const getImageUrlController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const { key } = req.params;
         if (!key) {
-            res.status(400).json({ error: "Clave de archivo requerida" });
+            res.status(400).json({ error: 'Clave de archivo requerida' });
             return;
         }
         const image = yield (0, imagesModel_1.getImageById)(key);
         if (!image) {
-            res.status(404).json({ error: "Imagen no encontrada" });
+            res.status(404).json({ error: 'Imagen no encontrada' });
             return;
         }
         res.status(200).json({ url: image.url });
@@ -654,8 +662,8 @@ const getImageUrlController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     catch (error) {
         console.error('[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:', error);
         res.status(500).json({
-            error: "Error al generar URL de archivo",
-            details: error.message
+            error: 'Error al generar URL de archivo',
+            details: error.message,
         });
     }
 });

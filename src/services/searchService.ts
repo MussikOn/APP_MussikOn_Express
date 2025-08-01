@@ -101,10 +101,18 @@ export class SearchService {
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
         filteredEvents = events.filter(
-          (event: any) =>
-            event.eventName.toLowerCase().includes(searchTerm) ||
-            event.location.toLowerCase().includes(searchTerm) ||
-            event.comment?.toLowerCase().includes(searchTerm)
+          (event: any) => {
+            // Función auxiliar para verificar si un valor es string y hacer búsqueda
+            const searchInField = (field: any): boolean => {
+              return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+            };
+            
+            return (
+              searchInField(event.eventName) ||
+              searchInField(event.location) ||
+              searchInField(event.comment)
+            );
+          }
         );
       }
 
@@ -180,10 +188,18 @@ export class SearchService {
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
         filteredRequests = requests.filter(
-          (request: any) =>
-            request.description?.toLowerCase().includes(searchTerm) ||
-            request.location.toLowerCase().includes(searchTerm) ||
-            request.requirements?.toLowerCase().includes(searchTerm)
+          (request: any) => {
+            // Función auxiliar para verificar si un valor es string y hacer búsqueda
+            const searchInField = (field: any): boolean => {
+              return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+            };
+            
+            return (
+              searchInField(request.description) ||
+              searchInField(request.location) ||
+              searchInField(request.requirements)
+            );
+          }
         );
       }
 
@@ -239,10 +255,18 @@ export class SearchService {
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
         filteredUsers = users.filter(
-          (user: any) =>
-            user.name.toLowerCase().includes(searchTerm) ||
-            user.lastName.toLowerCase().includes(searchTerm) ||
-            user.userEmail.toLowerCase().includes(searchTerm)
+          (user: any) => {
+            // Función auxiliar para verificar si un valor es string y hacer búsqueda
+            const searchInField = (field: any): boolean => {
+              return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+            };
+            
+            return (
+              searchInField(user.name) ||
+              searchInField(user.lastName) ||
+              searchInField(user.userEmail)
+            );
+          }
         );
       }
 

@@ -9,7 +9,7 @@ const musicianProfileController_1 = require("../controllers/musicianProfileContr
 const musician = (0, express_1.Router)();
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({ storage });
-musician.use(upload.single("file"));
+musician.use(upload.single('file'));
 /**
  * @swagger
  * tags:
@@ -67,7 +67,7 @@ musician.use(upload.single("file"));
  *                 error:
  *                   type: string
  */
-musician.post("/saveImage", musicianProfileController_1.uploadFile);
+musician.post('/saveImage', musicianProfileController_1.uploadFile);
 /**
  * @swagger
  * /media/getImage/{key}:
@@ -110,5 +110,5 @@ musician.post("/saveImage", musicianProfileController_1.uploadFile);
  *                 error:
  *                   type: string
  */
-musician.get("/getImage/:key", musicianProfileController_1.getFileUrl);
+musician.get('/getImage/:key', musicianProfileController_1.getFileUrl);
 exports.default = musician;

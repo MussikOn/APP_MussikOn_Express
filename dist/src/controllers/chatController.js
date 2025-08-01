@@ -19,21 +19,21 @@ const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, functio
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         const conversations = yield (0, chatModel_1.getConversationsByUserModel)(userEmail);
         res.json({
             success: true,
-            data: conversations
+            data: conversations,
         });
     }
     catch (error) {
         console.error('Error al obtener conversaciones:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -47,7 +47,7 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
@@ -56,14 +56,14 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!conversation) {
             res.status(404).json({
                 success: false,
-                error: 'Conversación no encontrada'
+                error: 'Conversación no encontrada',
             });
             return;
         }
         if (!conversation.participants.includes(userEmail)) {
             res.status(403).json({
                 success: false,
-                error: 'No tienes permisos para acceder a esta conversación'
+                error: 'No tienes permisos para acceder a esta conversación',
             });
             return;
         }
@@ -72,14 +72,14 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         yield (0, chatModel_1.markConversationAsReadModel)(conversationId, userEmail);
         res.json({
             success: true,
-            data: messages
+            data: messages,
         });
     }
     catch (error) {
         console.error('Error al obtener mensajes:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -95,14 +95,14 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         if (!content || content.trim().length === 0) {
             res.status(400).json({
                 success: false,
-                error: 'El contenido del mensaje es requerido'
+                error: 'El contenido del mensaje es requerido',
             });
             return;
         }
@@ -111,14 +111,14 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!conversation) {
             res.status(404).json({
                 success: false,
-                error: 'Conversación no encontrada'
+                error: 'Conversación no encontrada',
             });
             return;
         }
         if (!conversation.participants.includes(userEmail)) {
             res.status(403).json({
                 success: false,
-                error: 'No tienes permisos para enviar mensajes a esta conversación'
+                error: 'No tienes permisos para enviar mensajes a esta conversación',
             });
             return;
         }
@@ -128,19 +128,19 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             senderName: userName || userEmail,
             content: content.trim(),
             status: 'sent',
-            type: type
+            type: type,
         };
         const message = yield (0, chatModel_1.createMessageModel)(messageData);
         res.json({
             success: true,
-            data: message
+            data: message,
         });
     }
     catch (error) {
         console.error('Error al enviar mensaje:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -154,21 +154,21 @@ const markAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         yield (0, chatModel_1.markMessageAsReadModel)(messageId);
         res.json({
             success: true,
-            data: null
+            data: null,
         });
     }
     catch (error) {
         console.error('Error al marcar mensaje como leído:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -182,14 +182,16 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
-        if (!participants || !Array.isArray(participants) || participants.length === 0) {
+        if (!participants ||
+            !Array.isArray(participants) ||
+            participants.length === 0) {
             res.status(400).json({
                 success: false,
-                error: 'Se requiere al menos un participante'
+                error: 'Se requiere al menos un participante',
             });
             return;
         }
@@ -200,21 +202,21 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (existingConversation) {
             res.json({
                 success: true,
-                data: existingConversation
+                data: existingConversation,
             });
             return;
         }
         const conversation = yield (0, chatModel_1.createConversationModel)(allParticipants);
         res.json({
             success: true,
-            data: conversation
+            data: conversation,
         });
     }
     catch (error) {
         console.error('Error al crear conversación:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -228,7 +230,7 @@ const searchConversations = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
@@ -236,19 +238,19 @@ const searchConversations = (req, res) => __awaiter(void 0, void 0, void 0, func
             search: search,
             unreadOnly: unreadOnly === 'true',
             dateFrom: dateFrom,
-            dateTo: dateTo
+            dateTo: dateTo,
         };
         const conversations = yield (0, chatModel_1.searchConversationsModel)(userEmail, filters);
         res.json({
             success: true,
-            data: conversations
+            data: conversations,
         });
     }
     catch (error) {
         console.error('Error al buscar conversaciones:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -262,21 +264,21 @@ const deleteConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         yield (0, chatModel_1.deleteConversationModel)(conversationId, userEmail);
         res.json({
             success: true,
-            data: null
+            data: null,
         });
     }
     catch (error) {
         console.error('Error al eliminar conversación:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -290,21 +292,21 @@ const archiveConversation = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         yield (0, chatModel_1.archiveConversationModel)(conversationId, userEmail);
         res.json({
             success: true,
-            data: null
+            data: null,
         });
     }
     catch (error) {
         console.error('Error al archivar conversación:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -318,7 +320,7 @@ const getConversationById = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
@@ -326,27 +328,27 @@ const getConversationById = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!conversation) {
             res.status(404).json({
                 success: false,
-                error: 'Conversación no encontrada'
+                error: 'Conversación no encontrada',
             });
             return;
         }
         if (!conversation.participants.includes(userEmail)) {
             res.status(403).json({
                 success: false,
-                error: 'No tienes permisos para acceder a esta conversación'
+                error: 'No tienes permisos para acceder a esta conversación',
             });
             return;
         }
         res.json({
             success: true,
-            data: conversation
+            data: conversation,
         });
     }
     catch (error) {
         console.error('Error al obtener conversación:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });
@@ -359,21 +361,21 @@ const getChatStats = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         if (!userEmail) {
             res.status(401).json({
                 success: false,
-                error: 'Usuario no autenticado'
+                error: 'Usuario no autenticado',
             });
             return;
         }
         const stats = yield (0, chatModel_1.getChatStatsModel)(userEmail);
         res.json({
             success: true,
-            data: stats
+            data: stats,
         });
     }
     catch (error) {
         console.error('Error al obtener estadísticas de chat:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error interno del servidor'
+            error: error.message || 'Error interno del servidor',
         });
     }
 });

@@ -64,7 +64,9 @@ adm.delete('/deleteAllUsers', authMiddleware_1.authMiddleware, (req, res) => __a
             deletePromises.push(firebase_1.db.collection('users').doc(doc.id).delete());
         });
         yield Promise.all(deletePromises);
-        res.status(200).json({ message: 'Todos los usuarios fueron eliminados exitosamente' });
+        res
+            .status(200)
+            .json({ message: 'Todos los usuarios fueron eliminados exitosamente' });
     }
     catch (error) {
         console.error('Error al eliminar todos los usuarios:', error);

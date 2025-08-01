@@ -17,8 +17,8 @@ function createToken(name, lastName, userEmail, roll) {
             name: name,
             lastName: lastName,
             userEmail: userEmail,
-            roll: roll
-        }, ENV_1.TOKEN_SECRET, { expiresIn: "24h" });
+            roll: roll,
+        }, ENV_1.TOKEN_SECRET, { expiresIn: '24h' });
     }
     catch (error) {
         return false;

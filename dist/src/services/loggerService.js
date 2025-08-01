@@ -74,14 +74,18 @@ class LoggerService {
             duration,
             metadata: {
                 statusCode: res.statusCode,
-                contentLength: res.get('Content-Length')
-            }
+                contentLength: res.get('Content-Length'),
+            },
         });
     }
     logError(error, req, context) {
         var _a;
-        const userId = req ? (((_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail) || 'anonymous') : 'unknown';
-        const requestId = req ? (req.headers['x-request-id'] || 'unknown') : 'unknown';
+        const userId = req
+            ? ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail) || 'anonymous'
+            : 'unknown';
+        const requestId = req
+            ? req.headers['x-request-id'] || 'unknown'
+            : 'unknown';
         this.error(error.message, error, {
             context: context || 'Application',
             userId,
@@ -89,7 +93,7 @@ class LoggerService {
             method: req === null || req === void 0 ? void 0 : req.method,
             url: req === null || req === void 0 ? void 0 : req.originalUrl,
             ip: req === null || req === void 0 ? void 0 : req.ip,
-            userAgent: req === null || req === void 0 ? void 0 : req.get('User-Agent')
+            userAgent: req === null || req === void 0 ? void 0 : req.get('User-Agent'),
         });
     }
     // Métodos específicos para diferentes contextos

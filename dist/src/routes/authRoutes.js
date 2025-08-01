@@ -43,7 +43,7 @@ const router = (0, express_1.Router)();
  *       409:
  *         description: Usuario ya existe
  */
-router.post("/Register", (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/Register', (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de registro', req.body.userEmail);
     yield (0, authController_1.registerController)(req, res);
     loggerService_1.logger.logAuth('Registro exitoso', req.body.userEmail);
@@ -84,7 +84,7 @@ router.post("/Register", (0, validationMiddleware_1.validate)(validationSchemas_
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/login", (0, validationMiddleware_1.validate)(validationSchemas_1.loginSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/login', (0, validationMiddleware_1.validate)(validationSchemas_1.loginSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de login', req.body.userEmail);
     yield (0, authController_1.loginController)(req, res);
     loggerService_1.logger.logAuth('Login exitoso', req.body.userEmail);
@@ -107,7 +107,7 @@ router.post("/login", (0, validationMiddleware_1.validate)(validationSchemas_1.l
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/email-register", (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/email-register', (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de registro con email', req.body.userEmail);
     yield (0, authController_1.emailRegisterController)(req, res);
     loggerService_1.logger.logAuth('Registro con email exitoso', req.body.userEmail);
@@ -143,11 +143,11 @@ router.post("/email-register", (0, validationMiddleware_1.validate)(validationSc
  *       404:
  *         description: Usuario no encontrado
  */
-router.put("/update/:userEmail", authMiddleware_1.authMiddleware, validationMiddleware_1.validateId, (0, validationMiddleware_1.validate)(validationSchemas_1.updateUserSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/update/:userEmail', authMiddleware_1.authMiddleware, validationMiddleware_1.validateId, (0, validationMiddleware_1.validate)(validationSchemas_1.updateUserSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userEmail = req.params.userEmail;
     loggerService_1.logger.logAuth('Intento de actualización de usuario', userEmail, {
-        metadata: { updatedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { updatedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     yield (0, authController_1.updateUserByEmailController)(req, res);
     loggerService_1.logger.logAuth('Actualización de usuario exitosa', userEmail);
@@ -175,7 +175,7 @@ router.put("/update/:userEmail", authMiddleware_1.authMiddleware, validationMidd
  *       404:
  *         description: Usuario no encontrado
  */
-router.get("/validate-number/:userEmail", authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/validate-number/:userEmail', authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userEmail = req.params.userEmail;
     loggerService_1.logger.logAuth('Validación de número solicitada', userEmail);
     yield (0, authController_1.validNumberGetByEmail)(req, res);
@@ -212,15 +212,17 @@ router.get("/validate-number/:userEmail", authMiddleware_1.authMiddleware, (0, e
  *       404:
  *         description: Usuario o evento no encontrado
  */
-router.post("/add-event/:userEmail", authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/add-event/:userEmail', authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userEmail = req.params.userEmail;
     const eventId = req.body.eventId;
     loggerService_1.logger.logAuth('Agregando evento a usuario', userEmail, {
-        metadata: { eventId, addedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { eventId, addedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     yield (0, authController_1.addEventToUserController)(req, res);
-    loggerService_1.logger.logAuth('Evento agregado exitosamente', userEmail, { metadata: { eventId } });
+    loggerService_1.logger.logAuth('Evento agregado exitosamente', userEmail, {
+        metadata: { eventId },
+    });
 })));
 /**
  * @swagger
@@ -245,11 +247,11 @@ router.post("/add-event/:userEmail", authMiddleware_1.authMiddleware, (0, errorH
  *       404:
  *         description: Usuario no encontrado
  */
-router.delete("/delete/:userEmail", authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.delete('/delete/:userEmail', authMiddleware_1.authMiddleware, (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userEmail = req.params.userEmail;
     loggerService_1.logger.logAuth('Eliminación de usuario solicitada', userEmail, {
-        metadata: { deletedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { deletedBy: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     yield (0, authController_1.deleteUserByEmailController)(req, res);
     loggerService_1.logger.logAuth('Usuario eliminado exitosamente', userEmail);
@@ -280,7 +282,7 @@ router.delete("/delete/:userEmail", authMiddleware_1.authMiddleware, (0, errorHa
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/forgot-password", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/forgot-password', (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userEmail = req.body.userEmail;
     loggerService_1.logger.logAuth('Solicitud de recuperación de contraseña', userEmail);
     yield (0, authController_1.forgotPasswordController)(req, res);
@@ -316,10 +318,12 @@ router.post("/forgot-password", (0, errorHandler_1.asyncHandler)((req, res) => _
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/verify-code", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/verify-code', (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userEmail = req.body.userEmail;
     const code = req.body.code;
-    loggerService_1.logger.logAuth('Verificación de código solicitada', userEmail, { metadata: { code } });
+    loggerService_1.logger.logAuth('Verificación de código solicitada', userEmail, {
+        metadata: { code },
+    });
     yield (0, authController_1.verifyCodeController)(req, res);
     loggerService_1.logger.logAuth('Código verificado exitosamente', userEmail);
 })));
@@ -356,7 +360,7 @@ router.post("/verify-code", (0, errorHandler_1.asyncHandler)((req, res) => __awa
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/reset-password", (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post('/reset-password', (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userEmail = req.body.userEmail;
     loggerService_1.logger.logAuth('Restablecimiento de contraseña solicitado', userEmail);
     yield (0, authController_1.resetPasswordController)(req, res);

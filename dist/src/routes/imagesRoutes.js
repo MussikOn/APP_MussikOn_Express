@@ -96,63 +96,63 @@ const router = (0, express_1.Router)();
  * POST /images/upload
  * Subir una nueva imagen
  */
-router.post("/upload", authMiddleware_1.authMiddleware, uploadMiddleware_1.imageUpload.single('image'), uploadMiddleware_1.validateImageFile, imagesController_1.uploadImageController);
+router.post('/upload', authMiddleware_1.authMiddleware, uploadMiddleware_1.imageUpload.single('image'), uploadMiddleware_1.validateImageFile, imagesController_1.uploadImageController);
 /**
  * GET /images
  * Listar imágenes con filtros
  */
-router.get("/", imagesController_1.listImagesController);
+router.get('/', imagesController_1.listImagesController);
 /**
  * GET /images/:imageId
  * Obtener imagen por ID
  */
-router.get("/:imageId", imagesController_1.getImageByIdController);
+router.get('/:imageId', imagesController_1.getImageByIdController);
 /**
  * PUT /images/:imageId
  * Actualizar imagen
  */
-router.put("/:imageId", authMiddleware_1.authMiddleware, imagesController_1.updateImageController);
+router.put('/:imageId', authMiddleware_1.authMiddleware, imagesController_1.updateImageController);
 /**
  * DELETE /images/:imageId
  * Eliminar imagen
  */
-router.delete("/:imageId", authMiddleware_1.authMiddleware, imagesController_1.deleteImageController);
+router.delete('/:imageId', authMiddleware_1.authMiddleware, imagesController_1.deleteImageController);
 // ==================== RUTAS ESPECÍFICAS ====================
 /**
  * GET /images/profile/:userId
  * Obtener imágenes de perfil de un usuario
  */
-router.get("/profile/:userId", imagesController_1.getUserProfileImagesController);
+router.get('/profile/:userId', imagesController_1.getUserProfileImagesController);
 /**
  * GET /images/posts
  * Obtener imágenes de posts
  */
-router.get("/posts", imagesController_1.getPostImagesController);
+router.get('/posts', imagesController_1.getPostImagesController);
 /**
  * GET /images/events
  * Obtener imágenes de eventos
  */
-router.get("/events", imagesController_1.getEventImagesController);
+router.get('/events', imagesController_1.getEventImagesController);
 // ==================== RUTAS DE ADMINISTRACIÓN ====================
 /**
  * GET /images/stats
  * Obtener estadísticas de imágenes (Solo administradores)
  */
-router.get("/stats", authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.getImageStatsController);
+router.get('/stats', authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.getImageStatsController);
 /**
  * POST /images/cleanup
  * Limpiar imágenes expiradas (Solo administradores senior)
  */
-router.post("/cleanup", authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.cleanupExpiredImagesController);
+router.post('/cleanup', authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.cleanupExpiredImagesController);
 // ==================== RUTAS LEGACY (COMPATIBILIDAD) ====================
 /**
  * GET /imgs/getAllImg
  * Obtener galería de imágenes (Legacy)
  */
-router.get("/getAllImg", imagesController_1.getAllImagesController);
+router.get('/getAllImg', imagesController_1.getAllImagesController);
 /**
  * GET /imgs/url/:key
  * Obtener URL de imagen por clave (Legacy)
  */
-router.get("/url/:key", imagesController_1.getImageUrlController);
+router.get('/url/:key', imagesController_1.getImageUrlController);
 exports.default = router;

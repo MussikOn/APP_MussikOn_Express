@@ -400,5 +400,5 @@ exports.default = {
     applySuperAdminValidations,
     applyAllValidations,
     applyValidationToRoute,
-    createCommonValidations
+    createCommonValidations,
 };

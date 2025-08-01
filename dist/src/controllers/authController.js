@@ -84,18 +84,22 @@ const firebase_1 = require("../utils/firebase");
 function registerController(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { name, lastName, roll, userEmail, userPassword, status } = req.body;
-            console.log("[src/controllers/authController.ts:72] Datos de registro recibidos:", req.body);
+            const { name, lastName, roll, userEmail, userPassword, status, } = req.body;
+            console.log('[src/controllers/authController.ts:72] Datos de registro recibidos:', req.body);
             if (!name || !lastName || !roll || !userEmail || !userPassword) {
-                res.status(400).json({ msg: "Error al registrarse, todos los campos deben de ser llenados" });
+                res.status(400).json({
+                    msg: 'Error al registrarse, todos los campos deben de ser llenados',
+                });
                 return;
             }
             if (!(0, validatios_1.validarPassword)(userPassword)) {
-                res.status(400).json({ msg: "La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 ." });
+                res.status(400).json({
+                    msg: 'La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 .',
+                });
                 return;
             }
             if (!(0, validatios_1.validarEmail)(userEmail)) {
-                res.status(400).json({ msg: "Correo Electrónico inválido." });
+                res.status(400).json({ msg: 'Correo Electrónico inválido.' });
                 return;
             }
             const pass = yield bcrypt_1.default.hash(userPassword, 10);
@@ -105,21 +109,28 @@ function registerController(req, res) {
             if (!saved) {
                 const token = (0, jwt_1.createToken)(name, lastName, userEmail, roll);
                 const user = yield (0, authModel_1.getUserByEmailModel)(userEmail);
-                res.status(200).json({ msg: "Usuario Registrado con éxito.", token, user });
+                res
+                    .status(200)
+                    .json({ msg: 'Usuario Registrado con éxito.', token, user });
                 return;
             }
-            else if (saved === "Hay campos que no han sido llenados") {
-                res.status(409).json({ msg: "Hay campos que no han sido llenados", data: saved });
+            else if (saved === 'Hay campos que no han sido llenados') {
+                res
+                    .status(409)
+                    .json({ msg: 'Hay campos que no han sido llenados', data: saved });
                 return;
             }
-            else if (saved === "El usuario ya Existe.") {
-                res.status(409).json({ msg: "Ya hay un usuario con esta direccion de correo electrónico.", data: saved });
+            else if (saved === 'El usuario ya Existe.') {
+                res.status(409).json({
+                    msg: 'Ya hay un usuario con esta direccion de correo electrónico.',
+                    data: saved,
+                });
                 return;
             }
         }
         catch (error) {
             console.info(`[src/controllers/authController.ts:95] Hubo un error al intentar registar un Usuario: ${error}`);
-            res.status(400).json({ msg: "Error al registrarse.", error });
+            res.status(400).json({ msg: 'Error al registrarse.', error });
             return;
         }
     });
@@ -129,35 +140,38 @@ function loginController(req, res) {
         try {
             const { userEmail, userPassword } = req.body;
             if (!userEmail || !userPassword) {
-                res.status(400).json({ msg: "Todos los campos deben de ser llenados." });
+                res.status(400).json({ msg: 'Todos los campos deben de ser llenados.' });
                 return;
             }
-            ;
             if (!(0, validatios_1.validarEmail)(userEmail)) {
-                res.status(400).json({ msg: "Dirección de correo electrónico no válido." });
+                res
+                    .status(400)
+                    .json({ msg: 'Dirección de correo electrónico no válido.' });
                 return;
             }
-            ;
             const data = yield (0, authModel_1.getUserByEmailModel)(userEmail);
             if (!data) {
-                res.status(401).json({ msg: "Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta." });
+                res.status(401).json({
+                    msg: 'Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta.',
+                });
                 return;
             }
-            ;
             const name = data.name;
             const lastName = data.lastName;
             const roll = data.roll;
             const pass = data.userPassword;
             const isMatch = yield bcrypt_1.default.compare(userPassword, pass);
             if (!isMatch) {
-                res.status(401).json({ msg: "Contraseña incorrecta." });
+                res.status(401).json({ msg: 'Contraseña incorrecta.' });
                 return;
             }
             const token = (0, jwt_1.createToken)(name, lastName, userEmail, roll);
-            res.status(200).json({ msg: "Login Exitoso", token, user: data });
+            res.status(200).json({ msg: 'Login Exitoso', token, user: data });
         }
         catch (error) {
-            res.status(401).json({ msg: "Error en la petición, Inténtelo mas tarde.", error });
+            res
+                .status(401)
+                .json({ msg: 'Error en la petición, Inténtelo mas tarde.', error });
             return;
         }
     });
@@ -167,28 +181,29 @@ const updateUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
         const dataUsers = req.body;
         const userEmail = req.params.userEmail.toLocaleLowerCase();
         if (!dataUsers || !userEmail) {
-            res.status(401).json({ msg: "No hay Datos para actualizar" });
+            res.status(401).json({ msg: 'No hay Datos para actualizar' });
         }
         if (!(0, validatios_1.validarEmail)(userEmail)) {
-            res.status(400).json({ msg: "Dirección de correo electrónico no válido." });
+            res
+                .status(400)
+                .json({ msg: 'Dirección de correo electrónico no válido.' });
             return;
         }
-        ;
         // status por defecto true si no se envía
         if (typeof dataUsers.status !== 'boolean') {
             dataUsers.status = true;
         }
         const updateValidation = yield (0, authModel_1.updateUserByEmailModel)(userEmail, dataUsers);
         if (updateValidation) {
-            console.info("Resultado de updateUserByEmailModel");
+            console.info('Resultado de updateUserByEmailModel');
             console.info(updateValidation);
             res.status(401).json({ msg: updateValidation });
         }
-        res.status(200).json({ msg: "Consulta éxitosa", });
+        res.status(200).json({ msg: 'Consulta éxitosa' });
     }
     catch (error) {
-        console.info("Error al actualizar los datos.");
-        res.status(401).json({ msg: "Error al actualizar el usuario." });
+        console.info('Error al actualizar los datos.');
+        res.status(401).json({ msg: 'Error al actualizar el usuario.' });
     }
 });
 exports.updateUserByEmailController = updateUserByEmailController;
@@ -253,25 +268,34 @@ const emailRegisterController = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const userEmail = req.body.userEmail.toLocaleLowerCase();
         if (!userEmail) {
-            res.status(400).json({ msg: "Todos los campos deben de ser llenados." });
+            res.status(400).json({ msg: 'Todos los campos deben de ser llenados.' });
             return;
         }
         if (!(0, validatios_1.validarEmail)(userEmail)) {
-            res.status(402).json({ msg: "Dirección de correo electrónico no válido." });
+            res
+                .status(402)
+                .json({ msg: 'Dirección de correo electrónico no válido.' });
             return;
         }
-        const querySnapshot = yield firebase_1.db.collection("users").where("userEmail", "==", userEmail).get();
+        const querySnapshot = yield firebase_1.db
+            .collection('users')
+            .where('userEmail', '==', userEmail)
+            .get();
         if (!querySnapshot.empty) {
-            res.status(409).json({ msg: "Ya hay un usuario con esta dirección de correo electrónico." });
+            res.status(409).json({
+                msg: 'Ya hay un usuario con esta dirección de correo electrónico.',
+            });
             return;
         }
         else {
-            yield (0, mailer_1.sendEmail)(userEmail, "Verifica tu cuenta en MusikOn", html);
-            res.status(200).json({ msg: "Email recibido con exito!", numParam });
+            yield (0, mailer_1.sendEmail)(userEmail, 'Verifica tu cuenta en MusikOn', html);
+            res.status(200).json({ msg: 'Email recibido con exito!', numParam });
         }
     }
     catch (err) {
-        res.status(400).json({ msg: "Verifique bien su dirección de correo electrónico.", err });
+        res
+            .status(400)
+            .json({ msg: 'Verifique bien su dirección de correo electrónico.', err });
         return;
     }
 });
@@ -280,22 +304,22 @@ const validNumberGetByEmail = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const numBack = req.body.vaildNumber.toString();
         const numParam = req.params.vaildNumber.toString();
-        if (numBack === "" || numParam === "") {
-            res.status(402).json({ msg: "Faltan datos requeridos." });
+        if (numBack === '' || numParam === '') {
+            res.status(402).json({ msg: 'Faltan datos requeridos.' });
             return;
         }
         const isMatch = yield bcrypt_1.default.compare(numParam, numBack);
         if (!isMatch) {
             console.info(`Son Iguales: ${numBack},${numParam}.`);
-            res.status(402).json({ msg: "Codigo Incorrecto." });
+            res.status(402).json({ msg: 'Codigo Incorrecto.' });
             return;
         }
         console.info(`Numero del Body: ${numBack}`);
         console.info(`Numero del Parametros: ${numParam}`);
-        res.status(200).json({ msg: "Bien hecho!" });
+        res.status(200).json({ msg: 'Bien hecho!' });
     }
     catch (err) {
-        res.status(402).json({ msg: "Fallo el proceso!" });
+        res.status(402).json({ msg: 'Fallo el proceso!' });
     }
 });
 exports.validNumberGetByEmail = validNumberGetByEmail;
@@ -303,24 +327,26 @@ const addEventToUserController = (req, res) => __awaiter(void 0, void 0, void 0,
     try {
         const user = req.user;
         if (!user || !user.userEmail) {
-            res.status(401).json({ msg: "Usuario no autenticado." });
+            res.status(401).json({ msg: 'Usuario no autenticado.' });
             return;
         }
         const eventData = req.body;
         if (!eventData) {
-            res.status(400).json({ msg: "No se proporcionó información del evento." });
+            res
+                .status(400)
+                .json({ msg: 'No se proporcionó información del evento.' });
             return;
         }
         const result = yield (0, authModel_1.addEventToUserModel)(user.userEmail, eventData);
         if (!result) {
-            res.status(200).json({ msg: "Evento guardado exitosamente." });
+            res.status(200).json({ msg: 'Evento guardado exitosamente.' });
         }
         else {
             res.status(400).json({ msg: result });
         }
     }
     catch (error) {
-        res.status(500).json({ msg: "Error al guardar el evento.", error });
+        res.status(500).json({ msg: 'Error al guardar el evento.', error });
     }
 });
 exports.addEventToUserController = addEventToUserController;
@@ -333,7 +359,7 @@ const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
             return;
         }
         const result = yield (0, authModel_1.deleteUserByEmailModel)(userEmail);
-        console.log("[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:", result);
+        console.log('[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:', result);
         console.log('[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
         if (result === false) {
             res.json({ message: 'Usuario eliminado correctamente' });
@@ -342,16 +368,21 @@ const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
             res.status(400).json({ message: 'Falta el email' });
         }
         else if (result === 'not_found') {
-            res.status(404).json({ message: 'El usuario no existe o ya fue eliminado' });
+            res
+                .status(404)
+                .json({ message: 'El usuario no existe o ya fue eliminado' });
         }
         else {
             res.status(500).json({ message: result });
         }
     }
     catch (error) {
-        console.log("[src/controllers/authController.ts:288] Error en deleteUserByEmailController");
+        console.log('[src/controllers/authController.ts:288] Error en deleteUserByEmailController');
         console.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
-        res.status(500).json({ message: 'Error al eliminar usuario', error: error.message });
+        res.status(500).json({
+            message: 'Error al eliminar usuario',
+            error: error.message,
+        });
     }
 });
 exports.deleteUserByEmailController = deleteUserByEmailController;
@@ -444,31 +475,33 @@ const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0,
     try {
         const { userEmail } = req.body;
         if (!userEmail) {
-            res.status(400).json({ msg: "Email es requerido" });
+            res.status(400).json({ msg: 'Email es requerido' });
             return;
         }
         if (!(0, validatios_1.validarEmail)(userEmail)) {
-            res.status(400).json({ msg: "Email inválido" });
+            res.status(400).json({ msg: 'Email inválido' });
             return;
         }
         // Buscar usuario
         const user = yield (0, authModel_1.getUserByEmailModel)(userEmail);
         if (!user) {
-            res.status(404).json({ msg: "Usuario no encontrado" });
+            res.status(404).json({ msg: 'Usuario no encontrado' });
             return;
         }
         // Verificar que sea superadmin
-        if (user.roll !== "superadmin") {
-            res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+        if (user.roll !== 'superadmin') {
+            res
+                .status(403)
+                .json({ msg: 'Solo superadmin puede recuperar contraseña' });
             return;
         }
         // Generar código de verificación
         const verificationCode = generateVerificationCode();
-        const expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutos
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos
         // Guardar código temporalmente
         verificationCodes.set(userEmail.toLowerCase(), {
             code: verificationCode,
-            expiresAt
+            expiresAt,
         });
         // Enviar email con código
         const html = `<!DOCTYPE html>
@@ -551,20 +584,20 @@ const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0,
     </body>
     </html>`;
         try {
-            yield (0, mailer_1.sendEmail)(userEmail, "Recuperar Contraseña - MusikOn", html);
+            yield (0, mailer_1.sendEmail)(userEmail, 'Recuperar Contraseña - MusikOn', html);
             res.status(200).json({
-                msg: "Código de verificación enviado al email",
-                userEmail: userEmail
+                msg: 'Código de verificación enviado al email',
+                userEmail: userEmail,
             });
         }
         catch (emailError) {
-            console.error("Error al enviar email:", emailError);
-            res.status(500).json({ msg: "Error al enviar email de verificación" });
+            console.error('Error al enviar email:', emailError);
+            res.status(500).json({ msg: 'Error al enviar email de verificación' });
         }
     }
     catch (error) {
-        console.error("Error en forgotPasswordController:", error);
-        res.status(500).json({ msg: "Error interno del servidor" });
+        console.error('Error en forgotPasswordController:', error);
+        res.status(500).json({ msg: 'Error interno del servidor' });
     }
 });
 exports.forgotPasswordController = forgotPasswordController;
@@ -573,47 +606,49 @@ const verifyCodeController = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const { userEmail, code } = req.body;
         if (!userEmail || !code) {
-            res.status(400).json({ msg: "Email y código son requeridos" });
+            res.status(400).json({ msg: 'Email y código son requeridos' });
             return;
         }
         if (!(0, validatios_1.validarEmail)(userEmail)) {
-            res.status(400).json({ msg: "Email inválido" });
+            res.status(400).json({ msg: 'Email inválido' });
             return;
         }
         // Buscar usuario
         const user = yield (0, authModel_1.getUserByEmailModel)(userEmail);
         if (!user) {
-            res.status(404).json({ msg: "Usuario no encontrado" });
+            res.status(404).json({ msg: 'Usuario no encontrado' });
             return;
         }
         // Verificar que sea superadmin
-        if (user.roll !== "superadmin") {
-            res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+        if (user.roll !== 'superadmin') {
+            res
+                .status(403)
+                .json({ msg: 'Solo superadmin puede recuperar contraseña' });
             return;
         }
         // Verificar código
         const storedData = verificationCodes.get(userEmail.toLowerCase());
         if (!storedData) {
-            res.status(400).json({ msg: "Código no encontrado o expirado" });
+            res.status(400).json({ msg: 'Código no encontrado o expirado' });
             return;
         }
         if (storedData.expiresAt < Date.now()) {
             verificationCodes.delete(userEmail.toLowerCase());
-            res.status(400).json({ msg: "Código expirado" });
+            res.status(400).json({ msg: 'Código expirado' });
             return;
         }
         if (storedData.code !== code) {
-            res.status(400).json({ msg: "Código inválido" });
+            res.status(400).json({ msg: 'Código inválido' });
             return;
         }
         res.status(200).json({
-            msg: "Código verificado correctamente",
-            userEmail: userEmail
+            msg: 'Código verificado correctamente',
+            userEmail: userEmail,
         });
     }
     catch (error) {
-        console.error("Error en verifyCodeController:", error);
-        res.status(500).json({ msg: "Error interno del servidor" });
+        console.error('Error en verifyCodeController:', error);
+        res.status(500).json({ msg: 'Error interno del servidor' });
     }
 });
 exports.verifyCodeController = verifyCodeController;
@@ -622,41 +657,47 @@ const resetPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const { userEmail, code, newPassword } = req.body;
         if (!userEmail || !code || !newPassword) {
-            res.status(400).json({ msg: "Email, código y nueva contraseña son requeridos" });
+            res
+                .status(400)
+                .json({ msg: 'Email, código y nueva contraseña son requeridos' });
             return;
         }
         if (!(0, validatios_1.validarEmail)(userEmail)) {
-            res.status(400).json({ msg: "Email inválido" });
+            res.status(400).json({ msg: 'Email inválido' });
             return;
         }
         if (!(0, validatios_1.validarPassword)(newPassword)) {
-            res.status(400).json({ msg: "La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales" });
+            res.status(400).json({
+                msg: 'La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales',
+            });
             return;
         }
         // Buscar usuario
         const user = yield (0, authModel_1.getUserByEmailModel)(userEmail);
         if (!user) {
-            res.status(404).json({ msg: "Usuario no encontrado" });
+            res.status(404).json({ msg: 'Usuario no encontrado' });
             return;
         }
         // Verificar que sea superadmin
-        if (user.roll !== "superadmin") {
-            res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+        if (user.roll !== 'superadmin') {
+            res
+                .status(403)
+                .json({ msg: 'Solo superadmin puede recuperar contraseña' });
             return;
         }
         // Verificar código
         const storedData = verificationCodes.get(userEmail.toLowerCase());
         if (!storedData) {
-            res.status(400).json({ msg: "Código no encontrado o expirado" });
+            res.status(400).json({ msg: 'Código no encontrado o expirado' });
             return;
         }
         if (storedData.expiresAt < Date.now()) {
             verificationCodes.delete(userEmail.toLowerCase());
-            res.status(400).json({ msg: "Código expirado" });
+            res.status(400).json({ msg: 'Código expirado' });
             return;
         }
         if (storedData.code !== code) {
-            res.status(400).json({ msg: "Código inválido" });
+            res.status(400).json({ msg: 'Código inválido' });
             return;
         }
         // Hashear nueva contraseña
@@ -664,7 +705,7 @@ const resetPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, 
         // Actualizar contraseña en la base de datos
         const updateData = {
             userPassword: hashedPassword,
-            update_at: new Date().toString()
+            update_at: new Date().toString(),
         };
         const updateResult = yield (0, authModel_1.updateUserByEmailModel)(userEmail, updateData);
         if (updateResult) {
@@ -674,13 +715,13 @@ const resetPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, 
         // Eliminar código usado
         verificationCodes.delete(userEmail.toLowerCase());
         res.status(200).json({
-            msg: "Contraseña actualizada correctamente",
-            userEmail: userEmail
+            msg: 'Contraseña actualizada correctamente',
+            userEmail: userEmail,
         });
     }
     catch (error) {
-        console.error("Error en resetPasswordController:", error);
-        res.status(500).json({ msg: "Error interno del servidor" });
+        console.error('Error en resetPasswordController:', error);
+        res.status(500).json({ msg: 'Error interno del servidor' });
     }
 });
 exports.resetPasswordController = resetPasswordController;

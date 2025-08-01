@@ -26,24 +26,26 @@ exports.searchEventsController = (0, errorHandler_1.asyncHandler)((req, res) => 
         dateFrom: req.query.dateFrom,
         dateTo: req.query.dateTo,
         location: req.query.location,
-        budget: req.query.budget ? {
-            min: parseInt(req.query.budget),
-            max: parseInt(req.query.budgetMax)
-        } : undefined,
+        budget: req.query.budget
+            ? {
+                min: parseInt(req.query.budget),
+                max: parseInt(req.query.budgetMax),
+            }
+            : undefined,
         limit: parseInt(req.query.limit) || 20,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda de eventos iniciada', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const result = yield searchService_1.searchService.searchEvents(filters);
     loggerService_1.logger.info('Búsqueda de eventos completada', {
         metadata: {
             totalResults: result.total,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
@@ -52,8 +54,8 @@ exports.searchEventsController = (0, errorHandler_1.asyncHandler)((req, res) => 
             total: result.total,
             page: result.page,
             limit: result.limit,
-            hasMore: result.hasMore
-        }
+            hasMore: result.hasMore,
+        },
     });
 }));
 /**
@@ -69,24 +71,26 @@ exports.searchMusicianRequestsController = (0, errorHandler_1.asyncHandler)((req
         dateFrom: req.query.dateFrom,
         dateTo: req.query.dateTo,
         location: req.query.location,
-        budget: req.query.budget ? {
-            min: parseInt(req.query.budget),
-            max: parseInt(req.query.budgetMax)
-        } : undefined,
+        budget: req.query.budget
+            ? {
+                min: parseInt(req.query.budget),
+                max: parseInt(req.query.budgetMax),
+            }
+            : undefined,
         limit: parseInt(req.query.limit) || 20,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda de solicitudes iniciada', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const result = yield searchService_1.searchService.searchMusicianRequests(filters);
     loggerService_1.logger.info('Búsqueda de solicitudes completada', {
         metadata: {
             totalResults: result.total,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
@@ -95,8 +99,8 @@ exports.searchMusicianRequestsController = (0, errorHandler_1.asyncHandler)((req
             total: result.total,
             page: result.page,
             limit: result.limit,
-            hasMore: result.hasMore
-        }
+            hasMore: result.hasMore,
+        },
     });
 }));
 /**
@@ -110,17 +114,17 @@ exports.searchUsersController = (0, errorHandler_1.asyncHandler)((req, res) => _
         limit: parseInt(req.query.limit) || 20,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda de usuarios iniciada', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const result = yield searchService_1.searchService.searchUsers(filters);
     loggerService_1.logger.info('Búsqueda de usuarios completada', {
         metadata: {
             totalResults: result.total,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
@@ -129,8 +133,8 @@ exports.searchUsersController = (0, errorHandler_1.asyncHandler)((req, res) => _
             total: result.total,
             page: result.page,
             limit: result.limit,
-            hasMore: result.hasMore
-        }
+            hasMore: result.hasMore,
+        },
     });
 }));
 /**
@@ -150,10 +154,10 @@ exports.globalSearchController = (0, errorHandler_1.asyncHandler)((req, res) => 
         limit: parseInt(req.query.limit) || 10,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda global iniciada', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const result = yield searchService_1.searchService.globalSearch(filters);
     loggerService_1.logger.info('Búsqueda global completada', {
@@ -161,21 +165,21 @@ exports.globalSearchController = (0, errorHandler_1.asyncHandler)((req, res) => 
             totalEvents: result.events.length,
             totalRequests: result.requests.length,
             totalUsers: result.users.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
         data: {
             events: result.events,
             requests: result.requests,
-            users: result.users
+            users: result.users,
         },
         summary: {
             totalEvents: result.events.length,
             totalRequests: result.requests.length,
-            totalUsers: result.users.length
-        }
+            totalUsers: result.users.length,
+        },
     });
 }));
 /**
@@ -189,27 +193,27 @@ exports.searchByLocationController = (0, errorHandler_1.asyncHandler)((req, res)
         metadata: {
             location,
             radius: searchRadius,
-            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail
-        }
+            userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail,
+        },
     });
     const result = yield searchService_1.searchService.searchByLocation(location, searchRadius);
     loggerService_1.logger.info('Búsqueda por ubicación completada', {
         metadata: {
             totalEvents: result.events.length,
             totalRequests: result.requests.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
         data: {
             events: result.events,
-            requests: result.requests
+            requests: result.requests,
         },
         location: {
             searchLocation: location,
-            radius: searchRadius
-        }
+            radius: searchRadius,
+        },
     });
 }));
 /**
@@ -225,24 +229,26 @@ exports.searchAvailableEventsForMusicianController = (0, errorHandler_1.asyncHan
         dateFrom: req.query.dateFrom,
         dateTo: req.query.dateTo,
         location: req.query.location,
-        budget: req.query.budget ? {
-            min: parseInt(req.query.budget),
-            max: parseInt(req.query.budgetMax)
-        } : undefined,
+        budget: req.query.budget
+            ? {
+                min: parseInt(req.query.budget),
+                max: parseInt(req.query.budgetMax),
+            }
+            : undefined,
         limit: parseInt(req.query.limit) || 20,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda de eventos disponibles para músico iniciada', {
-        metadata: { filters, musicianId }
+        metadata: { filters, musicianId },
     });
     const result = yield searchService_1.searchService.searchAvailableEventsForMusician(musicianId, filters);
     loggerService_1.logger.info('Búsqueda de eventos disponibles para músico completada', {
         metadata: {
             totalResults: result.total,
-            musicianId
-        }
+            musicianId,
+        },
     });
     res.json({
         success: true,
@@ -251,8 +257,8 @@ exports.searchAvailableEventsForMusicianController = (0, errorHandler_1.asyncHan
             total: result.total,
             page: result.page,
             limit: result.limit,
-            hasMore: result.hasMore
-        }
+            hasMore: result.hasMore,
+        },
     });
 }));
 /**
@@ -266,18 +272,18 @@ exports.searchAvailableMusiciansForEventController = (0, errorHandler_1.asyncHan
         limit: parseInt(req.query.limit) || 20,
         offset: parseInt(req.query.offset) || 0,
         sortBy: req.query.sortBy,
-        sortOrder: req.query.sortOrder
+        sortOrder: req.query.sortOrder,
     };
     loggerService_1.logger.info('Búsqueda de músicos disponibles para evento iniciada', {
-        metadata: { filters, eventId, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail }
+        metadata: { filters, eventId, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
     });
     const result = yield searchService_1.searchService.searchAvailableMusiciansForEvent(eventId, filters);
     loggerService_1.logger.info('Búsqueda de músicos disponibles para evento completada', {
         metadata: {
             totalResults: result.total,
             eventId,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail
-        }
+            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
+        },
     });
     res.json({
         success: true,
@@ -286,7 +292,7 @@ exports.searchAvailableMusiciansForEventController = (0, errorHandler_1.asyncHan
             total: result.total,
             page: result.page,
             limit: result.limit,
-            hasMore: result.hasMore
-        }
+            hasMore: result.hasMore,
+        },
     });
 }));

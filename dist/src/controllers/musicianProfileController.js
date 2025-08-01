@@ -21,30 +21,30 @@ dotenv_1.default.config();
 const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
-            res.status(400).json({ error: "No file uploaded" });
+            res.status(400).json({ error: 'No file uploaded' });
             return;
         }
         console.info(req.file);
-        const fileKey = Date.now() + "_" + req.file.originalname;
+        const fileKey = Date.now() + '_' + req.file.originalname;
         const command = new client_s3_1.PutObjectCommand({
             Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
             Key: fileKey,
             Body: req.file.buffer,
             ContentType: req.file.mimetype,
         });
-        console.info("Direccion");
+        console.info('Direccion');
         const direccion = yield idriveE2_1.s3.send(command);
         console.info(direccion);
         const url = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${fileKey}`;
         res.status(200).json({
-            message: "File uploaded successfully",
+            message: 'File uploaded successfully',
             url,
             key: fileKey,
         });
     }
     catch (error) {
-        console.error("Upload error:", error);
-        res.status(500).json({ error: "Upload failed" });
+        console.error('Upload error:', error);
+        res.status(500).json({ error: 'Upload failed' });
     }
 });
 exports.uploadFile = uploadFile;
@@ -52,16 +52,19 @@ const getFileUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { key } = req.params;
         if (!key) {
-            res.status(400).json({ error: "Missing file key" });
+            res.status(400).json({ error: 'Missing file key' });
             return;
         }
-        const command = new client_s3_1.GetObjectCommand({ Bucket: process.env.IDRIVE_E2_BUCKET_NAME, Key: key, });
+        const command = new client_s3_1.GetObjectCommand({
+            Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+            Key: key,
+        });
         const url = yield (0, s3_request_presigner_1.getSignedUrl)(idriveE2_1.s3, command, { expiresIn: 60 * 5 });
         res.status(200).json({ url });
     }
     catch (error) {
-        console.error("URL error:", error);
-        res.status(500).json({ error: "Failed to generate file URL" });
+        console.error('URL error:', error);
+        res.status(500).json({ error: 'Failed to generate file URL' });
     }
 });
 exports.getFileUrl = getFileUrl;

@@ -61,7 +61,7 @@ function validateAndSanitize(schema, data, options = {}) {
         stripUnknown: true,
         allowUnknown: false,
         convert: true,
-        presence: 'required'
+        presence: 'required',
     };
     const validationOptions = Object.assign(Object.assign({}, defaultOptions), options);
     try {
@@ -75,31 +75,33 @@ function validateAndSanitize(schema, data, options = {}) {
                     field: detail.path.join('.'),
                     message: detail.message,
                     value: (_a = detail.context) === null || _a === void 0 ? void 0 : _a.value,
-                    type: detail.type
+                    type: detail.type,
                 });
             });
             return {
                 isValid: false,
                 errors,
-                sanitizedData: value
+                sanitizedData: value,
             };
         }
         return {
             isValid: true,
             errors: [],
-            sanitizedData: value
+            sanitizedData: value,
         };
     }
     catch (err) {
         loggerService_1.logger.error('Error en validación Joi', err);
         return {
             isValid: false,
-            errors: [{
+            errors: [
+                {
                     field: 'unknown',
                     message: 'Error interno de validación',
-                    type: 'internal'
-                }],
-            sanitizedData: data
+                    type: 'internal',
+                },
+            ],
+            sanitizedData: data,
         };
     }
 }
@@ -117,14 +119,14 @@ function validate(schema, property = 'body', options = {}) {
                     userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
                     url: req.originalUrl,
                     method: req.method,
-                    metadata: { errors: result.errors }
+                    metadata: { errors: result.errors },
                 });
                 res.status(400).json({
                     success: false,
                     message: 'Datos de entrada inválidos',
                     errors: result.errors,
                     timestamp: new Date().toISOString(),
-                    path: req.originalUrl
+                    path: req.originalUrl,
                 });
                 return;
             }
@@ -133,7 +135,7 @@ function validate(schema, property = 'body', options = {}) {
             loggerService_1.logger.debug('Validación exitosa', {
                 userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId,
                 url: req.originalUrl,
-                method: req.method
+                method: req.method,
             });
             next();
         }
@@ -142,7 +144,7 @@ function validate(schema, property = 'body', options = {}) {
             res.status(500).json({
                 success: false,
                 message: 'Error interno del servidor',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
         }
     };
@@ -157,7 +159,7 @@ function validateId(req, res, next) {
             success: false,
             message: 'ID requerido',
             field: 'id',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -169,7 +171,7 @@ function validateId(req, res, next) {
             message: 'ID inválido: debe tener entre 1 y 1500 caracteres',
             field: 'id',
             value: sanitizedId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -180,7 +182,7 @@ function validateId(req, res, next) {
             message: 'ID contiene caracteres no permitidos',
             field: 'id',
             value: sanitizedId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -199,21 +201,21 @@ function validatePagination(req, res, next) {
         errors.push({
             field: 'page',
             message: 'Página debe ser mayor a 0',
-            value: page
+            value: page,
         });
     }
     if (limit < 1 || limit > 100) {
         errors.push({
             field: 'limit',
             message: 'Límite debe estar entre 1 y 100',
-            value: limit
+            value: limit,
         });
     }
     if (offset < 0) {
         errors.push({
             field: 'offset',
             message: 'Offset debe ser mayor o igual a 0',
-            value: offset
+            value: offset,
         });
     }
     if (errors.length > 0) {
@@ -221,7 +223,7 @@ function validatePagination(req, res, next) {
             success: false,
             message: 'Parámetros de paginación inválidos',
             errors,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -232,7 +234,12 @@ function validatePagination(req, res, next) {
 /**
  * Middleware para validar archivos
  */
-function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], maxSize = 10 * 1024 * 1024 // 10MB por defecto
+function validateFile(allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+], maxSize = 10 * 1024 * 1024 // 10MB por defecto
 ) {
     return (req, res, next) => {
         var _a;
@@ -240,21 +247,27 @@ function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'i
             res.status(400).json({
                 success: false,
                 message: 'Archivo requerido',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
-        const files = req.files ? (Array.isArray(req.files) ? req.files : [req.files]) : [req.file];
+        const files = req.files
+            ? Array.isArray(req.files)
+                ? req.files
+                : [req.files]
+            : [req.file];
         const errors = [];
         for (const file of files) {
             if (!file)
                 continue;
             // Validar tipo de archivo
-            if (file.mimetype && typeof file.mimetype === 'string' && !allowedTypes.includes(file.mimetype)) {
+            if (file.mimetype &&
+                typeof file.mimetype === 'string' &&
+                !allowedTypes.includes(file.mimetype)) {
                 errors.push({
                     field: 'file',
                     message: `Tipo de archivo no permitido. Tipos permitidos: ${allowedTypes.join(', ')}`,
-                    value: file.mimetype
+                    value: file.mimetype,
                 });
             }
             // Validar tamaño
@@ -262,7 +275,7 @@ function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'i
                 errors.push({
                     field: 'file',
                     message: `Archivo demasiado grande. Tamaño máximo: ${Math.round(maxSize / 1024 / 1024)}MB`,
-                    value: file.size
+                    value: file.size,
                 });
             }
             // Validar nombre de archivo
@@ -272,7 +285,7 @@ function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'i
                     errors.push({
                         field: 'filename',
                         message: 'Nombre de archivo demasiado largo',
-                        value: sanitizedName
+                        value: sanitizedName,
                     });
                 }
                 // Verificar extensión
@@ -282,7 +295,7 @@ function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'i
                     errors.push({
                         field: 'filename',
                         message: `Extensión no permitida. Extensiones permitidas: ${allowedExtensions.join(', ')}`,
-                        value: extension
+                        value: extension,
                     });
                 }
             }
@@ -292,7 +305,7 @@ function validateFile(allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'i
                 success: false,
                 message: 'Archivo(s) inválido(s)',
                 errors,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -311,14 +324,14 @@ function validateCoordinates(req, res, next) {
         errors.push({
             field: 'latitude',
             message: 'Latitud debe ser un número entre -90 y 90',
-            value: latValue
+            value: latValue,
         });
     }
     if (isNaN(lngValue) || lngValue < -180 || lngValue > 180) {
         errors.push({
             field: 'longitude',
             message: 'Longitud debe ser un número entre -180 y 180',
-            value: lngValue
+            value: lngValue,
         });
     }
     if (errors.length > 0) {
@@ -326,7 +339,7 @@ function validateCoordinates(req, res, next) {
             success: false,
             message: 'Coordenadas geográficas inválidas',
             errors,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -345,7 +358,7 @@ function validateDateRange(req, res, next) {
         res.status(400).json({
             success: false,
             message: 'Fechas de inicio y fin requeridas',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -356,21 +369,21 @@ function validateDateRange(req, res, next) {
         errors.push({
             field: 'startDate',
             message: 'Fecha de inicio inválida',
-            value: start
+            value: start,
         });
     }
     if (isNaN(endDateObj.getTime())) {
         errors.push({
             field: 'endDate',
             message: 'Fecha de fin inválida',
-            value: end
+            value: end,
         });
     }
     if (startDateObj >= endDateObj) {
         errors.push({
             field: 'dateRange',
             message: 'La fecha de inicio debe ser anterior a la fecha de fin',
-            value: { start: startDateObj, end: endDateObj }
+            value: { start: startDateObj, end: endDateObj },
         });
     }
     // Verificar que las fechas no estén muy en el futuro (más de 10 años)
@@ -380,7 +393,7 @@ function validateDateRange(req, res, next) {
         errors.push({
             field: 'dateRange',
             message: 'Las fechas no pueden estar más de 10 años en el futuro',
-            value: { start: startDateObj, end: endDateObj }
+            value: { start: startDateObj, end: endDateObj },
         });
     }
     if (errors.length > 0) {
@@ -388,7 +401,7 @@ function validateDateRange(req, res, next) {
             success: false,
             message: 'Rango de fechas inválido',
             errors,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         });
         return;
     }
@@ -409,21 +422,21 @@ function validatePriceRange(req, res, next) {
             errors.push({
                 field: 'minPrice',
                 message: 'Precio mínimo debe ser un número mayor o igual a 0',
-                value: min
+                value: min,
             });
         }
         if (max !== undefined && (isNaN(max) || max < 0)) {
             errors.push({
                 field: 'maxPrice',
                 message: 'Precio máximo debe ser un número mayor o igual a 0',
-                value: max
+                value: max,
             });
         }
         if (min !== undefined && max !== undefined && min > max) {
             errors.push({
                 field: 'priceRange',
                 message: 'El precio mínimo no puede ser mayor al precio máximo',
-                value: { min, max }
+                value: { min, max },
             });
         }
         if (errors.length > 0) {
@@ -431,7 +444,7 @@ function validatePriceRange(req, res, next) {
                 success: false,
                 message: 'Rango de precios inválido',
                 errors,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -450,7 +463,7 @@ function validateUserRole(allowedRoles) {
             res.status(401).json({
                 success: false,
                 message: 'Usuario no autenticado',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -460,7 +473,7 @@ function validateUserRole(allowedRoles) {
                 message: `Acceso denegado. Roles permitidos: ${allowedRoles.join(', ')}`,
                 userRole: user.roll,
                 allowedRoles,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -480,7 +493,7 @@ function validateQueryLimit(maxLimit = 100) {
                 field: 'limit',
                 value: limit,
                 maxLimit,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -500,7 +513,7 @@ function validateSearchQuery(req, res, next) {
                 success: false,
                 message: 'Término de búsqueda no puede estar vacío',
                 field: 'query',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -510,7 +523,7 @@ function validateSearchQuery(req, res, next) {
                 message: 'Término de búsqueda demasiado largo (máximo 100 caracteres)',
                 field: 'query',
                 value: sanitizedQuery.length,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }
@@ -520,7 +533,7 @@ function validateSearchQuery(req, res, next) {
                 success: false,
                 message: 'Término de búsqueda contiene caracteres no permitidos',
                 field: 'query',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
             return;
         }

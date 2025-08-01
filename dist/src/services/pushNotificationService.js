@@ -28,7 +28,7 @@ class ApiService {
             catch (error) {
                 return {
                     success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
         });
@@ -49,7 +49,7 @@ class ApiService {
             catch (error) {
                 return {
                     success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
         });
@@ -66,7 +66,7 @@ class ApiService {
             catch (error) {
                 return {
                     success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
         });
@@ -87,7 +87,7 @@ class ApiService {
             catch (error) {
                 return {
                     success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 };
             }
         });
@@ -148,7 +148,7 @@ class PushNotificationService {
         return {
             granted: permission === 'granted',
             denied: permission === 'denied',
-            default: permission === 'default'
+            default: permission === 'default',
         };
     }
     /**
@@ -232,7 +232,7 @@ class PushNotificationService {
                 if (!subscription) {
                     subscription = yield this.registration.pushManager.subscribe({
                         userVisibleOnly: true,
-                        applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+                        applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey),
                     });
                 }
                 // Guardar suscripción en el backend
@@ -240,8 +240,8 @@ class PushNotificationService {
                     endpoint: subscription.endpoint,
                     keys: {
                         p256dh: this.arrayBufferToBase64(subscription.getKey('p256dh')),
-                        auth: this.arrayBufferToBase64(subscription.getKey('auth'))
-                    }
+                        auth: this.arrayBufferToBase64(subscription.getKey('auth')),
+                    },
                 };
                 const response = yield apiService.post('/push-notifications/subscription', subscriptionData);
                 if (response.success && response.data) {
@@ -341,7 +341,9 @@ class PushNotificationService {
                     title: notification.title,
                     body: notification.body,
                     data: notification.data || {},
-                    priority: (notification.priority === 'low' ? 'default' : notification.priority) || 'high',
+                    priority: (notification.priority === 'low'
+                        ? 'default'
+                        : notification.priority) || 'high',
                     badge: 1,
                     channelId: notification.category || 'default',
                 }));
@@ -382,14 +384,14 @@ class PushNotificationService {
                     userId,
                     title: notification.title,
                     ticketsSent: tickets.length,
-                    errors: receiptIds.length
+                    errors: receiptIds.length,
                 });
                 return true;
             }
             catch (error) {
                 console.error('Error enviando notificación', {
                     userId,
-                    error: error instanceof Error ? error.message : 'Unknown error'
+                    error: error instanceof Error ? error.message : 'Unknown error',
                 });
                 return false;
             }
@@ -447,7 +449,7 @@ class PushNotificationService {
                     totalUsers: request.userIds.length,
                     successCount,
                     failedCount,
-                    ticketsSent: tickets.length
+                    ticketsSent: tickets.length,
                 });
                 return { success: successCount, failed: failedCount };
             }
@@ -568,7 +570,7 @@ class PushNotificationService {
                     body: 'Esta es una notificación de prueba del sistema MussikOn',
                     data: {
                         type: 'test',
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
                     },
                     priority: 'high',
                     badge: 1,
@@ -619,7 +621,7 @@ class PushNotificationService {
      * Convertir VAPID key de base64 a Uint8Array
      */
     urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
         const base64 = (base64String + padding)
             .replace(/-/g, '+')
             .replace(/_/g, '/');
@@ -664,15 +666,15 @@ class PushNotificationService {
                     event: true,
                     request: true,
                     payment: true,
-                    chat: true
+                    chat: true,
                 },
                 quietHours: {
                     enabled: false,
                     startTime: '22:00',
-                    endTime: '08:00'
+                    endTime: '08:00',
                 },
                 sound: true,
-                vibration: true
+                vibration: true,
             };
         });
     }
@@ -699,8 +701,12 @@ class PushNotificationService {
             return false;
         const now = new Date();
         const currentTime = now.getHours() * 60 + now.getMinutes();
-        const [startHour, startMinute] = settings.quietHours.startTime.split(':').map(Number);
-        const [endHour, endMinute] = settings.quietHours.endTime.split(':').map(Number);
+        const [startHour, startMinute] = settings.quietHours.startTime
+            .split(':')
+            .map(Number);
+        const [endHour, endMinute] = settings.quietHours.endTime
+            .split(':')
+            .map(Number);
         const startTime = startHour * 60 + startMinute;
         const endTime = endHour * 60 + endMinute;
         if (startTime <= endTime) {

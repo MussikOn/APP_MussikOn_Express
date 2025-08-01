@@ -8,11 +8,11 @@ exports.users = {};
 function initializeSocket(server, userMap) {
     const io = new socket_io_1.Server(server, {
         cors: {
-            origin: "*",
-            methods: ["GET", "POST", "PUT"],
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT'],
         },
     });
-    io.on("connection", (socket) => {
+    io.on('connection', socket => {
         (0, eventSocket_1.socketHandler)(io, socket, userMap);
     });
     return io;

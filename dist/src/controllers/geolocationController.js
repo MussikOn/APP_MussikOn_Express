@@ -21,25 +21,25 @@ exports.searchByProximityController = (0, errorHandler_1.asyncHandler)((req, res
     const { lat, lng, radius, type, limit } = req.query;
     const center = {
         latitude: parseFloat(lat),
-        longitude: parseFloat(lng)
+        longitude: parseFloat(lng),
     };
     const filters = {
         radius: parseFloat(radius),
         type: type,
-        limit: limit ? parseInt(limit) : 20
+        limit: limit ? parseInt(limit) : 20,
     };
     const locations = yield geolocationService_1.geolocationService.searchByProximity(center, filters);
     loggerService_1.logger.info('Búsqueda por proximidad completada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { filters, results: locations.length }
+        metadata: { filters, results: locations.length },
     });
     res.status(200).json({
         success: true,
         data: {
             locations,
             filters,
-            total: locations.length
-        }
+            total: locations.length,
+        },
     });
 }));
 /**
@@ -50,12 +50,12 @@ exports.findNearbyEventsController = (0, errorHandler_1.asyncHandler)((req, res)
     const { lat, lng, radius, limit } = req.query;
     const center = {
         latitude: parseFloat(lat),
-        longitude: parseFloat(lng)
+        longitude: parseFloat(lng),
     };
     const events = yield geolocationService_1.geolocationService.findNearbyEvents(center, parseFloat(radius), limit ? parseInt(limit) : 20);
     loggerService_1.logger.info('Eventos cercanos encontrados', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { center, radius, results: events.length }
+        metadata: { center, radius, results: events.length },
     });
     res.status(200).json({
         success: true,
@@ -63,8 +63,8 @@ exports.findNearbyEventsController = (0, errorHandler_1.asyncHandler)((req, res)
             events,
             center,
             radius: parseFloat(radius),
-            total: events.length
-        }
+            total: events.length,
+        },
     });
 }));
 /**
@@ -75,12 +75,12 @@ exports.findNearbyMusiciansController = (0, errorHandler_1.asyncHandler)((req, r
     const { lat, lng, radius, limit } = req.query;
     const center = {
         latitude: parseFloat(lat),
-        longitude: parseFloat(lng)
+        longitude: parseFloat(lng),
     };
     const musicians = yield geolocationService_1.geolocationService.findNearbyMusicians(center, parseFloat(radius), limit ? parseInt(limit) : 20);
     loggerService_1.logger.info('Músicos cercanos encontrados', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { center, radius, results: musicians.length }
+        metadata: { center, radius, results: musicians.length },
     });
     res.status(200).json({
         success: true,
@@ -88,8 +88,8 @@ exports.findNearbyMusiciansController = (0, errorHandler_1.asyncHandler)((req, r
             musicians,
             center,
             radius: parseFloat(radius),
-            total: musicians.length
-        }
+            total: musicians.length,
+        },
     });
 }));
 /**
@@ -101,19 +101,19 @@ exports.optimizeRouteController = (0, errorHandler_1.asyncHandler)((req, res) =>
     const routeData = {
         waypoints: waypoints.map((point) => ({
             latitude: point.latitude || point.lat,
-            longitude: point.longitude || point.lng
+            longitude: point.longitude || point.lng,
         })),
         mode: mode || 'driving',
-        avoid: avoid || []
+        avoid: avoid || [],
     };
     const route = yield geolocationService_1.geolocationService.optimizeRoute(routeData);
     loggerService_1.logger.info('Ruta optimizada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { routeData, result: route }
+        metadata: { routeData, result: route },
     });
     res.status(200).json({
         success: true,
-        data: route
+        data: route,
     });
 }));
 /**
@@ -125,11 +125,11 @@ exports.geocodeAddressController = (0, errorHandler_1.asyncHandler)((req, res) =
     const coordinates = yield geolocationService_1.geolocationService.geocodeAddress(address, country);
     loggerService_1.logger.info('Dirección geocodificada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { address, country, coordinates }
+        metadata: { address, country, coordinates },
     });
     res.status(200).json({
         success: true,
-        data: coordinates
+        data: coordinates,
     });
 }));
 /**
@@ -140,16 +140,16 @@ exports.reverseGeocodeController = (0, errorHandler_1.asyncHandler)((req, res) =
     const { lat, lng } = req.query;
     const coordinates = {
         latitude: parseFloat(lat),
-        longitude: parseFloat(lng)
+        longitude: parseFloat(lng),
     };
     const address = yield geolocationService_1.geolocationService.reverseGeocode(coordinates);
     loggerService_1.logger.info('Geocodificación inversa completada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { coordinates, address }
+        metadata: { coordinates, address },
     });
     res.status(200).json({
         success: true,
-        data: address
+        data: address,
     });
 }));
 /**
@@ -160,23 +160,23 @@ exports.calculateDistanceController = (0, errorHandler_1.asyncHandler)((req, res
     const { lat1, lng1, lat2, lng2 } = req.query;
     const point1 = {
         latitude: parseFloat(lat1),
-        longitude: parseFloat(lng1)
+        longitude: parseFloat(lng1),
     };
     const point2 = {
         latitude: parseFloat(lat2),
-        longitude: parseFloat(lng2)
+        longitude: parseFloat(lng2),
     };
     const distance = geolocationService_1.geolocationService.calculateDistance(point1, point2);
     loggerService_1.logger.info('Distancia calculada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { point1, point2, distance }
+        metadata: { point1, point2, distance },
     });
     res.status(200).json({
         success: true,
         data: {
             distance,
-            unit: 'km'
-        }
+            unit: 'km',
+        },
     });
 }));
 /**
@@ -187,16 +187,16 @@ exports.getLocationStatsController = (0, errorHandler_1.asyncHandler)((req, res)
     const { lat, lng, radius } = req.query;
     const center = {
         latitude: parseFloat(lat),
-        longitude: parseFloat(lng)
+        longitude: parseFloat(lng),
     };
     const stats = yield geolocationService_1.geolocationService.getLocationStats(center, parseFloat(radius));
     loggerService_1.logger.info('Estadísticas de ubicación obtenidas', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { center, radius, stats }
+        metadata: { center, radius, stats },
     });
     res.status(200).json({
         success: true,
-        data: stats
+        data: stats,
     });
 }));
 /**
@@ -207,23 +207,23 @@ exports.isWithinRadiusController = (0, errorHandler_1.asyncHandler)((req, res) =
     const { centerLat, centerLng, pointLat, pointLng, radius } = req.query;
     const center = {
         latitude: parseFloat(centerLat),
-        longitude: parseFloat(centerLng)
+        longitude: parseFloat(centerLng),
     };
     const point = {
         latitude: parseFloat(pointLat),
-        longitude: parseFloat(pointLng)
+        longitude: parseFloat(pointLng),
     };
     const isWithin = geolocationService_1.geolocationService.isWithinRadius(center, point, parseFloat(radius));
     loggerService_1.logger.info('Verificación de radio completada', {
         userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId,
-        metadata: { center, point, radius, isWithin }
+        metadata: { center, point, radius, isWithin },
     });
     res.status(200).json({
         success: true,
         data: {
             isWithin,
             distance: geolocationService_1.geolocationService.calculateDistance(center, point),
-            radius: parseFloat(radius)
-        }
+            radius: parseFloat(radius),
+        },
     });
 }));

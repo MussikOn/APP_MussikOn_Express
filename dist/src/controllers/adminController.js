@@ -40,7 +40,8 @@ const errorHandler_2 = require("../middleware/errorHandler");
 const loggerService_1 = require("../services/loggerService");
 // --- Usuarios ---
 function adminUsersGetAll(req, res, next) {
-    firebase_1.db.collection('users').get()
+    firebase_1.db.collection('users')
+        .get()
         .then(snapshot => {
         let users = [];
         snapshot.forEach(doc => users.push(Object.assign({ _id: doc.id }, doc.data())));
@@ -77,13 +78,15 @@ function adminUsersGetAll(req, res, next) {
             total,
             page,
             limit,
-            totalPages
+            totalPages,
         });
     })
         .catch(next);
 }
 function adminUsersGetById(req, res, next) {
-    firebase_1.db.collection('users').doc(req.params.id).get()
+    firebase_1.db.collection('users')
+        .doc(req.params.id)
+        .get()
         .then(doc => {
         if (!doc.exists) {
             res.status(404).json({ message: 'Usuario no encontrado' });
@@ -95,23 +98,35 @@ function adminUsersGetById(req, res, next) {
 }
 function adminUsersCreate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('users').add(data)
-        .then(ref => { res.status(201).json(Object.assign({ _id: ref.id }, data)); })
+    firebase_1.db.collection('users')
+        .add(data)
+        .then(ref => {
+        res.status(201).json(Object.assign({ _id: ref.id }, data));
+    })
         .catch(next);
 }
 function adminUsersUpdate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('users').doc(req.params.id).update(data)
-        .then(() => { res.status(200).json({ message: 'Usuario actualizado' }); })
+    firebase_1.db.collection('users')
+        .doc(req.params.id)
+        .update(data)
+        .then(() => {
+        res.status(200).json({ message: 'Usuario actualizado' });
+    })
         .catch(next);
 }
 function adminUsersRemove(req, res, next) {
-    firebase_1.db.collection('users').doc(req.params.id).delete()
-        .then(() => { res.status(200).json({ message: 'Usuario eliminado' }); })
+    firebase_1.db.collection('users')
+        .doc(req.params.id)
+        .delete()
+        .then(() => {
+        res.status(200).json({ message: 'Usuario eliminado' });
+    })
         .catch(next);
 }
 function adminUsersStats(req, res, next) {
-    firebase_1.db.collection('users').get()
+    firebase_1.db.collection('users')
+        .get()
         .then(snapshot => {
         const users = [];
         snapshot.forEach(doc => users.push(Object.assign({ _id: doc.id }, doc.data())));
@@ -125,7 +140,7 @@ function adminUsersStats(req, res, next) {
             musicians: users.filter(user => user.roll === 'musician').length,
             averageRating: 0, // TODO: Implement calculation
             topLocations: getTopUserLocations(users),
-            usersByMonth: getUsersByMonth(users)
+            usersByMonth: getUsersByMonth(users),
         };
         res.status(200).json({ stats });
     })
@@ -133,7 +148,8 @@ function adminUsersStats(req, res, next) {
 }
 // --- Eventos ---
 function adminEventsGetAll(req, res, next) {
-    firebase_1.db.collection('events').get()
+    firebase_1.db.collection('events')
+        .get()
         .then(snapshot => {
         const events = [];
         snapshot.forEach(doc => events.push(Object.assign({ _id: doc.id }, doc.data())));
@@ -142,7 +158,9 @@ function adminEventsGetAll(req, res, next) {
         .catch(next);
 }
 function adminEventsGetById(req, res, next) {
-    firebase_1.db.collection('events').doc(req.params.id).get()
+    firebase_1.db.collection('events')
+        .doc(req.params.id)
+        .get()
         .then(doc => {
         if (!doc.exists) {
             res.status(404).json({ message: 'Evento no encontrado' });
@@ -154,19 +172,30 @@ function adminEventsGetById(req, res, next) {
 }
 function adminEventsCreate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('events').add(data)
-        .then(ref => { res.status(201).json(Object.assign({ _id: ref.id }, data)); })
+    firebase_1.db.collection('events')
+        .add(data)
+        .then(ref => {
+        res.status(201).json(Object.assign({ _id: ref.id }, data));
+    })
         .catch(next);
 }
 function adminEventsUpdate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('events').doc(req.params.id).update(data)
-        .then(() => { res.status(200).json({ message: 'Evento actualizado' }); })
+    firebase_1.db.collection('events')
+        .doc(req.params.id)
+        .update(data)
+        .then(() => {
+        res.status(200).json({ message: 'Evento actualizado' });
+    })
         .catch(next);
 }
 function adminEventsRemove(req, res, next) {
-    firebase_1.db.collection('events').doc(req.params.id).delete()
-        .then(() => { res.status(200).json({ message: 'Evento eliminado' }); })
+    firebase_1.db.collection('events')
+        .doc(req.params.id)
+        .delete()
+        .then(() => {
+        res.status(200).json({ message: 'Evento eliminado' });
+    })
         .catch(next);
 }
 // --- Músicos ---
@@ -201,7 +230,8 @@ function adminImagesRemove(req, res, next) {
 }
 // --- Solicitudes de Músico ---
 function adminMusicianRequestsGetAll(req, res, next) {
-    firebase_1.db.collection('musicianRequests').get()
+    firebase_1.db.collection('musicianRequests')
+        .get()
         .then(snapshot => {
         let requests = [];
         snapshot.forEach(doc => requests.push(Object.assign({ _id: doc.id }, doc.data())));
@@ -214,7 +244,10 @@ function adminMusicianRequestsGetAll(req, res, next) {
             requests = requests.filter(req => req.instrument === instrument);
         }
         if (location) {
-            requests = requests.filter(req => { var _a; return (_a = req.location) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(location.toString().toLowerCase()); });
+            requests = requests.filter(req => {
+                var _a;
+                return (_a = req.location) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(location.toString().toLowerCase());
+            });
         }
         if (search) {
             requests = requests.filter(req => {
@@ -244,19 +277,24 @@ function adminMusicianRequestsGetAll(req, res, next) {
             total,
             page,
             limit,
-            totalPages
+            totalPages,
         });
     })
         .catch(next);
 }
 function adminMusicianRequestsCreate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('musicianRequests').add(data)
-        .then(ref => { res.status(201).json(Object.assign({ _id: ref.id }, data)); })
+    firebase_1.db.collection('musicianRequests')
+        .add(data)
+        .then(ref => {
+        res.status(201).json(Object.assign({ _id: ref.id }, data));
+    })
         .catch(next);
 }
 function adminMusicianRequestsGetById(req, res, next) {
-    firebase_1.db.collection('musicianRequests').doc(req.params.id).get()
+    firebase_1.db.collection('musicianRequests')
+        .doc(req.params.id)
+        .get()
         .then(doc => {
         if (!doc.exists) {
             res.status(404).json({ message: 'Solicitud no encontrada' });
@@ -268,32 +306,46 @@ function adminMusicianRequestsGetById(req, res, next) {
 }
 function adminMusicianRequestsUpdate(req, res, next) {
     const data = req.body;
-    firebase_1.db.collection('musicianRequests').doc(req.params.id).update(data)
-        .then(() => { res.status(200).json({ message: 'Solicitud actualizada' }); })
+    firebase_1.db.collection('musicianRequests')
+        .doc(req.params.id)
+        .update(data)
+        .then(() => {
+        res.status(200).json({ message: 'Solicitud actualizada' });
+    })
         .catch(next);
 }
 function adminMusicianRequestsRemove(req, res, next) {
-    firebase_1.db.collection('musicianRequests').doc(req.params.id).delete()
-        .then(() => { res.status(200).json({ message: 'Solicitud eliminada' }); })
+    firebase_1.db.collection('musicianRequests')
+        .doc(req.params.id)
+        .delete()
+        .then(() => {
+        res.status(200).json({ message: 'Solicitud eliminada' });
+    })
         .catch(next);
 }
 // Endpoint para estadísticas de solicitudes
 function adminMusicianRequestsStats(req, res, next) {
-    firebase_1.db.collection('musicianRequests').get()
+    firebase_1.db.collection('musicianRequests')
+        .get()
         .then(snapshot => {
         const requests = [];
         snapshot.forEach(doc => requests.push(Object.assign({ _id: doc.id }, doc.data())));
         const stats = {
             totalRequests: requests.length,
-            pendingRequests: requests.filter(req => req.status === 'pendiente').length,
-            assignedRequests: requests.filter(req => req.status === 'asignada').length,
-            completedRequests: requests.filter(req => req.status === 'completada').length,
-            cancelledRequests: requests.filter(req => req.status === 'cancelada').length,
-            unassignedRequests: requests.filter(req => req.status === 'no_asignada').length,
+            pendingRequests: requests.filter(req => req.status === 'pendiente')
+                .length,
+            assignedRequests: requests.filter(req => req.status === 'asignada')
+                .length,
+            completedRequests: requests.filter(req => req.status === 'completada')
+                .length,
+            cancelledRequests: requests.filter(req => req.status === 'cancelada')
+                .length,
+            unassignedRequests: requests.filter(req => req.status === 'no_asignada')
+                .length,
             averageResponseTime: 0, // TODO: Implementar cálculo de tiempo de respuesta
             topInstruments: getTopInstruments(requests),
             topLocations: getTopLocations(requests),
-            requestsByMonth: getRequestsByMonth(requests)
+            requestsByMonth: getRequestsByMonth(requests),
         };
         res.status(200).json({ stats });
     })
@@ -304,7 +356,8 @@ function getTopInstruments(requests) {
     const instrumentCounts = {};
     requests.forEach(req => {
         if (req.instrument) {
-            instrumentCounts[req.instrument] = (instrumentCounts[req.instrument] || 0) + 1;
+            instrumentCounts[req.instrument] =
+                (instrumentCounts[req.instrument] || 0) + 1;
         }
     });
     return Object.entries(instrumentCounts)
@@ -373,15 +426,21 @@ function getUsersByMonth(users) {
 exports.adminGlobalSearch = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { query, types, page = 1, limit = 20 } = req.query;
     const { userId } = req.user;
-    loggerService_1.logger.info('Búsqueda global iniciada', { userId, metadata: { query, types } });
+    loggerService_1.logger.info('Búsqueda global iniciada', {
+        userId,
+        metadata: { query, types },
+    });
     if (!query || typeof query !== 'string') {
         throw new errorHandler_2.OperationalError('Query de búsqueda requerida', 400);
     }
-    const searchTypes = types ? types.split(',') : ['users', 'events', 'requests'];
+    const searchTypes = types
+        ? types.split(',')
+        : ['users', 'events', 'requests'];
     const results = {};
     // Búsqueda en usuarios
     if (searchTypes.includes('users')) {
-        const users = yield firebase_1.db.collection('users')
+        const users = yield firebase_1.db
+            .collection('users')
             .where('name', '>=', query)
             .where('name', '<=', query + '\uf8ff')
             .limit(parseInt(limit))
@@ -390,7 +449,8 @@ exports.adminGlobalSearch = (0, errorHandler_1.asyncHandler)((req, res) => __awa
     }
     // Búsqueda en eventos
     if (searchTypes.includes('events')) {
-        const events = yield firebase_1.db.collection('events')
+        const events = yield firebase_1.db
+            .collection('events')
             .where('name', '>=', query)
             .where('name', '<=', query + '\uf8ff')
             .limit(parseInt(limit))
@@ -399,18 +459,22 @@ exports.adminGlobalSearch = (0, errorHandler_1.asyncHandler)((req, res) => __awa
     }
     // Búsqueda en solicitudes
     if (searchTypes.includes('requests')) {
-        const requests = yield firebase_1.db.collection('musicianRequests')
+        const requests = yield firebase_1.db
+            .collection('musicianRequests')
             .where('description', '>=', query)
             .where('description', '<=', query + '\uf8ff')
             .limit(parseInt(limit))
             .get();
         results.requests = requests.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
     }
-    loggerService_1.logger.info('Búsqueda global completada', { userId, metadata: { resultsCount: Object.keys(results).length } });
+    loggerService_1.logger.info('Búsqueda global completada', {
+        userId,
+        metadata: { resultsCount: Object.keys(results).length },
+    });
     res.status(200).json({
         success: true,
         data: results,
-        message: 'Búsqueda global completada'
+        message: 'Búsqueda global completada',
     });
 }));
 /**
@@ -452,33 +516,41 @@ exports.adminDashboardAnalytics = (0, errorHandler_1.asyncHandler)((req, res) =>
             total: totalUsers,
             active: activeUsers,
             recent: recentUsers,
-            growth: recentUsers > 0 ? ((recentUsers / totalUsers) * 100).toFixed(1) : '0'
+            growth: recentUsers > 0 ? ((recentUsers / totalUsers) * 100).toFixed(1) : '0',
         },
         events: {
             total: totalEvents,
             active: activeEvents,
             recent: recentEvents,
-            growth: recentEvents > 0 ? ((recentEvents / totalEvents) * 100).toFixed(1) : '0'
+            growth: recentEvents > 0
+                ? ((recentEvents / totalEvents) * 100).toFixed(1)
+                : '0',
         },
         requests: {
             total: totalRequests,
             pending: pendingRequests,
-            completionRate: totalRequests > 0 ? (((totalRequests - pendingRequests) / totalRequests) * 100).toFixed(1) : '0'
+            completionRate: totalRequests > 0
+                ? (((totalRequests - pendingRequests) / totalRequests) *
+                    100).toFixed(1)
+                : '0',
         },
         images: {
-            total: totalImages
+            total: totalImages,
         },
         system: {
             uptime: process.uptime(),
             memory: process.memoryUsage(),
-            timestamp: new Date().toISOString()
-        }
+            timestamp: new Date().toISOString(),
+        },
     };
-    loggerService_1.logger.info('Analytics del dashboard obtenidos', { userId, metadata: { analytics } });
+    loggerService_1.logger.info('Analytics del dashboard obtenidos', {
+        userId,
+        metadata: { analytics },
+    });
     res.status(200).json({
         success: true,
         data: analytics,
-        message: 'Analytics del dashboard obtenidos'
+        message: 'Analytics del dashboard obtenidos',
     });
 }));
 /**
@@ -487,7 +559,10 @@ exports.adminDashboardAnalytics = (0, errorHandler_1.asyncHandler)((req, res) =>
 exports.adminUserAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { period = 'week', groupBy = 'role' } = req.query;
     const { userId } = req.user;
-    loggerService_1.logger.info('Obteniendo analytics de usuarios', { userId, metadata: { period, groupBy } });
+    loggerService_1.logger.info('Obteniendo analytics de usuarios', {
+        userId,
+        metadata: { period, groupBy },
+    });
     const usersSnapshot = yield firebase_1.db.collection('users').get();
     const users = usersSnapshot.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
     let analytics = {};
@@ -501,14 +576,14 @@ exports.adminUserAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __aw
             byRole: roleStats,
             total: users.length,
             active: users.filter((u) => u.status === true).length,
-            inactive: users.filter((u) => u.status === false).length
+            inactive: users.filter((u) => u.status === false).length,
         };
     }
     else if (groupBy === 'status') {
         analytics = {
             active: users.filter((u) => u.status === true).length,
             inactive: users.filter((u) => u.status === false).length,
-            total: users.length
+            total: users.length,
         };
     }
     // Datos por período
@@ -534,11 +609,14 @@ exports.adminUserAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __aw
     });
     analytics.recent = recentUsers.length;
     analytics.period = period;
-    loggerService_1.logger.info('Analytics de usuarios obtenidos', { userId, metadata: { analytics } });
+    loggerService_1.logger.info('Analytics de usuarios obtenidos', {
+        userId,
+        metadata: { analytics },
+    });
     res.status(200).json({
         success: true,
         data: analytics,
-        message: 'Analytics de usuarios obtenidos'
+        message: 'Analytics de usuarios obtenidos',
     });
 }));
 /**
@@ -547,7 +625,10 @@ exports.adminUserAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __aw
 exports.adminEventAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { period = 'month', groupBy = 'status' } = req.query;
     const { userId } = req.user;
-    loggerService_1.logger.info('Obteniendo analytics de eventos', { userId, metadata: { period, groupBy } });
+    loggerService_1.logger.info('Obteniendo analytics de eventos', {
+        userId,
+        metadata: { period, groupBy },
+    });
     const eventsSnapshot = yield firebase_1.db.collection('events').get();
     const events = eventsSnapshot.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
     let analytics = {};
@@ -562,7 +643,7 @@ exports.adminEventAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __a
             total: events.length,
             active: events.filter((e) => e.status === 'active').length,
             completed: events.filter((e) => e.status === 'completed').length,
-            cancelled: events.filter((e) => e.status === 'cancelled').length
+            cancelled: events.filter((e) => e.status === 'cancelled').length,
         };
     }
     else if (groupBy === 'category') {
@@ -573,7 +654,7 @@ exports.adminEventAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __a
         }, {});
         analytics = {
             byCategory: categoryStats,
-            total: events.length
+            total: events.length,
         };
     }
     // Datos por período
@@ -599,11 +680,14 @@ exports.adminEventAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __a
     });
     analytics.recent = recentEvents.length;
     analytics.period = period;
-    loggerService_1.logger.info('Analytics de eventos obtenidos', { userId, metadata: { analytics } });
+    loggerService_1.logger.info('Analytics de eventos obtenidos', {
+        userId,
+        metadata: { analytics },
+    });
     res.status(200).json({
         success: true,
         data: analytics,
-        message: 'Analytics de eventos obtenidos'
+        message: 'Analytics de eventos obtenidos',
     });
 }));
 /**
@@ -612,7 +696,10 @@ exports.adminEventAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __a
 exports.adminRequestAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { period = 'quarter', groupBy = 'instrument' } = req.query;
     const { userId } = req.user;
-    loggerService_1.logger.info('Obteniendo analytics de solicitudes', { userId, metadata: { period, groupBy } });
+    loggerService_1.logger.info('Obteniendo analytics de solicitudes', {
+        userId,
+        metadata: { period, groupBy },
+    });
     const requestsSnapshot = yield firebase_1.db.collection('musicianRequests').get();
     const requests = requestsSnapshot.docs.map(doc => (Object.assign({ id: doc.id }, doc.data())));
     let analytics = {};
@@ -628,7 +715,7 @@ exports.adminRequestAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => _
             pending: requests.filter((r) => r.status === 'pending').length,
             assigned: requests.filter((r) => r.status === 'assigned').length,
             completed: requests.filter((r) => r.status === 'completed').length,
-            cancelled: requests.filter((r) => r.status === 'cancelled').length
+            cancelled: requests.filter((r) => r.status === 'cancelled').length,
         };
     }
     else if (groupBy === 'status') {
@@ -637,7 +724,7 @@ exports.adminRequestAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => _
             assigned: requests.filter((r) => r.status === 'assigned').length,
             completed: requests.filter((r) => r.status === 'completed').length,
             cancelled: requests.filter((r) => r.status === 'cancelled').length,
-            total: requests.length
+            total: requests.length,
         };
     }
     // Datos por período
@@ -665,12 +752,18 @@ exports.adminRequestAnalytics = (0, errorHandler_1.asyncHandler)((req, res) => _
     analytics.period = period;
     // Tasa de completitud
     const completedRequests = requests.filter((r) => r.status === 'completed').length;
-    analytics.completionRate = requests.length > 0 ? ((completedRequests / requests.length) * 100).toFixed(1) : '0';
-    loggerService_1.logger.info('Analytics de solicitudes obtenidos', { userId, metadata: { analytics } });
+    analytics.completionRate =
+        requests.length > 0
+            ? ((completedRequests / requests.length) * 100).toFixed(1)
+            : '0';
+    loggerService_1.logger.info('Analytics de solicitudes obtenidos', {
+        userId,
+        metadata: { analytics },
+    });
     res.status(200).json({
         success: true,
         data: analytics,
-        message: 'Analytics de solicitudes obtenidos'
+        message: 'Analytics de solicitudes obtenidos',
     });
 }));
 /**
@@ -724,7 +817,10 @@ exports.adminExportReport = (0, errorHandler_1.asyncHandler)((req, res) => __awa
         // JSON por defecto
         reportContent = JSON.stringify(data, null, 2);
     }
-    loggerService_1.logger.info('Reporte exportado exitosamente', { userId, metadata: { dataCount: data.length } });
+    loggerService_1.logger.info('Reporte exportado exitosamente', {
+        userId,
+        metadata: { dataCount: data.length },
+    });
     res.setHeader('Content-Type', format === 'csv' ? 'text/csv' : 'application/json');
     res.setHeader('Content-Disposition', `attachment; filename="${type}_report.${format}"`);
     res.status(200).send(reportContent);

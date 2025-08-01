@@ -25,7 +25,7 @@ const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0
     }
     catch (error) {
         console.error('Error al crear solicitud:', error);
-        res.status(500).json({ msg: "Error al crear solicitud" });
+        res.status(500).json({ msg: 'Error al crear solicitud' });
     }
 });
 exports.requestMusicianController = requestMusicianController;
@@ -59,13 +59,13 @@ const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         if (user.roll !== 'musico') {
-            res.status(403).json({ msg: "Solo los músicos pueden aceptar eventos." });
+            res.status(403).json({ msg: 'Solo los músicos pueden aceptar eventos.' });
             return;
         }
         const { eventId } = req.params;
         const updatedEvent = yield (0, eventModel_1.acceptEventModel)(eventId, user.userEmail);
         if (!updatedEvent) {
-            res.status(400).json({ msg: "No se pudo aceptar el evento." });
+            res.status(400).json({ msg: 'No se pudo aceptar el evento.' });
             return;
         }
         // Comentado temporalmente - notificaciones por socket
@@ -73,7 +73,7 @@ const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
     catch (error) {
         console.error('Error al aceptar evento:', error);
-        res.status(500).json({ msg: "Error al aceptar evento" });
+        res.status(500).json({ msg: 'Error al aceptar evento' });
     }
 });
 exports.acceptEventController = acceptEventController;
@@ -126,13 +126,13 @@ const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
         if (!event) {
             res.status(404).json({
                 success: false,
-                message: 'Evento no encontrado'
+                message: 'Evento no encontrado',
             });
             return;
         }
         res.json({
             success: true,
-            data: event
+            data: event,
         });
     }
     catch (error) {
@@ -140,7 +140,7 @@ const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
         res.status(500).json({
             success: false,
             message: 'Error al obtener el evento',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            error: error instanceof Error ? error.message : 'Error desconocido',
         });
     }
 });
@@ -156,7 +156,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Solicitud no encontrada:', eventId);
             res.status(404).json({
                 success: false,
-                message: 'Solicitud no encontrada'
+                message: 'Solicitud no encontrada',
             });
             return;
         }
@@ -165,15 +165,16 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Usuario no autorizado para cancelar esta solicitud');
             res.status(403).json({
                 success: false,
-                message: 'No tienes permisos para cancelar esta solicitud'
+                message: 'No tienes permisos para cancelar esta solicitud',
             });
             return;
         }
-        if (user.roll === 'musico' && originalEvent.assignedMusicianId !== user.userEmail) {
+        if (user.roll === 'musico' &&
+            originalEvent.assignedMusicianId !== user.userEmail) {
             console.log('❌ Músico no autorizado para cancelar esta solicitud');
             res.status(403).json({
                 success: false,
-                message: 'No tienes permisos para cancelar esta solicitud'
+                message: 'No tienes permisos para cancelar esta solicitud',
             });
             return;
         }
@@ -183,7 +184,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Error al cancelar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
-                message: 'Error al cancelar la solicitud'
+                message: 'Error al cancelar la solicitud',
             });
             return;
         }
@@ -192,7 +193,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.json({
             success: true,
             message: 'Solicitud cancelada exitosamente',
-            data: cancelledEvent
+            data: cancelledEvent,
         });
     }
     catch (error) {
@@ -200,7 +201,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json({
             success: false,
             message: 'Error al cancelar la solicitud',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            error: error instanceof Error ? error.message : 'Error desconocido',
         });
     }
 });
@@ -216,7 +217,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
             console.log('❌ Solicitud no encontrada:', eventId);
             res.status(404).json({
                 success: false,
-                message: 'Solicitud no encontrada'
+                message: 'Solicitud no encontrada',
             });
             return;
         }
@@ -225,15 +226,16 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
             console.log('❌ Usuario no autorizado para completar esta solicitud');
             res.status(403).json({
                 success: false,
-                message: 'No tienes permisos para completar esta solicitud'
+                message: 'No tienes permisos para completar esta solicitud',
             });
             return;
         }
-        if (user.roll === 'musico' && originalEvent.assignedMusicianId !== user.userEmail) {
+        if (user.roll === 'musico' &&
+            originalEvent.assignedMusicianId !== user.userEmail) {
             console.log('❌ Músico no autorizado para completar esta solicitud');
             res.status(403).json({
                 success: false,
-                message: 'No tienes permisos para completar esta solicitud'
+                message: 'No tienes permisos para completar esta solicitud',
             });
             return;
         }
@@ -243,7 +245,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
             console.log('❌ Error al completar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
-                message: 'Error al completar la solicitud'
+                message: 'Error al completar la solicitud',
             });
             return;
         }
@@ -252,7 +254,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         const response = {
             success: true,
             message: 'Solicitud completada exitosamente',
-            data: completedEvent
+            data: completedEvent,
         };
         res.json(response);
     }
@@ -261,7 +263,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(500).json({
             success: false,
             message: 'Error al completar la solicitud',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            error: error instanceof Error ? error.message : 'Error desconocido',
         });
     }
 });
@@ -277,7 +279,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Solicitud no encontrada:', eventId);
             res.status(404).json({
                 success: false,
-                message: 'Solicitud no encontrada'
+                message: 'Solicitud no encontrada',
             });
             return;
         }
@@ -286,7 +288,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Solo los organizadores pueden eliminar solicitudes');
             res.status(403).json({
                 success: false,
-                message: 'Solo los organizadores pueden eliminar solicitudes'
+                message: 'Solo los organizadores pueden eliminar solicitudes',
             });
             return;
         }
@@ -294,7 +296,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Usuario no autorizado para eliminar esta solicitud');
             res.status(403).json({
                 success: false,
-                message: 'No tienes permisos para eliminar esta solicitud'
+                message: 'No tienes permisos para eliminar esta solicitud',
             });
             return;
         }
@@ -304,7 +306,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             console.log('❌ Error al eliminar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
-                message: 'Error al eliminar la solicitud'
+                message: 'Error al eliminar la solicitud',
             });
             return;
         }
@@ -312,7 +314,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // Comentado temporalmente - notificaciones por socket
         res.json({
             success: true,
-            message: 'Solicitud eliminada exitosamente'
+            message: 'Solicitud eliminada exitosamente',
         });
     }
     catch (error) {
@@ -320,7 +322,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json({
             success: false,
             message: 'Error al eliminar la solicitud',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            error: error instanceof Error ? error.message : 'Error desconocido',
         });
     }
 });

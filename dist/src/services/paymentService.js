@@ -23,7 +23,10 @@ class PaymentService {
     createPaymentMethod(userId, paymentData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Creando método de pago', { userId, metadata: { paymentData } });
+                loggerService_1.logger.info('Creando método de pago', {
+                    userId,
+                    metadata: { paymentData },
+                });
                 // En producción, esto se integraría con Stripe/PayPal
                 const paymentMethod = {
                     id: `pm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -33,14 +36,20 @@ class PaymentService {
                     expiryMonth: paymentData.expiryMonth,
                     expiryYear: paymentData.expiryYear,
                     isDefault: paymentData.isDefault || false,
-                    userId
+                    userId,
                 };
-                yield firebase_1.db.collection('paymentMethods').doc(paymentMethod.id).set(paymentMethod);
+                yield firebase_1.db
+                    .collection('paymentMethods')
+                    .doc(paymentMethod.id)
+                    .set(paymentMethod);
                 // Si es el método por defecto, actualizar otros métodos
                 if (paymentMethod.isDefault) {
                     yield this.setDefaultPaymentMethod(userId, paymentMethod.id);
                 }
-                loggerService_1.logger.info('Método de pago creado', { userId, metadata: { paymentMethodId: paymentMethod.id } });
+                loggerService_1.logger.info('Método de pago creado', {
+                    userId,
+                    metadata: { paymentMethodId: paymentMethod.id },
+                });
                 return paymentMethod;
             }
             catch (error) {
@@ -55,7 +64,8 @@ class PaymentService {
     getPaymentMethods(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const snapshot = yield firebase_1.db.collection('paymentMethods')
+                const snapshot = yield firebase_1.db
+                    .collection('paymentMethods')
                     .where('userId', '==', userId)
                     .orderBy('isDefault', 'desc')
                     .get();
@@ -66,7 +76,9 @@ class PaymentService {
                 return paymentMethods;
             }
             catch (error) {
-                loggerService_1.logger.error('Error obteniendo métodos de pago', error, { userId });
+                loggerService_1.logger.error('Error obteniendo métodos de pago', error, {
+                    userId,
+                });
                 throw error;
             }
         });
@@ -79,7 +91,8 @@ class PaymentService {
             try {
                 const batch = firebase_1.db.batch();
                 // Remover default de otros métodos
-                const snapshot = yield firebase_1.db.collection('paymentMethods')
+                const snapshot = yield firebase_1.db
+                    .collection('paymentMethods')
                     .where('userId', '==', userId)
                     .where('isDefault', '==', true)
                     .get();
@@ -87,12 +100,20 @@ class PaymentService {
                     batch.update(doc.ref, { isDefault: false });
                 });
                 // Establecer nuevo método por defecto
-                batch.update(firebase_1.db.collection('paymentMethods').doc(paymentMethodId), { isDefault: true });
+                batch.update(firebase_1.db.collection('paymentMethods').doc(paymentMethodId), {
+                    isDefault: true,
+                });
                 yield batch.commit();
-                loggerService_1.logger.info('Método de pago por defecto actualizado', { userId, metadata: { paymentMethodId } });
+                loggerService_1.logger.info('Método de pago por defecto actualizado', {
+                    userId,
+                    metadata: { paymentMethodId },
+                });
             }
             catch (error) {
-                loggerService_1.logger.error('Error estableciendo método por defecto', error, { userId, metadata: { paymentMethodId } });
+                loggerService_1.logger.error('Error estableciendo método por defecto', error, {
+                    userId,
+                    metadata: { paymentMethodId },
+                });
                 throw error;
             }
         });
@@ -103,25 +124,39 @@ class PaymentService {
     createPaymentIntent(userId_1, amount_1) {
         return __awaiter(this, arguments, void 0, function* (userId, amount, currency = 'EUR', description, metadata = {}) {
             try {
-                loggerService_1.logger.info('Creando intento de pago', { userId, metadata: { amount, currency, description } });
+                loggerService_1.logger.info('Creando intento de pago', {
+                    userId,
+                    metadata: { amount, currency, description },
+                });
                 const paymentIntent = {
                     id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     amount,
-                    currency: this.supportedCurrencies.includes(currency) ? currency : this.defaultCurrency,
+                    currency: this.supportedCurrencies.includes(currency)
+                        ? currency
+                        : this.defaultCurrency,
                     status: 'pending',
                     paymentMethodId: '',
                     userId,
                     description,
                     metadata,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 };
-                yield firebase_1.db.collection('paymentIntents').doc(paymentIntent.id).set(paymentIntent);
-                loggerService_1.logger.info('Intento de pago creado', { userId, metadata: { paymentIntentId: paymentIntent.id } });
+                yield firebase_1.db
+                    .collection('paymentIntents')
+                    .doc(paymentIntent.id)
+                    .set(paymentIntent);
+                loggerService_1.logger.info('Intento de pago creado', {
+                    userId,
+                    metadata: { paymentIntentId: paymentIntent.id },
+                });
                 return paymentIntent;
             }
             catch (error) {
-                loggerService_1.logger.error('Error creando intento de pago', error, { userId, metadata: { amount } });
+                loggerService_1.logger.error('Error creando intento de pago', error, {
+                    userId,
+                    metadata: { amount },
+                });
                 throw error;
             }
         });
@@ -132,10 +167,14 @@ class PaymentService {
     processPayment(paymentIntentId, paymentMethodId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Procesando pago', { metadata: { paymentIntentId, paymentMethodId } });
+                loggerService_1.logger.info('Procesando pago', {
+                    metadata: { paymentIntentId, paymentMethodId },
+                });
                 // Simular procesamiento de pago
                 const success = Math.random() > 0.1; // 90% de éxito
-                const paymentIntentRef = firebase_1.db.collection('paymentIntents').doc(paymentIntentId);
+                const paymentIntentRef = firebase_1.db
+                    .collection('paymentIntents')
+                    .doc(paymentIntentId);
                 const paymentIntentDoc = yield paymentIntentRef.get();
                 if (!paymentIntentDoc.exists) {
                     throw new Error('Payment intent no encontrado');
@@ -146,7 +185,7 @@ class PaymentService {
                     yield paymentIntentRef.update({
                         status: 'succeeded',
                         paymentMethodId,
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
                     });
                     // Crear factura automáticamente
                     yield this.createInvoiceFromPayment(Object.assign(Object.assign({}, paymentIntent), { status: 'succeeded', paymentMethodId }));
@@ -154,8 +193,8 @@ class PaymentService {
                         metadata: {
                             paymentIntentId,
                             amount: paymentIntent.amount,
-                            currency: paymentIntent.currency
-                        }
+                            currency: paymentIntent.currency,
+                        },
                     });
                 }
                 else {
@@ -163,14 +202,16 @@ class PaymentService {
                     yield paymentIntentRef.update({
                         status: 'failed',
                         paymentMethodId,
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
                     });
                     loggerService_1.logger.info('Pago fallido', { metadata: { paymentIntentId } });
                 }
                 return Object.assign(Object.assign({}, paymentIntent), { status: success ? 'succeeded' : 'failed', paymentMethodId, updatedAt: new Date() });
             }
             catch (error) {
-                loggerService_1.logger.error('Error procesando pago', error, { metadata: { paymentIntentId } });
+                loggerService_1.logger.error('Error procesando pago', error, {
+                    metadata: { paymentIntentId },
+                });
                 throw error;
             }
         });
@@ -191,31 +232,35 @@ class PaymentService {
                     paidAt: new Date(),
                     userId: paymentIntent.userId,
                     eventId: paymentIntent.eventId,
-                    items: [{
+                    items: [
+                        {
                             id: `item_${Date.now()}`,
                             description: paymentIntent.description,
                             quantity: 1,
                             unitPrice: paymentIntent.amount,
                             total: paymentIntent.amount,
-                            type: 'service'
-                        }],
+                            type: 'service',
+                        },
+                    ],
                     subtotal: paymentIntent.amount,
                     tax: 0,
                     total: paymentIntent.amount,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 };
                 yield firebase_1.db.collection('invoices').doc(invoice.id).set(invoice);
                 loggerService_1.logger.info('Factura creada desde pago', {
                     metadata: {
                         invoiceId: invoice.id,
-                        paymentIntentId: paymentIntent.id
-                    }
+                        paymentIntentId: paymentIntent.id,
+                    },
                 });
                 return invoice;
             }
             catch (error) {
-                loggerService_1.logger.error('Error creando factura desde pago', error, { metadata: { paymentIntent } });
+                loggerService_1.logger.error('Error creando factura desde pago', error, {
+                    metadata: { paymentIntent },
+                });
                 throw error;
             }
         });
@@ -226,8 +271,11 @@ class PaymentService {
     createInvoice(userId, items, dueDate, eventId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Creando factura manual', { userId, metadata: { items, dueDate } });
-                const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+                loggerService_1.logger.info('Creando factura manual', {
+                    userId,
+                    metadata: { items, dueDate },
+                });
+                const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
                 const tax = subtotal * 0.16; // 16% IVA
                 const total = subtotal + tax;
                 const invoice = {
@@ -244,10 +292,13 @@ class PaymentService {
                     tax,
                     total,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 };
                 yield firebase_1.db.collection('invoices').doc(invoice.id).set(invoice);
-                loggerService_1.logger.info('Factura manual creada', { userId, metadata: { invoiceId: invoice.id } });
+                loggerService_1.logger.info('Factura manual creada', {
+                    userId,
+                    metadata: { invoiceId: invoice.id },
+                });
                 return invoice;
             }
             catch (error) {
@@ -285,7 +336,9 @@ class PaymentService {
     markInvoiceAsPaid(invoiceId, paymentMethodId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Marcando factura como pagada', { metadata: { invoiceId, paymentMethodId } });
+                loggerService_1.logger.info('Marcando factura como pagada', {
+                    metadata: { invoiceId, paymentMethodId },
+                });
                 const invoiceRef = firebase_1.db.collection('invoices').doc(invoiceId);
                 const invoiceDoc = yield invoiceRef.get();
                 if (!invoiceDoc.exists) {
@@ -301,14 +354,16 @@ class PaymentService {
                     yield invoiceRef.update({
                         status: 'paid',
                         paidAt: new Date(),
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
                     });
                     loggerService_1.logger.info('Factura marcada como pagada', { metadata: { invoiceId } });
                 }
                 return Object.assign(Object.assign({}, invoice), { status: result.status === 'succeeded' ? 'paid' : 'sent', paidAt: result.status === 'succeeded' ? new Date() : undefined, updatedAt: new Date() });
             }
             catch (error) {
-                loggerService_1.logger.error('Error marcando factura como pagada', error, { metadata: { invoiceId } });
+                loggerService_1.logger.error('Error marcando factura como pagada', error, {
+                    metadata: { invoiceId },
+                });
                 throw error;
             }
         });
@@ -319,9 +374,14 @@ class PaymentService {
     processRefund(paymentIntentId, amount, reason) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Procesando reembolso', { metadata: { paymentIntentId, amount, reason } });
+                loggerService_1.logger.info('Procesando reembolso', {
+                    metadata: { paymentIntentId, amount, reason },
+                });
                 // Verificar que el payment intent existe y fue exitoso
-                const paymentIntentDoc = yield firebase_1.db.collection('paymentIntents').doc(paymentIntentId).get();
+                const paymentIntentDoc = yield firebase_1.db
+                    .collection('paymentIntents')
+                    .doc(paymentIntentId)
+                    .get();
                 if (!paymentIntentDoc.exists) {
                     throw new Error('Payment intent no encontrado');
                 }
@@ -340,21 +400,25 @@ class PaymentService {
                     amount,
                     reason,
                     status: success ? 'succeeded' : 'failed',
-                    createdAt: new Date()
+                    createdAt: new Date(),
                 };
                 yield firebase_1.db.collection('refunds').doc(refund.id).set(refund);
                 if (success) {
                     // Actualizar payment intent
                     yield firebase_1.db.collection('paymentIntents').doc(paymentIntentId).update({
                         status: 'cancelled',
-                        updatedAt: new Date()
+                        updatedAt: new Date(),
                     });
                 }
-                loggerService_1.logger.info('Reembolso procesado', { metadata: { refundId: refund.id, amount } });
+                loggerService_1.logger.info('Reembolso procesado', {
+                    metadata: { refundId: refund.id, amount },
+                });
                 return refund;
             }
             catch (error) {
-                loggerService_1.logger.error('Error procesando reembolso', error, { metadata: { paymentIntentId } });
+                loggerService_1.logger.error('Error procesando reembolso', error, {
+                    metadata: { paymentIntentId },
+                });
                 throw error;
             }
         });
@@ -365,7 +429,9 @@ class PaymentService {
     getPaymentStats(userId, period) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                loggerService_1.logger.info('Obteniendo estadísticas de pagos', { metadata: { userId, period } });
+                loggerService_1.logger.info('Obteniendo estadísticas de pagos', {
+                    metadata: { userId, period },
+                });
                 const now = new Date();
                 let startDate = new Date(now.getFullYear(), now.getMonth(), 1); // Inicio del mes
                 if (period === 'week') {
@@ -378,7 +444,8 @@ class PaymentService {
                     startDate = new Date(now.getFullYear(), 0, 1);
                 }
                 // Estadísticas de payment intents
-                let paymentQuery = firebase_1.db.collection('paymentIntents')
+                let paymentQuery = firebase_1.db
+                    .collection('paymentIntents')
                     .where('createdAt', '>=', startDate);
                 if (userId) {
                     paymentQuery = paymentQuery.where('userId', '==', userId);
@@ -386,7 +453,8 @@ class PaymentService {
                 const paymentSnapshot = yield paymentQuery.get();
                 const payments = paymentSnapshot.docs.map(doc => doc.data());
                 // Estadísticas de facturas
-                let invoiceQuery = firebase_1.db.collection('invoices')
+                let invoiceQuery = firebase_1.db
+                    .collection('invoices')
                     .where('createdAt', '>=', startDate);
                 if (userId) {
                     invoiceQuery = invoiceQuery.where('userId', '==', userId);
@@ -394,7 +462,8 @@ class PaymentService {
                 const invoiceSnapshot = yield invoiceQuery.get();
                 const invoices = invoiceSnapshot.docs.map(doc => doc.data());
                 // Estadísticas de reembolsos
-                let refundQuery = firebase_1.db.collection('refunds')
+                const refundQuery = firebase_1.db
+                    .collection('refunds')
                     .where('createdAt', '>=', startDate);
                 const refundSnapshot = yield refundQuery.get();
                 const refunds = refundSnapshot.docs.map(doc => doc.data());
@@ -404,7 +473,8 @@ class PaymentService {
                         .reduce((sum, p) => sum + p.amount, 0),
                     totalTransactions: payments.length,
                     successfulTransactions: payments.filter((p) => p.status === 'succeeded').length,
-                    failedTransactions: payments.filter((p) => p.status === 'failed').length,
+                    failedTransactions: payments.filter((p) => p.status === 'failed')
+                        .length,
                     totalInvoices: invoices.length,
                     paidInvoices: invoices.filter((i) => i.status === 'paid').length,
                     totalRefunds: refunds.length,
@@ -412,11 +482,14 @@ class PaymentService {
                         .filter((r) => r.status === 'succeeded')
                         .reduce((sum, r) => sum + r.amount, 0),
                     averageTransaction: payments.length > 0
-                        ? payments.reduce((sum, p) => sum + p.amount, 0) / payments.length
+                        ? payments.reduce((sum, p) => sum + p.amount, 0) /
+                            payments.length
                         : 0,
                     successRate: payments.length > 0
-                        ? (payments.filter((p) => p.status === 'succeeded').length / payments.length) * 100
-                        : 0
+                        ? (payments.filter((p) => p.status === 'succeeded').length /
+                            payments.length) *
+                            100
+                        : 0,
                 };
                 loggerService_1.logger.info('Estadísticas de pagos obtenidas', { metadata: { stats } });
                 return stats;
@@ -434,7 +507,10 @@ class PaymentService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Validaciones básicas
-                if (!paymentData.cardNumber || !paymentData.expiryMonth || !paymentData.expiryYear || !paymentData.cvc) {
+                if (!paymentData.cardNumber ||
+                    !paymentData.expiryMonth ||
+                    !paymentData.expiryYear ||
+                    !paymentData.cvc) {
                     return false;
                 }
                 // Validar formato de tarjeta (Luhn algorithm)
@@ -455,7 +531,9 @@ class PaymentService {
                 return true;
             }
             catch (error) {
-                loggerService_1.logger.error('Error validando método de pago', error, { metadata: { paymentData } });
+                loggerService_1.logger.error('Error validando método de pago', error, {
+                    metadata: { paymentData },
+                });
                 return false;
             }
         });
@@ -472,25 +550,25 @@ class PaymentService {
                         isActive: true,
                         config: {
                             supportedCurrencies: ['USD', 'EUR', 'GBP'],
-                            fees: { percentage: 2.9, fixed: 30 }
-                        }
+                            fees: { percentage: 2.9, fixed: 30 },
+                        },
                     },
                     {
                         name: 'PayPal',
                         isActive: true,
                         config: {
                             supportedCurrencies: ['USD', 'EUR', 'GBP'],
-                            fees: { percentage: 3.5, fixed: 0 }
-                        }
+                            fees: { percentage: 3.5, fixed: 0 },
+                        },
                     },
                     {
                         name: 'MercadoPago',
                         isActive: false,
                         config: {
                             supportedCurrencies: ['USD', 'ARS', 'BRL'],
-                            fees: { percentage: 3.5, fixed: 0 }
-                        }
-                    }
+                            fees: { percentage: 3.5, fixed: 0 },
+                        },
+                    },
                 ];
                 return gateways.filter(gateway => gateway.isActive);
             }

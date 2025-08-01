@@ -24,7 +24,7 @@ exports.deleteEventModel = exports.completeEventModel = exports.cancelEventModel
 const firebase_1 = require("../utils/firebase");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
-    const eventRef = firebase_1.db.collection("events").doc();
+    const eventRef = firebase_1.db.collection('events').doc();
     const event = Object.assign(Object.assign({}, eventData), { id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, interestedMusicians: [] });
     yield eventRef.set(event);
     console.log('[src/models/eventModel.ts:16] Evento guardado:', event);
@@ -32,23 +32,25 @@ const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.createEventModel = createEventModel;
 const getEventsByUserAndStatus = (userEmail, status) => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db.collection("events")
-        .where("user", "==", userEmail)
-        .where("status", "==", status)
+    const snapshot = yield firebase_1.db
+        .collection('events')
+        .where('user', '==', userEmail)
+        .where('status', '==', status)
         .get();
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByUserAndStatus = getEventsByUserAndStatus;
 const getAvailableEvents = () => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db.collection("events")
-        .where("status", "==", "pending_musician")
+    const snapshot = yield firebase_1.db
+        .collection('events')
+        .where('status', '==', 'pending_musician')
         .get();
     console.log('[src/models/eventModel.ts:32] Eventos encontrados en BD:', snapshot.docs.length);
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getAvailableEvents = getAvailableEvents;
 const acceptEventModel = (eventId, musicianId) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventRef = firebase_1.db.collection('events').doc(eventId);
     const eventSnap = yield eventRef.get();
     if (!eventSnap.exists)
         return null;
@@ -62,29 +64,32 @@ const acceptEventModel = (eventId, musicianId) => __awaiter(void 0, void 0, void
 });
 exports.acceptEventModel = acceptEventModel;
 const getEventsByMusicianAndStatus = (musicianId, status) => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db.collection("events")
-        .where("assignedMusicianId", "==", musicianId)
-        .where("status", "==", status)
+    const snapshot = yield firebase_1.db
+        .collection('events')
+        .where('assignedMusicianId', '==', musicianId)
+        .where('status', '==', status)
         .get();
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByMusicianAndStatus = getEventsByMusicianAndStatus;
 const getEventsByUser = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db.collection("events")
-        .where("user", "==", userEmail)
+    const snapshot = yield firebase_1.db
+        .collection('events')
+        .where('user', '==', userEmail)
         .get();
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByUser = getEventsByUser;
 const getEventsByMusician = (musicianId) => __awaiter(void 0, void 0, void 0, function* () {
-    const snapshot = yield firebase_1.db.collection("events")
-        .where("assignedMusicianId", "==", musicianId)
+    const snapshot = yield firebase_1.db
+        .collection('events')
+        .where('assignedMusicianId', '==', musicianId)
         .get();
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getEventsByMusician = getEventsByMusician;
 const getEventByIdModel = (eventId) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventRef = firebase_1.db.collection('events').doc(eventId);
     const eventSnap = yield eventRef.get();
     if (!eventSnap.exists)
         return null;
@@ -92,7 +97,7 @@ const getEventByIdModel = (eventId) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.getEventByIdModel = getEventByIdModel;
 const cancelEventModel = (eventId, cancelledBy) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventRef = firebase_1.db.collection('events').doc(eventId);
     const eventSnap = yield eventRef.get();
     if (!eventSnap.exists)
         return null;
@@ -104,7 +109,7 @@ const cancelEventModel = (eventId, cancelledBy) => __awaiter(void 0, void 0, voi
 });
 exports.cancelEventModel = cancelEventModel;
 const completeEventModel = (eventId, completedBy) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventRef = firebase_1.db.collection('events').doc(eventId);
     const eventSnap = yield eventRef.get();
     if (!eventSnap.exists)
         return null;
@@ -116,7 +121,7 @@ const completeEventModel = (eventId, completedBy) => __awaiter(void 0, void 0, v
 });
 exports.completeEventModel = completeEventModel;
 const deleteEventModel = (eventId, deletedBy) => __awaiter(void 0, void 0, void 0, function* () {
-    const eventRef = firebase_1.db.collection("events").doc(eventId);
+    const eventRef = firebase_1.db.collection('events').doc(eventId);
     const eventSnap = yield eventRef.get();
     if (!eventSnap.exists)
         return null;

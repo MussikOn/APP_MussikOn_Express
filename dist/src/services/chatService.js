@@ -25,7 +25,8 @@ class ChatService {
                     const userDoc = yield firebase_1.db.collection('users').doc(participantId).get();
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        participantNames[participantId] = `${userData.name} ${userData.lastName}`;
+                        participantNames[participantId] =
+                            `${userData.name} ${userData.lastName}`;
                     }
                 }
                 const conversation = {
@@ -37,9 +38,12 @@ class ChatService {
                     groupName,
                     groupAdmin,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 };
-                yield firebase_1.db.collection('conversations').doc(conversation.id).set(conversation);
+                yield firebase_1.db
+                    .collection('conversations')
+                    .doc(conversation.id)
+                    .set(conversation);
                 return conversation;
             }
             catch (error) {
@@ -55,7 +59,8 @@ class ChatService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, limit = 20, offset = 0, unreadOnly = false } = filters;
-                let query = firebase_1.db.collection('conversations')
+                const query = firebase_1.db
+                    .collection('conversations')
                     .where('participants', 'array-contains', userId)
                     .orderBy('lastActivity', 'desc')
                     .limit(limit)
@@ -84,7 +89,8 @@ class ChatService {
     getConversationMessages(conversationId_1) {
         return __awaiter(this, arguments, void 0, function* (conversationId, limit = 50, offset = 0) {
             try {
-                const query = firebase_1.db.collection('conversations')
+                const query = firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .orderBy('timestamp', 'desc')
@@ -106,7 +112,10 @@ class ChatService {
         return __awaiter(this, arguments, void 0, function* (conversationId, senderId, content, type = 'text', metadata) {
             try {
                 // Verificar que la conversación existe
-                const conversationDoc = yield firebase_1.db.collection('conversations').doc(conversationId).get();
+                const conversationDoc = yield firebase_1.db
+                    .collection('conversations')
+                    .doc(conversationId)
+                    .get();
                 if (!conversationDoc.exists) {
                     throw new Error('Conversación no encontrada');
                 }
@@ -118,7 +127,11 @@ class ChatService {
                 const senderData = senderDoc.data();
                 const senderName = `${senderData.name} ${senderData.lastName}`;
                 const message = {
-                    id: firebase_1.db.collection('conversations').doc(conversationId).collection('messages').doc().id,
+                    id: firebase_1.db
+                        .collection('conversations')
+                        .doc(conversationId)
+                        .collection('messages')
+                        .doc().id,
                     conversationId,
                     senderId,
                     senderName,
@@ -126,10 +139,11 @@ class ChatService {
                     type,
                     timestamp: new Date(),
                     readBy: [senderId], // El remitente ya leyó el mensaje
-                    metadata
+                    metadata,
                 };
                 // Guardar el mensaje
-                yield firebase_1.db.collection('conversations')
+                yield firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .doc(message.id)
@@ -138,7 +152,7 @@ class ChatService {
                 yield firebase_1.db.collection('conversations').doc(conversationId).update({
                     lastMessage: message,
                     lastActivity: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 });
                 return message;
             }
@@ -158,19 +172,21 @@ class ChatService {
                     // Marcar mensajes específicos como leídos
                     const batch = firebase_1.db.batch();
                     for (const messageId of messageIds) {
-                        const messageRef = firebase_1.db.collection('conversations')
+                        const messageRef = firebase_1.db
+                            .collection('conversations')
                             .doc(conversationId)
                             .collection('messages')
                             .doc(messageId);
                         batch.update(messageRef, {
-                            readBy: firestore_1.FieldValue.arrayUnion(userId)
+                            readBy: firestore_1.FieldValue.arrayUnion(userId),
                         });
                     }
                     yield batch.commit();
                 }
                 else {
                     // Marcar todos los mensajes no leídos como leídos
-                    const messagesQuery = firebase_1.db.collection('conversations')
+                    const messagesQuery = firebase_1.db
+                        .collection('conversations')
                         .doc(conversationId)
                         .collection('messages')
                         .where('readBy', 'not-in', [[userId]]);
@@ -178,7 +194,7 @@ class ChatService {
                     const batch = firebase_1.db.batch();
                     snapshot.docs.forEach(doc => {
                         batch.update(doc.ref, {
-                            readBy: firestore_1.FieldValue.arrayUnion(userId)
+                            readBy: firestore_1.FieldValue.arrayUnion(userId),
                         });
                     });
                     yield batch.commit();
@@ -196,7 +212,8 @@ class ChatService {
     getUnreadMessageCount(conversationId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const query = firebase_1.db.collection('conversations')
+                const query = firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .where('readBy', 'not-in', [[userId]]);
@@ -215,7 +232,10 @@ class ChatService {
     getConversationById(conversationId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const doc = yield firebase_1.db.collection('conversations').doc(conversationId).get();
+                const doc = yield firebase_1.db
+                    .collection('conversations')
+                    .doc(conversationId)
+                    .get();
                 if (doc.exists) {
                     return doc.data();
                 }
@@ -234,7 +254,10 @@ class ChatService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 // Obtener todas las conversaciones del usuario
-                const conversations = yield this.getUserConversations({ userId, limit: 100 });
+                const conversations = yield this.getUserConversations({
+                    userId,
+                    limit: 100,
+                });
                 // Filtrar por término de búsqueda
                 return conversations.filter(conversation => {
                     var _a, _b;
@@ -260,7 +283,8 @@ class ChatService {
     searchMessages(conversationId_1, searchTerm_1) {
         return __awaiter(this, arguments, void 0, function* (conversationId, searchTerm, limit = 20) {
             try {
-                const query = firebase_1.db.collection('conversations')
+                const query = firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .orderBy('timestamp', 'desc')
@@ -282,7 +306,8 @@ class ChatService {
     deleteMessage(conversationId, messageId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const messageDoc = yield firebase_1.db.collection('conversations')
+                const messageDoc = yield firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .doc(messageId)
@@ -295,7 +320,8 @@ class ChatService {
                 if (message.senderId !== userId) {
                     throw new Error('No autorizado para eliminar este mensaje');
                 }
-                yield firebase_1.db.collection('conversations')
+                yield firebase_1.db
+                    .collection('conversations')
                     .doc(conversationId)
                     .collection('messages')
                     .doc(messageId)
@@ -334,10 +360,13 @@ class ChatService {
                 const userData = userDoc.data();
                 const participantName = `${userData.name} ${userData.lastName}`;
                 // Actualizar conversación
-                yield firebase_1.db.collection('conversations').doc(conversationId).update({
+                yield firebase_1.db
+                    .collection('conversations')
+                    .doc(conversationId)
+                    .update({
                     participants: firestore_1.FieldValue.arrayUnion(participantId),
                     [`participantNames.${participantId}`]: participantName,
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 });
             }
             catch (error) {
@@ -366,10 +395,13 @@ class ChatService {
                     throw new Error('El participante no está en la conversación');
                 }
                 // Actualizar conversación
-                yield firebase_1.db.collection('conversations').doc(conversationId).update({
+                yield firebase_1.db
+                    .collection('conversations')
+                    .doc(conversationId)
+                    .update({
                     participants: firestore_1.FieldValue.arrayRemove(participantId),
                     [`participantNames.${participantId}`]: firestore_1.FieldValue.delete(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 });
             }
             catch (error) {
@@ -384,7 +416,10 @@ class ChatService {
     getChatStats(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const conversations = yield this.getUserConversations({ userId, limit: 100 });
+                const conversations = yield this.getUserConversations({
+                    userId,
+                    limit: 100,
+                });
                 let totalMessages = 0;
                 let unreadMessages = 0;
                 let activeConversations = 0;
@@ -401,7 +436,7 @@ class ChatService {
                     totalConversations: conversations.length,
                     totalMessages,
                     unreadMessages,
-                    activeConversations
+                    activeConversations,
                 };
             }
             catch (error) {

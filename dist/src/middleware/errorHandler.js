@@ -30,7 +30,7 @@ function errorHandler(err, req, res, next) {
         method: req.method,
         ip: req.ip,
         userAgent: req.get('User-Agent'),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     });
     // Error de validación de Joi
     if (err.name === 'ValidationError') {

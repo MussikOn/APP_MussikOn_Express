@@ -45,7 +45,7 @@ const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS;
 const serviceAccount = path_1.default.join(__dirname, `../../${FIREBASE_CREDENTIALS}`);
 if (!admin.apps.length) {
     admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+        credential: admin.credential.cert(serviceAccount),
     });
 }
 // Inicializando Auth

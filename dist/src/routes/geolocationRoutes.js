@@ -12,29 +12,29 @@ const router = (0, express_1.Router)();
 // DTOs para validación
 const coordinatesDTO = joi_1.default.object({
     lat: joi_1.default.number().min(-90).max(90).required(),
-    lng: joi_1.default.number().min(-180).max(180).required()
+    lng: joi_1.default.number().min(-180).max(180).required(),
 });
 const geocodeAddressDTO = joi_1.default.object({
-    address: joi_1.default.string().required().min(3).max(200)
+    address: joi_1.default.string().required().min(3).max(200),
 });
 const reverseGeocodeDTO = joi_1.default.object({
     lat: joi_1.default.number().min(-90).max(90).required(),
-    lng: joi_1.default.number().min(-180).max(180).required()
+    lng: joi_1.default.number().min(-180).max(180).required(),
 });
 const calculateDistanceDTO = joi_1.default.object({
     point1: coordinatesDTO.required(),
-    point2: coordinatesDTO.required()
+    point2: coordinatesDTO.required(),
 });
 const isWithinRadiusDTO = joi_1.default.object({
     center: coordinatesDTO.required(),
     point: coordinatesDTO.required(),
-    radius: joi_1.default.number().positive().required()
+    radius: joi_1.default.number().positive().required(),
 });
 const optimizeRouteDTO = joi_1.default.object({
     startLocation: coordinatesDTO.required(),
     destinations: joi_1.default.array().items(coordinatesDTO).min(1).required(),
     mode: joi_1.default.string().valid('driving', 'walking', 'transit').required(),
-    optimize: joi_1.default.boolean().default(false)
+    optimize: joi_1.default.boolean().default(false),
 });
 /**
  * @swagger

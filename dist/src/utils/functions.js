@@ -19,10 +19,10 @@ exports.numberRandon = numberRandon;
  *       bearerFormat: JWT
  */
 // Centraliza el manejo de errores y respuestas
-function handleError(res, error, message = "Error interno del servidor", status = 500) {
+function handleError(res, error, message = 'Error interno del servidor', status = 500) {
     console.error(error);
     return res.status(status).json({ msg: message, error });
 }
-function handleSuccess(res, data, message = "Operación exitosa", status = 200) {
+function handleSuccess(res, data, message = 'Operación exitosa', status = 200) {
     return res.status(status).json({ msg: message, data });
 }

@@ -25,8 +25,8 @@ exports.savePushSubscription = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Usuario no autenticado',
-                code: 'UNAUTHORIZED'
-            }
+                code: 'UNAUTHORIZED',
+            },
         });
     }
     if (!endpoint || !keys) {
@@ -34,22 +34,22 @@ exports.savePushSubscription = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Endpoint y keys son requeridos',
-                code: 'VALIDATION_ERROR'
-            }
+                code: 'VALIDATION_ERROR',
+            },
         });
     }
     const subscription = yield pushNotificationService_1.pushNotificationService.saveSubscription(userId, {
         endpoint,
         keys,
-        isActive: true
+        isActive: true,
     });
     loggerService_1.logger.info('Suscripción push guardada', {
-        metadata: { userId, subscriptionId: subscription.id }
+        metadata: { userId, subscriptionId: subscription.id },
     });
     res.status(201).json({
         success: true,
         data: subscription,
-        message: 'Suscripción push guardada exitosamente'
+        message: 'Suscripción push guardada exitosamente',
     });
 }));
 /**
@@ -63,15 +63,15 @@ exports.getUserPushSubscriptions = (0, errorHandler_1.asyncHandler)((req, res) =
             success: false,
             error: {
                 message: 'Usuario no autenticado',
-                code: 'UNAUTHORIZED'
-            }
+                code: 'UNAUTHORIZED',
+            },
         });
     }
     const subscriptions = yield pushNotificationService_1.pushNotificationService.getUserSubscriptions();
     res.json({
         success: true,
         data: subscriptions,
-        message: 'Suscripciones obtenidas exitosamente'
+        message: 'Suscripciones obtenidas exitosamente',
     });
 }));
 /**
@@ -86,17 +86,17 @@ exports.deletePushSubscription = (0, errorHandler_1.asyncHandler)((req, res) => 
             success: false,
             error: {
                 message: 'Usuario no autenticado',
-                code: 'UNAUTHORIZED'
-            }
+                code: 'UNAUTHORIZED',
+            },
         });
     }
     yield pushNotificationService_1.pushNotificationService.deleteSubscription(subscriptionId);
     loggerService_1.logger.info('Suscripción push eliminada', {
-        metadata: { userId, subscriptionId }
+        metadata: { userId, subscriptionId },
     });
     res.json({
         success: true,
-        message: 'Suscripción push eliminada exitosamente'
+        message: 'Suscripción push eliminada exitosamente',
     });
 }));
 /**
@@ -110,17 +110,17 @@ exports.sendNotificationToUser = (0, errorHandler_1.asyncHandler)((req, res) => 
             success: false,
             error: {
                 message: 'Título y cuerpo de la notificación son requeridos',
-                code: 'VALIDATION_ERROR'
-            }
+                code: 'VALIDATION_ERROR',
+            },
         });
     }
     yield pushNotificationService_1.pushNotificationService.sendNotificationToUser(userId, notification);
     loggerService_1.logger.info('Notificación push enviada a usuario', {
-        metadata: { userId, notificationTitle: notification.title }
+        metadata: { userId, notificationTitle: notification.title },
     });
     res.json({
         success: true,
-        message: 'Notificación push enviada exitosamente'
+        message: 'Notificación push enviada exitosamente',
     });
 }));
 /**
@@ -133,8 +133,8 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Debe especificar un template o notificación personalizada',
-                code: 'VALIDATION_ERROR'
-            }
+                code: 'VALIDATION_ERROR',
+            },
         });
     }
     if (!bulkRequest.userIds && !bulkRequest.userRoles) {
@@ -142,19 +142,19 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Debe especificar usuarios o roles para enviar la notificación',
-                code: 'VALIDATION_ERROR'
-            }
+                code: 'VALIDATION_ERROR',
+            },
         });
     }
     const result = yield pushNotificationService_1.pushNotificationService.sendBulkNotification(bulkRequest);
     if (result) {
         loggerService_1.logger.info('Notificación masiva enviada', {
-            metadata: { success: result.success, failed: result.failed }
+            metadata: { success: result.success, failed: result.failed },
         });
         res.json({
             success: true,
             data: result,
-            message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`
+            message: `Notificación masiva enviada: ${result.success} exitosas, ${result.failed} fallidas`,
         });
     }
     else {
@@ -163,8 +163,8 @@ exports.sendBulkNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Error enviando notificación masiva',
-                code: 'INTERNAL_ERROR'
-            }
+                code: 'INTERNAL_ERROR',
+            },
         });
     }
 }));
@@ -178,19 +178,22 @@ exports.createNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res)
             success: false,
             error: {
                 message: 'Nombre, título y cuerpo del template son requeridos',
-                code: 'VALIDATION_ERROR'
-            }
+                code: 'VALIDATION_ERROR',
+            },
         });
     }
     const createdTemplate = yield pushNotificationService_1.pushNotificationService.createNotificationTemplate(template);
     if (createdTemplate) {
         loggerService_1.logger.info('Template de notificación creado', {
-            metadata: { templateId: createdTemplate.id, name: createdTemplate.name }
+            metadata: {
+                templateId: createdTemplate.id,
+                name: createdTemplate.name,
+            },
         });
         res.status(201).json({
             success: true,
             data: createdTemplate,
-            message: 'Template de notificación creado exitosamente'
+            message: 'Template de notificación creado exitosamente',
         });
     }
     else {
@@ -199,8 +202,8 @@ exports.createNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res)
             success: false,
             error: {
                 message: 'Error creando template de notificación',
-                code: 'INTERNAL_ERROR'
-            }
+                code: 'INTERNAL_ERROR',
+            },
         });
     }
 }));
@@ -213,7 +216,7 @@ exports.getNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res) =>
     res.json({
         success: true,
         data: template,
-        message: 'Template obtenido exitosamente'
+        message: 'Template obtenido exitosamente',
     });
 }));
 /**
@@ -224,7 +227,7 @@ exports.getActiveTemplates = (0, errorHandler_1.asyncHandler)((req, res) => __aw
     res.json({
         success: true,
         data: templates,
-        message: 'Templates obtenidos exitosamente'
+        message: 'Templates obtenidos exitosamente',
     });
 }));
 /**
@@ -235,12 +238,12 @@ exports.updateNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res)
     const updates = req.body;
     const updatedTemplate = yield pushNotificationService_1.pushNotificationService.updateNotificationTemplate(templateId, updates);
     loggerService_1.logger.info('Template de notificación actualizado', {
-        metadata: { templateId }
+        metadata: { templateId },
     });
     res.json({
         success: true,
         data: updatedTemplate,
-        message: 'Template actualizado exitosamente'
+        message: 'Template actualizado exitosamente',
     });
 }));
 /**
@@ -250,11 +253,11 @@ exports.deleteNotificationTemplate = (0, errorHandler_1.asyncHandler)((req, res)
     const { templateId } = req.params;
     yield pushNotificationService_1.pushNotificationService.deleteNotificationTemplate(templateId);
     loggerService_1.logger.info('Template de notificación eliminado', {
-        metadata: { templateId }
+        metadata: { templateId },
     });
     res.json({
         success: true,
-        message: 'Template eliminado exitosamente'
+        message: 'Template eliminado exitosamente',
     });
 }));
 /**
@@ -265,7 +268,7 @@ exports.getNotificationStats = (0, errorHandler_1.asyncHandler)((req, res) => __
     res.json({
         success: true,
         data: stats,
-        message: 'Estadísticas obtenidas exitosamente'
+        message: 'Estadísticas obtenidas exitosamente',
     });
 }));
 /**
@@ -276,7 +279,7 @@ exports.getVapidPublicKey = (0, errorHandler_1.asyncHandler)((req, res) => __awa
     res.json({
         success: true,
         data: { publicKey },
-        message: 'VAPID public key obtenida exitosamente'
+        message: 'VAPID public key obtenida exitosamente',
     });
 }));
 /**
@@ -290,8 +293,8 @@ exports.testPushNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
             success: false,
             error: {
                 message: 'Usuario no autenticado',
-                code: 'UNAUTHORIZED'
-            }
+                code: 'UNAUTHORIZED',
+            },
         });
     }
     const testNotification = {
@@ -302,19 +305,19 @@ exports.testPushNotification = (0, errorHandler_1.asyncHandler)((req, res) => __
         tag: 'test-notification',
         data: {
             url: '/dashboard',
-            type: 'test'
+            type: 'test',
         },
         requireInteraction: true,
         priority: 'high',
         category: 'test',
-        type: 'test'
+        type: 'test',
     };
     yield pushNotificationService_1.pushNotificationService.sendNotificationToUser(userId, testNotification);
     loggerService_1.logger.info('Notificación de prueba enviada', {
-        metadata: { userId }
+        metadata: { userId },
     });
     res.json({
         success: true,
-        message: 'Notificación de prueba enviada exitosamente'
+        message: 'Notificación de prueba enviada exitosamente',
     });
 }));

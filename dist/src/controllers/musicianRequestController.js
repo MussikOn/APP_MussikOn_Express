@@ -22,7 +22,7 @@ exports.setSocketInstance = setSocketInstance;
 // Crear solicitud de músico
 const createRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { userId, eventType, date, startTime, endTime, location, instrument, budget, comments } = req.body;
+        const { userId, eventType, date, startTime, endTime, location, instrument, budget, comments, } = req.body;
         const newRequest = {
             userId,
             eventType,
@@ -31,7 +31,7 @@ const createRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             location,
             instrument,
             budget,
-            comments
+            comments,
         };
         const docRef = yield firebase_1.db.collection('musicianRequests').add(Object.assign(Object.assign({}, newRequest), { status: 'pendiente', createdAt: new Date(), updatedAt: new Date() }));
         // Emitir evento socket a músicos conectados
@@ -92,7 +92,9 @@ const cancelRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.json({ success: true });
     }
     catch (err) {
-        res.status(500).json({ error: 'Error al cancelar solicitud', details: err });
+        res
+            .status(500)
+            .json({ error: 'Error al cancelar solicitud', details: err });
     }
 });
 exports.cancelRequest = cancelRequest;
@@ -140,10 +142,14 @@ const updateRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return;
         }
         yield docRef.update(Object.assign(Object.assign({}, updateData), { updatedAt: new Date() }));
-        res.status(200).json({ success: true, message: 'Solicitud actualizada correctamente' });
+        res
+            .status(200)
+            .json({ success: true, message: 'Solicitud actualizada correctamente' });
     }
     catch (err) {
-        res.status(500).json({ error: 'Error al actualizar solicitud', details: err });
+        res
+            .status(500)
+            .json({ error: 'Error al actualizar solicitud', details: err });
     }
 });
 exports.updateRequest = updateRequest;
@@ -158,10 +164,14 @@ const deleteRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return;
         }
         yield docRef.delete();
-        res.status(200).json({ success: true, message: 'Solicitud eliminada correctamente' });
+        res
+            .status(200)
+            .json({ success: true, message: 'Solicitud eliminada correctamente' });
     }
     catch (err) {
-        res.status(500).json({ error: 'Error al eliminar solicitud', details: err });
+        res
+            .status(500)
+            .json({ error: 'Error al eliminar solicitud', details: err });
     }
 });
 exports.deleteRequest = deleteRequest;

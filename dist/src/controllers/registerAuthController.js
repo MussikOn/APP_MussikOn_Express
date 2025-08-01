@@ -44,17 +44,19 @@ const sendEmailVerificationLink = (req, res) => __awaiter(void 0, void 0, void 0
     try {
         const user = yield firebase_1.dmAdmin.auth().getUser(uid);
         if (user.emailVerified) {
-            res.status(400).json({ message: "El correo ya está verificado." });
+            res.status(400).json({ message: 'El correo ya está verificado.' });
             return;
         }
-        const link = yield firebase_1.dmAdmin.auth().generateEmailVerificationLink(user.email);
+        const link = yield firebase_1.dmAdmin
+            .auth()
+            .generateEmailVerificationLink(user.email);
         // Aquí puedes enviar ese link por correo usando nodemailer o Mailgun, etc.
-        console.log("Verification link:", link);
+        console.log('Verification link:', link);
         // Devolver el enlace directamente o enviar vía email
-        res.status(200).json({ message: "Link generado", link });
+        res.status(200).json({ message: 'Link generado', link });
     }
     catch (error) {
-        res.status(500).json({ message: "Error al generar el link", error });
+        res.status(500).json({ message: 'Error al generar el link', error });
     }
 });
 exports.sendEmailVerificationLink = sendEmailVerificationLink;
