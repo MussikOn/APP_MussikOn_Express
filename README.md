@@ -1,428 +1,422 @@
-# 🎵 MussikOn API - Backend de Conectividad Musical
+# 🎵 MussikOn API - Backend
 
-## 📋 Descripción
+## 📋 Descripción General
 
-MussikOn es una API backend integral que conecta músicos con organizadores de eventos, facilitando la gestión completa del proceso desde la búsqueda hasta el pago. Esta es una **API pura de Node.js/Express** que proporciona funcionalidades avanzadas de búsqueda, geolocalización, pagos y comunicación en tiempo real.
-
-> **⚠️ Importante**: Este proyecto es un **backend puro** sin código de frontend. Todo el código de React/React Native ha sido eliminado para mantener una arquitectura limpia de API.
+MussikOn API es una plataforma backend robusta y escalable para conectar músicos, organizadores de eventos y usuarios en el ecosistema musical. Proporciona APIs RESTful completas con autenticación JWT, validación exhaustiva, búsqueda avanzada, y funcionalidades en tiempo real.
 
 ## 🚀 Características Principales
 
-### 🔐 Autenticación y Autorización
-- **JWT Authentication**: Sistema robusto de autenticación con tokens JWT
-- **Google OAuth**: Integración con Google para autenticación social
-- **Role-Based Access Control**: Control de acceso basado en roles (user, musician, admin, super_admin)
-- **Middleware de Seguridad**: Validación de tokens y permisos
+### 🔐 **Autenticación y Seguridad**
+- **JWT Authentication** con refresh tokens
+- **Google OAuth 2.0** integrado
+- **Role-Based Access Control** (RBAC)
+- **Rate Limiting** y protección contra ataques
+- **Input Sanitization** y validación exhaustiva
+- **CORS** configurado para producción
 
-### 🎯 Gestión de Eventos
-- **CRUD Completo**: Crear, leer, actualizar y eliminar eventos
-- **Búsqueda Avanzada**: Filtros por tipo, ubicación, fecha, presupuesto
-- **Estados de Evento**: Seguimiento del ciclo de vida del evento
-- **Imágenes y Multimedia**: Gestión de archivos con AWS S3
+### 🔍 **Sistema de Búsqueda Avanzado**
+- **Búsqueda Global** en todas las colecciones
+- **Búsqueda por Filtros** (eventos, usuarios, solicitudes)
+- **Búsqueda Geográfica** con algoritmos de proximidad
+- **Búsqueda de Disponibilidad** para músicos y eventos
+- **Validación Robusta** de datos de entrada
 
-### 👥 Gestión de Usuarios
-- **Perfiles de Músicos**: Información detallada, instrumentos, experiencia
-- **Perfiles de Organizadores**: Historial de eventos y preferencias
-- **Sistema de Roles**: Diferentes niveles de acceso y permisos
-- **Verificación de Identidad**: Proceso de validación de usuarios
+### 📊 **Analytics y Reportes**
+- **Métricas en Tiempo Real** de la plataforma
+- **Análisis de Eventos** y tendencias
+- **Reportes de Usuarios** y actividad
+- **Exportación CSV/JSON** de datos
+- **Dashboard Analytics** completo
 
-### 💰 Sistema de Pagos
-- **Múltiples Métodos de Pago**: Tarjetas, cuentas bancarias, PayPal
-- **Procesamiento de Pagos**: Intents, confirmaciones y reembolsos
-- **Facturación**: Generación automática de invoices
-- **Validación de Métodos**: Verificación de tarjetas y datos bancarios
-- **Estadísticas de Pagos**: Reportes y análisis financieros
+### 💬 **Comunicación en Tiempo Real**
+- **Socket.IO** para chat en vivo
+- **Notificaciones Push** integradas
+- **Eventos en Tiempo Real** para actualizaciones
+- **Sistema de Mensajería** robusto
 
-### 📍 Geolocalización Avanzada
-- **Búsqueda por Proximidad**: Encontrar eventos y músicos cercanos
-- **Optimización de Rutas**: Cálculo de rutas óptimas
-- **Geocodificación**: Conversión de direcciones a coordenadas
-- **Cálculo de Distancias**: Algoritmo de Haversine para distancias precisas
-- **Filtros Geográficos**: Búsqueda por radio y ubicación
+### 🎵 **Gestión Musical**
+- **Eventos Musicales** con gestión completa
+- **Solicitudes de Músicos** con workflow
+- **Perfiles de Músicos** detallados
+- **Gestión de Instrumentos** y especialidades
 
-### 🔍 Búsqueda Inteligente
-- **Búsqueda Global**: Búsqueda en toda la plataforma
-- **Filtros Avanzados**: Múltiples criterios de búsqueda
-- **Búsqueda por Ubicación**: Eventos y músicos por proximidad
-- **Búsqueda de Disponibilidad**: Eventos disponibles para músicos
-- **Ranking Inteligente**: Resultados ordenados por relevancia
+### 📱 **Integración Móvil**
+- **APIs Optimizadas** para aplicaciones móviles
+- **Push Notifications** para iOS/Android
+- **Geolocalización** avanzada
+- **Sincronización Offline**
 
-### 📊 Analytics y Reportes
-- **Métricas de Eventos**: Estadísticas de participación y éxito
-- **Análisis de Usuarios**: Comportamiento y patrones de uso
-- **Reportes de Pagos**: Análisis financiero y transacciones
-- **Dashboard Administrativo**: Panel de control para administradores
+## 🛠️ Stack Tecnológico
 
-### 💬 Sistema de Chat
-- **Chat en Tiempo Real**: Comunicación instantánea entre usuarios
-- **Salas de Chat**: Conversaciones grupales y privadas
-- **Notificaciones**: Alertas en tiempo real
-- **Historial de Mensajes**: Persistencia de conversaciones
-
-## 🛠️ Tecnologías Utilizadas
-
-### Backend (API Pura)
-- **Node.js** - Runtime de JavaScript
-- **Express.js** - Framework web
-- **TypeScript** - Lenguaje de programación tipado
+### **Backend Core**
+- **Node.js** (v18+) - Runtime de JavaScript
+- **Express.js** (v4.18+) - Framework web
+- **TypeScript** (v5+) - Tipado estático
 - **Firebase Firestore** - Base de datos NoSQL
-- **Firebase Admin SDK** - Integración con servicios de Firebase
-- **Socket.io** - Comunicación en tiempo real
+- **Firebase Admin SDK** - Autenticación y servicios
 
-### Autenticación y Seguridad
-- **JWT** - JSON Web Tokens
-- **Google OAuth 2.0** - Autenticación social
+### **Autenticación y Seguridad**
+- **JWT** (jsonwebtoken) - Tokens de autenticación
 - **bcrypt** - Hashing de contraseñas
+- **Google OAuth 2.0** - Autenticación social
+- **Helmet** - Headers de seguridad
 - **CORS** - Cross-Origin Resource Sharing
 
-### Almacenamiento y Archivos
-- **AWS S3 (iDrive E2)** - Almacenamiento de archivos
-- **Multer** - Middleware para subida de archivos
-- **Sharp** - Procesamiento de imágenes
-
-### Documentación y Testing
-- **Swagger/OpenAPI 3.0** - Documentación de API
+### **Validación y Sanitización**
 - **Joi** - Validación de esquemas
-- **Jest** - Framework de testing
-- **ESLint** - Linting de código
-- **Prettier** - Formateo de código
+- **Custom Validation Middleware** - Validación personalizada
+- **Input Sanitization** - Prevención XSS
+- **File Type Validation** - Validación de archivos
 
-### Pagos y Transacciones
-- **Stripe/PayPal Integration** - Procesamiento de pagos
-- **Validación de Tarjetas** - Verificación de métodos de pago
-- **Sistema de Facturación** - Generación de invoices
+### **Comunicación en Tiempo Real**
+- **Socket.IO** - WebSockets
+- **Push Notifications** - Notificaciones móviles
+- **Event Emitters** - Eventos internos
 
-### Geolocalización
-- **Algoritmo de Haversine** - Cálculo de distancias
-- **Google Maps API** - Geocodificación y rutas
-- **Índices Geoespaciales** - Búsqueda por proximidad
+### **Almacenamiento y Archivos**
+- **AWS S3 (iDrive E2)** - Almacenamiento de archivos
+- **Multer** - Middleware de subida de archivos
+- **Image Processing** - Procesamiento de imágenes
+
+### **Pagos y Transacciones**
+- **Stripe** - Procesamiento de pagos
+- **PayPal** - Pagos alternativos
+- **Invoice Generation** - Generación de facturas
+
+### **Geolocalización**
+- **Google Maps API** - Servicios de mapas
+- **Haversine Algorithm** - Cálculo de distancias
+- **Geocoding** - Conversión de direcciones
+
+### **Monitoreo y Logging**
+- **Custom Logger Service** - Sistema de logs
+- **Error Tracking** - Seguimiento de errores
+- **Performance Monitoring** - Monitoreo de rendimiento
 
 ## 📁 Estructura del Proyecto
 
 ```
-APP_MussikOn_Express/
-├── src/
-│   ├── config/                 # Configuraciones
-│   ├── controllers/            # Controladores de la API
-│   │   ├── adminController.ts
-│   │   ├── analyticsController.ts
-│   │   ├── authController.ts
-│   │   ├── authGoogleController.ts
-│   │   ├── chatController.ts
-│   │   ├── eventControllers.ts
-│   │   ├── geolocationController.ts
-│   │   ├── imagesController.ts
-│   │   ├── musicianProfileController.ts
-│   │   ├── musicianRequestController.ts
-│   │   ├── notificationController.ts
-│   │   ├── paymentController.ts
-│   │   ├── pushNotificationController.ts
-│   │   ├── registerAuthController.ts
-│   │   └── searchController.ts
-│   ├── middleware/             # Middlewares personalizados
-│   │   ├── adminOnly.ts
-│   │   ├── authMiddleware.ts
-│   │   ├── errorHandler.ts
-│   │   ├── requireRole.ts
-│   │   ├── uploadMiddleware.ts
-│   │   └── validationMiddleware.ts
-│   ├── models/                 # Modelos de datos
-│   │   ├── authModel.ts
-│   │   ├── chatModel.ts
-│   │   ├── eventModel.ts
-│   │   ├── imagesModel.ts
-│   │   └── musicianRequestModel.ts
-│   ├── routes/                 # Rutas de la API
-│   │   ├── adminRoutes.ts
-│   │   ├── analyticsRoutes.ts
-│   │   ├── authRoutes.ts
-│   │   ├── chatRoutes.ts
-│   │   ├── eventsRoutes.ts
-│   │   ├── geolocationRoutes.ts
-│   │   ├── imagesRoutes.ts
-│   │   ├── musicianProfileRoutes.ts
-│   │   ├── musicianRequestRoutes.ts
-│   │   ├── notificationRoutes.ts
-│   │   ├── paymentRoutes.ts
-│   │   ├── pushNotificationRoutes.ts
-│   │   ├── searchRoutes.ts
-│   │   └── superAdminRouter.ts
-│   ├── services/               # Servicios de negocio
-│   │   ├── analyticsService.ts
-│   │   ├── chatService.ts
-│   │   ├── geolocationService.ts
-│   │   ├── imageService.ts
-│   │   ├── loggerService.ts
-│   │   ├── paymentService.ts
-│   │   ├── pushNotificationService.ts
-│   │   └── searchService.ts
-│   ├── types/                  # Definiciones de tipos
-│   │   ├── dtos.ts
-│   │   ├── express.d.ts
-│   │   └── index.d.ts
-│   ├── utils/                  # Utilidades
-│   │   ├── DataTypes.ts
-│   │   ├── dtos.ts
-│   │   ├── firebase.ts
-│   │   ├── functions.ts
-│   │   ├── idriveE2.ts
-│   │   ├── jwt.ts
-│   │   ├── mailer.ts
-│   │   ├── socket.Io.ts
-│   │   └── validatios.ts
-│   └── sockets/                # WebSockets
-│       ├── chatSocket.ts
-│       └── eventSocket.ts
-├── docs/                       # Documentación completa
-├── functions/                  # Firebase Cloud Functions
-├── dist/                       # Código compilado
-├── public/                     # Archivos públicos
-├── index.ts                    # Punto de entrada
-├── package.json
-├── tsconfig.json
-└── README.md
+src/
+├── config/                 # Configuraciones
+│   └── ENV.ts             # Variables de entorno
+├── controllers/           # Controladores de la API
+│   ├── adminController.ts
+│   ├── analyticsController.ts
+│   ├── authController.ts
+│   ├── chatController.ts
+│   ├── eventControllers.ts
+│   ├── imagesController.ts
+│   ├── musicianProfileController.ts
+│   ├── musicianRequestController.ts
+│   ├── notificationController.ts
+│   ├── paymentController.ts
+│   ├── pushNotificationController.ts
+│   ├── registerAuthController.ts
+│   └── searchController.ts
+├── middleware/            # Middlewares personalizados
+│   ├── adminOnly.ts
+│   ├── authMiddleware.ts
+│   ├── errorHandler.ts
+│   ├── requireRole.ts
+│   ├── uploadMiddleware.ts
+│   └── validationMiddleware.ts
+├── models/               # Modelos de datos
+│   ├── authModel.ts
+│   ├── chatModel.ts
+│   ├── eventModel.ts
+│   ├── imagesModel.ts
+│   └── musicianRequestModel.ts
+├── routes/               # Rutas de la API
+│   ├── adminRoutes.ts
+│   ├── analyticsRoutes.ts
+│   ├── authRoutes.ts
+│   ├── chatRoutes.ts
+│   ├── eventsRoutes.ts
+│   ├── geolocationRoutes.ts
+│   ├── imagesRoutes.ts
+│   ├── musicianProfileRoutes.ts
+│   ├── musicianRequestRoutes.ts
+│   ├── notificationRoutes.ts
+│   ├── paymentRoutes.ts
+│   ├── pushNotificationRoutes.ts
+│   ├── searchRoutes.ts
+│   └── superAdminRouter.ts
+├── services/             # Servicios de negocio
+│   ├── analyticsService.ts
+│   ├── chatService.ts
+│   ├── geolocationService.ts
+│   ├── imageService.ts
+│   ├── loggerService.ts
+│   ├── paymentService.ts
+│   ├── pushNotificationService.ts
+│   └── searchService.ts
+├── sockets/              # Configuración de WebSockets
+│   ├── chatSocket.ts
+│   └── eventSocket.ts
+├── types/                # Definiciones de tipos TypeScript
+│   ├── dtos.ts
+│   ├── express.d.ts
+│   └── index.d.ts
+├── utils/                # Utilidades y helpers
+│   ├── DataTypes.ts
+│   ├── dtos.ts
+│   ├── firebase.ts
+│   ├── functions.ts
+│   ├── idriveE2.ts
+│   ├── jwt.ts
+│   ├── mailer.ts
+│   ├── socket.Io.ts
+│   ├── validatios.ts
+│   ├── validationSchemas.ts
+│   └── applyValidations.ts
+└── index.ts              # Punto de entrada de la aplicación
 ```
-
-> **🧹 Limpieza Completada**: Se eliminaron todos los directorios y archivos relacionados con React/React Native:
-> - ❌ `src/components/` - Componentes de React
-> - ❌ `src/hooks/` - Hooks de React  
-> - ❌ `src/appTypes/` - Tipos específicos de React
-> - ❌ `src/screens/` - Pantallas de React Native
 
 ## 🚀 Instalación y Configuración
 
-### Prerrequisitos
-- Node.js (v16 o superior)
+### **Prerrequisitos**
+- Node.js (v18 o superior)
 - npm o yarn
-- Firebase CLI
 - Cuenta de Firebase
 - Cuenta de AWS S3 (iDrive E2)
+- Cuenta de Stripe (opcional)
+- Cuenta de Google Cloud (opcional)
 
-### 1. Clonar el repositorio
+### **Instalación**
+
+1. **Clonar el repositorio**
 ```bash
 git clone <repository-url>
 cd APP_MussikOn_Express
 ```
 
-### 2. Instalar dependencias
+2. **Instalar dependencias**
 ```bash
 npm install
 ```
 
-### 3. Configurar variables de entorno
+3. **Configurar variables de entorno**
 ```bash
 cp ENV_example.ts ENV.ts
 # Editar ENV.ts con tus credenciales
 ```
 
-### 4. Configurar Firebase
+4. **Configurar Firebase**
 ```bash
-firebase login
-firebase init
+# Descargar service account key de Firebase Console
+# Colocar en la raíz del proyecto como 'serviceAccountKey.json'
 ```
 
-### 5. Compilar el proyecto
-```bash
-npm run build
-```
-
-### 6. Ejecutar en desarrollo
+5. **Ejecutar en desarrollo**
 ```bash
 npm run dev
 ```
 
+6. **Ejecutar en producción**
+```bash
+npm run build
+npm start
+```
+
 ## 📚 Documentación Completa
 
-### 🔍 [Documentación Principal](./docs/README.md)
-Documentación completa y organizada con navegación clara y búsqueda funcional.
+### **📖 Guías de Instalación y Configuración**
+- [Guía de Instalación](docs/guides/installation.md) - Instalación paso a paso
+- [Guía de Configuración](docs/guides/configuration.md) - Configuración de servicios
+- [Guía de Desarrollo](docs/development/) - Desarrollo y contribución
 
-### 📖 Guías Rápidas
-- [🚀 Instalación](./docs/guides/installation.md) - Configuración en 5 minutos
-- [🔧 Configuración](./docs/guides/configuration.md) - Configuración completa de servicios
-- [🎨 Integración Frontend](./docs/guides/frontend-integration.md) - Guías de integración
+### **🔌 APIs y Endpoints**
+- [Autenticación](docs/api/authentication.md) - JWT, OAuth, RBAC
+- [Eventos](docs/api/events.md) - Gestión de eventos musicales
+- [Solicitudes de Músicos](docs/api/musician-requests.md) - Workflow de solicitudes
+- [Búsqueda](docs/api/search.md) - Sistema de búsqueda avanzado
+- [Analytics](docs/api/analytics.md) - Métricas y reportes
+- [Imágenes](docs/api/images.md) - Gestión de archivos multimedia
+- [Notificaciones Push](docs/api/push-notifications.md) - Sistema de notificaciones
 
-### 🔧 APIs Específicas
-- [🔐 Autenticación](./docs/api/authentication.md) - JWT, OAuth, roles
-- [🎵 Eventos](./docs/api/events.md) - CRUD de eventos musicales
-- [💰 Pagos](./docs/api/payments.md) - Stripe, facturación
-- [📍 Geolocalización](./docs/api/geolocation.md) - Búsqueda por proximidad
-- [🔍 Búsqueda](./docs/api/search.md) - Búsqueda avanzada
-- [📊 Analytics](./docs/api/analytics.md) - Métricas y reportes
+### **🔒 Seguridad y Validación**
+- [Sistema de Validación](docs/validation/overview.md) - Validación exhaustiva
+- [Guía de Seguridad](docs/security/) - Mejores prácticas de seguridad
+- [Middleware de Validación](docs/validation/middleware.md) - Validación personalizada
 
-### 🛠️ Desarrollo
-- [🏗️ Arquitectura](./docs/development/architecture.md) - Estructura del proyecto
-- [🧪 Testing](./docs/development/testing.md) - Tests y debugging
-- [📝 Documentación](./docs/development/api-documentation.md) - Swagger y ReDoc
+### **🚀 Despliegue y Producción**
+- [Guía de Despliegue](docs/deployment/) - Despliegue en producción
+- [Configuración de Producción](docs/deployment/production.md) - Optimizaciones
+- [Monitoreo](docs/system/monitoring.md) - Monitoreo y logs
 
-### 🚀 Despliegue
-- [☁️ Firebase](./docs/deployment/firebase.md) - Despliegue en Firebase
-- [📊 Monitoreo](./docs/deployment/monitoring.md) - Logs y métricas
-
-### 🔒 Seguridad
-- [🛡️ Autenticación](./docs/security/authentication.md) - JWT y OAuth
-- [🔒 Validación](./docs/validation/overview.md) - Sistema de validación
-
-### 📱 Documentación Interactiva
-- **Swagger UI**: `http://localhost:3001/api-docs`
-- **ReDoc**: `http://localhost:3001/redoc`
-
-### Endpoints Principales
-
-#### 🔐 Autenticación
-- `POST /auth/register` - Registro de usuarios
-- `POST /auth/login` - Inicio de sesión
-- `POST /auth/google` - Autenticación con Google
-- `POST /auth/refresh` - Renovar token
-
-#### 🎯 Eventos
-- `GET /events` - Listar eventos
-- `POST /events` - Crear evento
-- `GET /events/:id` - Obtener evento
-- `PUT /events/:id` - Actualizar evento
-- `DELETE /events/:id` - Eliminar evento
-
-#### 💰 Pagos
-- `POST /payments/methods` - Crear método de pago
-- `GET /payments/methods` - Listar métodos de pago
-- `POST /payments/intents` - Crear intent de pago
-- `POST /payments/process` - Procesar pago
-- `POST /payments/invoices` - Crear factura
-- `GET /payments/stats` - Estadísticas de pagos
-
-#### 📍 Geolocalización
-- `GET /geolocation/search` - Búsqueda por proximidad
-- `GET /geolocation/nearby-events` - Eventos cercanos
-- `GET /geolocation/nearby-musicians` - Músicos cercanos
-- `POST /geolocation/optimize-route` - Optimizar ruta
-- `POST /geolocation/geocode` - Geocodificar dirección
-
-#### 🔍 Búsqueda
-- `GET /search/events` - Búsqueda de eventos
-- `GET /search/musician-requests` - Búsqueda de solicitudes
-- `GET /search/users` - Búsqueda de usuarios
-- `GET /search/global` - Búsqueda global
-- `GET /search/location` - Búsqueda por ubicación
+### **🛠️ Solución de Problemas**
+- [Guía de Troubleshooting](docs/troubleshooting.md) - Problemas comunes
+- [Logs y Debugging](docs/development/debugging.md) - Debugging avanzado
 
 ## 🔧 Scripts Disponibles
 
 ```bash
 # Desarrollo
-npm run dev          # Ejecutar en modo desarrollo
-npm run start        # Ejecutar en producción
-
-# Construcción
+npm run dev          # Servidor de desarrollo con hot reload
 npm run build        # Compilar TypeScript
-npm run clean        # Limpiar archivos compilados
+npm run start        # Servidor de producción
+
+# Linting y Formateo
+npm run lint         # Ejecutar ESLint
+npm run lint:fix     # Corregir errores de linting automáticamente
+npm run format       # Formatear código con Prettier
 
 # Testing
 npm run test         # Ejecutar tests
 npm run test:watch   # Tests en modo watch
+npm run test:coverage # Tests con cobertura
 
-# Linting
-npm run lint         # Verificar código
-npm run lint:fix     # Corregir problemas de linting
-
-# Formateo
-npm run format       # Formatear código con Prettier
+# Utilidades
+npm run clean        # Limpiar archivos generados
+npm run docs         # Generar documentación
 ```
+
+## 🔍 Sistema de Búsqueda
+
+### **Características**
+- **Búsqueda Global**: Búsqueda unificada en todas las colecciones
+- **Filtros Avanzados**: Por tipo, estado, fecha, ubicación, etc.
+- **Búsqueda Geográfica**: Por proximidad usando algoritmos de distancia
+- **Búsqueda de Disponibilidad**: Músicos disponibles para eventos
+- **Validación Robusta**: Manejo seguro de datos inconsistentes
+
+### **Endpoints Principales**
+```typescript
+GET /api/search/global          // Búsqueda global
+GET /api/search/events          // Búsqueda de eventos
+GET /api/search/users           // Búsqueda de usuarios
+GET /api/search/musician-requests // Búsqueda de solicitudes
+GET /api/search/location        // Búsqueda por ubicación
+```
+
+## 🔐 Sistema de Validación
+
+### **Características**
+- **Validación de Esquemas**: Joi schemas para todos los endpoints
+- **Sanitización de Input**: Prevención de XSS y inyección
+- **Validación de Archivos**: Tipos, tamaños, contenido
+- **Validación Geográfica**: Coordenadas y rangos de ubicación
+- **Validación de Pagos**: Montos, divisas, métodos de pago
+
+### **Middleware de Validación**
+```typescript
+// Ejemplo de uso
+app.post('/api/events', 
+  validate(createEventSchema),
+  validateFile('image', ['jpg', 'png'], 5 * 1024 * 1024),
+  eventController.createEvent
+);
+```
+
+## 📊 Analytics y Métricas
+
+### **Métricas Disponibles**
+- **Eventos**: Creación, participación, tendencias
+- **Usuarios**: Registro, actividad, roles
+- **Solicitudes**: Estado, asignación, completitud
+- **Plataforma**: Uso general, rendimiento, errores
+
+### **Exportación de Datos**
+- **CSV**: Para análisis en Excel/Google Sheets
+- **JSON**: Para integración con otras APIs
+- **Filtros Avanzados**: Por fecha, tipo, usuario, etc.
 
 ## 🚀 Despliegue
 
-### Firebase Cloud Functions
+### **Entornos Soportados**
+- **Desarrollo Local**: Node.js con hot reload
+- **Docker**: Contenedores para desarrollo y producción
+- **Firebase Functions**: Serverless deployment
+- **VPS/Cloud**: Despliegue tradicional con PM2
+
+### **Variables de Entorno Requeridas**
 ```bash
-# Desplegar funciones
-firebase deploy --only functions
+# Firebase
+FIREBASE_PROJECT_ID=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_CLIENT_EMAIL=
 
-# Desplegar hosting
-firebase deploy --only hosting
-```
+# AWS S3 (iDrive E2)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_BUCKET_NAME=
 
-### Variables de Entorno Requeridas
+# JWT
+JWT_SECRET=
+JWT_REFRESH_SECRET=
 
-```typescript
-// ENV.ts
-export const ENV = {
-  // Firebase
-  FIREBASE_PROJECT_ID: 'your-project-id',
-  FIREBASE_PRIVATE_KEY: 'your-private-key',
-  FIREBASE_CLIENT_EMAIL: 'your-client-email',
-  
-  // JWT
-  JWT_SECRET: 'your-jwt-secret',
-  JWT_EXPIRES_IN: '24h',
-  
-  // AWS S3
-  AWS_ACCESS_KEY_ID: 'your-access-key',
-  AWS_SECRET_ACCESS_KEY: 'your-secret-key',
-  AWS_REGION: 'your-region',
-  AWS_BUCKET_NAME: 'your-bucket-name',
-  
-  // Google OAuth
-  GOOGLE_CLIENT_ID: 'your-google-client-id',
-  GOOGLE_CLIENT_SECRET: 'your-google-client-secret',
-  
-  // Stripe (para pagos)
-  STRIPE_SECRET_KEY: 'your-stripe-secret-key',
-  STRIPE_PUBLISHABLE_KEY: 'your-stripe-publishable-key',
-  
-  // Google Maps (para geolocalización)
-  GOOGLE_MAPS_API_KEY: 'your-google-maps-api-key',
-  
-  // Servidor
-  PORT: 3001,
-  NODE_ENV: 'development'
-};
+# Google OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Stripe (opcional)
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Email
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASS=
 ```
 
 ## 🤝 Contribución
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+### **Proceso de Contribución**
+1. Fork del repositorio
+2. Crear rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -am 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
+
+### **Estándares de Código**
+- **TypeScript**: Tipado estricto obligatorio
+- **ESLint**: Reglas de linting configuradas
+- **Prettier**: Formateo automático de código
+- **Tests**: Cobertura mínima del 80%
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## 📞 Contacto
 
-- **Desarrollador**: Jefry Agustin Astacio Sanchez
-- **Email**: jesanchez@DCTIC.GC
-- **Proyecto**: [MussikOn API](https://github.com/your-username/APP_MussikOn_Express)
+- **Desarrollador**: Equipo MussikOn
+- **Email**: contacto@mussikon.com
+- **Documentación**: [docs/](docs/)
+- **Issues**: [GitHub Issues](https://github.com/mussikon/api/issues)
 
-## 🎯 Roadmap
+## 🔄 Estado del Proyecto
 
-### ✅ Completado
-- [x] Sistema de autenticación JWT
-- [x] CRUD de eventos
-- [x] Gestión de usuarios y roles
-- [x] Sistema de solicitudes de músicos
-- [x] Subida y gestión de imágenes
-- [x] Documentación Swagger
-- [x] Sistema de chat en tiempo real
-- [x] Búsqueda avanzada
+### **✅ Funcionalidades Completadas**
+- [x] Sistema de autenticación JWT + OAuth
+- [x] API RESTful completa
+- [x] Sistema de búsqueda avanzado
+- [x] Validación exhaustiva de datos
+- [x] Sistema de notificaciones push
 - [x] Analytics y reportes
+- [x] Gestión de archivos multimedia
+- [x] WebSockets para tiempo real
+- [x] Sistema de pagos integrado
 - [x] Geolocalización avanzada
-- [x] Sistema de pagos completo
-- [x] **Limpieza completa de código React** 🧹
-- [x] **API backend pura** ✅
 
-### 🔄 En Desarrollo
-- [ ] Optimización de performance
+### **🚧 En Desarrollo**
 - [ ] Tests unitarios completos
-- [ ] Integración con más gateways de pago
-- [ ] Documentación de API mejorada
+- [ ] Documentación de API con Swagger
+- [ ] Optimizaciones de rendimiento
+- [ ] Cache layer con Redis
 
-### 📋 Próximas Funcionalidades
-- [ ] Sistema de calificaciones y reseñas
+### **📋 Roadmap**
+- [ ] Microservicios architecture
+- [ ] GraphQL API
+- [ ] Machine Learning para recomendaciones
 - [ ] Integración con redes sociales
-- [ ] Dashboard de analytics avanzado
-- [ ] API para aplicaciones móviles
-- [ ] Sistema de recomendaciones IA
+- [ ] Sistema de streaming de audio
 
 ---
 
-**🎵 Conectando músicos con el mundo, una nota a la vez.**
+**Versión**: 2.0.0  
+**Última Actualización**: Diciembre 2024  
+**Estado**: ✅ Producción Ready
 

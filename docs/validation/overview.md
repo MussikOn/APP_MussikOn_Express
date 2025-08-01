@@ -1,741 +1,746 @@
-# 🔒 Sistema de Validación Completo - MussikOn API
+# 🛡️ Sistema de Validación - MussikOn API
 
-## 📋 Resumen
+## 📋 Descripción General
 
-Se ha implementado un sistema de validación completo y robusto para todos los endpoints de la API MussikOn. Este sistema incluye:
+El Sistema de Validación de MussikOn API proporciona una capa robusta de validación y sanitización de datos para todos los endpoints. Implementa validación de esquemas con Joi, sanitización de entrada, validación de archivos, y manejo seguro de datos inconsistentes de Firestore.
 
-- ✅ **Validación de entrada** con Joi
-- ✅ **Sanitización de datos** automática
-- ✅ **Validación de archivos** estricta
-- ✅ **Manejo de errores** detallado
-- ✅ **Logging** de validaciones
-- ✅ **Mensajes de error** personalizados
+## 🚀 Características Principales
 
-## 🏗️ Arquitectura del Sistema
+### **🔍 Validación de Esquemas**
+- **Joi Schemas**: Validación completa de tipos y formatos
+- **Custom Validators**: Validadores personalizados para casos específicos
+- **Error Messages**: Mensajes de error detallados y localizados
+- **Nested Validation**: Validación de objetos anidados complejos
 
-### Componentes Principales
+### **🧹 Sanitización de Input**
+- **XSS Prevention**: Prevención de ataques de cross-site scripting
+- **SQL Injection Protection**: Protección contra inyección de código
+- **Input Cleaning**: Limpieza automática de datos de entrada
+- **Type Conversion**: Conversión segura de tipos de datos
 
-1. **Middleware de Validación** (`src/middleware/validationMiddleware.ts`)
-2. **Esquemas de Validación** (`src/utils/validationSchemas.ts`)
-3. **Funciones de Sanitización**
-4. **Manejo de Errores**
+### **📁 Validación de Archivos**
+- **File Type Validation**: Validación de tipos MIME
+- **Size Limits**: Límites de tamaño configurables
+- **Content Analysis**: Análisis de contenido de archivos
+- **Virus Scanning**: Escaneo de malware (opcional)
 
-### Flujo de Validación
+### **🛡️ Seguridad Avanzada**
+- **Rate Limiting**: Limitación de velocidad de requests
+- **Input Length Limits**: Límites de longitud de entrada
+- **Special Character Filtering**: Filtrado de caracteres especiales
+- **Encoding Validation**: Validación de codificación
+
+## 📊 Arquitectura del Sistema
+
+### **Componentes Principales**
 
 ```
-Request → Sanitización → Validación Joi → Middleware → Controller
-    ↓           ↓              ↓              ↓           ↓
-  Raw Data → Clean Data → Validated Data → Processed → Response
+src/middleware/validationMiddleware.ts    # Middleware principal
+src/utils/validationSchemas.ts           # Esquemas Joi
+src/utils/applyValidations.ts            # Aplicación de validaciones
+src/middleware/errorHandler.ts           # Manejo de errores
 ```
 
-## 🔧 Middleware de Validación
-
-### Funciones Principales
-
-#### `validate(schema, property, options)`
-Valida y sanitiza datos usando esquemas Joi.
+### **Flujo de Validación**
 
 ```typescript
-// Ejemplo de uso
-router.post('/register', 
-  validate(registerSchema),
-  registerController
-);
+Request → Validation Middleware → Schema Validation → Sanitization → Controller
+    ↓
+Error Handler ← Custom Validation ← Type Checking ← Input Cleaning
 ```
 
-#### `validateId()`
-Valida IDs de Firestore con sanitización.
+## 🔧 Implementación Técnica
+
+### **Middleware Principal**
 
 ```typescript
-// Ejemplo de uso
-router.get('/user/:id', 
-  validateId,
-  getUserController
-);
-```
+// src/middleware/validationMiddleware.ts
+export const validate = (schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const { error, value } = schema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+      allowUnknown: false
+    });
 
-#### `validateFile(allowedTypes, maxSize)`
-Valida archivos con tipos y tamaños específicos.
+    if (error) {
+      const validationErrors = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message,
+        type: detail.type
+      }));
 
-```typescript
-// Ejemplo de uso
-router.post('/upload', 
-  upload.single('file'),
-  validateFile(['image/jpeg', 'image/png'], 5 * 1024 * 1024),
-  uploadController
-);
-```
-
-#### `validateCoordinates()`
-Valida coordenadas geográficas.
-
-```typescript
-// Ejemplo de uso
-router.get('/nearby', 
-  validateCoordinates,
-  getNearbyController
-);
-```
-
-#### `validateDateRange()`
-Valida rangos de fechas.
-
-```typescript
-// Ejemplo de uso
-router.get('/events', 
-  validateDateRange,
-  getEventsController
-);
-```
-
-#### `validatePriceRange()`
-Valida rangos de precios.
-
-```typescript
-// Ejemplo de uso
-router.get('/search', 
-  validatePriceRange,
-  searchController
-);
-```
-
-#### `validateUserRole(allowedRoles)`
-Valida roles de usuario.
-
-```typescript
-// Ejemplo de uso
-router.get('/admin', 
-  authMiddleware,
-  validateUserRole(['admin', 'superAdmin']),
-  adminController
-);
-```
-
-#### `validateQueryLimit(maxLimit)`
-Valida límites de consulta.
-
-```typescript
-// Ejemplo de uso
-router.get('/list', 
-  validateQueryLimit(50),
-  listController
-);
-```
-
-#### `validateSearchQuery()`
-Valida términos de búsqueda.
-
-```typescript
-// Ejemplo de uso
-router.get('/search', 
-  validateSearchQuery,
-  searchController
-);
-```
-
-## 🛡️ Sanitización de Datos
-
-### Función `sanitizeInput(data)`
-
-Elimina caracteres peligrosos y normaliza datos:
-
-```typescript
-// Caracteres eliminados
-- < > (tags HTML)
-- javascript: (protocolos peligrosos)
-- on* (event handlers)
-- <script> tags
-- Espacios múltiples
-- Caracteres de control
-```
-
-### Ejemplos de Sanitización
-
-```typescript
-// Entrada
-"<script>alert('xss')</script>  Hola   Mundo"
-
-// Salida
-"Hola Mundo"
-```
-
-## 📝 Esquemas de Validación
-
-### Autenticación
-
-#### `registerSchema`
-```typescript
-{
-  name: string (2-50 chars, solo letras y espacios)
-  lastName: string (2-50 chars, solo letras y espacios)
-  userEmail: string (email válido, max 100 chars)
-  userPassword: string (8-128 chars, patrón complejo)
-  roll: string (roles permitidos)
-}
-```
-
-#### `loginSchema`
-```typescript
-{
-  userEmail: string (email válido)
-  userPassword: string (requerido)
-}
-```
-
-#### `updateUserSchema`
-```typescript
-{
-  name: string (opcional, 2-50 chars)
-  lastName: string (opcional, 2-50 chars)
-  userPassword: string (opcional, patrón complejo)
-}
-```
-
-### Eventos
-
-#### `createEventSchema`
-```typescript
-{
-  eventName: string (3-100 chars)
-  eventType: string (tipos permitidos)
-  date: date (futura)
-  time: string (formato HH:MM)
-  location: string (5-200 chars)
-  duration: string (formato "Xh Ym")
-  instrument: string (instrumentos permitidos)
-  bringInstrument: boolean
-  comment: string (max 500 chars, opcional)
-  budget: string (número válido)
-  flyerUrl: string (URL válida, opcional)
-  songs: array (max 20 items, opcional)
-  recommendations: array (max 10 items, opcional)
-  mapsLink: string (URL válida, opcional)
-}
-```
-
-#### `updateEventSchema`
-Similar a `createEventSchema` pero todos los campos son opcionales.
-
-### Solicitudes de Músicos
-
-#### `createMusicianRequestSchema`
-```typescript
-{
-  eventType: string (tipos permitidos)
-  date: date (futura)
-  time: string (formato HH:MM)
-  location: string (5-200 chars)
-  instrument: string (instrumentos permitidos)
-  budget: number (0-999999)
-  comments: string (max 500 chars, opcional)
-}
-```
-
-### Chat
-
-#### `sendMessageSchema`
-```typescript
-{
-  conversationId: string (1-1500 chars)
-  content: string (1-1000 chars)
-  type: string (tipos permitidos)
-  metadata: object (opcional)
-}
-```
-
-#### `createConversationSchema`
-```typescript
-{
-  participants: array (2-10 emails)
-  title: string (1-100 chars, opcional)
-  type: string (private/group)
-}
-```
-
-### Pagos
-
-#### `createPaymentMethodSchema`
-```typescript
-{
-  type: string (tipos permitidos)
-  cardNumber: string (13-19 dígitos, solo para tarjetas)
-  expiryMonth: number (1-12, solo para tarjetas)
-  expiryYear: number (futuro, solo para tarjetas)
-  cvc: string (3-4 dígitos, solo para tarjetas)
-  billingAddress: object (requerido para tarjetas)
-}
-```
-
-#### `createPaymentIntentSchema`
-```typescript
-{
-  amount: number (0.01-999999.99)
-  currency: string (EUR/USD/GBP)
-  description: string (1-255 chars)
-  metadata: object (opcional)
-}
-```
-
-### Búsqueda
-
-#### `searchEventsSchema`
-```typescript
-{
-  query: string (1-100 chars, opcional)
-  status: string (estados permitidos, opcional)
-  eventType: string (tipos permitidos, opcional)
-  instrument: string (instrumentos permitidos, opcional)
-  dateFrom: date (opcional)
-  dateTo: date (posterior a dateFrom, opcional)
-  location: string (1-200 chars, opcional)
-  budget: number (0-999999, opcional)
-  budgetMax: number (>= budget, opcional)
-  limit: number (1-50, default 20)
-  offset: number (>= 0, default 0)
-  sortBy: string (campos permitidos, default 'date')
-  sortOrder: string (asc/desc, default 'asc')
-}
-```
-
-### Geolocalización
-
-#### `coordinatesSchema`
-```typescript
-{
-  latitude: number (-90 a 90)
-  longitude: number (-180 a 180)
-}
-```
-
-#### `geocodeAddressSchema`
-```typescript
-{
-  address: string (5-500 chars)
-  country: string (2-50 chars, opcional)
-}
-```
-
-#### `optimizeRouteSchema`
-```typescript
-{
-  waypoints: array (2-25 coordenadas)
-  mode: string (tipos permitidos, default 'driving')
-  avoid: array (elementos a evitar, opcional)
-}
-```
-
-### Administración
-
-#### `createAdminSchema`
-```typescript
-{
-  name: string (2-50 chars, solo letras)
-  lastName: string (2-50 chars, solo letras)
-  userEmail: string (email válido, max 100 chars)
-  userPassword: string (8-128 chars, patrón complejo)
-  roll: string (roles admin permitidos)
-}
-```
-
-#### `updateAdminSchema`
-Similar a `createAdminSchema` pero todos los campos son opcionales.
-
-### Notificaciones Push
-
-#### `pushSubscriptionSchema`
-```typescript
-{
-  endpoint: string (URL válida)
-  keys: {
-    p256dh: string (requerido)
-    auth: string (requerido)
-  }
-  isActive: boolean (default true)
-}
-```
-
-#### `notificationTemplateSchema`
-```typescript
-{
-  name: string (1-100 chars)
-  title: string (1-100 chars)
-  body: string (1-500 chars)
-  icon: string (URL válida, opcional)
-  badge: string (URL válida, opcional)
-  tag: string (1-50 chars, opcional)
-  data: object (opcional)
-  category: string (1-50 chars)
-  type: string (1-50 chars)
-  isActive: boolean (default true)
-}
-```
-
-## 🚨 Manejo de Errores
-
-### Estructura de Error
-
-```typescript
-{
-  success: false,
-  message: "Datos de entrada inválidos",
-  errors: [
-    {
-      field: "userEmail",
-      message: "El email debe tener un formato válido",
-      value: "invalid-email",
-      type: "string.email"
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        details: validationErrors
+      });
     }
-  ],
-  timestamp: "2024-01-01T12:00:00.000Z",
-  path: "/auth/register"
-}
-```
 
-### Tipos de Error
-
-1. **Validación de Campos**: Errores específicos por campo
-2. **Sanitización**: Datos peligrosos detectados
-3. **Archivos**: Tipos o tamaños no permitidos
-4. **Autenticación**: Tokens o permisos inválidos
-5. **Autorización**: Roles insuficientes
-
-### Logging de Errores
-
-```typescript
-logger.warn('Validación fallida', {
-  userId: req.user?.userId,
-  endpoint: req.originalUrl,
-  method: req.method,
-  errors: result.errors
-});
-```
-
-## 📊 Validación de Archivos
-
-### Tipos Permitidos
-
-```typescript
-// Imágenes
-['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-
-// Documentos
-['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-
-// Audio
-['audio/mpeg', 'audio/wav', 'audio/ogg']
-```
-
-### Validaciones Implementadas
-
-1. **Tipo MIME**: Verificación del tipo real del archivo
-2. **Tamaño**: Límites configurables por endpoint
-3. **Nombre**: Sanitización y validación de longitud
-4. **Extensión**: Verificación de extensión permitida
-5. **Contenido**: Análisis básico del contenido
-
-### Ejemplo de Uso
-
-```typescript
-router.post('/upload-profile', 
-  upload.single('image'),
-  validateFile(
-    ['image/jpeg', 'image/png'], 
-    5 * 1024 * 1024 // 5MB
-  ),
-  uploadProfileController
-);
-```
-
-## 🔍 Validación de Búsqueda
-
-### Sanitización de Queries
-
-```typescript
-// Caracteres peligrosos eliminados
-- < > " ' & (caracteres HTML)
-- javascript: (protocolos)
-- on* (event handlers)
-- <script> tags
-```
-
-### Límites de Búsqueda
-
-```typescript
-// Término de búsqueda
-- Mínimo: 1 carácter
-- Máximo: 100 caracteres
-
-// Resultados
-- Límite por defecto: 20
-- Límite máximo: 50
-- Offset máximo: 1000
-```
-
-## 🗺️ Validación Geográfica
-
-### Coordenadas
-
-```typescript
-// Latitud: -90 a 90
-// Longitud: -180 a 180
-// Radio: 0.1 a 100 km
-```
-
-### Direcciones
-
-```typescript
-// Longitud mínima: 5 caracteres
-// Longitud máxima: 500 caracteres
-// Sanitización de caracteres especiales
-```
-
-## 💰 Validación de Pagos
-
-### Tarjetas de Crédito
-
-```typescript
-// Número: 13-19 dígitos
-// Mes: 1-12
-// Año: Actual + hasta 20 años
-// CVC: 3-4 dígitos
-// Validación Luhn (algoritmo)
-```
-
-### Montos
-
-```typescript
-// Mínimo: 0.01
-// Máximo: 999,999.99
-// Monedas: EUR, USD, GBP
-```
-
-## 📈 Métricas de Validación
-
-### Logging
-
-```typescript
-// Validaciones exitosas
-logger.debug('Validación exitosa', {
-  userId: req.user?.userId,
-  endpoint: req.originalUrl,
-  method: req.method
-});
-
-// Validaciones fallidas
-logger.warn('Validación fallida', {
-  userId: req.user?.userId,
-  endpoint: req.originalUrl,
-  method: req.method,
-  errors: result.errors
-});
-```
-
-### Estadísticas
-
-- **Tasa de éxito**: 95%+
-- **Errores más comunes**: 
-  - Email inválido (30%)
-  - Contraseña débil (25%)
-  - Campos requeridos faltantes (20%)
-  - Tipos de archivo no permitidos (15%)
-  - Otros (10%)
-
-## 🚀 Implementación en Rutas
-
-### Ejemplo Completo
-
-```typescript
-import { 
-  validate, 
-  validateId, 
-  validateFile,
-  validateCoordinates 
-} from '../middleware/validationMiddleware';
-import { 
-  createEventSchema, 
-  updateEventSchema 
-} from '../utils/validationSchemas';
-
-// Crear evento
-router.post('/events',
-  authMiddleware,
-  validate(createEventSchema),
-  createEventController
-);
-
-// Actualizar evento
-router.put('/events/:id',
-  authMiddleware,
-  validateId,
-  validate(updateEventSchema),
-  updateEventController
-);
-
-// Subir imagen de evento
-router.post('/events/:id/image',
-  authMiddleware,
-  validateId,
-  upload.single('image'),
-  validateFile(['image/jpeg', 'image/png'], 10 * 1024 * 1024),
-  uploadEventImageController
-);
-
-// Buscar eventos cercanos
-router.get('/events/nearby',
-  validateCoordinates,
-  getNearbyEventsController
-);
-```
-
-## 🔧 Configuración
-
-### Variables de Entorno
-
-```typescript
-// Límites de archivo
-MAX_FILE_SIZE=10485760 // 10MB
-ALLOWED_IMAGE_TYPES=image/jpeg,image/png,image/gif
-ALLOWED_DOCUMENT_TYPES=application/pdf,application/msword
-
-// Límites de búsqueda
-MAX_SEARCH_LENGTH=100
-MAX_SEARCH_RESULTS=50
-MAX_SEARCH_OFFSET=1000
-
-// Límites de paginación
-MAX_PAGE_SIZE=100
-DEFAULT_PAGE_SIZE=10
-```
-
-### Personalización
-
-```typescript
-// Esquemas personalizados
-const customSchema = Joi.object({
-  // ... campos personalizados
-}).messages({
-  // ... mensajes personalizados
-});
-
-// Middleware personalizado
-const customValidation = (req, res, next) => {
-  // ... lógica personalizada
+    // Sanitizar datos
+    req.body = sanitizeInput(value);
+    next();
+  };
 };
 ```
 
-## 📚 Mejores Prácticas
+### **Esquemas de Validación**
 
-### 1. Siempre Validar Entrada
 ```typescript
-// ✅ Correcto
-router.post('/data', validate(schema), controller);
-
-// ❌ Incorrecto
-router.post('/data', controller);
-```
-
-### 2. Usar Esquemas Específicos
-```typescript
-// ✅ Correcto
-const userSchema = Joi.object({
-  name: Joi.string().min(2).max(50).required()
-});
-
-// ❌ Incorrecto
-const genericSchema = Joi.object().unknown();
-```
-
-### 3. Sanitizar Datos
-```typescript
-// ✅ Automático con middleware
-validate(schema) // Incluye sanitización
-
-// ❌ Manual (propenso a errores)
-req.body.name = req.body.name.replace(/[<>]/g, '');
-```
-
-### 4. Logging Detallado
-```typescript
-// ✅ Correcto
-logger.warn('Validación fallida', {
-  userId: req.user?.userId,
-  endpoint: req.originalUrl,
-  errors: result.errors
-});
-
-// ❌ Incorrecto
-console.log('Error de validación');
-```
-
-### 5. Mensajes de Error Claros
-```typescript
-// ✅ Correcto
-.messages({
-  'string.email': 'El email debe tener un formato válido',
-  'any.required': 'El campo es requerido'
-});
-
-// ❌ Incorrecto
-.messages({
-  'string.email': 'Invalid email'
+// src/utils/validationSchemas.ts
+export const createEventSchema = Joi.object({
+  eventName: Joi.string()
+    .min(3)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'El nombre del evento debe tener al menos 3 caracteres',
+      'string.max': 'El nombre del evento no puede exceder 100 caracteres',
+      'any.required': 'El nombre del evento es obligatorio'
+    }),
+  
+  eventType: Joi.string()
+    .valid('boda', 'concierto', 'fiesta', 'evento_corporativo')
+    .required(),
+  
+  date: Joi.date()
+    .greater('now')
+    .required(),
+  
+  location: Joi.string()
+    .min(5)
+    .max(200)
+    .required(),
+  
+  budget: Joi.number()
+    .positive()
+    .min(1000)
+    .max(1000000)
+    .required(),
+  
+  description: Joi.string()
+    .max(1000)
+    .optional(),
+  
+  instrument: Joi.string()
+    .valid('piano', 'guitarra', 'bajo', 'bateria', 'saxofon', 'violin')
+    .required()
 });
 ```
 
-## 🎯 Beneficios del Sistema
+### **Sanitización de Input**
 
-### Seguridad
-- ✅ Prevención de XSS
-- ✅ Validación de tipos de archivo
-- ✅ Sanitización automática
-- ✅ Protección contra inyección
+```typescript
+// Función de sanitización
+export const sanitizeInput = (data: any): any => {
+  if (typeof data === 'string') {
+    return data
+      .trim()
+      .replace(/[<>]/g, '') // Prevenir XSS básico
+      .replace(/\s+/g, ' '); // Normalizar espacios
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(sanitizeInput);
+  }
+  
+  if (typeof data === 'object' && data !== null) {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitized[key] = sanitizeInput(value);
+    }
+    return sanitized;
+  }
+  
+  return data;
+};
+```
 
-### Calidad de Datos
-- ✅ Consistencia en la base de datos
-- ✅ Validación en tiempo real
-- ✅ Mensajes de error claros
-- ✅ Logging detallado
+## 🔌 Middlewares Especializados
 
-### Mantenibilidad
-- ✅ Código reutilizable
-- ✅ Esquemas centralizados
-- ✅ Fácil testing
-- ✅ Documentación clara
+### **1. Validación de Archivos**
 
-### Performance
-- ✅ Validación temprana
-- ✅ Rechazo de datos inválidos
-- ✅ Reducción de errores en BD
-- ✅ Logging optimizado
+```typescript
+export const validateFile = (
+  fieldName: string,
+  allowedTypes: string[],
+  maxSize: number
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const file = req.file || req.files?.[fieldName];
+    
+    if (!file) {
+      return next();
+    }
+    
+    // Validar tipo de archivo
+    if (file.mimetype && !allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid file type',
+        allowedTypes,
+        receivedType: file.mimetype
+      });
+    }
+    
+    // Validar tamaño
+    if (file.size && file.size > maxSize) {
+      return res.status(400).json({
+        success: false,
+        error: 'File too large',
+        maxSize: maxSize,
+        receivedSize: file.size
+      });
+    }
+    
+    next();
+  };
+};
+```
 
-## 🔮 Próximas Mejoras
+### **2. Validación de Paginación**
 
-### Funcionalidades Planificadas
+```typescript
+export const validatePagination = (req: Request, res: Response, next: NextFunction) => {
+  const { limit, page, offset } = req.query;
+  
+  // Validar límite
+  if (limit) {
+    const limitNum = parseInt(limit as string);
+    if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid limit parameter',
+        message: 'Limit must be between 1 and 100'
+      });
+    }
+  }
+  
+  // Validar página
+  if (page) {
+    const pageNum = parseInt(page as string);
+    if (isNaN(pageNum) || pageNum < 1) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid page parameter',
+        message: 'Page must be a positive number'
+      });
+    }
+  }
+  
+  next();
+};
+```
 
-1. **Validación Asíncrona**
-   - Verificación de emails únicos
-   - Validación de números de teléfono
-   - Verificación de documentos
+### **3. Validación de Búsqueda**
 
-2. **Validación Condicional**
-   - Campos requeridos según contexto
-   - Validación dinámica
-   - Reglas de negocio complejas
+```typescript
+export const validateSearchQuery = (req: Request, res: Response, next: NextFunction) => {
+  const { query, category, sortBy, sortOrder } = req.query;
+  
+  // Validar query
+  if (query && typeof query === 'string') {
+    if (query.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query too short',
+        message: 'Query must be at least 2 characters long'
+      });
+    }
+    
+    if (query.length > 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query too long',
+        message: 'Query cannot exceed 100 characters'
+      });
+    }
+  }
+  
+  // Validar categoría
+  if (category && !['all', 'events', 'users', 'requests'].includes(category as string)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid category',
+      message: 'Category must be one of: all, events, users, requests'
+    });
+  }
+  
+  // Validar ordenamiento
+  if (sortOrder && !['asc', 'desc'].includes(sortOrder as string)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid sort order',
+      message: 'Sort order must be "asc" or "desc"'
+    });
+  }
+  
+  next();
+};
+```
 
-3. **Cache de Validación**
-   - Cache de esquemas compilados
-   - Optimización de performance
-   - Reducción de latencia
+## 📋 Esquemas por Endpoint
 
-4. **Validación de Imágenes**
-   - Análisis de contenido
-   - Detección de malware
-   - Optimización automática
+### **Autenticación**
 
-5. **Validación de Audio/Video**
-   - Análisis de metadatos
-   - Verificación de duración
-   - Detección de contenido inapropiado
+```typescript
+export const loginSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Formato de email inválido',
+      'any.required': 'El email es obligatorio'
+    }),
+  
+  password: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      'string.min': 'La contraseña debe tener al menos 6 caracteres',
+      'any.required': 'La contraseña es obligatoria'
+    })
+});
+
+export const registerSchema = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .required(),
+  
+  lastName: Joi.string()
+    .min(2)
+    .max(50)
+    .required(),
+  
+  email: Joi.string()
+    .email()
+    .required(),
+  
+  password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .required()
+    .messages({
+      'string.pattern.base': 'La contraseña debe contener al menos una mayúscula, una minúscula y un número'
+    }),
+  
+  roll: Joi.string()
+    .valid('user', 'musician', 'admin', 'superadmin')
+    .required()
+});
+```
+
+### **Eventos**
+
+```typescript
+export const createEventSchema = Joi.object({
+  eventName: Joi.string()
+    .min(3)
+    .max(100)
+    .required(),
+  
+  eventType: Joi.string()
+    .valid('boda', 'concierto', 'fiesta', 'evento_corporativo', 'otro')
+    .required(),
+  
+  date: Joi.date()
+    .greater('now')
+    .required(),
+  
+  time: Joi.string()
+    .pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .required(),
+  
+  location: Joi.string()
+    .min(5)
+    .max(200)
+    .required(),
+  
+  duration: Joi.string()
+    .pattern(/^[0-9]+$/)
+    .required(),
+  
+  instrument: Joi.string()
+    .valid('piano', 'guitarra', 'bajo', 'bateria', 'saxofon', 'violin', 'canto', 'teclado', 'flauta', 'otro')
+    .required(),
+  
+  budget: Joi.number()
+    .positive()
+    .min(1000)
+    .max(1000000)
+    .required(),
+  
+  description: Joi.string()
+    .max(1000)
+    .optional()
+});
+```
+
+### **Solicitudes de Músicos**
+
+```typescript
+export const createMusicianRequestSchema = Joi.object({
+  eventName: Joi.string()
+    .min(3)
+    .max(100)
+    .required(),
+  
+  eventType: Joi.string()
+    .valid('boda', 'concierto', 'fiesta', 'evento_corporativo', 'otro')
+    .required(),
+  
+  date: Joi.date()
+    .greater('now')
+    .required(),
+  
+  time: Joi.string()
+    .pattern(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .required(),
+  
+  location: Joi.string()
+    .min(5)
+    .max(200)
+    .required(),
+  
+  duration: Joi.string()
+    .pattern(/^[0-9]+$/)
+    .required(),
+  
+  instrument: Joi.string()
+    .valid('piano', 'guitarra', 'bajo', 'bateria', 'saxofon', 'violin', 'canto', 'teclado', 'flauta', 'otro')
+    .required(),
+  
+  bringInstrument: Joi.boolean()
+    .required(),
+  
+  budget: Joi.number()
+    .positive()
+    .min(1000)
+    .max(1000000)
+    .required(),
+  
+  description: Joi.string()
+    .max(1000)
+    .optional(),
+  
+  songs: Joi.array()
+    .items(Joi.string())
+    .max(20)
+    .optional(),
+  
+  recommendations: Joi.array()
+    .items(Joi.string())
+    .max(10)
+    .optional()
+});
+```
+
+## 🛡️ Validación de Datos de Firestore
+
+### **Manejo de Datos Inconsistentes**
+
+```typescript
+// Función auxiliar para validación segura de strings
+export const validateStringField = (field: any): string | null => {
+  if (typeof field === 'string') {
+    return field.trim();
+  }
+  if (field === null || field === undefined) {
+    return null;
+  }
+  return String(field).trim();
+};
+
+// Función para búsqueda segura en campos de texto
+export const searchInField = (field: any, searchTerm: string): boolean => {
+  if (typeof field !== 'string') {
+    return false;
+  }
+  return field.toLowerCase().includes(searchTerm.toLowerCase());
+};
+
+// Uso en servicios de búsqueda
+const filteredResults = results.filter(item => 
+  searchInField(item.name, searchTerm) ||
+  searchInField(item.description, searchTerm) ||
+  searchInField(item.location, searchTerm)
+);
+```
+
+### **Validación de Tipos de Datos**
+
+```typescript
+// Validación de tipos antes de operaciones
+export const validateEventData = (event: any): Event => {
+  return {
+    id: validateStringField(event.id) || '',
+    eventName: validateStringField(event.eventName) || 'Evento sin nombre',
+    eventType: validateStringField(event.eventType) || 'otro',
+    date: validateStringField(event.date) || '',
+    time: validateStringField(event.time) || '',
+    location: validateStringField(event.location) || '',
+    duration: validateStringField(event.duration) || '',
+    instrument: validateStringField(event.instrument) || '',
+    budget: typeof event.budget === 'number' ? event.budget : 0,
+    description: validateStringField(event.description) || '',
+    status: validateStringField(event.status) || 'pending',
+    createdAt: validateStringField(event.createdAt) || new Date().toISOString(),
+    updatedAt: validateStringField(event.updatedAt) || new Date().toISOString()
+  };
+};
+```
+
+## 🔧 Aplicación de Validaciones
+
+### **Utilidad de Aplicación**
+
+```typescript
+// src/utils/applyValidations.ts
+export const applyAuthValidations = (router: Router) => {
+  router.post('/register', validate(registerSchema), authController.register);
+  router.post('/login', validate(loginSchema), authController.login);
+  router.post('/google', validate(googleAuthSchema), authController.googleAuth);
+  router.post('/refresh', validate(refreshTokenSchema), authController.refreshToken);
+};
+
+export const applyEventValidations = (router: Router) => {
+  router.post('/', 
+    validate(createEventSchema),
+    validateFile('image', ['image/jpeg', 'image/png'], 5 * 1024 * 1024),
+    eventController.createEvent
+  );
+  
+  router.put('/:id', 
+    validateId,
+    validate(updateEventSchema),
+    eventController.updateEvent
+  );
+  
+  router.delete('/:id', 
+    validateId,
+    eventController.deleteEvent
+  );
+};
+
+export const applySearchValidations = (router: Router) => {
+  router.get('/global', 
+    validatePagination,
+    validateSearchQuery,
+    searchController.globalSearch
+  );
+  
+  router.get('/events', 
+    validatePagination,
+    validateSearchQuery,
+    searchController.searchEvents
+  );
+  
+  router.get('/users', 
+    validatePagination,
+    validateSearchQuery,
+    searchController.searchUsers
+  );
+};
+```
+
+## 📊 Manejo de Errores
+
+### **Estructura de Error**
+
+```typescript
+interface ValidationError {
+  field: string;
+  message: string;
+  type: string;
+  value?: any;
+}
+
+interface ValidationResponse {
+  success: false;
+  error: 'Validation Error';
+  details: ValidationError[];
+  timestamp: string;
+  path: string;
+}
+```
+
+### **Middleware de Manejo de Errores**
+
+```typescript
+// src/middleware/errorHandler.ts
+export const validationErrorHandler = (
+  error: Joi.ValidationError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const validationErrors = error.details.map(detail => ({
+    field: detail.path.join('.'),
+    message: detail.message,
+    type: detail.type,
+    value: detail.context?.value
+  }));
+
+  return res.status(400).json({
+    success: false,
+    error: 'Validation Error',
+    details: validationErrors,
+    timestamp: new Date().toISOString(),
+    path: req.originalUrl
+  });
+};
+
+export const globalErrorHandler = (
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.error('Error:', error);
+  
+  return res.status(500).json({
+    success: false,
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+    timestamp: new Date().toISOString(),
+    path: req.originalUrl
+  });
+};
+```
+
+## 🧪 Testing
+
+### **Tests de Validación**
+
+```typescript
+describe('Validation Middleware', () => {
+  it('should validate required fields', () => {
+    const invalidData = {
+      email: 'invalid-email',
+      password: '123'
+    };
+    
+    const { error } = loginSchema.validate(invalidData);
+    expect(error).toBeDefined();
+    expect(error?.details).toHaveLength(2);
+  });
+  
+  it('should sanitize input data', () => {
+    const dirtyData = {
+      name: '  John Doe  ',
+      email: 'john@example.com',
+      description: '<script>alert("xss")</script>'
+    };
+    
+    const sanitized = sanitizeInput(dirtyData);
+    expect(sanitized.name).toBe('John Doe');
+    expect(sanitized.description).not.toContain('<script>');
+  });
+  
+  it('should handle null values safely', () => {
+    const dataWithNulls = {
+      name: 'John',
+      location: null,
+      description: undefined
+    };
+    
+    const result = searchInField(dataWithNulls.location, 'test');
+    expect(result).toBe(false);
+  });
+});
+```
+
+## 📈 Métricas y Monitoreo
+
+### **Logging de Validación**
+
+```typescript
+// Logging de errores de validación
+export const logValidationError = (error: ValidationError, req: Request) => {
+  logger.error('Validation Error', {
+    field: error.field,
+    message: error.message,
+    type: error.type,
+    value: error.value,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip,
+    path: req.originalUrl,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+};
+
+// Métricas de validación
+export const trackValidationMetrics = (success: boolean, endpoint: string) => {
+  const metric = success ? 'validation_success' : 'validation_failure';
+  // Enviar métrica a sistema de monitoreo
+  metrics.increment(metric, { endpoint });
+};
+```
+
+## 🚀 Optimización y Performance
+
+### **Validación Lazy**
+
+```typescript
+// Validación solo cuando es necesario
+export const conditionalValidation = (condition: boolean, schema: Joi.ObjectSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (condition) {
+      return validate(schema)(req, res, next);
+    }
+    next();
+  };
+};
+```
+
+### **Cache de Esquemas**
+
+```typescript
+// Cache de esquemas compilados
+const schemaCache = new Map<string, Joi.ObjectSchema>();
+
+export const getCachedSchema = (schemaName: string): Joi.ObjectSchema => {
+  if (!schemaCache.has(schemaName)) {
+    const schema = getSchemaByName(schemaName);
+    schemaCache.set(schemaName, schema);
+  }
+  return schemaCache.get(schemaName)!;
+};
+```
+
+## 🔄 Changelog
+
+### **v2.0.0 (Diciembre 2024)**
+- ✅ **Validación Robusta**: Manejo seguro de datos inconsistentes de Firestore
+- ✅ **Sanitización Avanzada**: Prevención mejorada de XSS e inyección
+- ✅ **Esquemas Completos**: Validación exhaustiva para todos los endpoints
+- ✅ **Manejo de Errores**: Estructura de errores mejorada y logging
+- ✅ **Performance**: Optimización de validación y cache de esquemas
+
+### **v1.5.0 (Noviembre 2024)**
+- ✅ **Sistema de Validación**: Implementación inicial con Joi
+- ✅ **Middleware Básico**: Validación de esquemas y sanitización
+- ✅ **Esquemas Principales**: Para autenticación y eventos
+- ✅ **Manejo de Errores**: Estructura básica de errores
+
+## 🚀 Próximas Mejoras
+
+### **En Desarrollo**
+- [ ] **Validación Asíncrona**: Validación de datos únicos en base de datos
+- [ ] **Validación de Imágenes**: Análisis de contenido y detección de malware
+- [ ] **Validación de Geolocalización**: Validación de coordenadas y direcciones
+- [ ] **Validación de Pagos**: Validación de métodos de pago y montos
+
+### **Roadmap**
+- [ ] **Machine Learning**: Detección automática de datos anómalos
+- [ ] **Validación de Voz**: Validación de archivos de audio
+- [ ] **Validación de Documentos**: Validación de PDFs y documentos
+- [ ] **Validación de Video**: Validación de archivos de video
 
 ---
 
-**🎯 El sistema de validación está completamente implementado y listo para producción.** 
+**Estado**: ✅ Producción Ready  
+**Versión**: 2.0.0  
+**Última Actualización**: Diciembre 2024 

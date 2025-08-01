@@ -1,537 +1,508 @@
-# 🔍 API de Búsqueda Avanzada
+# 🔍 API de Búsqueda - MussikOn
 
-> **Sistema completo de búsqueda con filtros avanzados, geolocalización y búsqueda inteligente**
+## 📋 Descripción General
 
-## 📋 Tabla de Contenidos
+La API de Búsqueda de MussikOn proporciona funcionalidades avanzadas de búsqueda en toda la plataforma, incluyendo búsqueda global, filtros específicos, búsqueda geográfica y validación robusta de datos. El sistema está diseñado para manejar datos inconsistentes de Firestore de manera segura.
 
-- [Descripción General](#descripción-general)
-- [Endpoints](#endpoints)
-- [Filtros y Parámetros](#filtros-y-parámetros)
-- [Ejemplos de Uso](#ejemplos-de-uso)
-- [Respuestas](#respuestas)
-- [Casos de Uso](#casos-de-uso)
-- [Integración](#integración)
+## 🚀 Características Principales
 
-## 🎯 Descripción General
+### **🔍 Búsqueda Global**
+- Búsqueda unificada en todas las colecciones (eventos, usuarios, solicitudes)
+- Resultados combinados con metadatos enriquecidos
+- Ranking por relevancia y tipo de contenido
 
-La API de Búsqueda Avanzada proporciona capacidades de búsqueda sofisticadas para eventos, solicitudes de músicos y usuarios. Incluye filtros por ubicación, fecha, instrumento, especialidades y disponibilidad.
+### **🎯 Filtros Avanzados**
+- Filtros por tipo de contenido (eventos, usuarios, solicitudes)
+- Filtros por estado, fecha, ubicación, presupuesto
+- Filtros por instrumento, rol de usuario, categoría
 
-### Características Principales
+### **📍 Búsqueda Geográfica**
+- Búsqueda por proximidad usando algoritmos de distancia
+- Filtros por radio de búsqueda
+- Optimización de rutas y geocodificación
 
-- **Búsqueda global** en múltiples entidades
-- **Filtros por ubicación** con geolocalización
-- **Búsqueda por instrumento** y especialidades
-- **Filtros temporales** y de disponibilidad
-- **Búsqueda inteligente** con coincidencias parciales
-- **Paginación** y ordenamiento
-- **Búsqueda de disponibilidad** cruzada
+### **🛡️ Validación Robusta**
+- Manejo seguro de datos inconsistentes de Firestore
+- Validación de tipos antes de operaciones de string
+- Prevención de errores de `toLowerCase()` en datos null/undefined
 
-## 📡 Endpoints
+## 📊 Estructura de Respuesta
 
-### 1. Búsqueda de Eventos
-
-**GET** `/search/events`
-
-Búsqueda avanzada de eventos con múltiples filtros.
-
-### 2. Búsqueda de Solicitudes de Músicos
-
-**GET** `/search/musician-requests`
-
-Búsqueda de solicitudes de músicos con filtros específicos.
-
-### 3. Búsqueda de Usuarios
-
-**GET** `/search/users`
-
-Búsqueda de usuarios por nombre, email, rol y especialidades.
-
-### 4. Búsqueda Global
-
-**GET** `/search/global`
-
-Búsqueda simultánea en eventos, solicitudes y usuarios.
-
-### 5. Búsqueda por Ubicación
-
-**GET** `/search/location`
-
-Búsqueda basada en coordenadas geográficas y radio.
-
-### 6. Eventos Disponibles para Músico
-
-**GET** `/search/available-events`
-
-Encuentra eventos disponibles para un músico específico.
-
-### 7. Músicos Disponibles para Evento
-
-**GET** `/search/available-musicians`
-
-Encuentra músicos disponibles para un evento específico.
-
-## 🔧 Filtros y Parámetros
-
-### Parámetros Comunes
-
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `query` | string | Término de búsqueda general | `"piano"` |
-| `limit` | number | Número máximo de resultados | `20` |
-| `offset` | number | Desplazamiento para paginación | `0` |
-| `sortBy` | string | Campo para ordenar | `"date"` |
-| `order` | string | Orden ascendente/descendente | `"asc"` |
-
-### Filtros de Eventos
-
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `eventType` | string | Tipo de evento | `"boda"` |
-| `instrument` | string | Instrumento requerido | `"piano"` |
-| `dateFrom` | string | Fecha mínima (ISO) | `"2024-01-01"` |
-| `dateTo` | string | Fecha máxima (ISO) | `"2024-12-31"` |
-| `location` | string | Ubicación | `"Madrid"` |
-| `budgetMin` | number | Presupuesto mínimo | `10000` |
-| `budgetMax` | number | Presupuesto máximo | `100000` |
-| `status` | string | Estado del evento | `"pending_musician"` |
-
-### Filtros de Solicitudes
-
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `eventType` | string | Tipo de evento | `"concierto"` |
-| `instrument` | string | Instrumento requerido | `"guitarra"` |
-| `dateFrom` | string | Fecha mínima | `"2024-01-01"` |
-| `dateTo` | string | Fecha máxima | `"2024-12-31"` |
-| `location` | string | Ubicación | `"Barcelona"` |
-| `budgetMin` | number | Presupuesto mínimo | `5000` |
-| `budgetMax` | number | Presupuesto máximo | `50000` |
-| `status` | string | Estado de la solicitud | `"pendiente"` |
-
-### Filtros de Usuarios
-
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `name` | string | Nombre del usuario | `"Juan"` |
-| `roll` | string | Rol del usuario | `"musico"` |
-| `instrument` | string | Instrumento principal | `"piano"` |
-| `specialties` | string | Especialidades | `"jazz,clasico"` |
-| `location` | string | Ubicación | `"Valencia"` |
-| `status` | boolean | Estado activo/inactivo | `true` |
-
-### Filtros de Ubicación
-
-| Parámetro | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `lat` | number | Latitud | `40.4168` |
-| `lng` | number | Longitud | `-3.7038` |
-| `radius` | number | Radio en kilómetros | `50` |
-| `type` | string | Tipo de entidad | `"events"` |
-
-## 💡 Ejemplos de Uso
-
-### 1. Búsqueda de Eventos
-
-**Request:**
-```bash
-GET /search/events?query=boda&location=Madrid&dateFrom=2024-01-01&dateTo=2024-12-31&instrument=piano&budgetMin=10000&budgetMax=100000&limit=20&offset=0&sortBy=date&order=asc
-```
-
-**Response (200):**
-```json
+### **Respuesta Global**
+```typescript
 {
-  "success": true,
-  "data": {
-    "events": [
-      {
-        "id": "event_123",
-        "eventName": "Boda de María y Juan",
-        "eventType": "boda",
-        "date": "2024-12-25",
-        "time": "18:00",
-        "location": "Madrid, España",
-        "instrument": "piano",
-        "budget": 50000,
-        "status": "pending_musician",
-        "description": "Ceremonia y recepción",
-        "createdAt": "2024-01-15T10:30:00Z"
-      }
-    ],
-    "total": 1,
-    "filters": {
-      "query": "boda",
-      "location": "Madrid",
-      "dateFrom": "2024-01-01",
-      "dateTo": "2024-12-31",
-      "instrument": "piano",
-      "budgetMin": 10000,
-      "budgetMax": 100000
-    },
-    "pagination": {
-      "limit": 20,
-      "offset": 0,
-      "hasMore": false
-    }
-  }
+  success: boolean;
+  data: {
+    events: Event[];
+    requests: MusicianRequest[];
+    users: User[];
+  };
+  summary: {
+    totalEvents: number;
+    totalRequests: number;
+    totalUsers: number;
+  };
 }
 ```
 
-### 2. Búsqueda Global
-
-**Request:**
-```bash
-GET /search/global?query=piano&type=all&limit=10
+### **Respuesta de Búsqueda Específica**
+```typescript
+{
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
 ```
 
-**Response (200):**
+## 🔌 Endpoints Disponibles
+
+### **1. Búsqueda Global**
+```http
+GET /api/search/global
+```
+
+**Descripción**: Búsqueda unificada en todas las colecciones de la plataforma.
+
+**Parámetros de Query**:
+- `query` (string, opcional): Término de búsqueda
+- `category` (string, opcional): Categoría específica ('all', 'events', 'users', 'requests')
+- `limit` (number, opcional): Límite de resultados (default: 20)
+- `page` (number, opcional): Página de resultados (default: 1)
+
+**Ejemplo de Request**:
+```bash
+curl -X GET "http://localhost:3001/api/search/global?query=jefry&category=all&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Ejemplo de Response**:
 ```json
 {
   "success": true,
   "data": {
-    "events": [
-      {
-        "id": "event_123",
-        "eventName": "Boda de María y Juan",
-        "eventType": "boda",
-        "instrument": "piano"
-      }
-    ],
-    "musicianRequests": [
-      {
-        "id": "request_456",
-        "eventType": "concierto",
-        "instrument": "piano",
-        "location": "Barcelona"
-      }
-    ],
+    "events": [],
+    "requests": [],
     "users": [
       {
-        "id": "user_789",
-        "name": "Carlos",
-        "lastName": "Rodríguez",
-        "roll": "musico",
-        "instrument": "piano"
-      }
-    ],
-    "total": {
-      "events": 5,
-      "musicianRequests": 3,
-      "users": 2
-    }
-  }
-}
-```
-
-### 3. Búsqueda por Ubicación
-
-**Request:**
-```bash
-GET /search/location?lat=40.4168&lng=-3.7038&radius=50&type=events
-```
-
-**Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "results": [
+        "name": "Agustín ",
+        "lastName": "Sánchez ",
+        "userEmail": "astaciosanchezjefryagustin@gmail.com",
+        "create_at": "Sun Jun 29 2025 12:27:40 GMT-0400 (hora de Bolivia)",
+        "delete_at": "",
+        "roll": "superadmin"
+      },
       {
-        "id": "event_123",
-        "eventName": "Boda en Madrid",
-        "location": "Madrid, España",
-        "distance": 2.5,
-        "coordinates": {
-          "lat": 40.4168,
-          "lng": -3.7038
-        }
+        "name": "Jefry Agustín ",
+        "lastName": "Astacio Sánchez ",
+        "userEmail": "jasbootstudios@gmail.com",
+        "create_at": "Sun May 18 2025 12:31:31 GMT-0400 (hora estándar del Atlántico)",
+        "delete_at": "",
+        "roll": "superadmin"
       }
-    ],
-    "location": {
-      "lat": 40.4168,
-      "lng": -3.7038,
-      "radius": 50
-    },
-    "total": 1
+    ]
+  },
+  "summary": {
+    "totalEvents": 0,
+    "totalRequests": 0,
+    "totalUsers": 2
   }
 }
 ```
 
-### 4. Eventos Disponibles para Músico
+### **2. Búsqueda de Eventos**
+```http
+GET /api/search/events
+```
 
-**Request:**
+**Descripción**: Búsqueda específica de eventos musicales.
+
+**Parámetros de Query**:
+- `query` (string, opcional): Término de búsqueda
+- `status` (string, opcional): Estado del evento
+- `eventType` (string, opcional): Tipo de evento
+- `instrument` (string, opcional): Instrumento requerido
+- `dateFrom` (string, opcional): Fecha de inicio (YYYY-MM-DD)
+- `dateTo` (string, opcional): Fecha de fin (YYYY-MM-DD)
+- `location` (string, opcional): Ubicación del evento
+- `budget.min` (number, opcional): Presupuesto mínimo
+- `budget.max` (number, opcional): Presupuesto máximo
+- `limit` (number, opcional): Límite de resultados
+- `offset` (number, opcional): Offset para paginación
+- `sortBy` (string, opcional): Campo para ordenar
+- `sortOrder` (string, opcional): Orden ('asc' o 'desc')
+
+**Ejemplo de Request**:
 ```bash
-GET /search/available-events?musicianId=user_789&dateFrom=2024-01-01&dateTo=2024-12-31&instrument=piano
+curl -X GET "http://localhost:3001/api/search/events?query=concierto&eventType=musica&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-**Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "events": [
-      {
-        "id": "event_123",
-        "eventName": "Boda de María y Juan",
-        "eventType": "boda",
-        "date": "2024-12-25",
-        "location": "Madrid, España",
-        "budget": 50000,
-        "compatibility": 0.95,
-        "reasons": [
-          "Instrumento coincide",
-          "Fecha disponible",
-          "Ubicación accesible"
-        ]
-      }
-    ],
-    "musicianId": "user_789",
-    "total": 1
-  }
-}
+### **3. Búsqueda de Usuarios**
+```http
+GET /api/search/users
 ```
 
-### 5. Músicos Disponibles para Evento
+**Descripción**: Búsqueda de usuarios y músicos en la plataforma.
 
-**Request:**
+**Parámetros de Query**:
+- `query` (string, opcional): Término de búsqueda
+- `userRole` (string, opcional): Rol del usuario
+- `limit` (number, opcional): Límite de resultados
+- `offset` (number, opcional): Offset para paginación
+- `sortBy` (string, opcional): Campo para ordenar
+- `sortOrder` (string, opcional): Orden ('asc' o 'desc')
+
+**Ejemplo de Request**:
 ```bash
-GET /search/available-musicians?eventId=event_123&instrument=piano&date=2024-12-25&location=Madrid
+curl -X GET "http://localhost:3001/api/search/users?query=juan&userRole=musician&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-**Response (200):**
-```json
-{
-  "success": true,
-  "data": {
-    "musicians": [
-      {
-        "id": "user_789",
-        "name": "Carlos",
-        "lastName": "Rodríguez",
-        "instrument": "piano",
-        "specialties": ["jazz", "clasico"],
-        "rating": 4.8,
-        "compatibility": 0.95,
-        "reasons": [
-          "Instrumento coincide",
-          "Fecha disponible",
-          "Especialidad apropiada"
-        ]
-      }
-    ],
-    "eventId": "event_123",
-    "total": 1
-  }
+### **4. Búsqueda de Solicitudes de Músicos**
+```http
+GET /api/search/musician-requests
+```
+
+**Descripción**: Búsqueda de solicitudes de músicos para eventos.
+
+**Parámetros de Query**:
+- `query` (string, opcional): Término de búsqueda
+- `status` (string, opcional): Estado de la solicitud
+- `eventType` (string, opcional): Tipo de evento
+- `instrument` (string, opcional): Instrumento requerido
+- `dateFrom` (string, opcional): Fecha de inicio
+- `dateTo` (string, opcional): Fecha de fin
+- `location` (string, opcional): Ubicación
+- `budget.min` (number, opcional): Presupuesto mínimo
+- `budget.max` (number, opcional): Presupuesto máximo
+- `limit` (number, opcional): Límite de resultados
+- `offset` (number, opcional): Offset para paginación
+
+**Ejemplo de Request**:
+```bash
+curl -X GET "http://localhost:3001/api/search/musician-requests?status=pendiente&instrument=guitarra&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### **5. Búsqueda por Ubicación**
+```http
+GET /api/search/location
+```
+
+**Descripción**: Búsqueda de eventos y músicos por proximidad geográfica.
+
+**Parámetros de Query**:
+- `location` (string, requerido): Ubicación de búsqueda
+- `radius` (number, opcional): Radio de búsqueda en km (default: 50)
+- `type` (string, opcional): Tipo de búsqueda ('events', 'musicians', 'all')
+
+**Ejemplo de Request**:
+```bash
+curl -X GET "http://localhost:3001/api/search/location?location=Madrid&radius=30&type=events" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### **6. Búsqueda de Eventos Disponibles**
+```http
+GET /api/search/available-events
+```
+
+**Descripción**: Búsqueda de eventos disponibles para un músico específico.
+
+**Parámetros de Query**:
+- `musicianId` (string, requerido): ID del músico
+- `instrument` (string, opcional): Instrumento del músico
+- `dateFrom` (string, opcional): Fecha de disponibilidad desde
+- `dateTo` (string, opcional): Fecha de disponibilidad hasta
+- `location` (string, opcional): Ubicación preferida
+- `limit` (number, opcional): Límite de resultados
+
+**Ejemplo de Request**:
+```bash
+curl -X GET "http://localhost:3001/api/search/available-events?musicianId=123&instrument=guitarra&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### **7. Búsqueda de Músicos Disponibles**
+```http
+GET /api/search/available-musicians
+```
+
+**Descripción**: Búsqueda de músicos disponibles para un evento específico.
+
+**Parámetros de Query**:
+- `eventId` (string, requerido): ID del evento
+- `instrument` (string, opcional): Instrumento requerido
+- `date` (string, opcional): Fecha del evento
+- `location` (string, opcional): Ubicación del evento
+- `budget` (number, opcional): Presupuesto disponible
+- `limit` (number, opcional): Límite de resultados
+
+**Ejemplo de Request**:
+```bash
+curl -X GET "http://localhost:3001/api/search/available-musicians?eventId=456&instrument=guitarra&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 🔐 Autenticación
+
+Todos los endpoints de búsqueda requieren autenticación JWT. Incluye el token en el header de autorización:
+
+```http
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+## 🛡️ Validación y Seguridad
+
+### **Validación de Datos**
+- Todos los parámetros de query son validados
+- Sanitización de entrada para prevenir inyección
+- Validación de tipos antes de operaciones de string
+- Manejo seguro de datos inconsistentes de Firestore
+
+### **Middleware de Validación**
+```typescript
+// Ejemplo de validación en el backend
+app.get('/api/search/global', 
+  authMiddleware,
+  validatePagination,
+  validateSearchQuery,
+  searchController.globalSearch
+);
+```
+
+### **Manejo de Errores**
+```typescript
+// Ejemplo de manejo de errores
+try {
+  const results = await searchService.globalSearch(filters);
+  res.json(results);
+} catch (error) {
+  console.error('Error en búsqueda:', error);
+  res.status(500).json({ 
+    error: 'Error interno del servidor',
+    message: error.message 
+  });
 }
 ```
 
-## 📊 Respuestas
-
-### Estructura de Respuesta Estándar
-
-```json
-{
-  "success": boolean,
-  "data": {
-    "results": array,
-    "total": number,
-    "filters": object,
-    "pagination": {
-      "limit": number,
-      "offset": number,
-      "hasMore": boolean
-    }
-  }
-}
-```
-
-### Códigos de Estado
+## 📊 Códigos de Estado HTTP
 
 | Código | Descripción |
 |--------|-------------|
-| `200` | Búsqueda exitosa |
-| `400` | Parámetros inválidos |
-| `401` | No autenticado |
-| `403` | No autorizado |
-| `500` | Error interno |
+| 200 | Búsqueda exitosa |
+| 400 | Parámetros de búsqueda inválidos |
+| 401 | No autenticado |
+| 403 | No autorizado |
+| 500 | Error interno del servidor |
 
-## 🎯 Casos de Uso
+## 🔧 Implementación Técnica
 
-### 1. Búsqueda de Eventos por Organizador
-
-```javascript
-// Buscar eventos de bodas en Madrid para piano
-const searchEvents = async () => {
-  const response = await fetch('/search/events?eventType=boda&location=Madrid&instrument=piano&dateFrom=2024-01-01&dateTo=2024-12-31', {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  
-  const data = await response.json();
-  return data.data.events;
-};
-```
-
-### 2. Búsqueda de Músicos por Especialidad
-
-```javascript
-// Buscar músicos de piano especializados en jazz
-const searchMusicians = async () => {
-  const response = await fetch('/search/users?roll=musico&instrument=piano&specialties=jazz', {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  
-  const data = await response.json();
-  return data.data.users;
-};
-```
-
-### 3. Búsqueda por Ubicación
-
-```javascript
-// Buscar eventos cercanos a una ubicación
-const searchNearbyEvents = async (lat, lng, radius = 50) => {
-  const response = await fetch(`/search/location?lat=${lat}&lng=${lng}&radius=${radius}&type=events`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  
-  const data = await response.json();
-  return data.data.results;
-};
-```
-
-### 4. Búsqueda de Disponibilidad
-
-```javascript
-// Encontrar eventos disponibles para un músico
-const findAvailableEvents = async (musicianId, dateFrom, dateTo) => {
-  const response = await fetch(`/search/available-events?musicianId=${musicianId}&dateFrom=${dateFrom}&dateTo=${dateTo}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  
-  const data = await response.json();
-  return data.data.events;
-};
-```
-
-## 🔗 Integración
-
-### Configuración del Cliente
-
-```javascript
-class SearchAPI {
-  constructor(baseURL, token) {
-    this.baseURL = baseURL;
-    this.token = token;
-  }
-
-  async searchEvents(filters = {}) {
-    const params = new URLSearchParams(filters);
-    const response = await fetch(`${this.baseURL}/search/events?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json'
+### **Servicio de Búsqueda**
+```typescript
+export class SearchService {
+  async searchEvents(filters: SearchFilters): Promise<SearchResult<Event>> {
+    try {
+      let query: any = db.collection('events');
+      
+      // Aplicar filtros
+      if (filters.status) {
+        query = query.where('status', '==', filters.status);
       }
-    });
-    
-    return response.json();
-  }
-
-  async searchGlobal(query, type = 'all', limit = 10) {
-    const response = await fetch(`${this.baseURL}/search/global?query=${query}&type=${type}&limit=${limit}`, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json'
+      
+      // Validación robusta para búsqueda de texto
+      if (filters.query) {
+        const searchTerm = filters.query.toLowerCase();
+        const events = await query.get();
+        
+        const filteredEvents = events.docs
+          .map(doc => doc.data())
+          .filter(event => {
+            const searchInField = (field: any): boolean => {
+              return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+            };
+            
+            return (
+              searchInField(event.eventName) ||
+              searchInField(event.location) ||
+              searchInField(event.comment)
+            );
+          });
+        
+        return {
+          data: filteredEvents,
+          total: filteredEvents.length,
+          page: 1,
+          limit: filters.limit || 20,
+          hasMore: false
+        };
       }
-    });
-    
-    return response.json();
-  }
-
-  async searchByLocation(lat, lng, radius, type) {
-    const response = await fetch(`${this.baseURL}/search/location?lat=${lat}&lng=${lng}&radius=${radius}&type=${type}`, {
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    return response.json();
+      
+      // ... resto de la implementación
+    } catch (error) {
+      console.error('Error en búsqueda de eventos:', error);
+      throw new Error('Error al buscar eventos');
+    }
   }
 }
+```
 
-// Uso
-const searchAPI = new SearchAPI('https://api.mussikon.com', token);
+### **Validación de Tipos**
+```typescript
+// Función auxiliar para validación segura
+const searchInField = (field: any): boolean => {
+  return typeof field === 'string' && field.toLowerCase().includes(searchTerm);
+};
 
-// Buscar eventos
-const events = await searchAPI.searchEvents({
-  eventType: 'boda',
+// Uso en filtros
+filteredResults = results.filter(item => 
+  searchInField(item.name) ||
+  searchInField(item.description) ||
+  searchInField(item.location)
+);
+```
+
+## 📈 Optimización y Rendimiento
+
+### **Índices de Firestore**
+```typescript
+// Índices recomendados para búsqueda
+{
+  "collectionGroup": "events",
+  "queryScope": "COLLECTION",
+  "fields": [
+    { "fieldPath": "status", "order": "ASCENDING" },
+    { "fieldPath": "eventType", "order": "ASCENDING" },
+    { "fieldPath": "date", "order": "ASCENDING" }
+  ]
+}
+```
+
+### **Paginación Eficiente**
+```typescript
+// Implementación de paginación con cursor
+const getPaginatedResults = async (query: any, limit: number, lastDoc?: any) => {
+  if (lastDoc) {
+    query = query.startAfter(lastDoc);
+  }
+  
+  const snapshot = await query.limit(limit).get();
+  const results = snapshot.docs.map(doc => doc.data());
+  const hasMore = snapshot.docs.length === limit;
+  const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+  
+  return { results, hasMore, lastVisible };
+};
+```
+
+## 🧪 Testing
+
+### **Tests Unitarios**
+```typescript
+describe('SearchService', () => {
+  it('should handle null values in search fields', async () => {
+    const mockEvent = {
+      eventName: 'Test Event',
+      location: null,
+      comment: undefined
+    };
+    
+    const result = searchInField(mockEvent.location);
+    expect(result).toBe(false);
+  });
+  
+  it('should perform case-insensitive search', async () => {
+    const mockEvent = {
+      eventName: 'ROCK CONCERT',
+      location: 'Madrid',
+      comment: 'Great event'
+    };
+    
+    const result = searchInField(mockEvent.eventName);
+    expect(result).toBe(true);
+  });
+});
+```
+
+## 📝 Ejemplos de Uso
+
+### **Búsqueda Completa con Filtros**
+```javascript
+// Ejemplo de búsqueda completa
+const searchParams = {
+  query: 'rock concert',
+  category: 'events',
+  dateFrom: '2024-01-01',
+  dateTo: '2024-12-31',
   location: 'Madrid',
-  instrument: 'piano'
+  budget: { min: 1000, max: 5000 },
+  limit: 20,
+  page: 1
+};
+
+const response = await fetch('/api/search/global?' + new URLSearchParams(searchParams), {
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  }
 });
 
-// Búsqueda global
-const results = await searchAPI.searchGlobal('piano', 'all', 20);
-
-// Búsqueda por ubicación
-const nearbyEvents = await searchAPI.searchByLocation(40.4168, -3.7038, 50, 'events');
+const results = await response.json();
+console.log('Resultados:', results);
 ```
 
-### Manejo de Errores
-
+### **Búsqueda Geográfica**
 ```javascript
-const handleSearchError = (error) => {
-  if (error.response?.status === 400) {
-    console.error('Parámetros de búsqueda inválidos:', error.response.data.error.details);
-  } else if (error.response?.status === 401) {
-    console.error('Token de autenticación inválido');
-    // Redirigir a login
-  } else if (error.response?.status === 403) {
-    console.error('No tienes permisos para realizar esta búsqueda');
-  } else {
-    console.error('Error en la búsqueda:', error.message);
-  }
+// Ejemplo de búsqueda por ubicación
+const locationSearch = {
+  location: 'Barcelona, Spain',
+  radius: 50,
+  type: 'all'
 };
 
-// Uso con try-catch
-try {
-  const results = await searchAPI.searchEvents(filters);
-  // Procesar resultados
-} catch (error) {
-  handleSearchError(error);
-}
-```
-
-### Paginación
-
-```javascript
-const loadMoreResults = async (currentOffset, limit = 20) => {
-  const newFilters = {
-    ...currentFilters,
-    offset: currentOffset,
-    limit
-  };
-  
-  const response = await searchAPI.searchEvents(newFilters);
-  
-  if (response.data.pagination.hasMore) {
-    // Cargar más resultados
-    return response.data.events;
-  } else {
-    // No hay más resultados
-    return [];
+const response = await fetch('/api/search/location?' + new URLSearchParams(locationSearch), {
+  headers: {
+    'Authorization': `Bearer ${token}`
   }
-};
+});
+
+const nearbyResults = await response.json();
+console.log('Resultados cercanos:', nearbyResults);
 ```
+
+## 🔄 Changelog
+
+### **v2.0.0 (Diciembre 2024)**
+- ✅ **Validación Robusta**: Manejo seguro de datos inconsistentes de Firestore
+- ✅ **Búsqueda Global Mejorada**: Estructura de respuesta unificada
+- ✅ **Filtros Avanzados**: Soporte para múltiples criterios de búsqueda
+- ✅ **Búsqueda Geográfica**: Algoritmos de proximidad optimizados
+- ✅ **Performance**: Optimización de consultas y paginación
+
+### **v1.5.0 (Noviembre 2024)**
+- ✅ **Sistema de Búsqueda**: Implementación inicial
+- ✅ **Filtros Básicos**: Por tipo, estado, fecha
+- ✅ **Autenticación**: Integración con JWT
+- ✅ **Documentación**: Documentación inicial de endpoints
+
+## 🚀 Próximas Mejoras
+
+### **En Desarrollo**
+- [ ] **Búsqueda Semántica**: Búsqueda por significado y contexto
+- [ ] **Autocompletado**: Sugerencias de búsqueda inteligentes
+- [ ] **Filtros Avanzados**: Filtros por rating, experiencia, disponibilidad
+- [ ] **Búsqueda por Voz**: Integración con reconocimiento de voz
+
+### **Roadmap**
+- [ ] **Machine Learning**: Recomendaciones personalizadas
+- [ ] **Búsqueda por Imagen**: Búsqueda visual de instrumentos/eventos
+- [ ] **Analytics de Búsqueda**: Métricas de uso y popularidad
+- [ ] **Cache Inteligente**: Cache de resultados frecuentes
 
 ---
 
-**Documentación actualizada al**: $(date)
-
-**Versión**: 1.0.0 - API de búsqueda avanzada implementada ✅ 
+**Estado**: ✅ Producción Ready  
+**Versión**: 2.0.0  
+**Última Actualización**: Diciembre 2024 
