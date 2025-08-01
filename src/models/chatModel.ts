@@ -30,14 +30,41 @@ export const createConversationModel = async (
 export const getConversationsByUserModel = async (
   userEmail: string
 ): Promise<Conversation[]> => {
-  const snapshot = await db
-    .collection('conversations')
-    .where('participants', 'array-contains', userEmail)
-    .where('isActive', '==', true)
-    .orderBy('updatedAt', 'desc')
-    .get();
+  try {
+    // Primero intentar con la consulta optimizada
+    const snapshot = await db
+      .collection('conversations')
+      .where('participants', 'array-contains', userEmail)
+      .where('isActive', '==', true)
+      .orderBy('updatedAt', 'desc')
+      .get();
 
-  return snapshot.docs.map(doc => doc.data() as Conversation);
+    return snapshot.docs.map(doc => doc.data() as Conversation);
+  } catch (error: any) {
+    // Si falla por índice faltante, usar consulta alternativa
+    if (error.code === 9 && error.message.includes('requires an index')) {
+      console.warn('Índice compuesto faltante, usando consulta alternativa');
+      
+      // Consulta alternativa sin ordenamiento
+      const snapshot = await db
+        .collection('conversations')
+        .where('participants', 'array-contains', userEmail)
+        .where('isActive', '==', true)
+        .get();
+
+      const conversations = snapshot.docs.map(doc => doc.data() as Conversation);
+      
+      // Ordenar en memoria
+      return conversations.sort((a, b) => {
+        const dateA = new Date(a.updatedAt || a.createdAt || 0);
+        const dateB = new Date(b.updatedAt || b.createdAt || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
+    }
+    
+    // Si es otro tipo de error, relanzarlo
+    throw error;
+  }
 };
 
 // Obtener conversación por ID
