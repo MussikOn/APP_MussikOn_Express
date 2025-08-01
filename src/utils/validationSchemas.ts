@@ -4,6 +4,7 @@ import Joi from 'joi';
 // ESQUEMAS DE AUTENTICACIÓN
 // ============================================================================
 
+// Esquema de registro general (para todos los usuarios)
 export const registerSchema = Joi.object({
   name: Joi.string()
     .min(2)
@@ -68,6 +69,61 @@ export const registerSchema = Joi.object({
     }),
 });
 
+// Esquema de registro simplificado para músicos y creadores de eventos (MVP)
+export const musicianRegisterSchema = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .required()
+    .messages({
+      'string.min': 'El nombre debe tener al menos 2 caracteres',
+      'string.max': 'El nombre no puede exceder 50 caracteres',
+      'string.pattern.base': 'El nombre solo puede contener letras y espacios',
+      'any.required': 'El nombre es requerido',
+    }),
+  lastName: Joi.string()
+    .min(2)
+    .max(50)
+    .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .required()
+    .messages({
+      'string.min': 'El apellido debe tener al menos 2 caracteres',
+      'string.max': 'El apellido no puede exceder 50 caracteres',
+      'string.pattern.base':
+        'El apellido solo puede contener letras y espacios',
+      'any.required': 'El apellido es requerido',
+    }),
+  userEmail: Joi.string()
+    .email({ tlds: { allow: false } })
+    .max(100)
+    .required()
+    .messages({
+      'string.email': 'El email debe tener un formato válido',
+      'string.max': 'El email no puede exceder 100 caracteres',
+      'any.required': 'El email es requerido',
+    }),
+  userPassword: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.#])[A-Za-z\d@$!%*?&.#]{8,}$/
+    )
+    .required()
+    .messages({
+      'string.min': 'La contraseña debe tener al menos 8 caracteres',
+      'string.max': 'La contraseña no puede exceder 128 caracteres',
+      'string.pattern.base':
+        'La contraseña debe contener al menos una minúscula, una mayúscula, un número y un carácter especial',
+      'any.required': 'La contraseña es requerida',
+    }),
+  // El rol puede ser 'musico' o 'eventCreator'
+  roll: Joi.string().valid('musico', 'eventCreator').required().messages({
+    'any.only': 'El rol debe ser "musico" o "eventCreator"',
+    'any.required': 'El rol es requerido',
+  }),
+});
+
 export const loginSchema = Joi.object({
   userEmail: Joi.string()
     .email({ tlds: { allow: false } })
@@ -116,6 +172,137 @@ export const updateUserSchema = Joi.object({
       'string.pattern.base':
         'La contraseña debe contener al menos una minúscula, una mayúscula, un número y un carácter especial',
     }),
+});
+
+// Esquema para actualizar perfil completo de músico (por administradores)
+export const updateMusicianProfileSchema = Joi.object({
+  // Información básica
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .required()
+    .messages({
+      'string.min': 'El nombre debe tener al menos 2 caracteres',
+      'string.max': 'El nombre no puede exceder 50 caracteres',
+      'string.pattern.base': 'El nombre solo puede contener letras y espacios',
+      'any.required': 'El nombre es requerido',
+    }),
+  lastName: Joi.string()
+    .min(2)
+    .max(50)
+    .pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/)
+    .required()
+    .messages({
+      'string.min': 'El apellido debe tener al menos 2 caracteres',
+      'string.max': 'El apellido no puede exceder 50 caracteres',
+      'string.pattern.base': 'El apellido solo puede contener letras y espacios',
+      'any.required': 'El apellido es requerido',
+    }),
+  
+  // Información musical
+  instruments: Joi.array()
+    .items(Joi.string().valid(
+      'guitarra', 'piano', 'bajo', 'bateria', 'saxofon', 'trompeta', 
+      'violin', 'canto', 'teclado', 'flauta', 'clarinete', 'trombón',
+      'acordeón', 'armónica', 'ukelele', 'cajón', 'maracas', 'otro'
+    ))
+    .min(1)
+    .required()
+    .messages({
+      'array.min': 'Debe seleccionar al menos un instrumento',
+      'any.required': 'Los instrumentos son requeridos',
+    }),
+  
+  hasOwnInstruments: Joi.boolean()
+    .required()
+    .messages({
+      'any.required': 'Debe especificar si tiene instrumentos propios',
+    }),
+  
+  experience: Joi.string()
+    .valid('principiante', 'intermedio', 'avanzado', 'profesional')
+    .required()
+    .messages({
+      'any.only': 'La experiencia debe ser: principiante, intermedio, avanzado o profesional',
+      'any.required': 'La experiencia es requerida',
+    }),
+  
+  bio: Joi.string()
+    .max(500)
+    .optional()
+    .messages({
+      'string.max': 'La biografía no puede exceder 500 caracteres',
+    }),
+  
+  // Información de ubicación
+  location: Joi.object({
+    latitude: Joi.number()
+      .min(-90)
+      .max(90)
+      .required()
+      .messages({
+        'number.min': 'La latitud debe estar entre -90 y 90',
+        'number.max': 'La latitud debe estar entre -90 y 90',
+        'any.required': 'La latitud es requerida',
+      }),
+    longitude: Joi.number()
+      .min(-180)
+      .max(180)
+      .required()
+      .messages({
+        'number.min': 'La longitud debe estar entre -180 y 180',
+        'number.max': 'La longitud debe estar entre -180 y 180',
+        'any.required': 'La longitud es requerida',
+      }),
+    address: Joi.string()
+      .max(200)
+      .required()
+      .messages({
+        'string.max': 'La dirección no puede exceder 200 caracteres',
+        'any.required': 'La dirección es requerida',
+      }),
+  }).required(),
+  
+  // Información de tarifas
+  hourlyRate: Joi.number()
+    .min(0)
+    .max(10000)
+    .required()
+    .messages({
+      'number.min': 'La tarifa por hora debe ser mayor a 0',
+      'number.max': 'La tarifa por hora no puede exceder 10000',
+      'any.required': 'La tarifa por hora es requerida',
+    }),
+  
+  // Estado del perfil
+  isApproved: Joi.boolean()
+    .default(false)
+    .messages({
+      'any.default': 'Por defecto el músico no está aprobado',
+    }),
+  
+  isAvailable: Joi.boolean()
+    .default(true)
+    .messages({
+      'any.default': 'Por defecto el músico está disponible',
+    }),
+  
+  // Información de contacto adicional
+  phone: Joi.string()
+    .pattern(/^\+?[1-9]\d{1,14}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'El número de teléfono debe tener un formato válido',
+    }),
+  
+  // Redes sociales (opcional)
+  socialMedia: Joi.object({
+    instagram: Joi.string().uri().optional(),
+    facebook: Joi.string().uri().optional(),
+    youtube: Joi.string().uri().optional(),
+    spotify: Joi.string().uri().optional(),
+  }).optional(),
 });
 
 // ============================================================================

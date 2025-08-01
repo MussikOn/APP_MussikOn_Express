@@ -352,6 +352,299 @@ export const addEventToUserController = async (req: Request, res: Response) => {
   }
 };
 
+// Controlador para solicitar verificación de email (para músicos y creadores de eventos)
+export const requestEmailVerificationController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { name, lastName, userEmail, userPassword, roll }: {
+      name: string;
+      lastName: string;
+      userEmail: string;
+      userPassword: string;
+      roll: 'musico' | 'eventCreator';
+    } = req.body;
+
+    console.log(
+      '[src/controllers/authController.ts:356] Solicitud de verificación recibida:',
+      { name, lastName, userEmail, roll }
+    );
+
+    // Validar campos requeridos
+    if (!name || !lastName || !userEmail || !userPassword || !roll) {
+      return res.status(400).json({
+        success: false,
+        message: 'Todos los campos son requeridos: name, lastName, userEmail, userPassword, roll',
+      });
+    }
+
+    // Validar email
+    if (!validarEmail(userEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El formato del email no es válido',
+      });
+    }
+
+    // Validar contraseña
+    if (!validarPassword(userPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe contener mayúsculas, minúsculas, números y caracteres especiales',
+      });
+    }
+
+    // Validar rol
+    if (!['musico', 'eventCreator'].includes(roll)) {
+      return res.status(400).json({
+        success: false,
+        message: 'El rol debe ser "musico" o "eventCreator"',
+      });
+    }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await getUserByEmailModel(userEmail);
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: 'Ya existe un usuario con este email',
+      });
+    }
+
+    // Generar código de verificación
+    const verificationCode = numberRandon().toString();
+    const hashedCode = await bcrypt.hash(verificationCode, 10);
+
+    // Guardar datos temporalmente (se guardarán en la base de datos después de la verificación)
+    const tempUserData = {
+      name,
+      lastName,
+      userEmail: userEmail.toLowerCase(),
+      userPassword,
+      roll,
+      verificationCode: hashedCode,
+      expiresAt: Date.now() + 15 * 60 * 1000, // 15 minutos
+    };
+
+    // Guardar en memoria temporal (en producción usar Redis)
+    verificationCodes.set(userEmail.toLowerCase(), {
+      code: verificationCode,
+      userData: tempUserData,
+      expiresAt: Date.now() + 15 * 60 * 1000,
+    });
+
+    // Enviar email de verificación
+    const html = `<!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Verifica tu cuenta - MusikOn</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', sans-serif;">
+      <table align="center" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #004aad; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <!-- Logo -->
+              <tr>
+                <td style="padding: 30px 0; text-align: center; background-color: #ffffff;">
+                  <img src="https://lh3.googleusercontent.com/a/ACg8ocLSs4B7UmP4bKLb26G-puyYjCURVh0Qnf9yHD_zxbCfRJTd3DFOovBly95OzJTWk34hnBf1RhigsdCnM0Wwg3TKCgsJ3rs=s288-c-no" alt="MusikOn Logo" width="120" style="border-radius: 50%;" />
+                </td>
+              </tr>
+
+              <!-- Título -->
+              <tr>
+                <td style="padding: 30px; text-align: center;">
+                  <h2 style="margin: 0; font-size: 26px; color: #fff;">¡Bienvenido a <span style="color: #f1f1f1;">MusikOn</span>!</h2>
+                  <p style="font-size: 16px; color: hsl(246, 100%, 92%);">Gracias por registrarte como ${roll === 'musico' ? 'músico' : 'creador de eventos'}. Solo falta un paso para activar tu cuenta.</p>
+                </td>
+              </tr>
+
+              <!-- Código -->
+              <tr>
+                <td style="text-align: center; padding: 20px;">
+                  <h1 style="display: inline-block; padding: 15px 30px; background-color: #004aad; color: #fff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 50px;">
+                    ${verificationCode}
+                  </h1>
+                </td>
+              </tr>
+
+              <!-- Instrucciones -->
+              <tr>
+                <td style="padding: 20px 40px; text-align: center; font-size: 14px; color: #b6c9ff;">
+                  <p>Ingresa este código en la aplicación para completar tu registro.</p>
+                  <p>Este código expira en 15 minutos.</p>
+                </td>
+              </tr>
+
+              <!-- Mensaje de soporte -->
+              <tr>
+                <td style="padding: 20px 40px; text-align: center; font-size: 14px; color: #b6c9ff;">
+                  Si no creaste esta cuenta, puedes ignorar este mensaje. Si tienes dudas, contáctanos en <a href="mailto:appmusikon@gmail.com" style="color: hsl(214, 100%, 77%);">appmusikon@gmail.com</a>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="text-align: center; padding: 30px; background-color: #f0f0f0; font-size: 12px; color: #0041f3;">
+                  &copy; 2025 MusikOn. Todos los derechos reservados.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>`;
+
+    await sendEmail(userEmail, 'Verifica tu cuenta en MusikOn', html);
+
+    console.log(
+      '[src/controllers/authController.ts:420] Email de verificación enviado:',
+      userEmail
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Email de verificación enviado exitosamente. Revisa tu bandeja de entrada.',
+      data: {
+        userEmail,
+        roll,
+        expiresIn: '15 minutos',
+      },
+    });
+  } catch (error) {
+    console.error(
+      '[src/controllers/authController.ts:440] Error en requestEmailVerificationController:',
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    });
+  }
+};
+
+// Controlador para verificar código y completar registro
+export const verifyAndCompleteRegistrationController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { userEmail, code }: {
+      userEmail: string;
+      code: string;
+    } = req.body;
+
+    console.log(
+      '[src/controllers/authController.ts:450] Verificación de código recibida:',
+      { userEmail, code }
+    );
+
+    // Validar campos requeridos
+    if (!userEmail || !code) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email y código son requeridos',
+      });
+    }
+
+    // Validar email
+    if (!validarEmail(userEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email inválido',
+      });
+    }
+
+    // Buscar datos temporales
+    const storedData = verificationCodes.get(userEmail.toLowerCase());
+    if (!storedData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Código no encontrado o expirado',
+      });
+    }
+
+    // Verificar expiración
+    if (storedData.expiresAt < Date.now()) {
+      verificationCodes.delete(userEmail.toLowerCase());
+      return res.status(400).json({
+        success: false,
+        message: 'Código expirado',
+      });
+    }
+
+    // Verificar que existan los datos del usuario
+    if (!storedData.userData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Datos de registro no encontrados',
+      });
+    }
+
+    // Verificar código
+    const isCodeValid = await bcrypt.compare(code, storedData.userData.verificationCode);
+    if (!isCodeValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Código inválido',
+      });
+    }
+
+    // Registrar usuario en la base de datos
+    const { name, lastName, userPassword, roll } = storedData.userData;
+    const result = await registerModel(name, lastName, roll, userEmail, userPassword, true);
+
+    if (result === false) {
+      // Limpiar datos temporales
+      verificationCodes.delete(userEmail.toLowerCase());
+
+      // Generar token JWT
+      const token = createToken(name, lastName, userEmail, roll);
+
+      console.log(
+        '[src/controllers/authController.ts:500] Usuario registrado exitosamente:',
+        userEmail
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: roll === 'musico' 
+          ? 'Músico registrado exitosamente. Su perfil será completado por un administrador.'
+          : 'Creador de eventos registrado exitosamente.',
+        data: {
+          userEmail,
+          name,
+          lastName,
+          roll,
+          status: roll === 'musico' ? 'pending_approval' : 'active',
+          token,
+        },
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Error al registrar el usuario',
+        error: result,
+      });
+    }
+  } catch (error) {
+    console.error(
+      '[src/controllers/authController.ts:520] Error en verifyAndCompleteRegistrationController:',
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    });
+  }
+};
+
 export const deleteUserByEmailController = async (
   req: Request,
   res: Response
@@ -472,7 +765,19 @@ export const deleteUserByEmailController = async (
 // Almacén temporal para códigos de verificación (en producción usar Redis)
 const verificationCodes = new Map<
   string,
-  { code: string; expiresAt: number }
+  { 
+    code: string; 
+    expiresAt: number;
+    userData?: {
+      name: string;
+      lastName: string;
+      userEmail: string;
+      userPassword: string;
+      roll: string;
+      verificationCode: string;
+      expiresAt: number;
+    };
+  }
 >();
 
 // Función para generar código de verificación

@@ -7,6 +7,7 @@ import {
   registerSchema,
   loginSchema,
   updateUserSchema,
+  musicianRegisterSchema,
 } from '../utils/validationSchemas';
 import {
   emailRegisterController,
@@ -19,6 +20,8 @@ import {
   forgotPasswordController,
   verifyCodeController,
   resetPasswordController,
+  requestEmailVerificationController,
+  verifyAndCompleteRegistrationController,
 } from '../controllers/authController';
 
 const router = Router();
@@ -57,6 +60,151 @@ router.post(
     logger.logAuth('Intento de registro', req.body.userEmail);
     await registerController(req, res);
     logger.logAuth('Registro exitoso', req.body.userEmail);
+  })
+);
+
+/**
+ * @swagger
+ * /auth/request-verification:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Solicitar verificación de email para registro
+ *     description: Envía un código de verificación al email para completar el registro de músicos o creadores de eventos.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - lastName
+ *               - userEmail
+ *               - userPassword
+ *               - roll
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Nombre del usuario
+ *               lastName:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 50
+ *                 description: Apellido del usuario
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Email del usuario
+ *               userPassword:
+ *                 type: string
+ *                 minLength: 8
+ *                 description: Contraseña del usuario
+ *               roll:
+ *                 type: string
+ *                 enum: [musico, eventCreator]
+ *                 description: Rol del usuario (músico o creador de eventos)
+ *     responses:
+ *       200:
+ *         description: Email de verificación enviado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userEmail:
+ *                       type: string
+ *                     roll:
+ *                       type: string
+ *                     expiresIn:
+ *                       type: string
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       409:
+ *         description: Usuario ya existe
+ */
+router.post(
+  '/request-verification',
+  validate(musicianRegisterSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    logger.logAuth('Solicitud de verificación de email', req.body.userEmail);
+    await requestEmailVerificationController(req, res);
+    logger.logAuth('Email de verificación enviado', req.body.userEmail);
+  })
+);
+
+/**
+ * @swagger
+ * /auth/verify-and-complete-registration:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verificar código y completar registro
+ *     description: Verifica el código enviado por email y completa el registro del usuario.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userEmail
+ *               - code
+ *             properties:
+ *               userEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: Email del usuario
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *                 description: Código de verificación enviado por email
+ *     responses:
+ *       201:
+ *         description: Usuario registrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userEmail:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     lastName:
+ *                       type: string
+ *                     roll:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     token:
+ *                       type: string
+ *       400:
+ *         description: Código inválido o expirado
+ *       404:
+ *         description: Datos de registro no encontrados
+ */
+router.post(
+  '/verify-and-complete-registration',
+  asyncHandler(async (req: Request, res: Response) => {
+    logger.logAuth('Verificación de código solicitada', req.body.userEmail);
+    await verifyAndCompleteRegistrationController(req, res);
+    logger.logAuth('Registro completado exitosamente', req.body.userEmail);
   })
 );
 
