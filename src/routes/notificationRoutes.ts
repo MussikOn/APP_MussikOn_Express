@@ -9,7 +9,7 @@ import {
   getUnreadCount,
   createNotification,
   sendBulkNotification,
-  getNotificationStats
+  getNotificationStats,
 } from '../controllers/notificationController';
 
 const notificationRoutes = Router();
@@ -71,7 +71,7 @@ const notificationRoutes = Router();
  *         - isRead
  *         - createdAt
  *         - updatedAt
- *     
+ *
  *     CreateNotificationDTO:
  *       type: object
  *       properties:
@@ -99,7 +99,7 @@ const notificationRoutes = Router();
  *         - userId
  *         - title
  *         - message
- *     
+ *
  *     BulkNotificationDTO:
  *       type: object
  *       properties:
@@ -231,7 +231,11 @@ notificationRoutes.get('/', authMiddleware, getNotifications);
  *       500:
  *         description: Error interno del servidor
  */
-notificationRoutes.put('/:notificationId/read', authMiddleware, markNotificationAsRead);
+notificationRoutes.put(
+  '/:notificationId/read',
+  authMiddleware,
+  markNotificationAsRead
+);
 
 /**
  * @swagger
@@ -296,7 +300,11 @@ notificationRoutes.put('/read-all', authMiddleware, markAllNotificationsAsRead);
  *       500:
  *         description: Error interno del servidor
  */
-notificationRoutes.delete('/:notificationId', authMiddleware, deleteNotification);
+notificationRoutes.delete(
+  '/:notificationId',
+  authMiddleware,
+  deleteNotification
+);
 
 /**
  * @swagger
@@ -409,7 +417,12 @@ notificationRoutes.post('/', authMiddleware, createNotification);
  *       500:
  *         description: Error interno del servidor
  */
-notificationRoutes.post('/bulk', authMiddleware, requireRole(['super_admin']), sendBulkNotification);
+notificationRoutes.post(
+  '/bulk',
+  authMiddleware,
+  requireRole(['super_admin']),
+  sendBulkNotification
+);
 
 /**
  * @swagger
@@ -481,4 +494,4 @@ notificationRoutes.post('/bulk', authMiddleware, requireRole(['super_admin']), s
  */
 notificationRoutes.get('/stats', authMiddleware, getNotificationStats);
 
-export default notificationRoutes; 
+export default notificationRoutes;

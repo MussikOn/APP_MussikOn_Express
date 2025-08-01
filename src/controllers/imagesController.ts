@@ -1,18 +1,18 @@
-import { Request, Response } from "express";
-import { 
-  uploadImage, 
-  getImageById, 
-  listImages, 
-  updateImage, 
-  deleteImage, 
+import { Request, Response } from 'express';
+import {
+  uploadImage,
+  getImageById,
+  listImages,
+  updateImage,
+  deleteImage,
   getImageStats,
   getUserProfileImages,
   getPostImages,
   getEventImages,
   deleteImageFromS3,
-  cleanupExpiredImages
-} from "../models/imagesModel";
-import { ImageFilters, ImageUpdateRequest } from "../utils/DataTypes";
+  cleanupExpiredImages,
+} from '../models/imagesModel';
+import { ImageFilters, ImageUpdateRequest } from '../utils/DataTypes';
 
 /**
  * @swagger
@@ -62,23 +62,29 @@ import { ImageFilters, ImageUpdateRequest } from "../utils/DataTypes";
  *                 image:
  *                   $ref: '#/components/schemas/Image'
  */
-export const uploadImageController = async (req: Request, res: Response): Promise<void> => {
+export const uploadImageController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user) {
-      res.status(401).json({ error: "Usuario no autenticado" });
+      res.status(401).json({ error: 'Usuario no autenticado' });
       return;
     }
 
     if (!req.file) {
-      res.status(400).json({ error: "No se proporcionó ningún archivo" });
+      res.status(400).json({ error: 'No se proporcionó ningún archivo' });
       return;
     }
 
     const { category, description, tags, isPublic } = req.body;
-    
-    if (!category || !['profile', 'post', 'event', 'gallery', 'admin'].includes(category)) {
-      res.status(400).json({ error: "Categoría inválida" });
+
+    if (
+      !category ||
+      !['profile', 'post', 'event', 'gallery', 'admin'].includes(category)
+    ) {
+      res.status(400).json({ error: 'Categoría inválida' });
       return;
     }
 
@@ -88,20 +94,31 @@ export const uploadImageController = async (req: Request, res: Response): Promis
       isPublic: isPublic !== undefined ? JSON.parse(isPublic) : true,
     };
 
-    const image = await uploadImage(req.file, user.userEmail, category, metadata);
-    
-    console.log(`[src/controllers/imagesController.ts:uploadImageController] Imagen subida por ${user.userEmail}:`, image.id);
-    
+    const image = await uploadImage(
+      req.file,
+      user.userEmail,
+      category,
+      metadata
+    );
+
+    console.log(
+      `[src/controllers/imagesController.ts:uploadImageController] Imagen subida por ${user.userEmail}:`,
+      image.id
+    );
+
     res.status(201).json({
       success: true,
-      message: "Imagen subida exitosamente",
-      image
+      message: 'Imagen subida exitosamente',
+      image,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:', error);
-    res.status(500).json({ 
-      error: "Error al subir imagen", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al subir imagen',
+      details: error.message,
     });
   }
 };
@@ -134,33 +151,42 @@ export const uploadImageController = async (req: Request, res: Response): Promis
  *       404:
  *         description: Imagen no encontrada
  */
-export const getImageByIdController = async (req: Request, res: Response): Promise<void> => {
+export const getImageByIdController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { imageId } = req.params;
-    
+
     if (!imageId) {
-      res.status(400).json({ error: "ID de imagen requerido" });
+      res.status(400).json({ error: 'ID de imagen requerido' });
       return;
     }
 
     const image = await getImageById(imageId);
-    
+
     if (!image) {
-      res.status(404).json({ error: "Imagen no encontrada" });
+      res.status(404).json({ error: 'Imagen no encontrada' });
       return;
     }
 
-    console.log(`[src/controllers/imagesController.ts:getImageByIdController] Imagen obtenida:`, imageId);
-    
+    console.log(
+      `[src/controllers/imagesController.ts:getImageByIdController] Imagen obtenida:`,
+      imageId
+    );
+
     res.status(200).json({
       success: true,
-      image
+      image,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:', error);
-    res.status(500).json({ 
-      error: "Error al obtener imagen", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener imagen',
+      details: error.message,
     });
   }
 };
@@ -222,7 +248,10 @@ export const getImageByIdController = async (req: Request, res: Response): Promi
  *                 total:
  *                   type: integer
  */
-export const listImagesController = async (req: Request, res: Response): Promise<void> => {
+export const listImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const {
       category,
@@ -230,11 +259,11 @@ export const listImagesController = async (req: Request, res: Response): Promise
       isPublic,
       search,
       limit = 20,
-      offset = 0
+      offset = 0,
     } = req.query;
 
     const filters: ImageFilters = {};
-    
+
     if (category) filters.category = category as any;
     if (userId) filters.userId = userId as string;
     if (isPublic !== undefined) filters.isPublic = isPublic === 'true';
@@ -243,20 +272,25 @@ export const listImagesController = async (req: Request, res: Response): Promise
     if (offset) filters.offset = parseInt(offset as string);
 
     const images = await listImages(filters);
-    
-    console.log(`[src/controllers/imagesController.ts:listImagesController] ${images.length} imágenes listadas`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:listImagesController] ${images.length} imágenes listadas`
+    );
+
     res.status(200).json({
       success: true,
       images,
       total: images.length,
-      filters
+      filters,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:', error);
-    res.status(500).json({ 
-      error: "Error al listar imágenes", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al listar imágenes',
+      details: error.message,
     });
   }
 };
@@ -306,11 +340,14 @@ export const listImagesController = async (req: Request, res: Response): Promise
  *                 image:
  *                   $ref: '#/components/schemas/Image'
  */
-export const updateImageController = async (req: Request, res: Response): Promise<void> => {
+export const updateImageController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user) {
-      res.status(401).json({ error: "Usuario no autenticado" });
+      res.status(401).json({ error: 'Usuario no autenticado' });
       return;
     }
 
@@ -318,36 +355,44 @@ export const updateImageController = async (req: Request, res: Response): Promis
     const updateData: ImageUpdateRequest = req.body;
 
     if (!imageId) {
-      res.status(400).json({ error: "ID de imagen requerido" });
+      res.status(400).json({ error: 'ID de imagen requerido' });
       return;
     }
 
     // Verificar que la imagen existe y pertenece al usuario
     const existingImage = await getImageById(imageId);
     if (!existingImage) {
-      res.status(404).json({ error: "Imagen no encontrada" });
+      res.status(404).json({ error: 'Imagen no encontrada' });
       return;
     }
 
     if (existingImage.userId !== user.userEmail) {
-      res.status(403).json({ error: "No tienes permisos para actualizar esta imagen" });
+      res
+        .status(403)
+        .json({ error: 'No tienes permisos para actualizar esta imagen' });
       return;
     }
 
     const updatedImage = await updateImage(imageId, updateData);
-    
-    console.log(`[src/controllers/imagesController.ts:updateImageController] Imagen actualizada por ${user.userEmail}:`, imageId);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:updateImageController] Imagen actualizada por ${user.userEmail}:`,
+      imageId
+    );
+
     res.status(200).json({
       success: true,
-      message: "Imagen actualizada exitosamente",
-      image: updatedImage
+      message: 'Imagen actualizada exitosamente',
+      image: updatedImage,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:', error);
-    res.status(500).json({ 
-      error: "Error al actualizar imagen", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al actualizar imagen',
+      details: error.message,
     });
   }
 };
@@ -380,34 +425,43 @@ export const updateImageController = async (req: Request, res: Response): Promis
  *                 message:
  *                   type: string
  */
-export const deleteImageController = async (req: Request, res: Response): Promise<void> => {
+export const deleteImageController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user) {
-      res.status(401).json({ error: "Usuario no autenticado" });
+      res.status(401).json({ error: 'Usuario no autenticado' });
       return;
     }
 
     const { imageId } = req.params;
 
     if (!imageId) {
-      res.status(400).json({ error: "ID de imagen requerido" });
+      res.status(400).json({ error: 'ID de imagen requerido' });
       return;
     }
 
     await deleteImage(imageId, user.userEmail);
-    
-    console.log(`[src/controllers/imagesController.ts:deleteImageController] Imagen eliminada por ${user.userEmail}:`, imageId);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:deleteImageController] Imagen eliminada por ${user.userEmail}:`,
+      imageId
+    );
+
     res.status(200).json({
       success: true,
-      message: "Imagen eliminada exitosamente"
+      message: 'Imagen eliminada exitosamente',
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:', error);
-    res.status(500).json({ 
-      error: "Error al eliminar imagen", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al eliminar imagen',
+      details: error.message,
     });
   }
 };
@@ -433,27 +487,42 @@ export const deleteImageController = async (req: Request, res: Response): Promis
  *                 stats:
  *                   $ref: '#/components/schemas/ImageStats'
  */
-export const getImageStatsController = async (req: Request, res: Response): Promise<void> => {
+export const getImageStatsController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = (req as any).user;
-    if (!user || !['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'].includes(user.roll)) {
-      res.status(403).json({ error: "Acceso denegado. Se requieren permisos de administrador" });
+    if (
+      !user ||
+      !['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin'].includes(
+        user.roll
+      )
+    ) {
+      res.status(403).json({
+        error: 'Acceso denegado. Se requieren permisos de administrador',
+      });
       return;
     }
 
     const stats = await getImageStats();
-    
-    console.log(`[src/controllers/imagesController.ts:getImageStatsController] Estadísticas obtenidas por ${user.userEmail}`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:getImageStatsController] Estadísticas obtenidas por ${user.userEmail}`
+    );
+
     res.status(200).json({
       success: true,
-      stats
+      stats,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:', error);
-    res.status(500).json({ 
-      error: "Error al obtener estadísticas", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener estadísticas',
+      details: error.message,
     });
   }
 };
@@ -486,28 +555,36 @@ export const getImageStatsController = async (req: Request, res: Response): Prom
  *                   items:
  *                     $ref: '#/components/schemas/Image'
  */
-export const getUserProfileImagesController = async (req: Request, res: Response): Promise<void> => {
+export const getUserProfileImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { userId } = req.params;
 
     if (!userId) {
-      res.status(400).json({ error: "ID de usuario requerido" });
+      res.status(400).json({ error: 'ID de usuario requerido' });
       return;
     }
 
     const images = await getUserProfileImages(userId);
-    
-    console.log(`[src/controllers/imagesController.ts:getUserProfileImagesController] Imágenes de perfil obtenidas para ${userId}`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:getUserProfileImagesController] Imágenes de perfil obtenidas para ${userId}`
+    );
+
     res.status(200).json({
       success: true,
-      images
+      images,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:', error);
-    res.status(500).json({ 
-      error: "Error al obtener imágenes de perfil", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener imágenes de perfil',
+      details: error.message,
     });
   }
 };
@@ -539,23 +616,31 @@ export const getUserProfileImagesController = async (req: Request, res: Response
  *                   items:
  *                     $ref: '#/components/schemas/Image'
  */
-export const getPostImagesController = async (req: Request, res: Response): Promise<void> => {
+export const getPostImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { userId } = req.query;
 
     const images = await getPostImages(userId as string);
-    
-    console.log(`[src/controllers/imagesController.ts:getPostImagesController] ${images.length} imágenes de posts obtenidas`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:getPostImagesController] ${images.length} imágenes de posts obtenidas`
+    );
+
     res.status(200).json({
       success: true,
-      images
+      images,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:', error);
-    res.status(500).json({ 
-      error: "Error al obtener imágenes de posts", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener imágenes de posts',
+      details: error.message,
     });
   }
 };
@@ -587,23 +672,31 @@ export const getPostImagesController = async (req: Request, res: Response): Prom
  *                   items:
  *                     $ref: '#/components/schemas/Image'
  */
-export const getEventImagesController = async (req: Request, res: Response): Promise<void> => {
+export const getEventImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { eventId } = req.query;
 
     const images = await getEventImages(eventId as string);
-    
-    console.log(`[src/controllers/imagesController.ts:getEventImagesController] ${images.length} imágenes de eventos obtenidas`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:getEventImagesController] ${images.length} imágenes de eventos obtenidas`
+    );
+
     res.status(200).json({
       success: true,
-      images
+      images,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:', error);
-    res.status(500).json({ 
-      error: "Error al obtener imágenes de eventos", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener imágenes de eventos',
+      details: error.message,
     });
   }
 };
@@ -631,70 +724,92 @@ export const getEventImagesController = async (req: Request, res: Response): Pro
  *                 message:
  *                   type: string
  */
-export const cleanupExpiredImagesController = async (req: Request, res: Response): Promise<void> => {
+export const cleanupExpiredImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user || !['adminSenior', 'superAdmin'].includes(user.roll)) {
-      res.status(403).json({ error: "Acceso denegado. Se requieren permisos de administrador senior" });
+      res.status(403).json({
+        error: 'Acceso denegado. Se requieren permisos de administrador senior',
+      });
       return;
     }
 
     const deletedCount = await cleanupExpiredImages();
-    
-    console.log(`[src/controllers/imagesController.ts:cleanupExpiredImagesController] Limpieza realizada por ${user.userEmail}: ${deletedCount} imágenes eliminadas`);
-    
+
+    console.log(
+      `[src/controllers/imagesController.ts:cleanupExpiredImagesController] Limpieza realizada por ${user.userEmail}: ${deletedCount} imágenes eliminadas`
+    );
+
     res.status(200).json({
       success: true,
       deletedCount,
-      message: `${deletedCount} imágenes expiradas eliminadas`
+      message: `${deletedCount} imágenes expiradas eliminadas`,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:', error);
-    res.status(500).json({ 
-      error: "Error en limpieza de imágenes", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error en limpieza de imágenes',
+      details: error.message,
     });
   }
 };
 
 // Controladores legacy para compatibilidad
-export const getAllImagesController = async (req: Request, res: Response): Promise<void> => {
+export const getAllImagesController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const images = await listImages();
     res.status(200).json({
       success: true,
-      message: "Galería de fotos obtenida",
-      images
+      message: 'Galería de fotos obtenida',
+      images,
     });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:', error);
-    res.status(500).json({ 
-      error: "Error al obtener galería de imágenes", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al obtener galería de imágenes',
+      details: error.message,
     });
   }
 };
 
-export const getImageUrlController = async (req: Request, res: Response): Promise<void> => {
+export const getImageUrlController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { key } = req.params;
     if (!key) {
-      res.status(400).json({ error: "Clave de archivo requerida" });
+      res.status(400).json({ error: 'Clave de archivo requerida' });
       return;
     }
-    
+
     const image = await getImageById(key);
     if (!image) {
-      res.status(404).json({ error: "Imagen no encontrada" });
+      res.status(404).json({ error: 'Imagen no encontrada' });
       return;
     }
-    
+
     res.status(200).json({ url: image.url });
   } catch (error: any) {
-    console.error('[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:', error);
-    res.status(500).json({ 
-      error: "Error al generar URL de archivo", 
-      details: error.message 
+    console.error(
+      '[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:',
+      error
+    );
+    res.status(500).json({
+      error: 'Error al generar URL de archivo',
+      details: error.message,
     });
   }
 };

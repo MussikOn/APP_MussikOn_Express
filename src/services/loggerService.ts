@@ -4,7 +4,7 @@ export enum LogLevel {
   ERROR = 'error',
   WARN = 'warn',
   INFO = 'info',
-  DEBUG = 'debug'
+  DEBUG = 'debug',
 }
 
 export interface LogEntry {
@@ -32,16 +32,20 @@ class LoggerService {
     const user = entry.userId ? ` [User: ${entry.userId}]` : '';
     const request = entry.requestId ? ` [Request: ${entry.requestId}]` : '';
     const duration = entry.duration ? ` [${entry.duration}ms]` : '';
-    
+
     return `${base}${context}${user}${request}${duration}`;
   }
 
-  private log(level: LogLevel, message: string, options: Partial<LogEntry> = {}): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    options: Partial<LogEntry> = {}
+  ): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,
       message,
-      ...options
+      ...options,
     };
 
     const formattedLog = this.formatLog(entry);
@@ -89,8 +93,8 @@ class LoggerService {
   // Métodos específicos para logging de requests
   logRequest(req: Request, res: Response, duration: number): void {
     const userId = (req as any).user?.userEmail || 'anonymous';
-    const requestId = req.headers['x-request-id'] as string || 'unknown';
-    
+    const requestId = (req.headers['x-request-id'] as string) || 'unknown';
+
     this.info('Request completed', {
       context: 'HTTP',
       userId,
@@ -102,15 +106,19 @@ class LoggerService {
       duration,
       metadata: {
         statusCode: res.statusCode,
-        contentLength: res.get('Content-Length')
-      }
+        contentLength: res.get('Content-Length'),
+      },
     });
   }
 
   logError(error: Error, req?: Request, context?: string): void {
-    const userId = req ? ((req as any).user?.userEmail || 'anonymous') : 'unknown';
-    const requestId = req ? (req.headers['x-request-id'] as string || 'unknown') : 'unknown';
-    
+    const userId = req
+      ? (req as any).user?.userEmail || 'anonymous'
+      : 'unknown';
+    const requestId = req
+      ? (req.headers['x-request-id'] as string) || 'unknown'
+      : 'unknown';
+
     this.error(error.message, error, {
       context: context || 'Application',
       userId,
@@ -118,51 +126,75 @@ class LoggerService {
       method: req?.method,
       url: req?.originalUrl,
       ip: req?.ip,
-      userAgent: req?.get('User-Agent')
+      userAgent: req?.get('User-Agent'),
     });
   }
 
   // Métodos específicos para diferentes contextos
-  logAuth(message: string, userId?: string, options: Partial<LogEntry> = {}): void {
+  logAuth(
+    message: string,
+    userId?: string,
+    options: Partial<LogEntry> = {}
+  ): void {
     this.info(message, { context: 'Auth', userId, ...options });
   }
 
-  logEvent(message: string, eventId?: string, userId?: string, options: Partial<LogEntry> = {}): void {
-    this.info(message, { 
-      context: 'Event', 
-      userId, 
+  logEvent(
+    message: string,
+    eventId?: string,
+    userId?: string,
+    options: Partial<LogEntry> = {}
+  ): void {
+    this.info(message, {
+      context: 'Event',
+      userId,
       metadata: { eventId, ...options.metadata },
-      ...options 
+      ...options,
     });
   }
 
-  logImage(message: string, imageId?: string, userId?: string, options: Partial<LogEntry> = {}): void {
-    this.info(message, { 
-      context: 'Image', 
-      userId, 
+  logImage(
+    message: string,
+    imageId?: string,
+    userId?: string,
+    options: Partial<LogEntry> = {}
+  ): void {
+    this.info(message, {
+      context: 'Image',
+      userId,
       metadata: { imageId, ...options.metadata },
-      ...options 
+      ...options,
     });
   }
 
-  logChat(message: string, conversationId?: string, userId?: string, options: Partial<LogEntry> = {}): void {
-    this.info(message, { 
-      context: 'Chat', 
-      userId, 
+  logChat(
+    message: string,
+    conversationId?: string,
+    userId?: string,
+    options: Partial<LogEntry> = {}
+  ): void {
+    this.info(message, {
+      context: 'Chat',
+      userId,
       metadata: { conversationId, ...options.metadata },
-      ...options 
+      ...options,
     });
   }
 
-  logAdmin(message: string, adminId?: string, action?: string, options: Partial<LogEntry> = {}): void {
-    this.info(message, { 
-      context: 'Admin', 
-      userId: adminId, 
+  logAdmin(
+    message: string,
+    adminId?: string,
+    action?: string,
+    options: Partial<LogEntry> = {}
+  ): void {
+    this.info(message, {
+      context: 'Admin',
+      userId: adminId,
       metadata: { action, ...options.metadata },
-      ...options 
+      ...options,
     });
   }
 }
 
 // Exportar una instancia singleton
-export const logger = new LoggerService(); 
+export const logger = new LoggerService();

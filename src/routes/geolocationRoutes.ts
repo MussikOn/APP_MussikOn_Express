@@ -11,7 +11,7 @@ import {
   reverseGeocodeController,
   calculateDistanceController,
   getLocationStatsController,
-  isWithinRadiusController
+  isWithinRadiusController,
 } from '../controllers/geolocationController';
 
 const router = Router();
@@ -19,34 +19,34 @@ const router = Router();
 // DTOs para validación
 const coordinatesDTO = Joi.object({
   lat: Joi.number().min(-90).max(90).required(),
-  lng: Joi.number().min(-180).max(180).required()
+  lng: Joi.number().min(-180).max(180).required(),
 });
 
 const geocodeAddressDTO = Joi.object({
-  address: Joi.string().required().min(3).max(200)
+  address: Joi.string().required().min(3).max(200),
 });
 
 const reverseGeocodeDTO = Joi.object({
   lat: Joi.number().min(-90).max(90).required(),
-  lng: Joi.number().min(-180).max(180).required()
+  lng: Joi.number().min(-180).max(180).required(),
 });
 
 const calculateDistanceDTO = Joi.object({
   point1: coordinatesDTO.required(),
-  point2: coordinatesDTO.required()
+  point2: coordinatesDTO.required(),
 });
 
 const isWithinRadiusDTO = Joi.object({
   center: coordinatesDTO.required(),
   point: coordinatesDTO.required(),
-  radius: Joi.number().positive().required()
+  radius: Joi.number().positive().required(),
 });
 
 const optimizeRouteDTO = Joi.object({
   startLocation: coordinatesDTO.required(),
   destinations: Joi.array().items(coordinatesDTO).min(1).required(),
   mode: Joi.string().valid('driving', 'walking', 'transit').required(),
-  optimize: Joi.boolean().default(false)
+  optimize: Joi.boolean().default(false),
 });
 
 /**
@@ -266,7 +266,12 @@ router.get('/nearby-musicians', authMiddleware, findNearbyMusiciansController);
  *       200:
  *         description: Ruta optimizada
  */
-router.post('/optimize-route', authMiddleware, validate(optimizeRouteDTO), optimizeRouteController);
+router.post(
+  '/optimize-route',
+  authMiddleware,
+  validate(optimizeRouteDTO),
+  optimizeRouteController
+);
 
 /**
  * @swagger
@@ -289,7 +294,12 @@ router.post('/optimize-route', authMiddleware, validate(optimizeRouteDTO), optim
  *       200:
  *         description: Coordenadas obtenidas
  */
-router.post('/geocode', authMiddleware, validate(geocodeAddressDTO), geocodeAddressController);
+router.post(
+  '/geocode',
+  authMiddleware,
+  validate(geocodeAddressDTO),
+  geocodeAddressController
+);
 
 /**
  * @swagger
@@ -314,7 +324,12 @@ router.post('/geocode', authMiddleware, validate(geocodeAddressDTO), geocodeAddr
  *       200:
  *         description: Dirección obtenida
  */
-router.post('/reverse-geocode', authMiddleware, validate(reverseGeocodeDTO), reverseGeocodeController);
+router.post(
+  '/reverse-geocode',
+  authMiddleware,
+  validate(reverseGeocodeDTO),
+  reverseGeocodeController
+);
 
 /**
  * @swagger
@@ -349,7 +364,12 @@ router.post('/reverse-geocode', authMiddleware, validate(reverseGeocodeDTO), rev
  *       200:
  *         description: Distancia calculada
  */
-router.post('/calculate-distance', authMiddleware, validate(calculateDistanceDTO), calculateDistanceController);
+router.post(
+  '/calculate-distance',
+  authMiddleware,
+  validate(calculateDistanceDTO),
+  calculateDistanceController
+);
 
 /**
  * @swagger
@@ -400,6 +420,11 @@ router.get('/stats', authMiddleware, getLocationStatsController);
  *       200:
  *         description: Resultado de la verificación
  */
-router.post('/within-radius', authMiddleware, validate(isWithinRadiusDTO), isWithinRadiusController);
+router.post(
+  '/within-radius',
+  authMiddleware,
+  validate(isWithinRadiusDTO),
+  isWithinRadiusController
+);
 
-export default router; 
+export default router;

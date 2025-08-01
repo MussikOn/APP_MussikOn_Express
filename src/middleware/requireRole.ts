@@ -6,7 +6,7 @@ export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
-      
+
       if (!user) {
         throw new OperationalError('Usuario no autenticado', 401);
       }
@@ -28,5 +28,14 @@ export const requireRole = (allowedRoles: string[]) => {
 // Middleware específicos para roles comunes
 export const requireAdmin = requireRole(['admin', 'super_admin']);
 export const requireSuperAdmin = requireRole(['super_admin']);
-export const requireMusician = requireRole(['musician', 'admin', 'super_admin']);
-export const requireUser = requireRole(['user', 'musician', 'admin', 'super_admin']); 
+export const requireMusician = requireRole([
+  'musician',
+  'admin',
+  'super_admin',
+]);
+export const requireUser = requireRole([
+  'user',
+  'musician',
+  'admin',
+  'super_admin',
+]);

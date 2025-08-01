@@ -100,10 +100,11 @@ export class SearchService {
       let filteredEvents = events;
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
-        filteredEvents = events.filter((event: any) => 
-          event.eventName.toLowerCase().includes(searchTerm) ||
-          event.location.toLowerCase().includes(searchTerm) ||
-          event.comment?.toLowerCase().includes(searchTerm)
+        filteredEvents = events.filter(
+          (event: any) =>
+            event.eventName.toLowerCase().includes(searchTerm) ||
+            event.location.toLowerCase().includes(searchTerm) ||
+            event.comment?.toLowerCase().includes(searchTerm)
         );
       }
 
@@ -122,7 +123,7 @@ export class SearchService {
         total: filteredEvents.length,
         page: Math.floor((filters.offset || 0) / limit) + 1,
         limit,
-        hasMore: filteredEvents.length === limit
+        hasMore: filteredEvents.length === limit,
       };
     } catch (error) {
       console.error('Error en búsqueda de eventos:', error);
@@ -133,7 +134,9 @@ export class SearchService {
   /**
    * Búsqueda avanzada de solicitudes de músicos
    */
-  async searchMusicianRequests(filters: SearchFilters): Promise<SearchResult<MusicianRequest>> {
+  async searchMusicianRequests(
+    filters: SearchFilters
+  ): Promise<SearchResult<MusicianRequest>> {
     try {
       let query: any = db.collection('musicianRequests');
 
@@ -168,16 +171,19 @@ export class SearchService {
       }
 
       const snapshot = await query.get();
-      const requests = snapshot.docs.map((doc: any) => doc.data() as MusicianRequest);
+      const requests = snapshot.docs.map(
+        (doc: any) => doc.data() as MusicianRequest
+      );
 
       // Filtrado por texto si se especifica
       let filteredRequests = requests;
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
-        filteredRequests = requests.filter((request: any) => 
-          request.description?.toLowerCase().includes(searchTerm) ||
-          request.location.toLowerCase().includes(searchTerm) ||
-          request.requirements?.toLowerCase().includes(searchTerm)
+        filteredRequests = requests.filter(
+          (request: any) =>
+            request.description?.toLowerCase().includes(searchTerm) ||
+            request.location.toLowerCase().includes(searchTerm) ||
+            request.requirements?.toLowerCase().includes(searchTerm)
         );
       }
 
@@ -196,7 +202,7 @@ export class SearchService {
         total: filteredRequests.length,
         page: Math.floor((filters.offset || 0) / limit) + 1,
         limit,
-        hasMore: filteredRequests.length === limit
+        hasMore: filteredRequests.length === limit,
       };
     } catch (error) {
       console.error('Error en búsqueda de solicitudes:', error);
@@ -232,10 +238,11 @@ export class SearchService {
       let filteredUsers = users;
       if (filters.query) {
         const searchTerm = filters.query.toLowerCase();
-        filteredUsers = users.filter((user: any) => 
-          user.name.toLowerCase().includes(searchTerm) ||
-          user.lastName.toLowerCase().includes(searchTerm) ||
-          user.userEmail.toLowerCase().includes(searchTerm)
+        filteredUsers = users.filter(
+          (user: any) =>
+            user.name.toLowerCase().includes(searchTerm) ||
+            user.lastName.toLowerCase().includes(searchTerm) ||
+            user.userEmail.toLowerCase().includes(searchTerm)
         );
       }
 
@@ -244,7 +251,7 @@ export class SearchService {
         total: filteredUsers.length,
         page: Math.floor((filters.offset || 0) / limit) + 1,
         limit,
-        hasMore: filteredUsers.length === limit
+        hasMore: filteredUsers.length === limit,
       };
     } catch (error) {
       console.error('Error en búsqueda de usuarios:', error);
@@ -264,13 +271,13 @@ export class SearchService {
       const [eventsResult, requestsResult, usersResult] = await Promise.all([
         this.searchEvents(filters),
         this.searchMusicianRequests(filters),
-        this.searchUsers(filters)
+        this.searchUsers(filters),
       ]);
 
       return {
         events: eventsResult.data,
         requests: requestsResult.data,
-        users: usersResult.data
+        users: usersResult.data,
       };
     } catch (error) {
       console.error('Error en búsqueda global:', error);
@@ -281,7 +288,10 @@ export class SearchService {
   /**
    * Búsqueda por proximidad geográfica
    */
-  async searchByLocation(location: string, radius: number = 50): Promise<{
+  async searchByLocation(
+    location: string,
+    radius: number = 50
+  ): Promise<{
     events: Event[];
     requests: MusicianRequest[];
   }> {
@@ -292,7 +302,7 @@ export class SearchService {
 
       return {
         events: eventsResult.data,
-        requests: requestsResult.data
+        requests: requestsResult.data,
       };
     } catch (error) {
       console.error('Error en búsqueda por ubicación:', error);
@@ -303,25 +313,29 @@ export class SearchService {
   /**
    * Búsqueda de eventos disponibles para músicos
    */
-  async searchAvailableEventsForMusician(musicianId: string, filters: SearchFilters): Promise<SearchResult<Event>> {
+  async searchAvailableEventsForMusician(
+    musicianId: string,
+    filters: SearchFilters
+  ): Promise<SearchResult<Event>> {
     try {
       const availableFilters = {
         ...filters,
-        status: 'pending_musician'
+        status: 'pending_musician',
       };
 
       const result = await this.searchEvents(availableFilters);
-      
+
       // Filtrar eventos donde el músico no esté ya asignado o interesado
-      const filteredEvents = result.data.filter(event => 
-        event.assignedMusicianId !== musicianId &&
-        !event.interestedMusicians?.includes(musicianId)
+      const filteredEvents = result.data.filter(
+        event =>
+          event.assignedMusicianId !== musicianId &&
+          !event.interestedMusicians?.includes(musicianId)
       );
 
       return {
         ...result,
         data: filteredEvents,
-        total: filteredEvents.length
+        total: filteredEvents.length,
       };
     } catch (error) {
       console.error('Error en búsqueda de eventos disponibles:', error);
@@ -332,15 +346,18 @@ export class SearchService {
   /**
    * Búsqueda de músicos disponibles para un evento
    */
-  async searchAvailableMusiciansForEvent(eventId: string, filters: SearchFilters): Promise<SearchResult<User>> {
+  async searchAvailableMusiciansForEvent(
+    eventId: string,
+    filters: SearchFilters
+  ): Promise<SearchResult<User>> {
     try {
       const musicianFilters = {
         ...filters,
-        userRole: 'musico'
+        userRole: 'musico',
       };
 
       const result = await this.searchUsers(musicianFilters);
-      
+
       // Aquí se podría implementar lógica adicional para filtrar músicos
       // que estén disponibles en la fecha del evento, tengan el instrumento requerido, etc.
 
@@ -352,4 +369,4 @@ export class SearchService {
   }
 }
 
-export const searchService = new SearchService(); 
+export const searchService = new SearchService();

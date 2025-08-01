@@ -6,7 +6,10 @@ import { Server } from 'socket.io';
 // Asume que tienes acceso a la instancia de io y users (mapa de usuarios conectados)
 let io: Server;
 let users: Record<string, string>;
-export const setSocketInstance = (_io: Server, _users: Record<string, string>) => {
+export const setSocketInstance = (
+  _io: Server,
+  _users: Record<string, string>
+) => {
   io = _io;
   users = _users;
 };
@@ -15,9 +18,20 @@ export const setSocketInstance = (_io: Server, _users: Record<string, string>) =
 export const createRequest = async (req: Request, res: Response) => {
   try {
     const {
-      userId, eventType, date, startTime, endTime, location, instrument, budget, comments
+      userId,
+      eventType,
+      date,
+      startTime,
+      endTime,
+      location,
+      instrument,
+      budget,
+      comments,
     } = req.body;
-    const newRequest: Omit<MusicianRequest, 'id' | 'status' | 'createdAt' | 'updatedAt'> = {
+    const newRequest: Omit<
+      MusicianRequest,
+      'id' | 'status' | 'createdAt' | 'updatedAt'
+    > = {
       userId,
       eventType,
       date,
@@ -25,7 +39,7 @@ export const createRequest = async (req: Request, res: Response) => {
       location,
       instrument,
       budget,
-      comments
+      comments,
     };
     const docRef = await db.collection('musicianRequests').add({
       ...newRequest,
@@ -47,7 +61,10 @@ export const acceptRequest = async (req: Request, res: Response) => {
     const { requestId, musicianId } = req.body;
     const docRef = db.collection('musicianRequests').doc(requestId);
     const doc = await docRef.get();
-    if (!doc.exists) {res.status(404).json({ error: 'Solicitud no encontrada' });return;}
+    if (!doc.exists) {
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
+    }
     const data = doc.data() as MusicianRequest;
     if (data.status !== 'pendiente') {
       res.status(400).json({ error: 'Solicitud ya tomada o no disponible' });
@@ -75,12 +92,17 @@ export const cancelRequest = async (req: Request, res: Response) => {
     const { requestId } = req.body;
     const docRef = db.collection('musicianRequests').doc(requestId);
     const doc = await docRef.get();
-    if (!doc.exists) {res.status(404).json({ error: 'Solicitud no encontrada' });return;}
+    if (!doc.exists) {
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
+    }
     await docRef.update({ status: 'cancelada', updatedAt: new Date() });
     if (io) io.emit('request_cancelled', { requestId });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Error al cancelar solicitud', details: err });
+    res
+      .status(500)
+      .json({ error: 'Error al cancelar solicitud', details: err });
   }
 };
 
@@ -89,7 +111,10 @@ export const getRequestStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const doc = await db.collection('musicianRequests').doc(id).get();
-    if (!doc.exists) {res.status(404).json({ error: 'Solicitud no encontrada' });return;}
+    if (!doc.exists) {
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
+    }
     res.json(doc.data());
   } catch (err) {
     res.status(500).json({ error: 'Error al consultar estado', details: err });
@@ -123,9 +148,13 @@ export const updateRequest = async (req: Request, res: Response) => {
       return;
     }
     await docRef.update({ ...updateData, updatedAt: new Date() });
-    res.status(200).json({ success: true, message: 'Solicitud actualizada correctamente' });
+    res
+      .status(200)
+      .json({ success: true, message: 'Solicitud actualizada correctamente' });
   } catch (err) {
-    res.status(500).json({ error: 'Error al actualizar solicitud', details: err });
+    res
+      .status(500)
+      .json({ error: 'Error al actualizar solicitud', details: err });
   }
 };
 
@@ -136,12 +165,16 @@ export const deleteRequest = async (req: Request, res: Response) => {
     const docRef = db.collection('musicianRequests').doc(id);
     const doc = await docRef.get();
     if (!doc.exists) {
-    res.status(404).json({ error: 'Solicitud no encontrada' });
-    return;
+      res.status(404).json({ error: 'Solicitud no encontrada' });
+      return;
     }
     await docRef.delete();
-    res.status(200).json({ success: true, message: 'Solicitud eliminada correctamente' });
+    res
+      .status(200)
+      .json({ success: true, message: 'Solicitud eliminada correctamente' });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar solicitud', details: err });
+    res
+      .status(500)
+      .json({ error: 'Error al eliminar solicitud', details: err });
   }
 };

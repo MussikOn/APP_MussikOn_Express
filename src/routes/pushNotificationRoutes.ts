@@ -14,7 +14,7 @@ import {
   deleteNotificationTemplate,
   getNotificationStats,
   getVapidPublicKey,
-  testPushNotification
+  testPushNotification,
 } from '../controllers/pushNotificationController';
 
 const router = express.Router();
@@ -274,7 +274,11 @@ router.get('/subscriptions', authMiddleware, getUserPushSubscriptions);
  *       404:
  *         description: Suscripción no encontrada
  */
-router.delete('/subscription/:subscriptionId', authMiddleware, deletePushSubscription);
+router.delete(
+  '/subscription/:subscriptionId',
+  authMiddleware,
+  deletePushSubscription
+);
 
 /**
  * @swagger
@@ -305,7 +309,12 @@ router.delete('/subscription/:subscriptionId', authMiddleware, deletePushSubscri
  *       400:
  *         description: Datos inválidos
  */
-router.post('/send/:userId', authMiddleware, requireRole(['admin', 'superadmin']), sendNotificationToUser);
+router.post(
+  '/send/:userId',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  sendNotificationToUser
+);
 
 /**
  * @swagger
@@ -345,7 +354,12 @@ router.post('/send/:userId', authMiddleware, requireRole(['admin', 'superadmin']
  *       400:
  *         description: Datos inválidos
  */
-router.post('/bulk', authMiddleware, requireRole(['admin', 'superadmin']), sendBulkNotification);
+router.post(
+  '/bulk',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  sendBulkNotification
+);
 
 /**
  * @swagger
@@ -369,7 +383,12 @@ router.post('/bulk', authMiddleware, requireRole(['admin', 'superadmin']), sendB
  *       400:
  *         description: Datos inválidos
  */
-router.post('/templates', authMiddleware, requireRole(['admin', 'superadmin']), createNotificationTemplate);
+router.post(
+  '/templates',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  createNotificationTemplate
+);
 
 /**
  * @swagger
@@ -454,7 +473,12 @@ router.get('/templates/:templateId', authMiddleware, getNotificationTemplate);
  *       404:
  *         description: Template no encontrado
  */
-router.put('/templates/:templateId', authMiddleware, requireRole(['admin', 'superadmin']), updateNotificationTemplate);
+router.put(
+  '/templates/:templateId',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  updateNotificationTemplate
+);
 
 /**
  * @swagger
@@ -479,7 +503,12 @@ router.put('/templates/:templateId', authMiddleware, requireRole(['admin', 'supe
  *       404:
  *         description: Template no encontrado
  */
-router.delete('/templates/:templateId', authMiddleware, requireRole(['admin', 'superadmin']), deleteNotificationTemplate);
+router.delete(
+  '/templates/:templateId',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  deleteNotificationTemplate
+);
 
 /**
  * @swagger
@@ -521,7 +550,12 @@ router.delete('/templates/:templateId', authMiddleware, requireRole(['admin', 's
  *       401:
  *         description: No autorizado
  */
-router.get('/stats', authMiddleware, requireRole(['admin', 'superadmin']), getNotificationStats);
+router.get(
+  '/stats',
+  authMiddleware,
+  requireRole(['admin', 'superadmin']),
+  getNotificationStats
+);
 
 /**
  * @swagger
@@ -565,4 +599,4 @@ router.get('/vapid-key', getVapidPublicKey);
  */
 router.post('/test', authMiddleware, testPushNotification);
 
-export default router; 
+export default router;

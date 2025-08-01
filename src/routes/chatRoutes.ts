@@ -1,5 +1,5 @@
-import express from "express";
-import { authMiddleware } from "../middleware/authMiddleware";
+import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware';
 import {
   getConversations,
   getMessages,
@@ -10,8 +10,8 @@ import {
   deleteConversation,
   archiveConversation,
   getConversationById,
-  getChatStats
-} from "../controllers/chatController";
+  getChatStats,
+} from '../controllers/chatController';
 
 const router = express.Router();
 
@@ -19,33 +19,33 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Obtener todas las conversaciones del usuario
-router.get("/conversations", getConversations);
+router.get('/conversations', getConversations);
 
 // Buscar conversaciones con filtros
-router.get("/conversations/search", searchConversations);
+router.get('/conversations/search', searchConversations);
 
 // Obtener estadísticas de chat
-router.get("/stats", getChatStats);
+router.get('/stats', getChatStats);
 
 // Crear una nueva conversación
-router.post("/conversations", createConversation);
+router.post('/conversations', createConversation);
 
 // Obtener conversación por ID
-router.get("/conversations/:conversationId", getConversationById);
+router.get('/conversations/:conversationId', getConversationById);
 
 // Obtener mensajes de una conversación
-router.get("/conversations/:conversationId/messages", getMessages);
+router.get('/conversations/:conversationId/messages', getMessages);
 
 // Enviar mensaje a una conversación
-router.post("/conversations/:conversationId/messages", sendMessage);
+router.post('/conversations/:conversationId/messages', sendMessage);
 
 // Marcar mensaje como leído
-router.patch("/messages/:messageId/read", markAsRead);
+router.patch('/messages/:messageId/read', markAsRead);
 
 // Archivar conversación
-router.patch("/conversations/:conversationId/archive", archiveConversation);
+router.patch('/conversations/:conversationId/archive', archiveConversation);
 
 // Eliminar conversación
-router.delete("/conversations/:conversationId", deleteConversation);
+router.delete('/conversations/:conversationId', deleteConversation);
 
-export default router; 
+export default router;

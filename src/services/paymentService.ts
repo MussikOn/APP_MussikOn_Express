@@ -77,9 +77,15 @@ export class PaymentService {
   /**
    * Crear un método de pago
    */
-  async createPaymentMethod(userId: string, paymentData: any): Promise<PaymentMethod> {
+  async createPaymentMethod(
+    userId: string,
+    paymentData: any
+  ): Promise<PaymentMethod> {
     try {
-      logger.info('Creando método de pago', { userId, metadata: { paymentData } });
+      logger.info('Creando método de pago', {
+        userId,
+        metadata: { paymentData },
+      });
 
       // En producción, esto se integraría con Stripe/PayPal
       const paymentMethod: PaymentMethod = {
@@ -90,17 +96,23 @@ export class PaymentService {
         expiryMonth: paymentData.expiryMonth,
         expiryYear: paymentData.expiryYear,
         isDefault: paymentData.isDefault || false,
-        userId
+        userId,
       };
 
-      await db.collection('paymentMethods').doc(paymentMethod.id).set(paymentMethod);
+      await db
+        .collection('paymentMethods')
+        .doc(paymentMethod.id)
+        .set(paymentMethod);
 
       // Si es el método por defecto, actualizar otros métodos
       if (paymentMethod.isDefault) {
         await this.setDefaultPaymentMethod(userId, paymentMethod.id);
       }
 
-      logger.info('Método de pago creado', { userId, metadata: { paymentMethodId: paymentMethod.id } });
+      logger.info('Método de pago creado', {
+        userId,
+        metadata: { paymentMethodId: paymentMethod.id },
+      });
 
       return paymentMethod;
     } catch (error) {
@@ -114,7 +126,8 @@ export class PaymentService {
    */
   async getPaymentMethods(userId: string): Promise<PaymentMethod[]> {
     try {
-      const snapshot = await db.collection('paymentMethods')
+      const snapshot = await db
+        .collection('paymentMethods')
         .where('userId', '==', userId)
         .orderBy('isDefault', 'desc')
         .get();
@@ -126,7 +139,9 @@ export class PaymentService {
 
       return paymentMethods;
     } catch (error) {
-      logger.error('Error obteniendo métodos de pago', error as Error, { userId });
+      logger.error('Error obteniendo métodos de pago', error as Error, {
+        userId,
+      });
       throw error;
     }
   }
@@ -134,12 +149,16 @@ export class PaymentService {
   /**
    * Establecer método de pago por defecto
    */
-  async setDefaultPaymentMethod(userId: string, paymentMethodId: string): Promise<void> {
+  async setDefaultPaymentMethod(
+    userId: string,
+    paymentMethodId: string
+  ): Promise<void> {
     try {
       const batch = db.batch();
 
       // Remover default de otros métodos
-      const snapshot = await db.collection('paymentMethods')
+      const snapshot = await db
+        .collection('paymentMethods')
         .where('userId', '==', userId)
         .where('isDefault', '==', true)
         .get();
@@ -149,13 +168,21 @@ export class PaymentService {
       });
 
       // Establecer nuevo método por defecto
-      batch.update(db.collection('paymentMethods').doc(paymentMethodId), { isDefault: true });
+      batch.update(db.collection('paymentMethods').doc(paymentMethodId), {
+        isDefault: true,
+      });
 
       await batch.commit();
 
-      logger.info('Método de pago por defecto actualizado', { userId, metadata: { paymentMethodId } });
+      logger.info('Método de pago por defecto actualizado', {
+        userId,
+        metadata: { paymentMethodId },
+      });
     } catch (error) {
-      logger.error('Error estableciendo método por defecto', error as Error, { userId, metadata: { paymentMethodId } });
+      logger.error('Error estableciendo método por defecto', error as Error, {
+        userId,
+        metadata: { paymentMethodId },
+      });
       throw error;
     }
   }
@@ -171,28 +198,42 @@ export class PaymentService {
     metadata: Record<string, any> = {}
   ): Promise<PaymentIntent> {
     try {
-      logger.info('Creando intento de pago', { userId, metadata: { amount, currency, description } });
+      logger.info('Creando intento de pago', {
+        userId,
+        metadata: { amount, currency, description },
+      });
 
       const paymentIntent: PaymentIntent = {
         id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         amount,
-        currency: this.supportedCurrencies.includes(currency) ? currency : this.defaultCurrency,
+        currency: this.supportedCurrencies.includes(currency)
+          ? currency
+          : this.defaultCurrency,
         status: 'pending',
         paymentMethodId: '',
         userId,
         description,
         metadata,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
-      await db.collection('paymentIntents').doc(paymentIntent.id).set(paymentIntent);
+      await db
+        .collection('paymentIntents')
+        .doc(paymentIntent.id)
+        .set(paymentIntent);
 
-      logger.info('Intento de pago creado', { userId, metadata: { paymentIntentId: paymentIntent.id } });
+      logger.info('Intento de pago creado', {
+        userId,
+        metadata: { paymentIntentId: paymentIntent.id },
+      });
 
       return paymentIntent;
     } catch (error) {
-      logger.error('Error creando intento de pago', error as Error, { userId, metadata: { amount } });
+      logger.error('Error creando intento de pago', error as Error, {
+        userId,
+        metadata: { amount },
+      });
       throw error;
     }
   }
@@ -200,14 +241,21 @@ export class PaymentService {
   /**
    * Procesar pago
    */
-  async processPayment(paymentIntentId: string, paymentMethodId: string): Promise<PaymentIntent> {
+  async processPayment(
+    paymentIntentId: string,
+    paymentMethodId: string
+  ): Promise<PaymentIntent> {
     try {
-      logger.info('Procesando pago', { metadata: { paymentIntentId, paymentMethodId } });
+      logger.info('Procesando pago', {
+        metadata: { paymentIntentId, paymentMethodId },
+      });
 
       // Simular procesamiento de pago
       const success = Math.random() > 0.1; // 90% de éxito
 
-      const paymentIntentRef = db.collection('paymentIntents').doc(paymentIntentId);
+      const paymentIntentRef = db
+        .collection('paymentIntents')
+        .doc(paymentIntentId);
       const paymentIntentDoc = await paymentIntentRef.get();
 
       if (!paymentIntentDoc.exists) {
@@ -221,29 +269,29 @@ export class PaymentService {
         await paymentIntentRef.update({
           status: 'succeeded',
           paymentMethodId,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
 
         // Crear factura automáticamente
         await this.createInvoiceFromPayment({
           ...paymentIntent,
           status: 'succeeded',
-          paymentMethodId
+          paymentMethodId,
         });
 
-        logger.info('Pago procesado exitosamente', { 
-          metadata: { 
-            paymentIntentId, 
+        logger.info('Pago procesado exitosamente', {
+          metadata: {
+            paymentIntentId,
             amount: paymentIntent.amount,
-            currency: paymentIntent.currency 
-          } 
+            currency: paymentIntent.currency,
+          },
         });
       } else {
         // Pago fallido
         await paymentIntentRef.update({
           status: 'failed',
           paymentMethodId,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
 
         logger.info('Pago fallido', { metadata: { paymentIntentId } });
@@ -253,10 +301,12 @@ export class PaymentService {
         ...paymentIntent,
         status: success ? 'succeeded' : 'failed',
         paymentMethodId,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      logger.error('Error procesando pago', error as Error, { metadata: { paymentIntentId } });
+      logger.error('Error procesando pago', error as Error, {
+        metadata: { paymentIntentId },
+      });
       throw error;
     }
   }
@@ -264,7 +314,9 @@ export class PaymentService {
   /**
    * Crear factura desde un pago
    */
-  async createInvoiceFromPayment(paymentIntent: PaymentIntent): Promise<Invoice> {
+  async createInvoiceFromPayment(
+    paymentIntent: PaymentIntent
+  ): Promise<Invoice> {
     try {
       const invoice: Invoice = {
         id: `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -276,33 +328,37 @@ export class PaymentService {
         paidAt: new Date(),
         userId: paymentIntent.userId,
         eventId: paymentIntent.eventId,
-        items: [{
-          id: `item_${Date.now()}`,
-          description: paymentIntent.description,
-          quantity: 1,
-          unitPrice: paymentIntent.amount,
-          total: paymentIntent.amount,
-          type: 'service'
-        }],
+        items: [
+          {
+            id: `item_${Date.now()}`,
+            description: paymentIntent.description,
+            quantity: 1,
+            unitPrice: paymentIntent.amount,
+            total: paymentIntent.amount,
+            type: 'service',
+          },
+        ],
         subtotal: paymentIntent.amount,
         tax: 0,
         total: paymentIntent.amount,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       await db.collection('invoices').doc(invoice.id).set(invoice);
 
-      logger.info('Factura creada desde pago', { 
-        metadata: { 
-          invoiceId: invoice.id, 
-          paymentIntentId: paymentIntent.id 
-        } 
+      logger.info('Factura creada desde pago', {
+        metadata: {
+          invoiceId: invoice.id,
+          paymentIntentId: paymentIntent.id,
+        },
       });
 
       return invoice;
     } catch (error) {
-      logger.error('Error creando factura desde pago', error as Error, { metadata: { paymentIntent } });
+      logger.error('Error creando factura desde pago', error as Error, {
+        metadata: { paymentIntent },
+      });
       throw error;
     }
   }
@@ -317,9 +373,15 @@ export class PaymentService {
     eventId?: string
   ): Promise<Invoice> {
     try {
-      logger.info('Creando factura manual', { userId, metadata: { items, dueDate } });
+      logger.info('Creando factura manual', {
+        userId,
+        metadata: { items, dueDate },
+      });
 
-      const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+      const subtotal = items.reduce(
+        (sum, item) => sum + item.quantity * item.unitPrice,
+        0
+      );
       const tax = subtotal * 0.16; // 16% IVA
       const total = subtotal + tax;
 
@@ -335,18 +397,21 @@ export class PaymentService {
         items: items.map((item, index) => ({
           id: `item_${Date.now()}_${index}`,
           ...item,
-          total: item.quantity * item.unitPrice
+          total: item.quantity * item.unitPrice,
         })),
         subtotal,
         tax,
         total,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       await db.collection('invoices').doc(invoice.id).set(invoice);
 
-      logger.info('Factura manual creada', { userId, metadata: { invoiceId: invoice.id } });
+      logger.info('Factura manual creada', {
+        userId,
+        metadata: { invoiceId: invoice.id },
+      });
 
       return invoice;
     } catch (error) {
@@ -383,9 +448,14 @@ export class PaymentService {
   /**
    * Marcar factura como pagada
    */
-  async markInvoiceAsPaid(invoiceId: string, paymentMethodId: string): Promise<Invoice> {
+  async markInvoiceAsPaid(
+    invoiceId: string,
+    paymentMethodId: string
+  ): Promise<Invoice> {
     try {
-      logger.info('Marcando factura como pagada', { metadata: { invoiceId, paymentMethodId } });
+      logger.info('Marcando factura como pagada', {
+        metadata: { invoiceId, paymentMethodId },
+      });
 
       const invoiceRef = db.collection('invoices').doc(invoiceId);
       const invoiceDoc = await invoiceRef.get();
@@ -406,14 +476,17 @@ export class PaymentService {
       );
 
       // Procesar el pago
-      const result = await this.processPayment(paymentIntent.id, paymentMethodId);
+      const result = await this.processPayment(
+        paymentIntent.id,
+        paymentMethodId
+      );
 
       if (result.status === 'succeeded') {
         // Actualizar factura como pagada
         await invoiceRef.update({
           status: 'paid',
           paidAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
 
         logger.info('Factura marcada como pagada', { metadata: { invoiceId } });
@@ -423,10 +496,12 @@ export class PaymentService {
         ...invoice,
         status: result.status === 'succeeded' ? 'paid' : 'sent',
         paidAt: result.status === 'succeeded' ? new Date() : undefined,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      logger.error('Error marcando factura como pagada', error as Error, { metadata: { invoiceId } });
+      logger.error('Error marcando factura como pagada', error as Error, {
+        metadata: { invoiceId },
+      });
       throw error;
     }
   }
@@ -434,13 +509,22 @@ export class PaymentService {
   /**
    * Procesar reembolso
    */
-  async processRefund(paymentIntentId: string, amount: number, reason: string): Promise<Refund> {
+  async processRefund(
+    paymentIntentId: string,
+    amount: number,
+    reason: string
+  ): Promise<Refund> {
     try {
-      logger.info('Procesando reembolso', { metadata: { paymentIntentId, amount, reason } });
+      logger.info('Procesando reembolso', {
+        metadata: { paymentIntentId, amount, reason },
+      });
 
       // Verificar que el payment intent existe y fue exitoso
-      const paymentIntentDoc = await db.collection('paymentIntents').doc(paymentIntentId).get();
-      
+      const paymentIntentDoc = await db
+        .collection('paymentIntents')
+        .doc(paymentIntentId)
+        .get();
+
       if (!paymentIntentDoc.exists) {
         throw new Error('Payment intent no encontrado');
       }
@@ -452,7 +536,9 @@ export class PaymentService {
       }
 
       if (amount > paymentIntent.amount) {
-        throw new Error('El monto del reembolso no puede ser mayor al pago original');
+        throw new Error(
+          'El monto del reembolso no puede ser mayor al pago original'
+        );
       }
 
       // Simular procesamiento de reembolso
@@ -464,7 +550,7 @@ export class PaymentService {
         amount,
         reason,
         status: success ? 'succeeded' : 'failed',
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       await db.collection('refunds').doc(refund.id).set(refund);
@@ -473,15 +559,19 @@ export class PaymentService {
         // Actualizar payment intent
         await db.collection('paymentIntents').doc(paymentIntentId).update({
           status: 'cancelled',
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
 
-      logger.info('Reembolso procesado', { metadata: { refundId: refund.id, amount } });
+      logger.info('Reembolso procesado', {
+        metadata: { refundId: refund.id, amount },
+      });
 
       return refund;
     } catch (error) {
-      logger.error('Error procesando reembolso', error as Error, { metadata: { paymentIntentId } });
+      logger.error('Error procesando reembolso', error as Error, {
+        metadata: { paymentIntentId },
+      });
       throw error;
     }
   }
@@ -491,7 +581,9 @@ export class PaymentService {
    */
   async getPaymentStats(userId?: string, period?: string): Promise<any> {
     try {
-      logger.info('Obteniendo estadísticas de pagos', { metadata: { userId, period } });
+      logger.info('Obteniendo estadísticas de pagos', {
+        metadata: { userId, period },
+      });
 
       const now = new Date();
       let startDate = new Date(now.getFullYear(), now.getMonth(), 1); // Inicio del mes
@@ -499,13 +591,18 @@ export class PaymentService {
       if (period === 'week') {
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       } else if (period === 'month') {
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        startDate = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          now.getDate()
+        );
       } else if (period === 'year') {
         startDate = new Date(now.getFullYear(), 0, 1);
       }
 
       // Estadísticas de payment intents
-      let paymentQuery = db.collection('paymentIntents')
+      let paymentQuery = db
+        .collection('paymentIntents')
         .where('createdAt', '>=', startDate);
 
       if (userId) {
@@ -516,7 +613,8 @@ export class PaymentService {
       const payments = paymentSnapshot.docs.map(doc => doc.data());
 
       // Estadísticas de facturas
-      let invoiceQuery = db.collection('invoices')
+      let invoiceQuery = db
+        .collection('invoices')
         .where('createdAt', '>=', startDate);
 
       if (userId) {
@@ -527,7 +625,8 @@ export class PaymentService {
       const invoices = invoiceSnapshot.docs.map(doc => doc.data());
 
       // Estadísticas de reembolsos
-      let refundQuery = db.collection('refunds')
+      const refundQuery = db
+        .collection('refunds')
         .where('createdAt', '>=', startDate);
 
       const refundSnapshot = await refundQuery.get();
@@ -538,20 +637,28 @@ export class PaymentService {
           .filter((p: any) => p.status === 'succeeded')
           .reduce((sum: number, p: any) => sum + p.amount, 0),
         totalTransactions: payments.length,
-        successfulTransactions: payments.filter((p: any) => p.status === 'succeeded').length,
-        failedTransactions: payments.filter((p: any) => p.status === 'failed').length,
+        successfulTransactions: payments.filter(
+          (p: any) => p.status === 'succeeded'
+        ).length,
+        failedTransactions: payments.filter((p: any) => p.status === 'failed')
+          .length,
         totalInvoices: invoices.length,
         paidInvoices: invoices.filter((i: any) => i.status === 'paid').length,
         totalRefunds: refunds.length,
         refundAmount: refunds
           .filter((r: any) => r.status === 'succeeded')
           .reduce((sum: number, r: any) => sum + r.amount, 0),
-        averageTransaction: payments.length > 0 
-          ? payments.reduce((sum: number, p: any) => sum + p.amount, 0) / payments.length 
-          : 0,
-        successRate: payments.length > 0 
-          ? (payments.filter((p: any) => p.status === 'succeeded').length / payments.length) * 100 
-          : 0
+        averageTransaction:
+          payments.length > 0
+            ? payments.reduce((sum: number, p: any) => sum + p.amount, 0) /
+              payments.length
+            : 0,
+        successRate:
+          payments.length > 0
+            ? (payments.filter((p: any) => p.status === 'succeeded').length /
+                payments.length) *
+              100
+            : 0,
       };
 
       logger.info('Estadísticas de pagos obtenidas', { metadata: { stats } });
@@ -569,7 +676,12 @@ export class PaymentService {
   async validatePaymentMethod(paymentData: any): Promise<boolean> {
     try {
       // Validaciones básicas
-      if (!paymentData.cardNumber || !paymentData.expiryMonth || !paymentData.expiryYear || !paymentData.cvc) {
+      if (
+        !paymentData.cardNumber ||
+        !paymentData.expiryMonth ||
+        !paymentData.expiryYear ||
+        !paymentData.cvc
+      ) {
         return false;
       }
 
@@ -581,7 +693,10 @@ export class PaymentService {
 
       // Validar fecha de expiración
       const now = new Date();
-      const expiryDate = new Date(paymentData.expiryYear, paymentData.expiryMonth - 1);
+      const expiryDate = new Date(
+        paymentData.expiryYear,
+        paymentData.expiryMonth - 1
+      );
       if (expiryDate <= now) {
         return false;
       }
@@ -593,7 +708,9 @@ export class PaymentService {
 
       return true;
     } catch (error) {
-      logger.error('Error validando método de pago', error as Error, { metadata: { paymentData } });
+      logger.error('Error validando método de pago', error as Error, {
+        metadata: { paymentData },
+      });
       return false;
     }
   }
@@ -609,25 +726,25 @@ export class PaymentService {
           isActive: true,
           config: {
             supportedCurrencies: ['USD', 'EUR', 'GBP'],
-            fees: { percentage: 2.9, fixed: 30 }
-          }
+            fees: { percentage: 2.9, fixed: 30 },
+          },
         },
         {
           name: 'PayPal',
           isActive: true,
           config: {
             supportedCurrencies: ['USD', 'EUR', 'GBP'],
-            fees: { percentage: 3.5, fixed: 0 }
-          }
+            fees: { percentage: 3.5, fixed: 0 },
+          },
         },
         {
           name: 'MercadoPago',
           isActive: false,
           config: {
             supportedCurrencies: ['USD', 'ARS', 'BRL'],
-            fees: { percentage: 3.5, fixed: 0 }
-          }
-        }
+            fees: { percentage: 3.5, fixed: 0 },
+          },
+        },
       ];
 
       return gateways.filter(gateway => gateway.isActive);
@@ -636,4 +753,4 @@ export class PaymentService {
       throw error;
     }
   }
-} 
+}

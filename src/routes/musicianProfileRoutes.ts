@@ -1,11 +1,14 @@
-import { Router } from "express";
-import multer from "multer";
-import { getFileUrl, uploadFile } from "../controllers/musicianProfileController";
+import { Router } from 'express';
+import multer from 'multer';
+import {
+  getFileUrl,
+  uploadFile,
+} from '../controllers/musicianProfileController';
 
 const musician = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
-musician.use(upload.single("file"));
+musician.use(upload.single('file'));
 
 /**
  * @swagger
@@ -65,7 +68,7 @@ musician.use(upload.single("file"));
  *                 error:
  *                   type: string
  */
-musician.post("/saveImage", uploadFile);
+musician.post('/saveImage', uploadFile);
 
 /**
  * @swagger
@@ -109,7 +112,6 @@ musician.post("/saveImage", uploadFile);
  *                 error:
  *                   type: string
  */
-musician.get("/getImage/:key", getFileUrl);
+musician.get('/getImage/:key', getFileUrl);
 
 export default musician;
-

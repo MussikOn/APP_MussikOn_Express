@@ -10,7 +10,7 @@ import {
   getLocationPerformanceReportController,
   getTopActiveUsersReportController,
   getDashboardController,
-  exportReportController
+  exportReportController,
 } from '../controllers/analyticsController';
 
 const router = express.Router();
@@ -92,7 +92,12 @@ const router = express.Router();
  *       403:
  *         description: Acceso denegado
  */
-router.get('/events', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getEventAnalyticsController);
+router.get(
+  '/events',
+  authMiddleware,
+  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),
+  getEventAnalyticsController
+);
 
 /**
  * @swagger
@@ -164,7 +169,12 @@ router.get('/events', authMiddleware, requireRole('admin', 'superadmin', 'eventC
  *       403:
  *         description: Acceso denegado
  */
-router.get('/requests', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getRequestAnalyticsController);
+router.get(
+  '/requests',
+  authMiddleware,
+  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),
+  getRequestAnalyticsController
+);
 
 /**
  * @swagger
@@ -222,7 +232,12 @@ router.get('/requests', authMiddleware, requireRole('admin', 'superadmin', 'even
  *       403:
  *         description: Acceso denegado
  */
-router.get('/users', authMiddleware, requireRole('admin', 'superadmin'), getUserAnalyticsController);
+router.get(
+  '/users',
+  authMiddleware,
+  requireRole('admin', 'superadmin'),
+  getUserAnalyticsController
+);
 
 /**
  * @swagger
@@ -327,7 +342,12 @@ router.get('/users', authMiddleware, requireRole('admin', 'superadmin'), getUser
  *       403:
  *         description: Acceso denegado
  */
-router.get('/platform', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getPlatformAnalyticsController);
+router.get(
+  '/platform',
+  authMiddleware,
+  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),
+  getPlatformAnalyticsController
+);
 
 /**
  * @swagger
@@ -395,7 +415,12 @@ router.get('/platform', authMiddleware, requireRole('admin', 'superadmin', 'even
  *       403:
  *         description: Acceso denegado
  */
-router.get('/trends', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getTrendsReportController);
+router.get(
+  '/trends',
+  authMiddleware,
+  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),
+  getTrendsReportController
+);
 
 /**
  * @swagger
@@ -439,7 +464,12 @@ router.get('/trends', authMiddleware, requireRole('admin', 'superadmin', 'eventC
  *       403:
  *         description: Acceso denegado
  */
-router.get('/location-performance', authMiddleware, requireRole('admin', 'superadmin'), getLocationPerformanceReportController);
+router.get(
+  '/location-performance',
+  authMiddleware,
+  requireRole('admin', 'superadmin'),
+  getLocationPerformanceReportController
+);
 
 /**
  * @swagger
@@ -488,7 +518,12 @@ router.get('/location-performance', authMiddleware, requireRole('admin', 'supera
  *       403:
  *         description: Acceso denegado
  */
-router.get('/top-users', authMiddleware, requireRole('admin', 'superadmin'), getTopActiveUsersReportController);
+router.get(
+  '/top-users',
+  authMiddleware,
+  requireRole('admin', 'superadmin'),
+  getTopActiveUsersReportController
+);
 
 /**
  * @swagger
@@ -539,7 +574,12 @@ router.get('/top-users', authMiddleware, requireRole('admin', 'superadmin'), get
  *       403:
  *         description: Acceso denegado
  */
-router.get('/dashboard', authMiddleware, requireRole('admin', 'superadmin', 'eventCreator', 'organizador'), getDashboardController);
+router.get(
+  '/dashboard',
+  authMiddleware,
+  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),
+  getDashboardController
+);
 
 /**
  * @swagger
@@ -609,6 +649,11 @@ router.get('/dashboard', authMiddleware, requireRole('admin', 'superadmin', 'eve
  *       400:
  *         description: Tipo de reporte no válido
  */
-router.get('/export', authMiddleware, requireRole('admin', 'superadmin'), exportReportController);
+router.get(
+  '/export',
+  authMiddleware,
+  requireRole('admin', 'superadmin'),
+  exportReportController
+);
 
-export default router; 
+export default router;

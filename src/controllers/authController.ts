@@ -1,12 +1,18 @@
-import { Request, Response } from "express";
-import bcrypt from "bcrypt";
-import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel, deleteUserByEmailModel } from "../models/authModel";
-import { authUserRegister } from "../utils/DataTypes";
-import { validarEmail, validarPassword } from "../utils/validatios";
-import { createToken } from "../utils/jwt";
-import { sendEmail } from "../utils/mailer";
-import { numberRandon } from "../utils/functions"; 
-import { db } from "../utils/firebase";
+import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import {
+  getUserByEmailModel,
+  registerModel,
+  updateUserByEmailModel,
+  addEventToUserModel,
+  deleteUserByEmailModel,
+} from '../models/authModel';
+import { authUserRegister } from '../utils/DataTypes';
+import { validarEmail, validarPassword } from '../utils/validatios';
+import { createToken } from '../utils/jwt';
+import { sendEmail } from '../utils/mailer';
+import { numberRandon } from '../utils/functions';
+import { db } from '../utils/firebase';
 
 /**
  * @swagger
@@ -67,92 +73,150 @@ import { db } from "../utils/firebase";
  *         mapsLink:
  *           type: string
  */
-export async function registerController(req:Request, res:Response){
-    try{
-      const {name,lastName,roll,userEmail,userPassword,status}:authUserRegister = req.body;
-      console.log("[src/controllers/authController.ts:72] Datos de registro recibidos:", req.body);
-        if(!name || !lastName || !roll || !userEmail || !userPassword){ res.status(400).json({msg:"Error al registrarse, todos los campos deben de ser llenados"}); return;}
-        if(!validarPassword(userPassword)){
-            res.status(400).json({msg:"La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 ."}); return;
-        }
-        if(!validarEmail(userEmail)){
-            res.status(400).json({msg:"Correo Electrónico inválido."}); return;
-        }
-        const pass = await bcrypt.hash(userPassword,10);
-        // status por defecto true si no se envía
-        const userStatus = typeof status === 'boolean' ? status : true;
-        const saved = await registerModel(name, lastName, roll, userEmail, pass, userStatus);
-        if(!saved){
-            const token = createToken(name,lastName,userEmail,roll);
-            const user = await getUserByEmailModel(userEmail);
-            res.status(200).json({msg:"Usuario Registrado con éxito.", token, user});
-            return;
-        }else if(saved === "Hay campos que no han sido llenados"){
-            res.status(409).json({msg:"Hay campos que no han sido llenados", data:saved});
-            return;
-        }else if(saved === "El usuario ya Existe."){
-            res.status(409).json({msg:"Ya hay un usuario con esta direccion de correo electrónico.", data:saved});
-            return;
-        }
-    }catch(error){
-        console.info(`[src/controllers/authController.ts:95] Hubo un error al intentar registar un Usuario: ${error}`);
-        res.status(400).json({msg:"Error al registrarse.", error});
-        return;
+export async function registerController(req: Request, res: Response) {
+  try {
+    const {
+      name,
+      lastName,
+      roll,
+      userEmail,
+      userPassword,
+      status,
+    }: authUserRegister = req.body;
+    console.log(
+      '[src/controllers/authController.ts:72] Datos de registro recibidos:',
+      req.body
+    );
+    if (!name || !lastName || !roll || !userEmail || !userPassword) {
+      res.status(400).json({
+        msg: 'Error al registrarse, todos los campos deben de ser llenados',
+      });
+      return;
     }
+    if (!validarPassword(userPassword)) {
+      res.status(400).json({
+        msg: 'La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales \n\n\nEjemplo: Tunombre*55 .',
+      });
+      return;
+    }
+    if (!validarEmail(userEmail)) {
+      res.status(400).json({ msg: 'Correo Electrónico inválido.' });
+      return;
+    }
+    const pass = await bcrypt.hash(userPassword, 10);
+    // status por defecto true si no se envía
+    const userStatus = typeof status === 'boolean' ? status : true;
+    const saved = await registerModel(
+      name,
+      lastName,
+      roll,
+      userEmail,
+      pass,
+      userStatus
+    );
+    if (!saved) {
+      const token = createToken(name, lastName, userEmail, roll);
+      const user = await getUserByEmailModel(userEmail);
+      res
+        .status(200)
+        .json({ msg: 'Usuario Registrado con éxito.', token, user });
+      return;
+    } else if (saved === 'Hay campos que no han sido llenados') {
+      res
+        .status(409)
+        .json({ msg: 'Hay campos que no han sido llenados', data: saved });
+      return;
+    } else if (saved === 'El usuario ya Existe.') {
+      res.status(409).json({
+        msg: 'Ya hay un usuario con esta direccion de correo electrónico.',
+        data: saved,
+      });
+      return;
+    }
+  } catch (error) {
+    console.info(
+      `[src/controllers/authController.ts:95] Hubo un error al intentar registar un Usuario: ${error}`
+    );
+    res.status(400).json({ msg: 'Error al registrarse.', error });
+    return;
+  }
 }
 
-export async function loginController(req:Request, res:Response){
-    try{
-        const {userEmail, userPassword} = req.body;
-        if(!userEmail || !userPassword){
-            res.status(400).json({msg:"Todos los campos deben de ser llenados."});
-            return;
-        };
-        if(!validarEmail(userEmail)){res.status(400).json({msg:"Dirección de correo electrónico no válido."});return;};
-        const data = await getUserByEmailModel(userEmail);
-        if(!data){res.status(401).json({msg:"Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta."});return;};
-        const name = data.name; 
-        const lastName = data.lastName;
-        const roll = data.roll;
-        const pass = data.userPassword;
-        const isMatch = await bcrypt.compare(userPassword,pass);
-        if(!isMatch){res.status(401).json({msg:"Contraseña incorrecta."}); return;} 
-        const token = createToken(name,lastName,userEmail,roll);
-        res.status(200).json({msg:"Login Exitoso",token,user:data});
-    }catch(error){
-        res.status(401).json({msg:"Error en la petición, Inténtelo mas tarde.",error});
-        return;
+export async function loginController(req: Request, res: Response) {
+  try {
+    const { userEmail, userPassword } = req.body;
+    if (!userEmail || !userPassword) {
+      res.status(400).json({ msg: 'Todos los campos deben de ser llenados.' });
+      return;
     }
+    if (!validarEmail(userEmail)) {
+      res
+        .status(400)
+        .json({ msg: 'Dirección de correo electrónico no válido.' });
+      return;
+    }
+    const data = await getUserByEmailModel(userEmail);
+    if (!data) {
+      res.status(401).json({
+        msg: 'Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta.',
+      });
+      return;
+    }
+    const name = data.name;
+    const lastName = data.lastName;
+    const roll = data.roll;
+    const pass = data.userPassword;
+    const isMatch = await bcrypt.compare(userPassword, pass);
+    if (!isMatch) {
+      res.status(401).json({ msg: 'Contraseña incorrecta.' });
+      return;
+    }
+    const token = createToken(name, lastName, userEmail, roll);
+    res.status(200).json({ msg: 'Login Exitoso', token, user: data });
+  } catch (error) {
+    res
+      .status(401)
+      .json({ msg: 'Error en la petición, Inténtelo mas tarde.', error });
+    return;
+  }
 }
 
-
-export const updateUserByEmailController = async (req:Request, res:Response) =>{
-try{
+export const updateUserByEmailController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
     const dataUsers = req.body;
     const userEmail = req.params.userEmail.toLocaleLowerCase();
-    if(!dataUsers || !userEmail){res.status(401).json({msg:"No hay Datos para actualizar"})}
-    if(!validarEmail(userEmail)){res.status(400).json({msg:"Dirección de correo electrónico no válido."});return;};
+    if (!dataUsers || !userEmail) {
+      res.status(401).json({ msg: 'No hay Datos para actualizar' });
+    }
+    if (!validarEmail(userEmail)) {
+      res
+        .status(400)
+        .json({ msg: 'Dirección de correo electrónico no válido.' });
+      return;
+    }
     // status por defecto true si no se envía
     if (typeof dataUsers.status !== 'boolean') {
       dataUsers.status = true;
     }
-    const updateValidation = await updateUserByEmailModel(userEmail,dataUsers);
-    if(updateValidation){
-        console.info("Resultado de updateUserByEmailModel");
-        console.info(updateValidation)
-        res.status(401).json({msg:updateValidation})
+    const updateValidation = await updateUserByEmailModel(userEmail, dataUsers);
+    if (updateValidation) {
+      console.info('Resultado de updateUserByEmailModel');
+      console.info(updateValidation);
+      res.status(401).json({ msg: updateValidation });
     }
-    res.status(200).json({msg:"Consulta éxitosa",});
-}catch(error){
-    console.info("Error al actualizar los datos.");
-    res.status(401).json({msg:"Error al actualizar el usuario."});
-}
+    res.status(200).json({ msg: 'Consulta éxitosa' });
+  } catch (error) {
+    console.info('Error al actualizar los datos.');
+    res.status(401).json({ msg: 'Error al actualizar el usuario.' });
+  }
+};
 
-}
-
-export const emailRegisterController = async (req:Request, res:Response) =>{
+export const emailRegisterController = async (req: Request, res: Response) => {
   const numRandon = numberRandon().toString();
-  const numParam = await bcrypt.hash(numRandon,10);
+  const numParam = await bcrypt.hash(numRandon, 10);
   const html = `<!DOCTYPE html>
   <html lang="es">
   <head>
@@ -208,87 +272,132 @@ export const emailRegisterController = async (req:Request, res:Response) =>{
     </table>
   </body>
   </html>`;
-    try{
-        const userEmail = req.body.userEmail.toLocaleLowerCase();
-        if(!userEmail){res.status(400).json({msg:"Todos los campos deben de ser llenados."});return;}
-        if(!validarEmail(userEmail)){res.status(402).json({msg:"Dirección de correo electrónico no válido."});return;}
-         const querySnapshot = await db.collection("users").where("userEmail", "==", userEmail).get();
-                if(!querySnapshot.empty){res.status(409).json({msg:"Ya hay un usuario con esta dirección de correo electrónico."}); return;}else{
-                    await sendEmail(userEmail, "Verifica tu cuenta en MusikOn", html);
-                    res.status(200).json({msg:"Email recibido con exito!", numParam});
-                }
-    }catch(err){
-        res.status(400).json({msg:"Verifique bien su dirección de correo electrónico.",err});
-        return;
+  try {
+    const userEmail = req.body.userEmail.toLocaleLowerCase();
+    if (!userEmail) {
+      res.status(400).json({ msg: 'Todos los campos deben de ser llenados.' });
+      return;
     }
-}
-
-export const validNumberGetByEmail = async (req:Request, res:Response) =>{
-try{
-  const numBack = req.body.vaildNumber.toString();
-  const numParam = req.params.vaildNumber.toString();
-  if(numBack ===  "" || numParam === ""){res.status(402).json({msg:"Faltan datos requeridos."}); return;}
-  const isMatch = await bcrypt.compare(numParam,numBack);
-  if(!isMatch){
-    console.info(`Son Iguales: ${numBack},${numParam}.`);
-    res.status(402).json({msg:"Codigo Incorrecto."});
+    if (!validarEmail(userEmail)) {
+      res
+        .status(402)
+        .json({ msg: 'Dirección de correo electrónico no válido.' });
+      return;
+    }
+    const querySnapshot = await db
+      .collection('users')
+      .where('userEmail', '==', userEmail)
+      .get();
+    if (!querySnapshot.empty) {
+      res.status(409).json({
+        msg: 'Ya hay un usuario con esta dirección de correo electrónico.',
+      });
+      return;
+    } else {
+      await sendEmail(userEmail, 'Verifica tu cuenta en MusikOn', html);
+      res.status(200).json({ msg: 'Email recibido con exito!', numParam });
+    }
+  } catch (err) {
+    res
+      .status(400)
+      .json({ msg: 'Verifique bien su dirección de correo electrónico.', err });
     return;
   }
-  console.info(`Numero del Body: ${numBack}`);
-  console.info(`Numero del Parametros: ${numParam}`);
-  res.status(200).json({msg:"Bien hecho!"});
-}catch(err){
-  res.status(402).json({msg:"Fallo el proceso!"});
-}
-}
+};
+
+export const validNumberGetByEmail = async (req: Request, res: Response) => {
+  try {
+    const numBack = req.body.vaildNumber.toString();
+    const numParam = req.params.vaildNumber.toString();
+    if (numBack === '' || numParam === '') {
+      res.status(402).json({ msg: 'Faltan datos requeridos.' });
+      return;
+    }
+    const isMatch = await bcrypt.compare(numParam, numBack);
+    if (!isMatch) {
+      console.info(`Son Iguales: ${numBack},${numParam}.`);
+      res.status(402).json({ msg: 'Codigo Incorrecto.' });
+      return;
+    }
+    console.info(`Numero del Body: ${numBack}`);
+    console.info(`Numero del Parametros: ${numParam}`);
+    res.status(200).json({ msg: 'Bien hecho!' });
+  } catch (err) {
+    res.status(402).json({ msg: 'Fallo el proceso!' });
+  }
+};
 
 export const addEventToUserController = async (req: Request, res: Response) => {
-    try {
-        const user = (req as any).user;
-        if (!user || !user.userEmail) {
-            res.status(401).json({ msg: "Usuario no autenticado." });
-            return;
-        }
-        const eventData = req.body;
-        if (!eventData) {
-            res.status(400).json({ msg: "No se proporcionó información del evento." });
-            return;
-        }
-        const result = await addEventToUserModel(user.userEmail, eventData);
-        if (!result) {
-            res.status(200).json({ msg: "Evento guardado exitosamente." });
-        } else {
-            res.status(400).json({ msg: result });
-        }
-    } catch (error) {
-        res.status(500).json({ msg: "Error al guardar el evento.", error });
+  try {
+    const user = (req as any).user;
+    if (!user || !user.userEmail) {
+      res.status(401).json({ msg: 'Usuario no autenticado.' });
+      return;
     }
-}
+    const eventData = req.body;
+    if (!eventData) {
+      res
+        .status(400)
+        .json({ msg: 'No se proporcionó información del evento.' });
+      return;
+    }
+    const result = await addEventToUserModel(user.userEmail, eventData);
+    if (!result) {
+      res.status(200).json({ msg: 'Evento guardado exitosamente.' });
+    } else {
+      res.status(400).json({ msg: result });
+    }
+  } catch (error) {
+    res.status(500).json({ msg: 'Error al guardar el evento.', error });
+  }
+};
 
-export const deleteUserByEmailController = async (req: Request, res: Response) => {
+export const deleteUserByEmailController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { userEmail } = req.body;
-    console.log('[src/controllers/authController.ts:270] [DELETE] userEmail recibido:', userEmail); // LOG de depuración
+    console.log(
+      '[src/controllers/authController.ts:270] [DELETE] userEmail recibido:',
+      userEmail
+    ); // LOG de depuración
     if (!userEmail) {
       res.status(400).json({ message: 'Falta el email' });
       return;
     }
     const result = await deleteUserByEmailModel(userEmail);
-    console.log("[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:", result);
-    console.log('[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+    console.log(
+      '[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:',
+      result
+    );
+    console.log(
+      '[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:',
+      result
+    ); // LOG de depuración
     if (result === false) {
       res.json({ message: 'Usuario eliminado correctamente' });
     } else if (result === 'Falta el email') {
       res.status(400).json({ message: 'Falta el email' });
     } else if (result === 'not_found') {
-      res.status(404).json({ message: 'El usuario no existe o ya fue eliminado' });
+      res
+        .status(404)
+        .json({ message: 'El usuario no existe o ya fue eliminado' });
     } else {
       res.status(500).json({ message: result });
     }
   } catch (error) {
-    console.log("[src/controllers/authController.ts:288] Error en deleteUserByEmailController");
-    console.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
-    res.status(500).json({ message: 'Error al eliminar usuario', error: (error as Error).message });
+    console.log(
+      '[src/controllers/authController.ts:288] Error en deleteUserByEmailController'
+    );
+    console.error(
+      '[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:',
+      error
+    ); // LOG de error
+    res.status(500).json({
+      message: 'Error al eliminar usuario',
+      error: (error as Error).message,
+    });
   }
 };
 
@@ -314,7 +423,7 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
  *         description: Usuario no encontrado
  *       403:
  *         description: Solo superadmin puede recuperar contraseña
- * 
+ *
  * /auth/verify-code:
  *   post:
  *     summary: Verificar código de recuperación
@@ -335,7 +444,7 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
  *         description: Código verificado correctamente
  *       400:
  *         description: Código inválido o expirado
- * 
+ *
  * /auth/reset-password:
  *   post:
  *     summary: Restablecer contraseña
@@ -361,7 +470,10 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
  */
 
 // Almacén temporal para códigos de verificación (en producción usar Redis)
-const verificationCodes = new Map<string, { code: string; expiresAt: number }>();
+const verificationCodes = new Map<
+  string,
+  { code: string; expiresAt: number }
+>();
 
 // Función para generar código de verificación
 function generateVerificationCode(): string {
@@ -385,38 +497,40 @@ setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
 export const forgotPasswordController = async (req: Request, res: Response) => {
   try {
     const { userEmail } = req.body;
-    
+
     if (!userEmail) {
-      res.status(400).json({ msg: "Email es requerido" });
+      res.status(400).json({ msg: 'Email es requerido' });
       return;
     }
 
     if (!validarEmail(userEmail)) {
-      res.status(400).json({ msg: "Email inválido" });
+      res.status(400).json({ msg: 'Email inválido' });
       return;
     }
 
     // Buscar usuario
     const user = await getUserByEmailModel(userEmail);
     if (!user) {
-      res.status(404).json({ msg: "Usuario no encontrado" });
+      res.status(404).json({ msg: 'Usuario no encontrado' });
       return;
     }
 
     // Verificar que sea superadmin
-    if (user.roll !== "superadmin") {
-      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+    if (user.roll !== 'superadmin') {
+      res
+        .status(403)
+        .json({ msg: 'Solo superadmin puede recuperar contraseña' });
       return;
     }
 
     // Generar código de verificación
     const verificationCode = generateVerificationCode();
-    const expiresAt = Date.now() + (10 * 60 * 1000); // 10 minutos
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutos
 
     // Guardar código temporalmente
     verificationCodes.set(userEmail.toLowerCase(), {
       code: verificationCode,
-      expiresAt
+      expiresAt,
     });
 
     // Enviar email con código
@@ -501,24 +615,19 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
     </html>`;
 
     try {
-      await sendEmail(
-        userEmail,
-        "Recuperar Contraseña - MusikOn",
-        html
-      );
+      await sendEmail(userEmail, 'Recuperar Contraseña - MusikOn', html);
 
-      res.status(200).json({ 
-        msg: "Código de verificación enviado al email",
-        userEmail: userEmail 
+      res.status(200).json({
+        msg: 'Código de verificación enviado al email',
+        userEmail: userEmail,
       });
     } catch (emailError) {
-      console.error("Error al enviar email:", emailError);
-      res.status(500).json({ msg: "Error al enviar email de verificación" });
+      console.error('Error al enviar email:', emailError);
+      res.status(500).json({ msg: 'Error al enviar email de verificación' });
     }
-
   } catch (error) {
-    console.error("Error en forgotPasswordController:", error);
-    res.status(500).json({ msg: "Error interno del servidor" });
+    console.error('Error en forgotPasswordController:', error);
+    res.status(500).json({ msg: 'Error interno del servidor' });
   }
 };
 
@@ -526,56 +635,57 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
 export const verifyCodeController = async (req: Request, res: Response) => {
   try {
     const { userEmail, code } = req.body;
-    
+
     if (!userEmail || !code) {
-      res.status(400).json({ msg: "Email y código son requeridos" });
+      res.status(400).json({ msg: 'Email y código son requeridos' });
       return;
     }
 
     if (!validarEmail(userEmail)) {
-      res.status(400).json({ msg: "Email inválido" });
+      res.status(400).json({ msg: 'Email inválido' });
       return;
     }
 
     // Buscar usuario
     const user = await getUserByEmailModel(userEmail);
     if (!user) {
-      res.status(404).json({ msg: "Usuario no encontrado" });
+      res.status(404).json({ msg: 'Usuario no encontrado' });
       return;
     }
 
     // Verificar que sea superadmin
-    if (user.roll !== "superadmin") {
-      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+    if (user.roll !== 'superadmin') {
+      res
+        .status(403)
+        .json({ msg: 'Solo superadmin puede recuperar contraseña' });
       return;
     }
 
     // Verificar código
     const storedData = verificationCodes.get(userEmail.toLowerCase());
     if (!storedData) {
-      res.status(400).json({ msg: "Código no encontrado o expirado" });
+      res.status(400).json({ msg: 'Código no encontrado o expirado' });
       return;
     }
 
     if (storedData.expiresAt < Date.now()) {
       verificationCodes.delete(userEmail.toLowerCase());
-      res.status(400).json({ msg: "Código expirado" });
+      res.status(400).json({ msg: 'Código expirado' });
       return;
     }
 
     if (storedData.code !== code) {
-      res.status(400).json({ msg: "Código inválido" });
+      res.status(400).json({ msg: 'Código inválido' });
       return;
     }
 
-    res.status(200).json({ 
-      msg: "Código verificado correctamente",
-      userEmail: userEmail 
+    res.status(200).json({
+      msg: 'Código verificado correctamente',
+      userEmail: userEmail,
     });
-
   } catch (error) {
-    console.error("Error en verifyCodeController:", error);
-    res.status(500).json({ msg: "Error interno del servidor" });
+    console.error('Error en verifyCodeController:', error);
+    res.status(500).json({ msg: 'Error interno del servidor' });
   }
 };
 
@@ -583,50 +693,56 @@ export const verifyCodeController = async (req: Request, res: Response) => {
 export const resetPasswordController = async (req: Request, res: Response) => {
   try {
     const { userEmail, code, newPassword } = req.body;
-    
+
     if (!userEmail || !code || !newPassword) {
-      res.status(400).json({ msg: "Email, código y nueva contraseña son requeridos" });
+      res
+        .status(400)
+        .json({ msg: 'Email, código y nueva contraseña son requeridos' });
       return;
     }
 
     if (!validarEmail(userEmail)) {
-      res.status(400).json({ msg: "Email inválido" });
+      res.status(400).json({ msg: 'Email inválido' });
       return;
     }
 
     if (!validarPassword(newPassword)) {
-      res.status(400).json({ msg: "La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales" });
+      res.status(400).json({
+        msg: 'La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales',
+      });
       return;
     }
 
     // Buscar usuario
     const user = await getUserByEmailModel(userEmail);
     if (!user) {
-      res.status(404).json({ msg: "Usuario no encontrado" });
+      res.status(404).json({ msg: 'Usuario no encontrado' });
       return;
     }
 
     // Verificar que sea superadmin
-    if (user.roll !== "superadmin") {
-      res.status(403).json({ msg: "Solo superadmin puede recuperar contraseña" });
+    if (user.roll !== 'superadmin') {
+      res
+        .status(403)
+        .json({ msg: 'Solo superadmin puede recuperar contraseña' });
       return;
     }
 
     // Verificar código
     const storedData = verificationCodes.get(userEmail.toLowerCase());
     if (!storedData) {
-      res.status(400).json({ msg: "Código no encontrado o expirado" });
+      res.status(400).json({ msg: 'Código no encontrado o expirado' });
       return;
     }
 
     if (storedData.expiresAt < Date.now()) {
       verificationCodes.delete(userEmail.toLowerCase());
-      res.status(400).json({ msg: "Código expirado" });
+      res.status(400).json({ msg: 'Código expirado' });
       return;
     }
 
     if (storedData.code !== code) {
-      res.status(400).json({ msg: "Código inválido" });
+      res.status(400).json({ msg: 'Código inválido' });
       return;
     }
 
@@ -636,7 +752,7 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     // Actualizar contraseña en la base de datos
     const updateData = {
       userPassword: hashedPassword,
-      update_at: new Date().toString()
+      update_at: new Date().toString(),
     };
 
     const updateResult = await updateUserByEmailModel(userEmail, updateData);
@@ -648,13 +764,12 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     // Eliminar código usado
     verificationCodes.delete(userEmail.toLowerCase());
 
-    res.status(200).json({ 
-      msg: "Contraseña actualizada correctamente",
-      userEmail: userEmail 
+    res.status(200).json({
+      msg: 'Contraseña actualizada correctamente',
+      userEmail: userEmail,
     });
-
   } catch (error) {
-    console.error("Error en resetPasswordController:", error);
-    res.status(500).json({ msg: "Error interno del servidor" });
+    console.error('Error en resetPasswordController:', error);
+    res.status(500).json({ msg: 'Error interno del servidor' });
   }
 };

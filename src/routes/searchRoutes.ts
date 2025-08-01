@@ -8,7 +8,7 @@ import {
   globalSearchController,
   searchByLocationController,
   searchAvailableEventsForMusicianController,
-  searchAvailableMusiciansForEventController
+  searchAvailableMusiciansForEventController,
 } from '../controllers/searchController';
 
 const router = express.Router();
@@ -135,7 +135,12 @@ const router = express.Router();
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/events', authMiddleware, validatePagination, searchEventsController);
+router.get(
+  '/events',
+  authMiddleware,
+  validatePagination,
+  searchEventsController
+);
 
 /**
  * @swagger
@@ -252,7 +257,12 @@ router.get('/events', authMiddleware, validatePagination, searchEventsController
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/musician-requests', authMiddleware, validatePagination, searchMusicianRequestsController);
+router.get(
+  '/musician-requests',
+  authMiddleware,
+  validatePagination,
+  searchMusicianRequestsController
+);
 
 /**
  * @swagger
@@ -433,7 +443,12 @@ router.get('/users', authMiddleware, validatePagination, searchUsersController);
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/global', authMiddleware, validatePagination, globalSearchController);
+router.get(
+  '/global',
+  authMiddleware,
+  validatePagination,
+  globalSearchController
+);
 
 /**
  * @swagger
@@ -538,7 +553,12 @@ router.get('/global', authMiddleware, validatePagination, globalSearchController
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/location', authMiddleware, validatePagination, searchByLocationController);
+router.get(
+  '/location',
+  authMiddleware,
+  validatePagination,
+  searchByLocationController
+);
 
 /**
  * @swagger
@@ -633,7 +653,12 @@ router.get('/location', authMiddleware, validatePagination, searchByLocationCont
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/available-events', authMiddleware, validatePagination, searchAvailableEventsForMusicianController);
+router.get(
+  '/available-events',
+  authMiddleware,
+  validatePagination,
+  searchAvailableEventsForMusicianController
+);
 
 /**
  * @swagger
@@ -717,6 +742,11 @@ router.get('/available-events', authMiddleware, validatePagination, searchAvaila
  *       400:
  *         description: Parámetros de búsqueda inválidos
  */
-router.get('/available-musicians', authMiddleware, validatePagination, searchAvailableMusiciansForEventController);
+router.get(
+  '/available-musicians',
+  authMiddleware,
+  validatePagination,
+  searchAvailableMusiciansForEventController
+);
 
-export default router; 
+export default router;

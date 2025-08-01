@@ -1,3 +1,8 @@
+import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+
+// Inicializar Expo SDK
+const expo = new Expo();
+
 // Tipos para notificaciones push
 export interface PushSubscription {
   id: string;
@@ -111,12 +116,15 @@ class ApiService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  async post<T>(endpoint: string, body: any): Promise<PushNotificationApiResponse<T>> {
+  async post<T>(
+    endpoint: string,
+    body: any
+  ): Promise<PushNotificationApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'POST',
@@ -130,7 +138,7 @@ class ApiService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -145,12 +153,15 @@ class ApiService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  async put<T>(endpoint: string, body: any): Promise<PushNotificationApiResponse<T>> {
+  async put<T>(
+    endpoint: string,
+    body: any
+  ): Promise<PushNotificationApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'PUT',
@@ -164,7 +175,7 @@ class ApiService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -190,7 +201,9 @@ export class PushNotificationService {
 
       // Verificar soporte
       if (!this.isSupported()) {
-        throw new Error('Las notificaciones push no están soportadas en este dispositivo');
+        throw new Error(
+          'Las notificaciones push no están soportadas en este dispositivo'
+        );
       }
 
       // Obtener VAPID key del backend
@@ -230,7 +243,7 @@ export class PushNotificationService {
     return {
       granted: permission === 'granted',
       denied: permission === 'denied',
-      default: permission === 'default'
+      default: permission === 'default',
     };
   }
 
@@ -256,7 +269,9 @@ export class PushNotificationService {
    */
   private async loadVapidKey(): Promise<void> {
     try {
-      const response = await apiService.get<{ vapidPublicKey: string }>('/push-notifications/vapid-key');
+      const response = await apiService.get<{ vapidPublicKey: string }>(
+        '/push-notifications/vapid-key'
+      );
       if (response.success && response.data) {
         this.vapidPublicKey = response.data.vapidPublicKey;
       } else {
@@ -309,11 +324,11 @@ export class PushNotificationService {
 
       // Obtener suscripción existente o crear nueva
       let subscription = await this.registration.pushManager.getSubscription();
-      
+
       if (!subscription) {
         subscription = await this.registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+          applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey),
         });
       }
 
@@ -322,12 +337,15 @@ export class PushNotificationService {
         endpoint: subscription.endpoint,
         keys: {
           p256dh: this.arrayBufferToBase64(subscription.getKey('p256dh')!),
-          auth: this.arrayBufferToBase64(subscription.getKey('auth')!)
-        }
+          auth: this.arrayBufferToBase64(subscription.getKey('auth')!),
+        },
       };
 
-      const response = await apiService.post<PushSubscription>('/push-notifications/subscription', subscriptionData);
-      
+      const response = await apiService.post<PushSubscription>(
+        '/push-notifications/subscription',
+        subscriptionData
+      );
+
       if (response.success && response.data) {
         return response.data;
       } else {
@@ -344,7 +362,9 @@ export class PushNotificationService {
    */
   async getUserSubscriptions(): Promise<PushSubscription[]> {
     try {
-      const response = await apiService.get<PushSubscription[]>('/push-notifications/subscriptions');
+      const response = await apiService.get<PushSubscription[]>(
+        '/push-notifications/subscriptions'
+      );
       return response.success && response.data ? response.data : [];
     } catch (error) {
       console.error('Error obteniendo suscripciones:', error);
@@ -355,16 +375,22 @@ export class PushNotificationService {
   /**
    * Guardar suscripción push
    */
-  async saveSubscription(userId: string, subscriptionData: {
-    endpoint: string;
-    keys: { p256dh: string; auth: string };
-    isActive: boolean;
-  }): Promise<PushSubscription> {
+  async saveSubscription(
+    userId: string,
+    subscriptionData: {
+      endpoint: string;
+      keys: { p256dh: string; auth: string };
+      isActive: boolean;
+    }
+  ): Promise<PushSubscription> {
     try {
-      const response = await apiService.post<PushSubscription>('/push-notifications/subscriptions', {
-        userId,
-        ...subscriptionData
-      });
+      const response = await apiService.post<PushSubscription>(
+        '/push-notifications/subscriptions',
+        {
+          userId,
+          ...subscriptionData,
+        }
+      );
       if (response.success && response.data) {
         return response.data;
       }
@@ -387,12 +413,15 @@ export class PushNotificationService {
    */
   async deleteSubscription(subscriptionId: string): Promise<boolean> {
     try {
-      const response = await apiService.delete(`/push-notifications/subscription/${subscriptionId}`);
-      
+      const response = await apiService.delete(
+        `/push-notifications/subscription/${subscriptionId}`
+      );
+
       if (response.success) {
         // También eliminar suscripción local si existe
         if (this.registration) {
-          const subscription = await this.registration.pushManager.getSubscription();
+          const subscription =
+            await this.registration.pushManager.getSubscription();
           if (subscription) {
             await subscription.unsubscribe();
           }
@@ -407,28 +436,167 @@ export class PushNotificationService {
   }
 
   /**
-   * Enviar notificación a usuario específico
+   * Enviar notificación a usuario específico usando Expo
    */
   async sendNotificationToUser(
-    userId: string, 
+    userId: string,
     notification: Omit<PushNotification, 'id' | 'userId' | 'timestamp' | 'read'>
   ): Promise<boolean> {
     try {
-      const response = await apiService.post(`/push-notifications/send/${userId}`, notification);
-      return response.success;
+      // Obtener suscripciones del usuario
+      const subscriptions = await this.getUserSubscriptions();
+      const userSubscriptions = subscriptions.filter(
+        sub => sub.userId === userId && sub.isActive
+      );
+
+      if (userSubscriptions.length === 0) {
+        console.log(`No hay suscripciones activas para el usuario ${userId}`);
+        return false;
+      }
+
+      // Crear mensajes para Expo
+      const messages: ExpoPushMessage[] = userSubscriptions.map(
+        subscription => ({
+          to: subscription.endpoint,
+          sound: 'default',
+          title: notification.title,
+          body: notification.body,
+          data: notification.data || {},
+          priority:
+            (notification.priority === 'low'
+              ? 'default'
+              : notification.priority) || 'high',
+          badge: 1,
+          channelId: notification.category || 'default',
+        })
+      );
+
+      // Enviar notificaciones usando Expo
+      const chunks = expo.chunkPushNotifications(messages);
+      const tickets = [];
+
+      for (const chunk of chunks) {
+        try {
+          const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+          tickets.push(...ticketChunk);
+        } catch (error) {
+          console.error('Error enviando chunk de notificaciones:', error);
+        }
+      }
+
+      // Verificar tickets para errores
+      const receiptIds = tickets
+        .filter(ticket => ticket.status === 'error')
+        .map(ticket => (ticket as any).id);
+
+      if (receiptIds.length > 0) {
+        const receiptIdChunks =
+          expo.chunkPushNotificationReceiptIds(receiptIds);
+        for (const chunk of receiptIdChunks) {
+          try {
+            const receipts = await expo.getPushNotificationReceiptsAsync(chunk);
+            for (const receiptId in receipts) {
+              const receipt = receipts[receiptId];
+              if (receipt.status === 'error') {
+                console.error(
+                  `Error en notificación ${receiptId}:`,
+                  receipt.message
+                );
+              }
+            }
+          } catch (error) {
+            console.error('Error verificando receipts:', error);
+          }
+        }
+      }
+
+      console.log('Notificación enviada exitosamente', {
+        userId,
+        title: notification.title,
+        ticketsSent: tickets.length,
+        errors: receiptIds.length,
+      });
+
+      return true;
     } catch (error) {
-      console.error('Error enviando notificación:', error);
+      console.error('Error enviando notificación', {
+        userId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       return false;
     }
   }
 
   /**
-   * Enviar notificación masiva
+   * Enviar notificación masiva usando Expo
    */
-  async sendBulkNotification(request: BulkNotificationRequest): Promise<{ success: number; failed: number } | null> {
+  async sendBulkNotification(
+    request: BulkNotificationRequest
+  ): Promise<{ success: number; failed: number } | null> {
     try {
-      const response = await apiService.post<{ success: number; failed: number }>('/push-notifications/bulk', request);
-      return response.success && response.data ? response.data : null;
+      // Obtener todas las suscripciones activas
+      const allSubscriptions = await this.getUserSubscriptions();
+      const targetSubscriptions = allSubscriptions.filter(
+        sub => request.userIds.includes(sub.userId) && sub.isActive
+      );
+
+      if (targetSubscriptions.length === 0) {
+        console.log(
+          'No hay suscripciones activas para los usuarios especificados'
+        );
+        return { success: 0, failed: request.userIds.length };
+      }
+
+      // Crear mensajes para Expo
+      const messages: ExpoPushMessage[] = targetSubscriptions.map(
+        subscription => ({
+          to: subscription.endpoint,
+          sound: 'default',
+          title: request.title,
+          body: request.body,
+          data: request.data || {},
+          priority: 'high',
+          badge: 1,
+          channelId: request.category || 'default',
+        })
+      );
+
+      // Enviar notificaciones usando Expo
+      const chunks = expo.chunkPushNotifications(messages);
+      const tickets = [];
+      let successCount = 0;
+      let failedCount = 0;
+
+      for (const chunk of chunks) {
+        try {
+          const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+          tickets.push(...ticketChunk);
+
+          // Contar éxitos y fallos
+          ticketChunk.forEach(ticket => {
+            if (ticket.status === 'ok') {
+              successCount++;
+            } else {
+              failedCount++;
+            }
+          });
+        } catch (error) {
+          console.error(
+            'Error enviando chunk de notificaciones masivas:',
+            error
+          );
+          failedCount += chunk.length;
+        }
+      }
+
+      console.log('Notificación masiva enviada', {
+        totalUsers: request.userIds.length,
+        successCount,
+        failedCount,
+        ticketsSent: tickets.length,
+      });
+
+      return { success: successCount, failed: failedCount };
     } catch (error) {
       console.error('Error enviando notificación masiva:', error);
       return null;
@@ -442,7 +610,10 @@ export class PushNotificationService {
     template: Omit<NotificationTemplate, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<NotificationTemplate | null> {
     try {
-      const response = await apiService.post<NotificationTemplate>('/push-notifications/templates', template);
+      const response = await apiService.post<NotificationTemplate>(
+        '/push-notifications/templates',
+        template
+      );
       return response.success && response.data ? response.data : null;
     } catch (error) {
       console.error('Error creando template:', error);
@@ -455,7 +626,9 @@ export class PushNotificationService {
    */
   async getActiveTemplates(): Promise<NotificationTemplate[]> {
     try {
-      const response = await apiService.get<NotificationTemplate[]>('/push-notifications/templates');
+      const response = await apiService.get<NotificationTemplate[]>(
+        '/push-notifications/templates'
+      );
       return response.success && response.data ? response.data : [];
     } catch (error) {
       console.error('Error obteniendo templates:', error);
@@ -466,9 +639,13 @@ export class PushNotificationService {
   /**
    * Obtener template específico
    */
-  async getNotificationTemplate(templateId: string): Promise<NotificationTemplate | null> {
+  async getNotificationTemplate(
+    templateId: string
+  ): Promise<NotificationTemplate | null> {
     try {
-      const response = await apiService.get<NotificationTemplate>(`/push-notifications/templates/${templateId}`);
+      const response = await apiService.get<NotificationTemplate>(
+        `/push-notifications/templates/${templateId}`
+      );
       return response.success && response.data ? response.data : null;
     } catch (error) {
       console.error('Error obteniendo template:', error);
@@ -480,11 +657,14 @@ export class PushNotificationService {
    * Actualizar template
    */
   async updateNotificationTemplate(
-    templateId: string, 
+    templateId: string,
     updates: Partial<NotificationTemplate>
   ): Promise<NotificationTemplate | null> {
     try {
-      const response = await apiService.put<NotificationTemplate>(`/push-notifications/templates/${templateId}`, updates);
+      const response = await apiService.put<NotificationTemplate>(
+        `/push-notifications/templates/${templateId}`,
+        updates
+      );
       return response.success && response.data ? response.data : null;
     } catch (error) {
       console.error('Error actualizando template:', error);
@@ -497,7 +677,9 @@ export class PushNotificationService {
    */
   async deleteNotificationTemplate(templateId: string): Promise<boolean> {
     try {
-      const response = await apiService.delete(`/push-notifications/templates/${templateId}`);
+      const response = await apiService.delete(
+        `/push-notifications/templates/${templateId}`
+      );
       return response.success;
     } catch (error) {
       console.error('Error eliminando template:', error);
@@ -510,7 +692,9 @@ export class PushNotificationService {
    */
   async getNotificationStats(): Promise<NotificationStats | null> {
     try {
-      const response = await apiService.get<NotificationStats>('/push-notifications/stats');
+      const response = await apiService.get<NotificationStats>(
+        '/push-notifications/stats'
+      );
       return response.success && response.data ? response.data : null;
     } catch (error) {
       console.error('Error obteniendo estadísticas:', error);
@@ -519,12 +703,62 @@ export class PushNotificationService {
   }
 
   /**
-   * Enviar notificación de prueba
+   * Enviar notificación de prueba usando Expo
    */
   async testPushNotification(): Promise<boolean> {
     try {
-      const response = await apiService.post('/push-notifications/test', {});
-      return response.success;
+      // Obtener todas las suscripciones activas
+      const subscriptions = await this.getUserSubscriptions();
+      const activeSubscriptions = subscriptions.filter(sub => sub.isActive);
+
+      if (activeSubscriptions.length === 0) {
+        console.log(
+          'No hay suscripciones activas para enviar notificación de prueba'
+        );
+        return false;
+      }
+
+      // Crear mensaje de prueba
+      const testMessage: ExpoPushMessage = {
+        to: activeSubscriptions[0].endpoint, // Enviar solo a la primera suscripción
+        sound: 'default',
+        title: '🔔 Notificación de Prueba',
+        body: 'Esta es una notificación de prueba del sistema MussikOn',
+        data: {
+          type: 'test',
+          timestamp: new Date().toISOString(),
+        },
+        priority: 'high',
+        badge: 1,
+        channelId: 'test',
+      };
+
+      // Enviar notificación de prueba
+      const chunks = expo.chunkPushNotifications([testMessage]);
+
+      for (const chunk of chunks) {
+        try {
+          const tickets = await expo.sendPushNotificationsAsync(chunk);
+
+          // Verificar resultado
+          const ticket = tickets[0];
+          if (ticket.status === 'ok') {
+            console.log('✅ Notificación de prueba enviada exitosamente');
+            return true;
+          } else {
+            console.error(
+              '❌ Error enviando notificación de prueba:',
+              ticket.message
+            );
+            return false;
+          }
+        } catch (error) {
+          console.error('❌ Error enviando notificación de prueba:', error);
+          return false;
+        }
+      }
+
+      return false;
     } catch (error) {
       console.error('Error enviando notificación de prueba:', error);
       return false;
@@ -534,7 +768,10 @@ export class PushNotificationService {
   /**
    * Mostrar notificación local (para testing)
    */
-  showLocalNotification(title: string, options: NotificationOptions = {}): void {
+  showLocalNotification(
+    title: string,
+    options: NotificationOptions = {}
+  ): void {
     if (!('Notification' in window)) {
       console.warn('Las notificaciones no están soportadas');
       return;
@@ -545,7 +782,7 @@ export class PushNotificationService {
         icon: '/icon-192x192.png',
         badge: '/badge-72x72.png',
         tag: 'mussikon-notification',
-        ...options
+        ...options,
       });
     }
   }
@@ -554,7 +791,7 @@ export class PushNotificationService {
    * Convertir VAPID key de base64 a Uint8Array
    */
   private urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
       .replace(/-/g, '+')
       .replace(/_/g, '/');
@@ -585,7 +822,9 @@ export class PushNotificationService {
    */
   async getNotificationSettings(): Promise<NotificationSettings> {
     try {
-      const response = await apiService.get<NotificationSettings>('/push-notifications/settings');
+      const response = await apiService.get<NotificationSettings>(
+        '/push-notifications/settings'
+      );
       if (response.success && response.data) {
         return response.data;
       }
@@ -602,24 +841,29 @@ export class PushNotificationService {
         event: true,
         request: true,
         payment: true,
-        chat: true
+        chat: true,
       },
       quietHours: {
         enabled: false,
         startTime: '22:00',
-        endTime: '08:00'
+        endTime: '08:00',
       },
       sound: true,
-      vibration: true
+      vibration: true,
     };
   }
 
   /**
    * Actualizar configuración de notificaciones
    */
-  async updateNotificationSettings(settings: Partial<NotificationSettings>): Promise<boolean> {
+  async updateNotificationSettings(
+    settings: Partial<NotificationSettings>
+  ): Promise<boolean> {
     try {
-      const response = await apiService.put('/push-notifications/settings', settings);
+      const response = await apiService.put(
+        '/push-notifications/settings',
+        settings
+      );
       return response.success;
     } catch (error) {
       console.error('Error actualizando configuración:', error);
@@ -635,10 +879,14 @@ export class PushNotificationService {
 
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
-    
-    const [startHour, startMinute] = settings.quietHours.startTime.split(':').map(Number);
-    const [endHour, endMinute] = settings.quietHours.endTime.split(':').map(Number);
-    
+
+    const [startHour, startMinute] = settings.quietHours.startTime
+      .split(':')
+      .map(Number);
+    const [endHour, endMinute] = settings.quietHours.endTime
+      .split(':')
+      .map(Number);
+
     const startTime = startHour * 60 + startMinute;
     const endTime = endHour * 60 + endMinute;
 
@@ -652,4 +900,4 @@ export class PushNotificationService {
 }
 
 // Instancia singleton del servicio
-export const pushNotificationService = new PushNotificationService(); 
+export const pushNotificationService = new PushNotificationService();

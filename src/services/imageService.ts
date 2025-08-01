@@ -1,21 +1,20 @@
-import { Image, ImageFilters } from "../utils/DataTypes";
-import { 
-  uploadImage, 
-  getImageById, 
-  listImages, 
-  updateImage, 
+import { Image, ImageFilters } from '../utils/DataTypes';
+import {
+  uploadImage,
+  getImageById,
+  listImages,
+  updateImage,
   deleteImage,
   getUserProfileImages,
   getPostImages,
   getEventImages,
-  getImageStats
-} from "../models/imagesModel";
+  getImageStats,
+} from '../models/imagesModel';
 
 /**
  * Servicio para manejo de imágenes
  */
 export class ImageService {
-  
   /**
    * Subir imagen de perfil
    */
@@ -27,7 +26,7 @@ export class ImageService {
     return await uploadImage(file, userId, 'profile', {
       description: description || 'Foto de perfil',
       tags: ['profile', 'user'],
-      isPublic: true
+      isPublic: true,
     });
   }
 
@@ -43,7 +42,7 @@ export class ImageService {
     return await uploadImage(file, userId, 'post', {
       description: description || 'Imagen de post',
       tags: tags || ['post'],
-      isPublic: true
+      isPublic: true,
     });
   }
 
@@ -60,7 +59,7 @@ export class ImageService {
       description: description || 'Imagen de evento',
       tags: ['event', eventId],
       isPublic: true,
-      customMetadata: { eventId }
+      customMetadata: { eventId },
     });
   }
 
@@ -76,7 +75,7 @@ export class ImageService {
     return await uploadImage(file, userId, 'gallery', {
       description: description || 'Imagen de galería',
       tags: tags || ['gallery'],
-      isPublic: true
+      isPublic: true,
     });
   }
 
@@ -92,7 +91,7 @@ export class ImageService {
     return await uploadImage(file, userId, 'admin', {
       description: description || 'Imagen administrativa',
       tags: tags || ['admin'],
-      isPublic: false
+      isPublic: false,
     });
   }
 
@@ -104,7 +103,7 @@ export class ImageService {
     userId?: string
   ): Promise<Image | null> {
     const image = await getImageById(imageId);
-    
+
     if (!image) {
       return null;
     }
@@ -133,11 +132,11 @@ export class ImageService {
     hasPrev: boolean;
   }> {
     const offset = (page - 1) * limit;
-    
+
     const allImages = await listImages({
       ...filters,
       limit: undefined,
-      offset: undefined
+      offset: undefined,
     });
 
     const total = allImages.length;
@@ -150,7 +149,7 @@ export class ImageService {
       page,
       totalPages,
       hasNext: page < totalPages,
-      hasPrev: page > 1
+      hasPrev: page > 1,
     };
   }
 
@@ -163,7 +162,7 @@ export class ImageService {
     updateData: any
   ): Promise<Image> {
     const image = await getImageById(imageId);
-    
+
     if (!image) {
       throw new Error('Imagen no encontrada');
     }
@@ -183,7 +182,7 @@ export class ImageService {
     userId: string
   ): Promise<boolean> {
     const image = await getImageById(imageId);
-    
+
     if (!image) {
       throw new Error('Imagen no encontrada');
     }
@@ -232,7 +231,7 @@ export class ImageService {
   ): Promise<Image[]> {
     return await listImages({
       ...filters,
-      search: searchTerm
+      search: searchTerm,
     });
   }
 
@@ -244,9 +243,9 @@ export class ImageService {
     filters: ImageFilters = {}
   ): Promise<Image[]> {
     const images = await listImages(filters);
-    
-    return images.filter(image => 
-      image.tags && tags.some(tag => image.tags!.includes(tag))
+
+    return images.filter(
+      image => image.tags && tags.some(tag => image.tags!.includes(tag))
     );
   }
 
@@ -259,7 +258,7 @@ export class ImageService {
   ): Promise<Image[]> {
     return await listImages({
       ...filters,
-      limit
+      limit,
     });
   }
 
@@ -272,23 +271,30 @@ export class ImageService {
       'image/png',
       'image/gif',
       'image/webp',
-      'image/svg+xml'
+      'image/svg+xml',
     ];
-    
+
     return allowedMimeTypes.includes(file.mimetype);
   }
 
   /**
    * Validar tamaño de imagen
    */
-  static validateImageSize(file: Express.Multer.File, maxSize: number = 10 * 1024 * 1024): boolean {
+  static validateImageSize(
+    file: Express.Multer.File,
+    maxSize: number = 10 * 1024 * 1024
+  ): boolean {
     return file.size <= maxSize;
   }
 
   /**
    * Generar nombre de archivo único
    */
-  static generateUniqueFileName(originalName: string, category: string, userId: string): string {
+  static generateUniqueFileName(
+    originalName: string,
+    category: string,
+    userId: string
+  ): string {
     const timestamp = Date.now();
     const extension = originalName.split('.').pop();
     const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -308,7 +314,7 @@ export class ImageService {
     isPublic: boolean;
   } | null> {
     const image = await getImageById(imageId);
-    
+
     if (!image) {
       return null;
     }
@@ -320,7 +326,7 @@ export class ImageService {
       mimetype: image.mimetype,
       category: image.category,
       createdAt: image.createdAt,
-      isPublic: image.isPublic
+      isPublic: image.isPublic,
     };
   }
-} 
+}

@@ -1,21 +1,25 @@
-import express, { Request, Response, Router } from "express";
-import { authMiddleware } from "../middleware/authMiddleware";
-import { validate } from "../middleware/validationMiddleware";
-import { asyncHandler } from "../middleware/errorHandler";
-import { logger } from "../services/loggerService";
-import { LoginDTO, RegisterDTO, UpdateUserDTO } from "../types/dtos";
-import { 
-  emailRegisterController, 
-  loginController, 
-  registerController, 
-  updateUserByEmailController, 
-  validNumberGetByEmail, 
-  addEventToUserController, 
+import express, { Request, Response, Router } from 'express';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { validate, validateId } from '../middleware/validationMiddleware';
+import { asyncHandler } from '../middleware/errorHandler';
+import { logger } from '../services/loggerService';
+import {
+  registerSchema,
+  loginSchema,
+  updateUserSchema,
+} from '../utils/validationSchemas';
+import {
+  emailRegisterController,
+  loginController,
+  registerController,
+  updateUserByEmailController,
+  validNumberGetByEmail,
+  addEventToUserController,
   deleteUserByEmailController,
   forgotPasswordController,
   verifyCodeController,
-  resetPasswordController
-} from "../controllers/authController";
+  resetPasswordController,
+} from '../controllers/authController';
 
 const router = Router();
 
@@ -46,8 +50,9 @@ const router = Router();
  *       409:
  *         description: Usuario ya existe
  */
-router.post("/Register", 
-  validate(RegisterDTO),
+router.post(
+  '/Register',
+  validate(registerSchema),
   asyncHandler(async (req: Request, res: Response) => {
     logger.logAuth('Intento de registro', req.body.userEmail);
     await registerController(req, res);
@@ -91,8 +96,9 @@ router.post("/Register",
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/login", 
-  validate(LoginDTO),
+router.post(
+  '/login',
+  validate(loginSchema),
   asyncHandler(async (req: Request, res: Response) => {
     logger.logAuth('Intento de login', req.body.userEmail);
     await loginController(req, res);
@@ -118,8 +124,9 @@ router.post("/login",
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/email-register", 
-  validate(RegisterDTO),
+router.post(
+  '/email-register',
+  validate(registerSchema),
   asyncHandler(async (req: Request, res: Response) => {
     logger.logAuth('Intento de registro con email', req.body.userEmail);
     await emailRegisterController(req, res);
@@ -158,13 +165,15 @@ router.post("/email-register",
  *       404:
  *         description: Usuario no encontrado
  */
-router.put("/update/:userEmail", 
+router.put(
+  '/update/:userEmail',
   authMiddleware,
-  validate(UpdateUserDTO),
+  validateId,
+  validate(updateUserSchema),
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.params.userEmail;
-    logger.logAuth('Intento de actualización de usuario', userEmail, { 
-      metadata: { updatedBy: (req as any).user?.userEmail } 
+    logger.logAuth('Intento de actualización de usuario', userEmail, {
+      metadata: { updatedBy: (req as any).user?.userEmail },
     });
     await updateUserByEmailController(req, res);
     logger.logAuth('Actualización de usuario exitosa', userEmail);
@@ -194,7 +203,8 @@ router.put("/update/:userEmail",
  *       404:
  *         description: Usuario no encontrado
  */
-router.get("/validate-number/:userEmail", 
+router.get(
+  '/validate-number/:userEmail',
   authMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.params.userEmail;
@@ -235,16 +245,19 @@ router.get("/validate-number/:userEmail",
  *       404:
  *         description: Usuario o evento no encontrado
  */
-router.post("/add-event/:userEmail", 
+router.post(
+  '/add-event/:userEmail',
   authMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.params.userEmail;
     const eventId = req.body.eventId;
-    logger.logAuth('Agregando evento a usuario', userEmail, { 
-      metadata: { eventId, addedBy: (req as any).user?.userEmail } 
+    logger.logAuth('Agregando evento a usuario', userEmail, {
+      metadata: { eventId, addedBy: (req as any).user?.userEmail },
     });
     await addEventToUserController(req, res);
-    logger.logAuth('Evento agregado exitosamente', userEmail, { metadata: { eventId } });
+    logger.logAuth('Evento agregado exitosamente', userEmail, {
+      metadata: { eventId },
+    });
   })
 );
 
@@ -271,12 +284,13 @@ router.post("/add-event/:userEmail",
  *       404:
  *         description: Usuario no encontrado
  */
-router.delete("/delete/:userEmail", 
+router.delete(
+  '/delete/:userEmail',
   authMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.params.userEmail;
-    logger.logAuth('Eliminación de usuario solicitada', userEmail, { 
-      metadata: { deletedBy: (req as any).user?.userEmail } 
+    logger.logAuth('Eliminación de usuario solicitada', userEmail, {
+      metadata: { deletedBy: (req as any).user?.userEmail },
     });
     await deleteUserByEmailController(req, res);
     logger.logAuth('Usuario eliminado exitosamente', userEmail);
@@ -309,7 +323,8 @@ router.delete("/delete/:userEmail",
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/forgot-password", 
+router.post(
+  '/forgot-password',
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.body.userEmail;
     logger.logAuth('Solicitud de recuperación de contraseña', userEmail);
@@ -348,11 +363,14 @@ router.post("/forgot-password",
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/verify-code", 
+router.post(
+  '/verify-code',
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.body.userEmail;
     const code = req.body.code;
-    logger.logAuth('Verificación de código solicitada', userEmail, { metadata: { code } });
+    logger.logAuth('Verificación de código solicitada', userEmail, {
+      metadata: { code },
+    });
     await verifyCodeController(req, res);
     logger.logAuth('Código verificado exitosamente', userEmail);
   })
@@ -391,7 +409,8 @@ router.post("/verify-code",
  *       404:
  *         description: Usuario no encontrado
  */
-router.post("/reset-password", 
+router.post(
+  '/reset-password',
   asyncHandler(async (req: Request, res: Response) => {
     const userEmail = req.body.userEmail;
     logger.logAuth('Restablecimiento de contraseña solicitado', userEmail);

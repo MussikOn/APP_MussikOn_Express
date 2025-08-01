@@ -13,4 +13,4 @@ export interface MusicianRequest {
   assignedMusicianId?: string;
   createdAt: FirebaseFirestore.Timestamp;
   updatedAt: FirebaseFirestore.Timestamp;
-} 
+}

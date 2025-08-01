@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { createRequest, acceptRequest, cancelRequest, getRequestStatus, getRequestById, updateRequest, deleteRequest } from '../controllers/musicianRequestController';
+import {
+  createRequest,
+  acceptRequest,
+  cancelRequest,
+  getRequestStatus,
+  getRequestById,
+  updateRequest,
+  deleteRequest,
+} from '../controllers/musicianRequestController';
 
 const router = Router();
 
@@ -499,4 +507,4 @@ router.get('/:id', getRequestById);
 router.put('/:id', updateRequest);
 router.delete('/:id', deleteRequest);
 
-export default router; 
+export default router;

@@ -14,7 +14,7 @@ import {
   getEventByIdController,
   cancelEventController,
   completeEventController,
-  deleteEventController
+  deleteEventController,
 } from '../controllers/eventControllers';
 
 const router = express.Router();
@@ -209,7 +209,11 @@ router.get('/my-scheduled', authMiddleware, myScheduledEventsController);
  *               items:
  *                 $ref: '#/components/schemas/Event'
  */
-router.get('/my-past-performances', authMiddleware, myPastPerformancesController);
+router.get(
+  '/my-past-performances',
+  authMiddleware,
+  myPastPerformancesController
+);
 
 /**
  * @swagger

@@ -48,6 +48,7 @@ const io = new Server(server, {
       'http://localhost:5173',
       'http://localhost:5173/analytics',
       'http://192.168.54.59:5173',
+      'http://192.168.54.86:5173',
       'http://192.168.54.59:1000',
       'http://172.20.10.2:5173',
       'http://192.168.54.131:5173',
@@ -62,10 +63,12 @@ const io = new Server(server, {
 // Configurar CORS
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5173/analytics',
   'http://192.168.54.59:5173',
-  'http://192.168.54.131:5173',
+  'http://192.168.54.86:5173',
   'http://192.168.54.59:1000',
   'http://172.20.10.2:5173',
+  'http://192.168.54.131:5173',
   'http://192.168.100.101:5173',
   'https://mussikon.web.app',
   'https://mussikon.firebaseapp.com'

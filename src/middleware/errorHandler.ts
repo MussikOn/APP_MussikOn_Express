@@ -16,7 +16,7 @@ export class OperationalError extends Error implements AppError {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = true;
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -41,7 +41,7 @@ export function errorHandler(
     method: req.method,
     ip: req.ip,
     userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 
   // Error de validación de Joi
@@ -83,7 +83,7 @@ export function errorHandler(
   res.status(error.statusCode || 500).json({
     success: false,
     error: error.message || 'Error interno del servidor',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }
 
@@ -99,7 +99,14 @@ export function asyncHandler(fn: Function) {
 /**
  * Middleware para manejar rutas no encontradas
  */
-export function notFoundHandler(req: Request, res: Response, next: NextFunction): void {
-  const error = new OperationalError(`Ruta no encontrada: ${req.originalUrl}`, 404);
+export function notFoundHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const error = new OperationalError(
+    `Ruta no encontrada: ${req.originalUrl}`,
+    404
+  );
   next(error);
-} 
+}

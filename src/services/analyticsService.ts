@@ -89,14 +89,16 @@ export class AnalyticsService {
   /**
    * Analytics de eventos
    */
-  async getEventAnalytics(filters: AnalyticsFilters = {}): Promise<EventAnalytics> {
+  async getEventAnalytics(
+    filters: AnalyticsFilters = {}
+  ): Promise<EventAnalytics> {
     try {
       let query: any = db.collection('events');
-      
+
       if (filters.dateFrom) {
         query = query.where('createdAt', '>=', filters.dateFrom);
       }
-      
+
       if (filters.dateTo) {
         query = query.where('createdAt', '<=', filters.dateTo);
       }
@@ -111,45 +113,50 @@ export class AnalyticsService {
       let completedEvents = 0;
       let cancelledEvents = 0;
 
-              events.forEach((event: any) => {
-          // Contar por estado
-          eventsByStatus[event.status] = (eventsByStatus[event.status] || 0) + 1;
-          
-          // Contar por tipo
-          eventsByType[event.eventType] = (eventsByType[event.eventType] || 0) + 1;
-          
-          // Contar por mes - Validar fecha antes de convertir
-          let month: string;
-          try {
-            const createdAt = event.createdAt ? new Date(event.createdAt) : new Date();
-            if (isNaN(createdAt.getTime())) {
-              console.info('./src/services/analyticsService.ts line 126')
-              console.warn('Fecha inválida en event:', event.id, event.createdAt);
-              month = new Date().toISOString().substring(0, 7);
-            } else {
-              month = createdAt.toISOString().substring(0, 7);
-            }
-          } catch (error) {
-            console.info('./src/services/analyticsService.ts line 133')
-            console.warn('Error al procesar fecha de event:', event.id, error);
+      events.forEach((event: any) => {
+        // Contar por estado
+        eventsByStatus[event.status] = (eventsByStatus[event.status] || 0) + 1;
+
+        // Contar por tipo
+        eventsByType[event.eventType] =
+          (eventsByType[event.eventType] || 0) + 1;
+
+        // Contar por mes - Validar fecha antes de convertir
+        let month: string;
+        try {
+          const createdAt = event.createdAt
+            ? new Date(event.createdAt)
+            : new Date();
+          if (isNaN(createdAt.getTime())) {
+            console.info('./src/services/analyticsService.ts line 126');
+            console.warn('Fecha inválida en event:', event.id, event.createdAt);
             month = new Date().toISOString().substring(0, 7);
+          } else {
+            month = createdAt.toISOString().substring(0, 7);
           }
-          
-          eventsByMonth[month] = (eventsByMonth[month] || 0) + 1;
-          
-          // Calcular presupuesto
-          totalBudget += event.budget || 0;
-          
-          // Contar eventos completados
-          if (event.status === 'completado') completedEvents++;
-          
-          // Contar eventos cancelados
-          if (event.status === 'cancelado') cancelledEvents++;
-        });
+        } catch (error) {
+          console.info('./src/services/analyticsService.ts line 133');
+          console.warn('Error al procesar fecha de event:', event.id, error);
+          month = new Date().toISOString().substring(0, 7);
+        }
+
+        eventsByMonth[month] = (eventsByMonth[month] || 0) + 1;
+
+        // Calcular presupuesto
+        totalBudget += event.budget || 0;
+
+        // Contar eventos completados
+        if (event.status === 'completado') completedEvents++;
+
+        // Contar eventos cancelados
+        if (event.status === 'cancelado') cancelledEvents++;
+      });
 
       const averageBudget = events.length > 0 ? totalBudget / events.length : 0;
-      const completionRate = events.length > 0 ? (completedEvents / events.length) * 100 : 0;
-      const cancellationRate = events.length > 0 ? (cancelledEvents / events.length) * 100 : 0;
+      const completionRate =
+        events.length > 0 ? (completedEvents / events.length) * 100 : 0;
+      const cancellationRate =
+        events.length > 0 ? (cancelledEvents / events.length) * 100 : 0;
 
       return {
         totalEvents: events.length,
@@ -159,7 +166,7 @@ export class AnalyticsService {
         averageBudget,
         totalBudget,
         completionRate,
-        cancellationRate
+        cancellationRate,
       };
     } catch (error) {
       console.error('Error al obtener analytics de eventos:', error);
@@ -170,20 +177,24 @@ export class AnalyticsService {
   /**
    * Analytics de solicitudes de músicos
    */
-  async getRequestAnalytics(filters: AnalyticsFilters = {}): Promise<RequestAnalytics> {
+  async getRequestAnalytics(
+    filters: AnalyticsFilters = {}
+  ): Promise<RequestAnalytics> {
     try {
       let query: any = db.collection('musicianRequests');
-      
+
       if (filters.dateFrom) {
         query = query.where('createdAt', '>=', filters.dateFrom);
       }
-      
+
       if (filters.dateTo) {
         query = query.where('createdAt', '<=', filters.dateTo);
       }
 
       const snapshot = await query.get();
-      const requests = snapshot.docs.map((doc: any) => doc.data() as MusicianRequest);
+      const requests = snapshot.docs.map(
+        (doc: any) => doc.data() as MusicianRequest
+      );
 
       const requestsByStatus: Record<string, number> = {};
       const requestsByType: Record<string, number> = {};
@@ -195,56 +206,77 @@ export class AnalyticsService {
 
       requests.forEach((request: any) => {
         // Contar por estado
-        requestsByStatus[request.status] = (requestsByStatus[request.status] || 0) + 1;
-        
+        requestsByStatus[request.status] =
+          (requestsByStatus[request.status] || 0) + 1;
+
         // Contar por tipo
-        requestsByType[request.eventType] = (requestsByType[request.eventType] || 0) + 1;
-        
+        requestsByType[request.eventType] =
+          (requestsByType[request.eventType] || 0) + 1;
+
         // Contar por mes - Validar fecha antes de convertir
         let month: string;
         try {
-          const createdAt = request.createdAt ? new Date(request.createdAt) : new Date();
+          const createdAt = request.createdAt
+            ? new Date(request.createdAt)
+            : new Date();
           if (isNaN(createdAt.getTime())) {
-            console.info('./src/services/analyticsService.ts line 208')
-            console.warn('Fecha inválida en request:', request.id, request.createdAt);
+            console.info('./src/services/analyticsService.ts line 208');
+            console.warn(
+              'Fecha inválida en request:',
+              request.id,
+              request.createdAt
+            );
             month = new Date().toISOString().substring(0, 7);
           } else {
             month = createdAt.toISOString().substring(0, 7);
           }
         } catch (error) {
-          console.info('./src/services/analyticsService.ts line 215')
-          console.warn('Error al procesar fecha de request:', request.id, error);
+          console.info('./src/services/analyticsService.ts line 215');
+          console.warn(
+            'Error al procesar fecha de request:',
+            request.id,
+            error
+          );
           month = new Date().toISOString().substring(0, 7);
         }
-        
+
         requestsByMonth[month] = (requestsByMonth[month] || 0) + 1;
-        
+
         // Calcular presupuesto
         totalBudget += request.budget || 0;
-        
+
         // Contar solicitudes aceptadas
         if (request.status === 'asignada') acceptedRequests++;
-        
+
         // Calcular tiempo de respuesta - Validar fechas
         if (request.assignedMusicianId && request.updatedAt) {
           try {
-            const created = request.createdAt ? new Date(request.createdAt) : new Date();
+            const created = request.createdAt
+              ? new Date(request.createdAt)
+              : new Date();
             const updated = new Date(request.updatedAt);
-            
+
             if (!isNaN(created.getTime()) && !isNaN(updated.getTime())) {
               totalResponseTime += updated.getTime() - created.getTime();
               responseTimeCount++;
             }
           } catch (error) {
-            console.info('./src/services/analyticsService.ts line 239')
-            console.warn('Error al calcular tiempo de respuesta:', request.id, error);
+            console.info('./src/services/analyticsService.ts line 239');
+            console.warn(
+              'Error al calcular tiempo de respuesta:',
+              request.id,
+              error
+            );
           }
         }
       });
 
-      const averageBudget = requests.length > 0 ? totalBudget / requests.length : 0;
-      const acceptanceRate = requests.length > 0 ? (acceptedRequests / requests.length) * 100 : 0;
-      const averageResponseTime = responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0;
+      const averageBudget =
+        requests.length > 0 ? totalBudget / requests.length : 0;
+      const acceptanceRate =
+        requests.length > 0 ? (acceptedRequests / requests.length) * 100 : 0;
+      const averageResponseTime =
+        responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0;
 
       return {
         totalRequests: requests.length,
@@ -254,7 +286,7 @@ export class AnalyticsService {
         averageBudget,
         totalBudget,
         acceptanceRate,
-        averageResponseTime
+        averageResponseTime,
       };
     } catch (error) {
       console.error('Error al obtener analytics de solicitudes:', error);
@@ -265,10 +297,12 @@ export class AnalyticsService {
   /**
    * Analytics de usuarios
    */
-  async getUserAnalytics(filters: AnalyticsFilters = {}): Promise<UserAnalytics> {
+  async getUserAnalytics(
+    filters: AnalyticsFilters = {}
+  ): Promise<UserAnalytics> {
     try {
       let query: any = db.collection('users');
-      
+
       if (filters.userRole) {
         query = query.where('roll', '==', filters.userRole);
       }
@@ -282,44 +316,50 @@ export class AnalyticsService {
       let newUsersThisMonth = 0;
 
       const currentMonth = new Date().toISOString().substring(0, 7);
-      const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().substring(0, 7);
+      const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .substring(0, 7);
 
-              users.forEach((user: any) => {
-          // Contar por rol
-          usersByRole[user.roll] = (usersByRole[user.roll] || 0) + 1;
-          
-          // Contar por mes - Validar fecha antes de convertir
-          let month: string;
-          try {
-            const createAt = user.create_at ? new Date(user.create_at) : new Date();
-            if (isNaN(createAt.getTime())) {
-              console.info('./src/services/analyticsService.ts line 296')
-              console.warn('Fecha inválida en user:', user.id, user.create_at);
-              month = new Date().toISOString().substring(0, 7);
-            } else {
-              month = createAt.toISOString().substring(0, 7);
-            }
-          } catch (error) {
-            console.info('./src/services/analyticsService.ts line 303')
-            console.warn('Error al procesar fecha de user:', user.id, error);
+      users.forEach((user: any) => {
+        // Contar por rol
+        usersByRole[user.roll] = (usersByRole[user.roll] || 0) + 1;
+
+        // Contar por mes - Validar fecha antes de convertir
+        let month: string;
+        try {
+          const createAt = user.create_at
+            ? new Date(user.create_at)
+            : new Date();
+          if (isNaN(createAt.getTime())) {
+            console.info('./src/services/analyticsService.ts line 296');
+            console.warn('Fecha inválida en user:', user.id, user.create_at);
             month = new Date().toISOString().substring(0, 7);
+          } else {
+            month = createAt.toISOString().substring(0, 7);
           }
-          
-          usersByMonth[month] = (usersByMonth[month] || 0) + 1;
-          
-          // Contar usuarios activos (creados en el último mes)
-          if (month >= lastMonth) activeUsers++;
-          
-          // Contar nuevos usuarios este mes
-          if (month === currentMonth) newUsersThisMonth++;
-        });
+        } catch (error) {
+          console.info('./src/services/analyticsService.ts line 303');
+          console.warn('Error al procesar fecha de user:', user.id, error);
+          month = new Date().toISOString().substring(0, 7);
+        }
+
+        usersByMonth[month] = (usersByMonth[month] || 0) + 1;
+
+        // Contar usuarios activos (creados en el último mes)
+        if (month >= lastMonth) activeUsers++;
+
+        // Contar nuevos usuarios este mes
+        if (month === currentMonth) newUsersThisMonth++;
+      });
 
       // Calcular tasa de crecimiento
       const previousMonthUsers = usersByMonth[lastMonth] || 0;
       const currentMonthUsers = usersByMonth[currentMonth] || 0;
-      const userGrowthRate = previousMonthUsers > 0 
-        ? ((currentMonthUsers - previousMonthUsers) / previousMonthUsers) * 100 
-        : 0;
+      const userGrowthRate =
+        previousMonthUsers > 0
+          ? ((currentMonthUsers - previousMonthUsers) / previousMonthUsers) *
+            100
+          : 0;
 
       return {
         totalUsers: users.length,
@@ -327,7 +367,7 @@ export class AnalyticsService {
         usersByMonth,
         activeUsers,
         newUsersThisMonth,
-        userGrowthRate
+        userGrowthRate,
       };
     } catch (error) {
       console.error('Error al obtener analytics de usuarios:', error);
@@ -338,26 +378,30 @@ export class AnalyticsService {
   /**
    * Analytics de la plataforma completa
    */
-  async getPlatformAnalytics(filters: AnalyticsFilters = {}): Promise<PlatformAnalytics> {
+  async getPlatformAnalytics(
+    filters: AnalyticsFilters = {}
+  ): Promise<PlatformAnalytics> {
     try {
-      const [eventAnalytics, requestAnalytics, userAnalytics] = await Promise.all([
-        this.getEventAnalytics(filters),
-        this.getRequestAnalytics(filters),
-        this.getUserAnalytics(filters)
-      ]);
+      const [eventAnalytics, requestAnalytics, userAnalytics] =
+        await Promise.all([
+          this.getEventAnalytics(filters),
+          this.getRequestAnalytics(filters),
+          this.getUserAnalytics(filters),
+        ]);
 
       // Calcular ingresos totales (simulado)
       const totalRevenue = eventAnalytics.totalBudget * 0.1; // 10% de comisión
-      const averageEventValue = eventAnalytics.totalEvents > 0 
-        ? eventAnalytics.totalBudget / eventAnalytics.totalEvents 
-        : 0;
+      const averageEventValue =
+        eventAnalytics.totalEvents > 0
+          ? eventAnalytics.totalBudget / eventAnalytics.totalEvents
+          : 0;
 
       // Top tipos de eventos
       const topEventTypes = Object.entries(eventAnalytics.eventsByType)
         .map(([type, count]) => ({
           type,
           count,
-          revenue: count * averageEventValue
+          revenue: count * averageEventValue,
         }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
@@ -368,22 +412,24 @@ export class AnalyticsService {
         { location: 'Santiago', count: 120, revenue: 12000 },
         { location: 'La Romana', count: 80, revenue: 8000 },
         { location: 'Puerto Plata', count: 60, revenue: 6000 },
-        { location: 'San Pedro de Macorís', count: 40, revenue: 4000 }
+        { location: 'San Pedro de Macorís', count: 40, revenue: 4000 },
       ];
 
       // Métricas de engagement
-      const eventsPerUser = userAnalytics.totalUsers > 0 
-        ? eventAnalytics.totalEvents / userAnalytics.totalUsers 
-        : 0;
-      const requestsPerUser = userAnalytics.totalUsers > 0 
-        ? requestAnalytics.totalRequests / userAnalytics.totalUsers 
-        : 0;
+      const eventsPerUser =
+        userAnalytics.totalUsers > 0
+          ? eventAnalytics.totalEvents / userAnalytics.totalUsers
+          : 0;
+      const requestsPerUser =
+        userAnalytics.totalUsers > 0
+          ? requestAnalytics.totalRequests / userAnalytics.totalUsers
+          : 0;
 
       // Métricas de performance (simuladas)
       const performance = {
         averageResponseTime: requestAnalytics.averageResponseTime,
         successRate: 95.5, // Simulado
-        errorRate: 4.5 // Simulado
+        errorRate: 4.5, // Simulado
       };
 
       return {
@@ -394,9 +440,9 @@ export class AnalyticsService {
         userEngagement: {
           eventsPerUser,
           requestsPerUser,
-          averageSessionDuration: 25.5 // Simulado en minutos
+          averageSessionDuration: 25.5, // Simulado en minutos
         },
-        performance
+        performance,
       };
     } catch (error) {
       console.error('Error al obtener analytics de plataforma:', error);
@@ -409,14 +455,30 @@ export class AnalyticsService {
    */
   async getTrendsReport(months: number = 6): Promise<{
     eventTrends: Array<{ month: string; count: number; revenue: number }>;
-    requestTrends: Array<{ month: string; count: number; acceptanceRate: number }>;
+    requestTrends: Array<{
+      month: string;
+      count: number;
+      acceptanceRate: number;
+    }>;
     userTrends: Array<{ month: string; newUsers: number; activeUsers: number }>;
   }> {
     try {
       const trends = {
-        eventTrends: [] as Array<{ month: string; count: number; revenue: number }> ,
-        requestTrends: [] as Array<{ month: string; count: number; acceptanceRate: number }> ,
-        userTrends: [] as Array<{ month: string; newUsers: number; activeUsers: number }>
+        eventTrends: [] as Array<{
+          month: string;
+          count: number;
+          revenue: number;
+        }>,
+        requestTrends: [] as Array<{
+          month: string;
+          count: number;
+          acceptanceRate: number;
+        }>,
+        userTrends: [] as Array<{
+          month: string;
+          newUsers: number;
+          activeUsers: number;
+        }>,
       };
 
       // Generar datos de tendencias para los últimos meses
@@ -428,35 +490,35 @@ export class AnalyticsService {
         // Simular datos de tendencias
         const eventCount = Math.floor(Math.random() * 50) + 20;
         const eventRevenue = eventCount * (Math.random() * 500 + 200);
-        
+
         const requestCount = Math.floor(Math.random() * 30) + 10;
         const acceptanceRate = Math.random() * 30 + 60;
-        
+
         const newUsers = Math.floor(Math.random() * 20) + 5;
         const activeUsers = Math.floor(Math.random() * 100) + 50;
 
         trends.eventTrends.push({
           month,
           count: eventCount,
-          revenue: eventRevenue
+          revenue: eventRevenue,
         });
 
         trends.requestTrends.push({
           month,
           count: requestCount,
-          acceptanceRate
+          acceptanceRate,
         });
 
         trends.userTrends.push({
           month,
           newUsers,
-          activeUsers
+          activeUsers,
         });
       }
 
       return trends;
     } catch (error) {
-      console.info('./src/services/analyticsService.ts line 459')
+      console.info('./src/services/analyticsService.ts line 459');
       console.error('Error al obtener reporte de tendencias:', error);
       throw new Error('Error al obtener reporte de tendencias');
     }
@@ -465,15 +527,17 @@ export class AnalyticsService {
   /**
    * Reporte de rendimiento por ubicación
    */
-  async getLocationPerformanceReport(): Promise<Array<{
-    location: string;
-    totalEvents: number;
-    totalRequests: number;
-    totalRevenue: number;
-    averageEventValue: number;
-    completionRate: number;
-    acceptanceRate: number;
-  }>> {
+  async getLocationPerformanceReport(): Promise<
+    Array<{
+      location: string;
+      totalEvents: number;
+      totalRequests: number;
+      totalRevenue: number;
+      averageEventValue: number;
+      completionRate: number;
+      acceptanceRate: number;
+    }>
+  > {
     try {
       // Simular datos de rendimiento por ubicación
       const locations = [
@@ -486,7 +550,7 @@ export class AnalyticsService {
         'San Francisco de Macorís',
         'La Vega',
         'Moca',
-        'Bonao'
+        'Bonao',
       ];
 
       return locations.map(location => ({
@@ -496,11 +560,14 @@ export class AnalyticsService {
         totalRevenue: Math.floor(Math.random() * 20000) + 5000,
         averageEventValue: Math.floor(Math.random() * 500) + 200,
         completionRate: Math.random() * 30 + 70,
-        acceptanceRate: Math.random() * 40 + 50
+        acceptanceRate: Math.random() * 40 + 50,
       }));
     } catch (error) {
-      console.info('./src/services/analyticsService.ts line 502')
-      console.error('Error al obtener reporte de rendimiento por ubicación:', error);
+      console.info('./src/services/analyticsService.ts line 502');
+      console.error(
+        'Error al obtener reporte de rendimiento por ubicación:',
+        error
+      );
       throw new Error('Error al obtener reporte de rendimiento por ubicación');
     }
   }
@@ -508,34 +575,38 @@ export class AnalyticsService {
   /**
    * Reporte de usuarios más activos
    */
-  async getTopActiveUsersReport(limit: number = 10): Promise<Array<{
-    user: User;
-    eventsCreated: number;
-    requestsCreated: number;
-    eventsCompleted: number;
-    requestsAccepted: number;
-    totalRevenue: number;
-  }>> {
+  async getTopActiveUsersReport(limit: number = 10): Promise<
+    Array<{
+      user: User;
+      eventsCreated: number;
+      requestsCreated: number;
+      eventsCompleted: number;
+      requestsAccepted: number;
+      totalRevenue: number;
+    }>
+  > {
     try {
       // Obtener usuarios
       const usersSnapshot = await db.collection('users').limit(limit).get();
       const users = usersSnapshot.docs.map(doc => doc.data() as User);
 
       // Simular datos de actividad
-      return users.map(user => ({
-        user,
-        eventsCreated: Math.floor(Math.random() * 20) + 1,
-        requestsCreated: Math.floor(Math.random() * 15) + 1,
-        eventsCompleted: Math.floor(Math.random() * 15) + 1,
-        requestsAccepted: Math.floor(Math.random() * 10) + 1,
-        totalRevenue: Math.floor(Math.random() * 5000) + 500
-      })).sort((a, b) => b.totalRevenue - a.totalRevenue);
+      return users
+        .map(user => ({
+          user,
+          eventsCreated: Math.floor(Math.random() * 20) + 1,
+          requestsCreated: Math.floor(Math.random() * 15) + 1,
+          eventsCompleted: Math.floor(Math.random() * 15) + 1,
+          requestsAccepted: Math.floor(Math.random() * 10) + 1,
+          totalRevenue: Math.floor(Math.random() * 5000) + 500,
+        }))
+        .sort((a, b) => b.totalRevenue - a.totalRevenue);
     } catch (error) {
-      console.info('./src/services/analyticsService.ts line 534')
+      console.info('./src/services/analyticsService.ts line 534');
       console.error('Error al obtener reporte de usuarios más activos:', error);
       throw new Error('Error al obtener reporte de usuarios más activos');
     }
   }
 }
 
-export const analyticsService = new AnalyticsService(); 
+export const analyticsService = new AnalyticsService();

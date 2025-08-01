@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/requireRole';
 import { validate } from '../middleware/validationMiddleware';
-import { 
+import {
   createPaymentMethodController,
   getPaymentMethodsController,
   setDefaultPaymentMethodController,
@@ -14,15 +14,15 @@ import {
   processRefundController,
   getPaymentStatsController,
   validatePaymentMethodController,
-  getPaymentGatewaysController
+  getPaymentGatewaysController,
 } from '../controllers/paymentController';
-import { 
+import {
   createPaymentMethodDTO,
   createPaymentIntentDTO,
   createInvoiceDTO,
   processPaymentDTO,
   processRefundDTO,
-  validatePaymentMethodDTO
+  validatePaymentMethodDTO,
 } from '../utils/dtos';
 
 const router = Router();
@@ -158,7 +158,12 @@ const router = Router();
  *       401:
  *         description: No autorizado
  */
-router.post('/methods', authMiddleware, validate(createPaymentMethodDTO), createPaymentMethodController);
+router.post(
+  '/methods',
+  authMiddleware,
+  validate(createPaymentMethodDTO),
+  createPaymentMethodController
+);
 
 /**
  * @swagger
@@ -221,7 +226,11 @@ router.get('/methods', authMiddleware, getPaymentMethodsController);
  *       404:
  *         description: Método de pago no encontrado
  */
-router.put('/methods/:paymentMethodId/default', authMiddleware, setDefaultPaymentMethodController);
+router.put(
+  '/methods/:paymentMethodId/default',
+  authMiddleware,
+  setDefaultPaymentMethodController
+);
 
 /**
  * @swagger
@@ -256,7 +265,12 @@ router.put('/methods/:paymentMethodId/default', authMiddleware, setDefaultPaymen
  *       401:
  *         description: No autorizado
  */
-router.post('/intents', authMiddleware, validate(createPaymentIntentDTO), createPaymentIntentController);
+router.post(
+  '/intents',
+  authMiddleware,
+  validate(createPaymentIntentDTO),
+  createPaymentIntentController
+);
 
 /**
  * @swagger
@@ -298,7 +312,12 @@ router.post('/intents', authMiddleware, validate(createPaymentIntentDTO), create
  *       401:
  *         description: No autorizado
  */
-router.post('/process', authMiddleware, validate(processPaymentDTO), processPaymentController);
+router.post(
+  '/process',
+  authMiddleware,
+  validate(processPaymentDTO),
+  processPaymentController
+);
 
 /**
  * @swagger
@@ -333,7 +352,12 @@ router.post('/process', authMiddleware, validate(processPaymentDTO), processPaym
  *       401:
  *         description: No autorizado
  */
-router.post('/invoices', authMiddleware, validate(createInvoiceDTO), createInvoiceController);
+router.post(
+  '/invoices',
+  authMiddleware,
+  validate(createInvoiceDTO),
+  createInvoiceController
+);
 
 /**
  * @swagger
@@ -429,7 +453,11 @@ router.get('/invoices', authMiddleware, getInvoicesController);
  *       404:
  *         description: Factura no encontrada
  */
-router.post('/invoices/:invoiceId/pay', authMiddleware, markInvoiceAsPaidController);
+router.post(
+  '/invoices/:invoiceId/pay',
+  authMiddleware,
+  markInvoiceAsPaidController
+);
 
 /**
  * @swagger
@@ -464,7 +492,12 @@ router.post('/invoices/:invoiceId/pay', authMiddleware, markInvoiceAsPaidControl
  *       401:
  *         description: No autorizado
  */
-router.post('/refunds', authMiddleware, validate(processRefundDTO), processRefundController);
+router.post(
+  '/refunds',
+  authMiddleware,
+  validate(processRefundDTO),
+  processRefundController
+);
 
 /**
  * @swagger
@@ -533,7 +566,12 @@ router.post('/refunds', authMiddleware, validate(processRefundDTO), processRefun
  *       403:
  *         description: Acceso denegado
  */
-router.get('/stats', authMiddleware, requireRole(['admin', 'super_admin']), getPaymentStatsController);
+router.get(
+  '/stats',
+  authMiddleware,
+  requireRole(['admin', 'super_admin']),
+  getPaymentStatsController
+);
 
 /**
  * @swagger
@@ -571,7 +609,11 @@ router.get('/stats', authMiddleware, requireRole(['admin', 'super_admin']), getP
  *       400:
  *         description: Datos inválidos
  */
-router.post('/validate', validate(validatePaymentMethodDTO), validatePaymentMethodController);
+router.post(
+  '/validate',
+  validate(validatePaymentMethodDTO),
+  validatePaymentMethodController
+);
 
 /**
  * @swagger
@@ -613,4 +655,4 @@ router.post('/validate', validate(validatePaymentMethodDTO), validatePaymentMeth
  */
 router.get('/gateways', getPaymentGatewaysController);
 
-export default router; 
+export default router;

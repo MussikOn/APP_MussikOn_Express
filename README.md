@@ -231,15 +231,40 @@ npm run build
 npm run dev
 ```
 
-## 📚 Documentación de la API
+## 📚 Documentación Completa
 
-### Swagger UI
-- **URL**: `http://localhost:3001/api-docs`
-- **Descripción**: Documentación interactiva de la API
+### 🔍 [Documentación Principal](./docs/README.md)
+Documentación completa y organizada con navegación clara y búsqueda funcional.
 
-### ReDoc
-- **URL**: `http://localhost:3001/redoc`
-- **Descripción**: Documentación alternativa con mejor legibilidad
+### 📖 Guías Rápidas
+- [🚀 Instalación](./docs/guides/installation.md) - Configuración en 5 minutos
+- [🔧 Configuración](./docs/guides/configuration.md) - Configuración completa de servicios
+- [🎨 Integración Frontend](./docs/guides/frontend-integration.md) - Guías de integración
+
+### 🔧 APIs Específicas
+- [🔐 Autenticación](./docs/api/authentication.md) - JWT, OAuth, roles
+- [🎵 Eventos](./docs/api/events.md) - CRUD de eventos musicales
+- [💰 Pagos](./docs/api/payments.md) - Stripe, facturación
+- [📍 Geolocalización](./docs/api/geolocation.md) - Búsqueda por proximidad
+- [🔍 Búsqueda](./docs/api/search.md) - Búsqueda avanzada
+- [📊 Analytics](./docs/api/analytics.md) - Métricas y reportes
+
+### 🛠️ Desarrollo
+- [🏗️ Arquitectura](./docs/development/architecture.md) - Estructura del proyecto
+- [🧪 Testing](./docs/development/testing.md) - Tests y debugging
+- [📝 Documentación](./docs/development/api-documentation.md) - Swagger y ReDoc
+
+### 🚀 Despliegue
+- [☁️ Firebase](./docs/deployment/firebase.md) - Despliegue en Firebase
+- [📊 Monitoreo](./docs/deployment/monitoring.md) - Logs y métricas
+
+### 🔒 Seguridad
+- [🛡️ Autenticación](./docs/security/authentication.md) - JWT y OAuth
+- [🔒 Validación](./docs/validation/overview.md) - Sistema de validación
+
+### 📱 Documentación Interactiva
+- **Swagger UI**: `http://localhost:3001/api-docs`
+- **ReDoc**: `http://localhost:3001/redoc`
 
 ### Endpoints Principales
 

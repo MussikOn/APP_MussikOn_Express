@@ -1,9 +1,9 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
 dotenv.config();
 
 export const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
@@ -19,9 +19,9 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
       html,
     });
 
-    console.log("[src/utils/mailer.ts:21] Correo enviado a:", to);
+    console.log('[src/utils/mailer.ts:21] Correo enviado a:', to);
   } catch (error) {
-    console.error("[src/utils/mailer.ts:23] Error al enviar el correo:", error);
+    console.error('[src/utils/mailer.ts:23] Error al enviar el correo:', error);
     throw error;
   }
 };

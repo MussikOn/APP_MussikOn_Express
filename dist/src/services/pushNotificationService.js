@@ -10,6 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pushNotificationService = exports.PushNotificationService = void 0;
+const expo_server_sdk_1 = require("expo-server-sdk");
+// Inicializar Expo SDK
+const expo = new expo_server_sdk_1.Expo();
 // Servicio API básico
 class ApiService {
     constructor(baseUrl = '/api') {
@@ -319,28 +322,134 @@ class PushNotificationService {
         });
     }
     /**
-     * Enviar notificación a usuario específico
+     * Enviar notificación a usuario específico usando Expo
      */
     sendNotificationToUser(userId, notification) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield apiService.post(`/push-notifications/send/${userId}`, notification);
-                return response.success;
+                // Obtener suscripciones del usuario
+                const subscriptions = yield this.getUserSubscriptions();
+                const userSubscriptions = subscriptions.filter(sub => sub.userId === userId && sub.isActive);
+                if (userSubscriptions.length === 0) {
+                    console.log(`No hay suscripciones activas para el usuario ${userId}`);
+                    return false;
+                }
+                // Crear mensajes para Expo
+                const messages = userSubscriptions.map(subscription => ({
+                    to: subscription.endpoint,
+                    sound: 'default',
+                    title: notification.title,
+                    body: notification.body,
+                    data: notification.data || {},
+                    priority: (notification.priority === 'low' ? 'default' : notification.priority) || 'high',
+                    badge: 1,
+                    channelId: notification.category || 'default',
+                }));
+                // Enviar notificaciones usando Expo
+                const chunks = expo.chunkPushNotifications(messages);
+                const tickets = [];
+                for (const chunk of chunks) {
+                    try {
+                        const ticketChunk = yield expo.sendPushNotificationsAsync(chunk);
+                        tickets.push(...ticketChunk);
+                    }
+                    catch (error) {
+                        console.error('Error enviando chunk de notificaciones:', error);
+                    }
+                }
+                // Verificar tickets para errores
+                const receiptIds = tickets
+                    .filter(ticket => ticket.status === 'error')
+                    .map(ticket => ticket.id);
+                if (receiptIds.length > 0) {
+                    const receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds);
+                    for (const chunk of receiptIdChunks) {
+                        try {
+                            const receipts = yield expo.getPushNotificationReceiptsAsync(chunk);
+                            for (const receiptId in receipts) {
+                                const receipt = receipts[receiptId];
+                                if (receipt.status === 'error') {
+                                    console.error(`Error en notificación ${receiptId}:`, receipt.message);
+                                }
+                            }
+                        }
+                        catch (error) {
+                            console.error('Error verificando receipts:', error);
+                        }
+                    }
+                }
+                console.log('Notificación enviada exitosamente', {
+                    userId,
+                    title: notification.title,
+                    ticketsSent: tickets.length,
+                    errors: receiptIds.length
+                });
+                return true;
             }
             catch (error) {
-                console.error('Error enviando notificación:', error);
+                console.error('Error enviando notificación', {
+                    userId,
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                });
                 return false;
             }
         });
     }
     /**
-     * Enviar notificación masiva
+     * Enviar notificación masiva usando Expo
      */
     sendBulkNotification(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield apiService.post('/push-notifications/bulk', request);
-                return response.success && response.data ? response.data : null;
+                // Obtener todas las suscripciones activas
+                const allSubscriptions = yield this.getUserSubscriptions();
+                const targetSubscriptions = allSubscriptions.filter(sub => request.userIds.includes(sub.userId) && sub.isActive);
+                if (targetSubscriptions.length === 0) {
+                    console.log('No hay suscripciones activas para los usuarios especificados');
+                    return { success: 0, failed: request.userIds.length };
+                }
+                // Crear mensajes para Expo
+                const messages = targetSubscriptions.map(subscription => ({
+                    to: subscription.endpoint,
+                    sound: 'default',
+                    title: request.title,
+                    body: request.body,
+                    data: request.data || {},
+                    priority: 'high',
+                    badge: 1,
+                    channelId: request.category || 'default',
+                }));
+                // Enviar notificaciones usando Expo
+                const chunks = expo.chunkPushNotifications(messages);
+                const tickets = [];
+                let successCount = 0;
+                let failedCount = 0;
+                for (const chunk of chunks) {
+                    try {
+                        const ticketChunk = yield expo.sendPushNotificationsAsync(chunk);
+                        tickets.push(...ticketChunk);
+                        // Contar éxitos y fallos
+                        ticketChunk.forEach(ticket => {
+                            if (ticket.status === 'ok') {
+                                successCount++;
+                            }
+                            else {
+                                failedCount++;
+                            }
+                        });
+                    }
+                    catch (error) {
+                        console.error('Error enviando chunk de notificaciones masivas:', error);
+                        failedCount += chunk.length;
+                    }
+                }
+                console.log('Notificación masiva enviada', {
+                    totalUsers: request.userIds.length,
+                    successCount,
+                    failedCount,
+                    ticketsSent: tickets.length
+                });
+                return { success: successCount, failed: failedCount };
             }
             catch (error) {
                 console.error('Error enviando notificación masiva:', error);
@@ -439,13 +548,54 @@ class PushNotificationService {
         });
     }
     /**
-     * Enviar notificación de prueba
+     * Enviar notificación de prueba usando Expo
      */
     testPushNotification() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield apiService.post('/push-notifications/test', {});
-                return response.success;
+                // Obtener todas las suscripciones activas
+                const subscriptions = yield this.getUserSubscriptions();
+                const activeSubscriptions = subscriptions.filter(sub => sub.isActive);
+                if (activeSubscriptions.length === 0) {
+                    console.log('No hay suscripciones activas para enviar notificación de prueba');
+                    return false;
+                }
+                // Crear mensaje de prueba
+                const testMessage = {
+                    to: activeSubscriptions[0].endpoint, // Enviar solo a la primera suscripción
+                    sound: 'default',
+                    title: '🔔 Notificación de Prueba',
+                    body: 'Esta es una notificación de prueba del sistema MussikOn',
+                    data: {
+                        type: 'test',
+                        timestamp: new Date().toISOString()
+                    },
+                    priority: 'high',
+                    badge: 1,
+                    channelId: 'test',
+                };
+                // Enviar notificación de prueba
+                const chunks = expo.chunkPushNotifications([testMessage]);
+                for (const chunk of chunks) {
+                    try {
+                        const tickets = yield expo.sendPushNotificationsAsync(chunk);
+                        // Verificar resultado
+                        const ticket = tickets[0];
+                        if (ticket.status === 'ok') {
+                            console.log('✅ Notificación de prueba enviada exitosamente');
+                            return true;
+                        }
+                        else {
+                            console.error('❌ Error enviando notificación de prueba:', ticket.message);
+                            return false;
+                        }
+                    }
+                    catch (error) {
+                        console.error('❌ Error enviando notificación de prueba:', error);
+                        return false;
+                    }
+                }
+                return false;
             }
             catch (error) {
                 console.error('Error enviando notificación de prueba:', error);

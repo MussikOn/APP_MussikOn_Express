@@ -14,7 +14,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const validationMiddleware_1 = require("../middleware/validationMiddleware");
 const errorHandler_1 = require("../middleware/errorHandler");
 const loggerService_1 = require("../services/loggerService");
-const dtos_1 = require("../types/dtos");
+const validationSchemas_1 = require("../utils/validationSchemas");
 const authController_1 = require("../controllers/authController");
 const router = (0, express_1.Router)();
 /**
@@ -43,7 +43,7 @@ const router = (0, express_1.Router)();
  *       409:
  *         description: Usuario ya existe
  */
-router.post("/Register", (0, validationMiddleware_1.validate)(dtos_1.RegisterDTO), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/Register", (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de registro', req.body.userEmail);
     yield (0, authController_1.registerController)(req, res);
     loggerService_1.logger.logAuth('Registro exitoso', req.body.userEmail);
@@ -84,7 +84,7 @@ router.post("/Register", (0, validationMiddleware_1.validate)(dtos_1.RegisterDTO
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/login", (0, validationMiddleware_1.validate)(dtos_1.LoginDTO), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/login", (0, validationMiddleware_1.validate)(validationSchemas_1.loginSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de login', req.body.userEmail);
     yield (0, authController_1.loginController)(req, res);
     loggerService_1.logger.logAuth('Login exitoso', req.body.userEmail);
@@ -107,7 +107,7 @@ router.post("/login", (0, validationMiddleware_1.validate)(dtos_1.LoginDTO), (0,
  *       400:
  *         description: Datos de entrada inválidos
  */
-router.post("/email-register", (0, validationMiddleware_1.validate)(dtos_1.RegisterDTO), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/email-register", (0, validationMiddleware_1.validate)(validationSchemas_1.registerSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     loggerService_1.logger.logAuth('Intento de registro con email', req.body.userEmail);
     yield (0, authController_1.emailRegisterController)(req, res);
     loggerService_1.logger.logAuth('Registro con email exitoso', req.body.userEmail);
@@ -143,7 +143,7 @@ router.post("/email-register", (0, validationMiddleware_1.validate)(dtos_1.Regis
  *       404:
  *         description: Usuario no encontrado
  */
-router.put("/update/:userEmail", authMiddleware_1.authMiddleware, (0, validationMiddleware_1.validate)(dtos_1.UpdateUserDTO), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put("/update/:userEmail", authMiddleware_1.authMiddleware, validationMiddleware_1.validateId, (0, validationMiddleware_1.validate)(validationSchemas_1.updateUserSchema), (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userEmail = req.params.userEmail;
     loggerService_1.logger.logAuth('Intento de actualización de usuario', userEmail, {

@@ -1,4 +1,4 @@
-import { PhoneIdentifier } from "firebase-admin/lib/auth/identifier";
+import { PhoneIdentifier } from 'firebase-admin/lib/auth/identifier';
 
 export interface authUserRegister {
   id?: number;
@@ -59,7 +59,7 @@ export type EventAlert = {
   organizerId: string; // UID del organizador
   musicianId: string; // UID del músico que recibe la alerta
   createdAt: string; // Fecha de creación de la alerta
-  status: "pending" | "accepted" | "declined"; // Estado
+  status: 'pending' | 'accepted' | 'declined'; // Estado
   calendarEventId?: string; // ID del evento en Google Calendar (si se agregó)
 };
 
@@ -80,7 +80,12 @@ export interface Event {
   songs: string[];
   recommendations: string[];
   mapsLink: string;
-  status: 'pending_musician' | 'musician_assigned' | 'completed' | 'cancelled' | 'musician_cancelled';
+  status:
+    | 'pending_musician'
+    | 'musician_assigned'
+    | 'completed'
+    | 'cancelled'
+    | 'musician_cancelled';
   assignedMusicianId?: string;
   interestedMusicians?: string[];
   createdAt: string;

@@ -1,7 +1,11 @@
-import { Router } from "express";
-import { authMiddleware } from "../middleware/authMiddleware";
-import { adminOnly } from "../middleware/adminOnly";
-import { imageUpload, handleMulterError, validateImageFile } from "../middleware/uploadMiddleware";
+import { Router } from 'express';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { adminOnly } from '../middleware/adminOnly';
+import {
+  imageUpload,
+  handleMulterError,
+  validateImageFile,
+} from '../middleware/uploadMiddleware';
 import {
   uploadImageController,
   getImageByIdController,
@@ -15,8 +19,8 @@ import {
   cleanupExpiredImagesController,
   // Controladores legacy para compatibilidad
   getAllImagesController,
-  getImageUrlController
-} from "../controllers/imagesController";
+  getImageUrlController,
+} from '../controllers/imagesController';
 
 const router = Router();
 
@@ -113,7 +117,7 @@ const router = Router();
  * Subir una nueva imagen
  */
 router.post(
-  "/upload",
+  '/upload',
   authMiddleware,
   imageUpload.single('image'),
   validateImageFile,
@@ -124,33 +128,25 @@ router.post(
  * GET /images
  * Listar imágenes con filtros
  */
-router.get("/", listImagesController);
+router.get('/', listImagesController);
 
 /**
  * GET /images/:imageId
  * Obtener imagen por ID
  */
-router.get("/:imageId", getImageByIdController);
+router.get('/:imageId', getImageByIdController);
 
 /**
  * PUT /images/:imageId
  * Actualizar imagen
  */
-router.put(
-  "/:imageId",
-  authMiddleware,
-  updateImageController
-);
+router.put('/:imageId', authMiddleware, updateImageController);
 
 /**
  * DELETE /images/:imageId
  * Eliminar imagen
  */
-router.delete(
-  "/:imageId",
-  authMiddleware,
-  deleteImageController
-);
+router.delete('/:imageId', authMiddleware, deleteImageController);
 
 // ==================== RUTAS ESPECÍFICAS ====================
 
@@ -158,19 +154,19 @@ router.delete(
  * GET /images/profile/:userId
  * Obtener imágenes de perfil de un usuario
  */
-router.get("/profile/:userId", getUserProfileImagesController);
+router.get('/profile/:userId', getUserProfileImagesController);
 
 /**
  * GET /images/posts
  * Obtener imágenes de posts
  */
-router.get("/posts", getPostImagesController);
+router.get('/posts', getPostImagesController);
 
 /**
  * GET /images/events
  * Obtener imágenes de eventos
  */
-router.get("/events", getEventImagesController);
+router.get('/events', getEventImagesController);
 
 // ==================== RUTAS DE ADMINISTRACIÓN ====================
 
@@ -178,13 +174,18 @@ router.get("/events", getEventImagesController);
  * GET /images/stats
  * Obtener estadísticas de imágenes (Solo administradores)
  */
-router.get("/stats", authMiddleware, adminOnly, getImageStatsController);
+router.get('/stats', authMiddleware, adminOnly, getImageStatsController);
 
 /**
  * POST /images/cleanup
  * Limpiar imágenes expiradas (Solo administradores senior)
  */
-router.post("/cleanup", authMiddleware, adminOnly, cleanupExpiredImagesController);
+router.post(
+  '/cleanup',
+  authMiddleware,
+  adminOnly,
+  cleanupExpiredImagesController
+);
 
 // ==================== RUTAS LEGACY (COMPATIBILIDAD) ====================
 
@@ -192,12 +193,12 @@ router.post("/cleanup", authMiddleware, adminOnly, cleanupExpiredImagesControlle
  * GET /imgs/getAllImg
  * Obtener galería de imágenes (Legacy)
  */
-router.get("/getAllImg", getAllImagesController);
+router.get('/getAllImg', getAllImagesController);
 
 /**
  * GET /imgs/url/:key
  * Obtener URL de imagen por clave (Legacy)
  */
-router.get("/url/:key", getImageUrlController);
+router.get('/url/:key', getImageUrlController);
 
 export default router;

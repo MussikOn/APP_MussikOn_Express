@@ -31,7 +31,7 @@ import {
   adminUserAnalytics,
   adminEventAnalytics,
   adminRequestAnalytics,
-  adminExportReport
+  adminExportReport,
 } from '../controllers/adminController';
 
 const adminRoutes = Router();
@@ -442,10 +442,26 @@ adminRoutes.delete('/images/:id', adminOnly, adminImagesRemove);
 // --- Solicitudes de Músico ---
 adminRoutes.get('/musician-requests', adminOnly, adminMusicianRequestsGetAll);
 adminRoutes.post('/musician-requests', adminOnly, adminMusicianRequestsCreate);
-adminRoutes.get('/musician-requests/:id', adminOnly, adminMusicianRequestsGetById);
-adminRoutes.put('/musician-requests/:id', adminOnly, adminMusicianRequestsUpdate);
-adminRoutes.delete('/musician-requests/:id', adminOnly, adminMusicianRequestsRemove);
-adminRoutes.get('/musician-requests/stats', adminOnly, adminMusicianRequestsStats);
+adminRoutes.get(
+  '/musician-requests/:id',
+  adminOnly,
+  adminMusicianRequestsGetById
+);
+adminRoutes.put(
+  '/musician-requests/:id',
+  adminOnly,
+  adminMusicianRequestsUpdate
+);
+adminRoutes.delete(
+  '/musician-requests/:id',
+  adminOnly,
+  adminMusicianRequestsRemove
+);
+adminRoutes.get(
+  '/musician-requests/stats',
+  adminOnly,
+  adminMusicianRequestsStats
+);
 
 // ===== NUEVAS RUTAS PARA ADMIN SYSTEM =====
 
