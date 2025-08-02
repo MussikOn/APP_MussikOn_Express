@@ -33,6 +33,7 @@ const paymentRoutes_1 = __importDefault(require("./src/routes/paymentRoutes"));
 const notificationRoutes_1 = __importDefault(require("./src/routes/notificationRoutes"));
 const pushNotificationRoutes_1 = __importDefault(require("./src/routes/pushNotificationRoutes"));
 const musicianSearchRoutes_1 = __importDefault(require("./src/routes/musicianSearchRoutes"));
+const hiringRoutes_1 = __importDefault(require("./src/routes/hiringRoutes"));
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
 // import { setupEventSocket } from './src/sockets/eventSocket';
@@ -357,6 +358,7 @@ app.use('/payments', paymentRoutes_1.default);
 app.use('/notifications', notificationRoutes_1.default);
 app.use('/push-notifications', pushNotificationRoutes_1.default);
 app.use('/musician-search', musicianSearchRoutes_1.default);
+app.use('/hiring', hiringRoutes_1.default);
 // Configurar documentación
 app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs, swaggerUiOptions));
 app.use("/redoc", (0, redoc_express_1.default)({

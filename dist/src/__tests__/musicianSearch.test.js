@@ -16,6 +16,14 @@ jest.mock('../utils/firebase', () => ({
     db: {
         collection: jest.fn(() => ({
             where: jest.fn(() => ({
+                where: jest.fn(() => ({
+                    where: jest.fn(() => ({
+                        get: jest.fn(() => Promise.resolve({
+                            docs: [],
+                            empty: true,
+                        })),
+                    })),
+                })),
                 get: jest.fn(() => Promise.resolve({
                     docs: [],
                     empty: true,
@@ -79,6 +87,16 @@ describe('Sistema de Búsqueda de Músicos', () => {
         });
         describe('getRecommendedMusicians', () => {
             test('should throw error when event not found', () => __awaiter(void 0, void 0, void 0, function* () {
+                // Mock para simular evento no encontrado
+                const mockDb = require('../utils/firebase').db;
+                mockDb.collection.mockImplementation(() => ({
+                    doc: jest.fn(() => ({
+                        get: jest.fn(() => Promise.resolve({
+                            exists: false,
+                            data: () => null,
+                        })),
+                    })),
+                }));
                 yield expect(musicianSearchService_1.MusicianSearchService.getRecommendedMusicians('non-existent-event')).rejects.toThrow('Evento no encontrado');
             }));
         });
@@ -95,7 +113,7 @@ describe('Sistema de Búsqueda de Músicos', () => {
                 const service = musicianSearchService_1.MusicianSearchService;
                 expect(service.parseDuration('invalid')).toBe(0);
                 expect(service.parseDuration('')).toBe(0);
-                expect(service.parseDuration('2:30')).toBe(30); // Solo minutos si no hay formato correcto
+                expect(service.parseDuration('2:30')).toBe(150); // 2h 30m = 150 minutos
             });
         });
         describe('calculateDistance', () => {
@@ -208,7 +226,7 @@ describe('Sistema de Búsqueda de Músicos', () => {
             else if (hourlyCost <= budget * 1.2) {
                 budgetScore = 5;
             }
-            expect(budgetScore).toBe(10); // 6000 <= 5000 * 1.2 = 6000
+            expect(budgetScore).toBe(5); // 6000 > 5000, pero 6000 <= 5000 * 1.2 = 6000
         });
     });
     describe('Validación de Disponibilidad', () => {
