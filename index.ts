@@ -29,6 +29,7 @@ import geolocationRoutes from './src/routes/geolocationRoutes';
 import paymentRoutes from './src/routes/paymentRoutes';
 import notificationRoutes from './src/routes/notificationRoutes';
 import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
+import musicianSearchRoutes from './src/routes/musicianSearchRoutes';
 
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
@@ -365,6 +366,7 @@ app.use('/geolocation', geolocationRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/push-notifications', pushNotificationRoutes);
+app.use('/musician-search', musicianSearchRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));

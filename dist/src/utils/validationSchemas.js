@@ -60,7 +60,7 @@ exports.registerSchema = joi_1.default.object({
         'any.default': 'El rol por defecto es usuario',
     }),
 });
-// Esquema de registro simplificado para músicos (MVP)
+// Esquema de registro simplificado para músicos y creadores de eventos (MVP)
 exports.musicianRegisterSchema = joi_1.default.object({
     name: joi_1.default.string()
         .min(2)
@@ -104,8 +104,11 @@ exports.musicianRegisterSchema = joi_1.default.object({
         'string.pattern.base': 'La contraseña debe contener al menos una minúscula, una mayúscula, un número y un carácter especial',
         'any.required': 'La contraseña es requerida',
     }),
-    // El rol se asigna automáticamente como 'musico'
-    roll: joi_1.default.string().valid('musico').default('musico'),
+    // El rol puede ser 'musico' o 'eventCreator'
+    roll: joi_1.default.string().valid('musico', 'eventCreator').required().messages({
+        'any.only': 'El rol debe ser "musico" o "eventCreator"',
+        'any.required': 'El rol es requerido',
+    }),
 });
 exports.loginSchema = joi_1.default.object({
     userEmail: joi_1.default.string()
