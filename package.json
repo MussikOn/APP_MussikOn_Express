@@ -24,7 +24,17 @@
     "deploy:indexes": "node scripts/deploy-indexes.js",
     "monitor:indexes": "node scripts/monitor-indexes.js",
     "indexes:dry-run": "node scripts/deploy-indexes.js --dry-run",
-    "analyze:queries": "node scripts/analyze-queries.js"
+    "analyze:queries": "node scripts/analyze-queries.js",
+    "monitor:performance": "node scripts/monitor-performance.js",
+    "monitor:performance:once": "node scripts/monitor-performance.js --once",
+    "redis:install": "npm install -g redis-cli",
+    "redis:start": "redis-server",
+    "redis:test": "redis-cli ping",
+    "redis:monitor": "redis-cli monitor",
+    "redis:stats": "redis-cli info stats",
+    "redis:flush": "redis-cli flushall",
+    "production:setup": "npm run redis:install && npm run redis:start",
+    "production:test": "npm run redis:test && npm run monitor:performance:once"
   },
   "keywords": [
     "mussikon",

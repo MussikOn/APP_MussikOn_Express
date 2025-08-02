@@ -2,6 +2,7 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVapidConfig = exports.getExpoConfig = exports.getRateLimitConfig = exports.getCorsConfig = exports.getBaseUrl = exports.isTest = exports.isProduction = exports.isDevelopment = exports.validateEnv = exports.ENV = exports.FIREBASE_CREDENTIALS = exports.EMAIL_PASSWORD = exports.EMAIL_USER = exports.IDRIVE_E2_REGION = exports.IDRIVE_E2_SECRET_KEY = exports.IDRIVE_E2_ACCESS_KEY = exports.IDRIVE_E2_ENDPOINT = exports.URL_API = exports.PORT = exports.IP = void 0;
 const os_1 = __importDefault(require("os"));
@@ -75,6 +76,37 @@ exports.ENV = {
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || 'your-vapid-private-key',
     // Redis (opcional, para cache y sesiones)
     REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
+    // ===== OPTIMIZACIONES DE RENDIMIENTO =====
+    // Redis Configuration
+    REDIS_HOST: (_a = process.env.REDIS_HOST) !== null && _a !== void 0 ? _a : 'localhost',
+    REDIS_PORT: parseInt((_b = process.env.REDIS_PORT) !== null && _b !== void 0 ? _b : '6379'),
+    REDIS_PASSWORD: (_c = process.env.REDIS_PASSWORD) !== null && _c !== void 0 ? _c : '',
+    REDIS_DB: parseInt((_d = process.env.REDIS_DB) !== null && _d !== void 0 ? _d : '0'),
+    REDIS_TTL: parseInt((_e = process.env.REDIS_TTL) !== null && _e !== void 0 ? _e : '3600'),
+    REDIS_MAX_MEMORY: (_f = process.env.REDIS_MAX_MEMORY) !== null && _f !== void 0 ? _f : '256mb',
+    // Cache Configuration
+    CACHE_ENABLED: process.env.CACHE_ENABLED === 'true',
+    CACHE_TTL: parseInt((_g = process.env.CACHE_TTL) !== null && _g !== void 0 ? _g : '3600'),
+    CACHE_MAX_ITEMS: parseInt((_h = process.env.CACHE_MAX_ITEMS) !== null && _h !== void 0 ? _h : '1000'),
+    CACHE_CLEANUP_INTERVAL: parseInt((_j = process.env.CACHE_CLEANUP_INTERVAL) !== null && _j !== void 0 ? _j : '300000'),
+    // Compression Configuration
+    COMPRESSION_ENABLED: process.env.COMPRESSION_ENABLED === 'true',
+    COMPRESSION_THRESHOLD: parseInt((_k = process.env.COMPRESSION_THRESHOLD) !== null && _k !== void 0 ? _k : '1024'),
+    COMPRESSION_LEVEL: parseInt((_l = process.env.COMPRESSION_LEVEL) !== null && _l !== void 0 ? _l : '6'),
+    // Query Optimization Configuration
+    QUERY_OPTIMIZATION_ENABLED: process.env.QUERY_OPTIMIZATION_ENABLED === 'true',
+    DEFAULT_PAGE_SIZE: parseInt((_m = process.env.DEFAULT_PAGE_SIZE) !== null && _m !== void 0 ? _m : '20'),
+    MAX_PAGE_SIZE: parseInt((_o = process.env.MAX_PAGE_SIZE) !== null && _o !== void 0 ? _o : '100'),
+    DEFAULT_SORT_FIELD: (_p = process.env.DEFAULT_SORT_FIELD) !== null && _p !== void 0 ? _p : 'createdAt',
+    DEFAULT_SORT_DIRECTION: (_q = process.env.DEFAULT_SORT_DIRECTION) !== null && _q !== void 0 ? _q : 'desc',
+    // Firestore Optimization Configuration
+    FIRESTORE_BATCH_SIZE: parseInt((_r = process.env.FIRESTORE_BATCH_SIZE) !== null && _r !== void 0 ? _r : '500'),
+    FIRESTORE_TIMEOUT: parseInt((_s = process.env.FIRESTORE_TIMEOUT) !== null && _s !== void 0 ? _s : '30000'),
+    FIRESTORE_RETRY_ATTEMPTS: parseInt((_t = process.env.FIRESTORE_RETRY_ATTEMPTS) !== null && _t !== void 0 ? _t : '3'),
+    // Performance Monitoring Configuration
+    PERFORMANCE_MONITORING_ENABLED: process.env.PERFORMANCE_MONITORING_ENABLED === 'true',
+    METRICS_COLLECTION_INTERVAL: parseInt((_u = process.env.METRICS_COLLECTION_INTERVAL) !== null && _u !== void 0 ? _u : '60000'),
+    SLOW_QUERY_THRESHOLD: parseInt((_v = process.env.SLOW_QUERY_THRESHOLD) !== null && _v !== void 0 ? _v : '1000'),
     // AWS S3 (opcional, para almacenamiento de archivos)
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || 'your-aws-access-key',
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || 'your-aws-secret-key',

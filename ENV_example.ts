@@ -89,6 +89,44 @@ export const ENV = {
   // Redis (opcional, para cache y sesiones)
   REDIS_URL: process.env.REDIS_URL || 'redis://localhost:6379',
   
+  // ===== OPTIMIZACIONES DE RENDIMIENTO =====
+  
+  // Redis Configuration
+  REDIS_HOST: process.env.REDIS_HOST ?? 'localhost',
+  REDIS_PORT: parseInt(process.env.REDIS_PORT ?? '6379'),
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD ?? '',
+  REDIS_DB: parseInt(process.env.REDIS_DB ?? '0'),
+  REDIS_TTL: parseInt(process.env.REDIS_TTL ?? '3600'),
+  REDIS_MAX_MEMORY: process.env.REDIS_MAX_MEMORY ?? '256mb',
+  
+  // Cache Configuration
+  CACHE_ENABLED: process.env.CACHE_ENABLED === 'true',
+  CACHE_TTL: parseInt(process.env.CACHE_TTL ?? '3600'),
+  CACHE_MAX_ITEMS: parseInt(process.env.CACHE_MAX_ITEMS ?? '1000'),
+  CACHE_CLEANUP_INTERVAL: parseInt(process.env.CACHE_CLEANUP_INTERVAL ?? '300000'),
+  
+  // Compression Configuration
+  COMPRESSION_ENABLED: process.env.COMPRESSION_ENABLED === 'true',
+  COMPRESSION_THRESHOLD: parseInt(process.env.COMPRESSION_THRESHOLD ?? '1024'),
+  COMPRESSION_LEVEL: parseInt(process.env.COMPRESSION_LEVEL ?? '6'),
+  
+  // Query Optimization Configuration
+  QUERY_OPTIMIZATION_ENABLED: process.env.QUERY_OPTIMIZATION_ENABLED === 'true',
+  DEFAULT_PAGE_SIZE: parseInt(process.env.DEFAULT_PAGE_SIZE ?? '20'),
+  MAX_PAGE_SIZE: parseInt(process.env.MAX_PAGE_SIZE ?? '100'),
+  DEFAULT_SORT_FIELD: process.env.DEFAULT_SORT_FIELD ?? 'createdAt',
+  DEFAULT_SORT_DIRECTION: process.env.DEFAULT_SORT_DIRECTION ?? 'desc',
+  
+  // Firestore Optimization Configuration
+  FIRESTORE_BATCH_SIZE: parseInt(process.env.FIRESTORE_BATCH_SIZE ?? '500'),
+  FIRESTORE_TIMEOUT: parseInt(process.env.FIRESTORE_TIMEOUT ?? '30000'),
+  FIRESTORE_RETRY_ATTEMPTS: parseInt(process.env.FIRESTORE_RETRY_ATTEMPTS ?? '3'),
+  
+  // Performance Monitoring Configuration
+  PERFORMANCE_MONITORING_ENABLED: process.env.PERFORMANCE_MONITORING_ENABLED === 'true',
+  METRICS_COLLECTION_INTERVAL: parseInt(process.env.METRICS_COLLECTION_INTERVAL ?? '60000'),
+  SLOW_QUERY_THRESHOLD: parseInt(process.env.SLOW_QUERY_THRESHOLD ?? '1000'),
+  
   // AWS S3 (opcional, para almacenamiento de archivos)
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || 'your-aws-access-key',
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || 'your-aws-secret-key',
