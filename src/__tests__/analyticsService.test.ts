@@ -266,28 +266,40 @@ describe('AnalyticsService', () => {
 
   describe('Error handling', () => {
     it('should handle database errors gracefully', async () => {
-      (mockDb.collection as jest.Mock).mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          get: jest.fn().mockRejectedValue(new Error('Database error'))
-        })
-      });
+      // Mock que la consulta falle
+      const mockQuery = {
+        where: jest.fn().mockReturnThis(),
+        get: jest.fn().mockRejectedValue(new Error('Database error'))
+      };
+      
+      (db.collection as jest.Mock).mockReturnValue(mockQuery);
 
-      await expect(analyticsService.getEventAnalytics()).rejects.toThrow('Database error');
+      await expect(analyticsService.getEventAnalytics()).rejects.toThrow('Error al obtener analytics de eventos');
     });
 
     it('should handle empty results', async () => {
-      const mockSnapshot = { size: 0, docs: [] };
-
-      (mockDb.collection as jest.Mock).mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          get: jest.fn().mockResolvedValue(mockSnapshot)
+      // Mock que no hay resultados
+      const mockQuery = {
+        where: jest.fn().mockReturnThis(),
+        get: jest.fn().mockResolvedValue({
+          docs: []
         })
-      });
+      };
+      
+      (db.collection as jest.Mock).mockReturnValue(mockQuery);
 
       const result = await analyticsService.getEventAnalytics();
 
-      expect(result.totalEvents).toBe(0);
-      expect(result.averageBudget).toBe(0);
+      expect(result).toEqual({
+        totalEvents: 0,
+        eventsByStatus: {},
+        eventsByType: {},
+        eventsByMonth: {},
+        averageBudget: 0,
+        totalBudget: 0,
+        completionRate: 0,
+        cancellationRate: 0
+      });
     });
   });
 }); 
