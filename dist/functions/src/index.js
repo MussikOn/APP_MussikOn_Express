@@ -51,6 +51,7 @@ const musicianProfileRoutes_1 = __importDefault(require("./routes/musicianProfil
 const eventsRoutes_1 = __importDefault(require("./routes/eventsRoutes"));
 const musicianRequestRoutes_1 = __importDefault(require("./routes/musicianRequestRoutes"));
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
+const advancedSearchRoutes_1 = __importDefault(require("./routes/advancedSearchRoutes"));
 // Inicializar Firebase Admin
 admin.initializeApp();
 // Configurar variables de entorno
@@ -89,6 +90,7 @@ app.use("/media", musicianProfileRoutes_1.default);
 app.use("/events", eventsRoutes_1.default);
 app.use('/musician-requests', musicianRequestRoutes_1.default);
 app.use('/chat', chatRoutes_1.default);
+app.use('/advanced-search', advancedSearchRoutes_1.default);
 // Endpoint de prueba
 app.get('/test', (req, res) => {
     res.json({

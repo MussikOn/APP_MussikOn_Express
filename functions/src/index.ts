@@ -13,6 +13,7 @@ import musicianProfileRoutes from './routes/musicianProfileRoutes';
 import eventsRoutes from './routes/eventsRoutes';
 import musicianRequestRoutes from './routes/musicianRequestRoutes';
 import chatRoutes from './routes/chatRoutes';
+import advancedSearchRoutes from './routes/advancedSearchRoutes';
 
 // Importar configuración
 import { URL_API } from './config/ENV';
@@ -60,6 +61,7 @@ app.use("/media", musicianProfileRoutes);
 app.use("/events", eventsRoutes);
 app.use('/musician-requests', musicianRequestRoutes);
 app.use('/chat', chatRoutes);
+app.use('/advanced-search', advancedSearchRoutes);
 
 // Endpoint de prueba
 app.get('/test', (req, res) => {

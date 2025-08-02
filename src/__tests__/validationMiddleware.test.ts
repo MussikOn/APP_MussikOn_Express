@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { validationMiddleware } from '../middleware/validationMiddleware';
+import { validate } from '../middleware/validationMiddleware';
 import { musicianRegisterSchema } from '../utils/validationSchemas';
 
 describe('ValidationMiddleware', () => {
@@ -33,7 +33,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'Password123!'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
@@ -48,7 +48,7 @@ describe('ValidationMiddleware', () => {
         // roll, userEmail, userPassword faltantes
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -74,7 +74,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'Password123!'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -100,7 +100,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'weak'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -126,7 +126,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'Password123!'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -152,7 +152,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'Password123!'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -178,7 +178,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'Password123!'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -204,7 +204,7 @@ describe('ValidationMiddleware', () => {
         userPassword: 'weak'
       };
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -225,7 +225,7 @@ describe('ValidationMiddleware', () => {
     it('should handle empty body', () => {
       mockRequest.body = {};
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);
@@ -246,7 +246,7 @@ describe('ValidationMiddleware', () => {
     it('should handle null body', () => {
       mockRequest.body = null;
 
-      const middleware = validationMiddleware(musicianRegisterSchema);
+      const middleware = validate(musicianRegisterSchema);
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(400);

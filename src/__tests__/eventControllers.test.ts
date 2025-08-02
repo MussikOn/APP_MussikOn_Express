@@ -55,8 +55,11 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
-          userEmail: 'juan@example.com',
-          roll: 'eventCreator'
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
+          userEmail: 'juan@example.com'
         },
         body: {
           eventName: 'Boda de María',
@@ -100,6 +103,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         }
       };
@@ -124,6 +131,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         }
       };
@@ -148,6 +159,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         }
       };
@@ -187,8 +202,11 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
-          userEmail: 'musico@example.com',
-          roll: 'musico'
+          userId: 'musico123',
+          email: 'musico@example.com',
+          role: 'musico',
+          name: 'Músico Test',
+          userEmail: 'musico@example.com'
         },
         body: {
           eventId: 'event123'
@@ -213,8 +231,11 @@ describe('EventControllers', () => {
 
     it('should return error when user is not a musician', async () => {
       mockRequest.user = {
-        userEmail: 'user@example.com',
-        roll: 'eventCreator'
+        userId: 'user123',
+        email: 'user@example.com',
+        role: 'eventCreator',
+        name: 'User Test',
+        userEmail: 'user@example.com'
       };
 
       await acceptEventController(mockRequest as Request, mockResponse as Response);
@@ -237,6 +258,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'musico123',
+          email: 'musico@example.com',
+          role: 'musico',
+          name: 'Músico Test',
           userEmail: 'musico@example.com'
         }
       };
@@ -261,6 +286,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'musico123',
+          email: 'musico@example.com',
+          role: 'musico',
+          name: 'Músico Test',
           userEmail: 'musico@example.com'
         }
       };
@@ -285,6 +314,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         }
       };
@@ -309,6 +342,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         }
       };
@@ -367,6 +404,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         },
         params: {
@@ -407,6 +448,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         },
         params: {
@@ -448,6 +493,10 @@ describe('EventControllers', () => {
     beforeEach(() => {
       mockRequest = {
         user: {
+          userId: 'user123',
+          email: 'juan@example.com',
+          role: 'eventCreator',
+          name: 'Juan Pérez',
           userEmail: 'juan@example.com'
         },
         params: {

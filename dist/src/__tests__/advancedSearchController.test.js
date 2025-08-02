@@ -1,0 +1,308 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const advancedSearchController_1 = require("../controllers/advancedSearchController");
+const musicianStatusService_1 = require("../services/musicianStatusService");
+const calendarConflictService_1 = require("../services/calendarConflictService");
+const rateCalculationService_1 = require("../services/rateCalculationService");
+// Mock de los servicios
+jest.mock('../services/musicianStatusService');
+jest.mock('../services/calendarConflictService');
+jest.mock('../services/rateCalculationService');
+describe('AdvancedSearchController', () => {
+    let controller;
+    let mockRequest;
+    let mockResponse;
+    beforeEach(() => {
+        controller = new advancedSearchController_1.AdvancedSearchController();
+        mockRequest = {
+            body: {},
+            params: {},
+            query: {}
+        };
+        mockResponse = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn().mockReturnThis()
+        };
+    });
+    describe('searchAvailableMusicians', () => {
+        it('should return error when required parameters are missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {};
+            yield controller.searchAvailableMusicians(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Faltan parámetros requeridos: eventType, instrument, location, eventDate, duration'
+            });
+        }));
+        it('should return empty results when no musicians are available', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {
+                eventType: 'wedding',
+                instrument: 'guitarra',
+                location: 'Madrid',
+                eventDate: '2024-12-25T20:00:00Z',
+                duration: 120
+            };
+            // Mock de servicios
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            mockMusicianStatusService.prototype.getOnlineMusicians = jest.fn().mockResolvedValue([]);
+            yield controller.searchAvailableMusicians(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: {
+                    availableMusicians: [],
+                    unavailableMusicians: [],
+                    conflicts: {},
+                    message: 'No hay músicos disponibles en este momento'
+                }
+            });
+        }));
+        it('should return available musicians with rates', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {
+                eventType: 'wedding',
+                instrument: 'guitarra',
+                location: 'Madrid',
+                eventDate: '2024-12-25T20:00:00Z',
+                duration: 120
+            };
+            const mockMusicians = [
+                {
+                    musicianId: 'musician1',
+                    isOnline: true,
+                    availability: { isAvailable: true },
+                    performance: { rating: 4.5, responseTime: 30, totalEvents: 50 }
+                }
+            ];
+            const mockRateResult = {
+                finalRate: 150,
+                breakdown: [],
+                recommendations: { suggestedRate: 150, marketAverage: 120, competitorRates: [140, 160] }
+            };
+            // Mock de servicios
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            const mockCalendarConflictService = calendarConflictService_1.CalendarConflictService;
+            const mockRateCalculationService = rateCalculationService_1.RateCalculationService;
+            mockMusicianStatusService.prototype.getOnlineMusicians = jest.fn().mockResolvedValue(mockMusicians);
+            mockCalendarConflictService.prototype.checkMultipleMusiciansAvailability = jest.fn().mockResolvedValue({
+                availableMusicians: ['musician1'],
+                unavailableMusicians: [],
+                conflicts: {}
+            });
+            mockRateCalculationService.prototype.calculateRate = jest.fn().mockResolvedValue(mockRateResult);
+            yield controller.searchAvailableMusicians(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: expect.objectContaining({
+                    availableMusicians: expect.arrayContaining([
+                        expect.objectContaining({
+                            musicianId: 'musician1',
+                            rate: 150
+                        })
+                    ]),
+                    totalFound: 1,
+                    availableCount: 1,
+                    unavailableCount: 0
+                })
+            });
+        }));
+    });
+    describe('checkMusicianAvailability', () => {
+        it('should return error when required parameters are missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {};
+            yield controller.checkMusicianAvailability(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Faltan parámetros requeridos: musicianId, eventDate, duration'
+            });
+        }));
+        it('should return not found when musician does not exist', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {
+                musicianId: 'nonexistent',
+                eventDate: '2024-12-25T20:00:00Z',
+                duration: 120
+            };
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            mockMusicianStatusService.prototype.getStatus = jest.fn().mockResolvedValue(null);
+            yield controller.checkMusicianAvailability(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(404);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Músico no encontrado'
+            });
+        }));
+        it('should return unavailable when musician is offline', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {
+                musicianId: 'musician1',
+                eventDate: '2024-12-25T20:00:00Z',
+                duration: 120
+            };
+            const mockStatus = {
+                isOnline: false,
+                availability: { isAvailable: false }
+            };
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            mockMusicianStatusService.prototype.getStatus = jest.fn().mockResolvedValue(mockStatus);
+            yield controller.checkMusicianAvailability(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: {
+                    isAvailable: false,
+                    reason: 'Músico no está online o no disponible',
+                    status: mockStatus
+                }
+            });
+        }));
+    });
+    describe('updateMusicianStatus', () => {
+        it('should return error when musicianId is missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = {};
+            yield controller.updateMusicianStatus(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'ID del músico requerido'
+            });
+        }));
+        it('should update musician status successfully', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = { musicianId: 'musician1' };
+            mockRequest.body = {
+                isOnline: true,
+                currentLocation: { latitude: 40.4168, longitude: -3.7038 }
+            };
+            const mockUpdatedStatus = {
+                id: 'musician1',
+                isOnline: true,
+                currentLocation: { latitude: 40.4168, longitude: -3.7038 }
+            };
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            mockMusicianStatusService.prototype.updateStatus = jest.fn().mockResolvedValue(mockUpdatedStatus);
+            yield controller.updateMusicianStatus(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: mockUpdatedStatus
+            });
+        }));
+    });
+    describe('musicianHeartbeat', () => {
+        it('should return error when musicianId is missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = {};
+            yield controller.musicianHeartbeat(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'ID del músico requerido'
+            });
+        }));
+        it('should register heartbeat successfully', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = { musicianId: 'musician1' };
+            mockRequest.body = {
+                location: { latitude: 40.4168, longitude: -3.7038 }
+            };
+            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
+            mockMusicianStatusService.prototype.heartbeat = jest.fn().mockResolvedValue(undefined);
+            yield controller.musicianHeartbeat(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Heartbeat registrado correctamente'
+            });
+        }));
+    });
+    describe('getDailyAvailability', () => {
+        it('should return error when musicianId is missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = {};
+            yield controller.getDailyAvailability(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'ID del músico requerido'
+            });
+        }));
+        it('should return daily availability', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.params = { musicianId: 'musician1' };
+            mockRequest.query = { date: '2024-12-25' };
+            const mockAvailability = {
+                date: new Date('2024-12-25'),
+                busySlots: [],
+                availableSlots: [
+                    { startTime: new Date('2024-12-25T10:00:00'), endTime: new Date('2024-12-25T12:00:00'), duration: 120 }
+                ]
+            };
+            const mockCalendarConflictService = calendarConflictService_1.CalendarConflictService;
+            mockCalendarConflictService.prototype.getDailyAvailability = jest.fn().mockResolvedValue(mockAvailability);
+            yield controller.getDailyAvailability(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: mockAvailability
+            });
+        }));
+    });
+    describe('calculateMusicianRate', () => {
+        it('should return error when required parameters are missing', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {};
+            yield controller.calculateMusicianRate(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(400);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Faltan parámetros requeridos'
+            });
+        }));
+        it('should calculate rate successfully', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest.body = {
+                musicianId: 'musician1',
+                eventType: 'wedding',
+                duration: 120,
+                location: 'Madrid',
+                eventDate: '2024-12-25T20:00:00Z',
+                instrument: 'guitarra'
+            };
+            const mockRateResult = {
+                baseRate: 50,
+                finalRate: 150,
+                breakdown: [],
+                factors: {},
+                recommendations: {}
+            };
+            const mockRateCalculationService = rateCalculationService_1.RateCalculationService;
+            mockRateCalculationService.prototype.calculateRate = jest.fn().mockResolvedValue(mockRateResult);
+            yield controller.calculateMusicianRate(mockRequest, mockResponse);
+            expect(mockResponse.status).toHaveBeenCalledWith(200);
+            expect(mockResponse.json).toHaveBeenCalledWith({
+                success: true,
+                data: mockRateResult
+            });
+        }));
+    });
+    describe('calculateRelevanceScore', () => {
+        it('should calculate relevance score correctly', () => {
+            const musician = {
+                status: {
+                    performance: {
+                        rating: 4.5,
+                        responseTime: 30,
+                        totalEvents: 50
+                    }
+                },
+                rate: 150
+            };
+            const score = controller.calculateRelevanceScore(musician);
+            // Score esperado: rating(36) + response(22.5) + price(5) + experience(10) = 73.5
+            expect(score).toBeGreaterThan(0);
+            expect(score).toBeLessThanOrEqual(100);
+        });
+    });
+});
