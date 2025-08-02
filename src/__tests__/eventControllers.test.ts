@@ -360,8 +360,22 @@ describe('EventControllers', () => {
   });
 
   describe('myCancelledEventsController', () => {
+    let isolatedMockRequest: Partial<Request>;
+    let isolatedMockResponse: Partial<Response>;
+    let isolatedMockJson: jest.Mock;
+    let isolatedMockStatus: jest.Mock;
+
     beforeEach(() => {
-      mockRequest = createMockRequest({
+      // Crear mocks completamente aislados para este test
+      isolatedMockJson = jest.fn();
+      isolatedMockStatus = jest.fn().mockReturnValue({ json: isolatedMockJson });
+      
+      isolatedMockResponse = {
+        status: isolatedMockStatus,
+        json: isolatedMockJson
+      };
+
+      isolatedMockRequest = createMockRequest({
         user: {
           id: 'user123',
           userEmail: 'juan@example.com',
@@ -369,21 +383,22 @@ describe('EventControllers', () => {
         }
       });
       
-      // Limpiar mocks específicamente para este test
+      // Limpiar completamente todos los mocks
       jest.clearAllMocks();
     });
 
     it('should return cancelled events successfully', async () => {
-      const mockEvents = [
+      const expectedEvents = [
         { id: 'event1', eventName: 'Evento 1', status: 'cancelled' },
         { id: 'event2', eventName: 'Evento 2', status: 'cancelled' }
       ];
 
-      (getEventsByUserAndStatus as jest.Mock).mockResolvedValue(mockEvents);
+      // Mock específico para este test que devuelve exactamente lo esperado
+      (getEventsByUserAndStatus as jest.Mock).mockResolvedValueOnce(expectedEvents);
 
-      await myCancelledEventsController(mockRequest as Request, mockResponse as Response);
+      await myCancelledEventsController(isolatedMockRequest as Request, isolatedMockResponse as Response);
 
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvents });
+      expect(isolatedMockJson).toHaveBeenCalledWith({ data: expectedEvents });
       expect(getEventsByUserAndStatus).toHaveBeenCalledWith('juan@example.com', 'cancelled');
     });
   });

@@ -201,7 +201,13 @@ describe('HiringService', () => {
 
       expect(result).toEqual(
         expect.objectContaining({
-          ...mockDoc.data(),
+          eventCreatorId: 'creator123',
+          musicianId: 'musician123',
+          eventId: 'event123',
+          eventDetails: 'Evento de música',
+          terms: 'Pago por adelantado',
+          status: 'pending',
+          messages: [],
           id: 'hiring123'
         })
       );
