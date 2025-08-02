@@ -1,5 +1,6 @@
 import { db } from '../utils/firebase';
 import { Event, User } from '../utils/DataTypes';
+import { logger } from './loggerService';
 
 // Definir tipo para MusicianRequest ya que no existe en DataTypes
 export interface MusicianRequest {
@@ -216,27 +217,39 @@ export class AnalyticsService {
         // Contar por mes - Validar fecha antes de convertir
         let month: string;
         try {
-          const createdAt = request.createdAt
-            ? new Date(request.createdAt)
-            : new Date();
+          let createdAt: Date;
+          
+          // Manejar diferentes tipos de fecha (Timestamp de Firestore, Date, string)
+          if (request.createdAt) {
+            if (request.createdAt.toDate) {
+              // Es un Timestamp de Firestore
+              createdAt = request.createdAt.toDate();
+            } else if (request.createdAt instanceof Date) {
+              // Ya es un Date
+              createdAt = request.createdAt;
+            } else if (typeof request.createdAt === 'string') {
+              // Es un string, intentar convertir
+              createdAt = new Date(request.createdAt);
+            } else {
+              // Otro tipo, usar fecha actual
+              createdAt = new Date();
+            }
+          } else {
+            createdAt = new Date();
+          }
+          
           if (isNaN(createdAt.getTime())) {
-            console.info('./src/services/analyticsService.ts line 208');
-            console.warn(
-              'Fecha inválida en request:',
-              request.id,
-              request.createdAt
-            );
+            logger.warn('Fecha inválida en request', {
+              metadata: { requestId: request.id, createdAt: request.createdAt }
+            });
             month = new Date().toISOString().substring(0, 7);
           } else {
             month = createdAt.toISOString().substring(0, 7);
           }
         } catch (error) {
-          console.info('./src/services/analyticsService.ts line 215');
-          console.warn(
-            'Error al procesar fecha de request:',
-            request.id,
-            error
-          );
+          logger.warn('Error al procesar fecha de request', {
+            metadata: { requestId: request.id, error: (error as Error).message }
+          });
           month = new Date().toISOString().substring(0, 7);
         }
 
@@ -251,22 +264,43 @@ export class AnalyticsService {
         // Calcular tiempo de respuesta - Validar fechas
         if (request.assignedMusicianId && request.updatedAt) {
           try {
-            const created = request.createdAt
-              ? new Date(request.createdAt)
-              : new Date();
-            const updated = new Date(request.updatedAt);
+            let created: Date;
+            let updated: Date;
+            
+            // Manejar createdAt
+            if (request.createdAt) {
+              if (request.createdAt.toDate) {
+                created = request.createdAt.toDate();
+              } else if (request.createdAt instanceof Date) {
+                created = request.createdAt;
+              } else if (typeof request.createdAt === 'string') {
+                created = new Date(request.createdAt);
+              } else {
+                created = new Date();
+              }
+            } else {
+              created = new Date();
+            }
+            
+            // Manejar updatedAt
+            if (request.updatedAt.toDate) {
+              updated = request.updatedAt.toDate();
+            } else if (request.updatedAt instanceof Date) {
+              updated = request.updatedAt;
+            } else if (typeof request.updatedAt === 'string') {
+              updated = new Date(request.updatedAt);
+            } else {
+              updated = new Date();
+            }
 
             if (!isNaN(created.getTime()) && !isNaN(updated.getTime())) {
               totalResponseTime += updated.getTime() - created.getTime();
               responseTimeCount++;
             }
           } catch (error) {
-            console.info('./src/services/analyticsService.ts line 239');
-            console.warn(
-              'Error al calcular tiempo de respuesta:',
-              request.id,
-              error
-            );
+            logger.warn('Error al calcular tiempo de respuesta', {
+              metadata: { requestId: request.id, error: (error as Error).message }
+            });
           }
         }
       });
