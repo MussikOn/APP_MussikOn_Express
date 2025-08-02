@@ -20,7 +20,11 @@
     "postinstall": "npm run build",
     "deploy:firebase": "firebase deploy",
     "deploy:functions": "firebase deploy --only functions",
-    "deploy:hosting": "firebase deploy --only hosting"
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:indexes": "node scripts/deploy-indexes.js",
+    "monitor:indexes": "node scripts/monitor-indexes.js",
+    "indexes:dry-run": "node scripts/deploy-indexes.js --dry-run",
+    "analyze:queries": "node scripts/analyze-queries.js"
   },
   "keywords": [
     "mussikon",
