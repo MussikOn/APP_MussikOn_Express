@@ -31,7 +31,9 @@
     "redoc-express": "^2.1.0",
     "@aws-sdk/client-s3": "^3.787.0",
     "@aws-sdk/s3-request-presigner": "^3.787.0",
-    "aws-sdk": "^2.1692.0"
+    "aws-sdk": "^2.1692.0",
+    "ioredis": "^5.3.2",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.12.0",
@@ -50,7 +52,8 @@
     "@types/nodemailer": "^6.4.17",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
-    "@types/socket.io": "^3.0.1"
+    "@types/socket.io": "^3.0.1",
+    "@types/compression": "^1.7.5"
   },
   "private": true
 }
