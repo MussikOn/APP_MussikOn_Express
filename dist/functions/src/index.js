@@ -53,6 +53,7 @@ const musicianRequestRoutes_1 = __importDefault(require("./routes/musicianReques
 const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const advancedSearchRoutes_1 = __importDefault(require("./routes/advancedSearchRoutes"));
 const optimizationRoutes_1 = __importDefault(require("./routes/optimizationRoutes"));
+const paymentSystemRoutes_1 = __importDefault(require("./routes/paymentSystemRoutes"));
 // Inicializar Firebase Admin
 admin.initializeApp();
 // Configurar variables de entorno
@@ -93,6 +94,11 @@ app.use('/musician-requests', musicianRequestRoutes_1.default);
 app.use('/chat', chatRoutes_1.default);
 app.use('/advanced-search', advancedSearchRoutes_1.default);
 app.use('/optimization', optimizationRoutes_1.default);
+app.use('/payments', paymentSystemRoutes_1.default);
+app.use('/bank-accounts', paymentSystemRoutes_1.default);
+app.use('/musicians', paymentSystemRoutes_1.default);
+app.use('/events', paymentSystemRoutes_1.default);
+app.use('/admin', paymentSystemRoutes_1.default);
 // Endpoint de prueba
 app.get('/test', (req, res) => {
     res.json({

@@ -8,4 +8,5 @@ export { default as eventsRoutes } from './eventsRoutes';
 export { default as musicianRequestRoutes } from './musicianRequestRoutes';
 export { default as chatRoutes } from './chatRoutes';
 export { default as advancedSearchRoutes } from './advancedSearchRoutes';
-export { default as optimizationRoutes } from './optimizationRoutes'; 
+export { default as optimizationRoutes } from './optimizationRoutes';
+export { default as paymentSystemRoutes } from './paymentSystemRoutes'; 

@@ -128,3 +128,32 @@ export const imageUpload = multer({
     }
   },
 });
+
+/**
+ * Configuración de multer para documentos (comprobantes de pago)
+ */
+export const documentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1, // Solo un archivo
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes y PDFs'));
+    }
+  },
+});
+
+// Exportación por defecto para compatibilidad
+export const upload = documentUpload;

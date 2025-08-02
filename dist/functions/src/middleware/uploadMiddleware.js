@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.imageUpload = exports.validateImageFile = exports.handleMulterError = void 0;
+exports.upload = exports.documentUpload = exports.imageUpload = exports.validateImageFile = exports.handleMulterError = void 0;
 const multer_1 = __importDefault(require("multer"));
 /**
  * Middleware para manejar errores de multer
@@ -97,7 +97,7 @@ exports.imageUpload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: {
         fileSize: 10 * 1024 * 1024, // 10MB
-        files: 1 // Solo un archivo
+        files: 1, // Solo un archivo
     },
     fileFilter: (req, file, cb) => {
         const allowedMimeTypes = [
@@ -105,7 +105,7 @@ exports.imageUpload = (0, multer_1.default)({
             'image/png',
             'image/gif',
             'image/webp',
-            'image/svg+xml'
+            'image/svg+xml',
         ];
         if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
@@ -113,5 +113,32 @@ exports.imageUpload = (0, multer_1.default)({
         else {
             cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes'));
         }
-    }
+    },
 });
+/**
+ * Configuración de multer para documentos (comprobantes de pago)
+ */
+exports.documentUpload = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB
+        files: 1, // Solo un archivo
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf',
+        ];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        }
+        else {
+            cb(new Error('Tipo de archivo no permitido. Solo se permiten imágenes y PDFs'));
+        }
+    },
+});
+// Exportación por defecto para compatibilidad
+exports.upload = exports.documentUpload;
