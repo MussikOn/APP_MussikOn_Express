@@ -4,11 +4,12 @@
 
 **MussikOn API** es una plataforma backend robusta y escalable para conectar músicos, organizadores de eventos y usuarios en el ecosistema musical. Proporciona APIs RESTful completas con autenticación JWT, validación exhaustiva, búsqueda avanzada, analytics, pagos, y funcionalidades en tiempo real.
 
-**Estado Actual**: ✅ **100% LISTO PARA PRODUCCIÓN**
+**Estado Actual**: ⚠️ **NO LISTO PARA PRODUCCIÓN** - Requiere correcciones críticas de seguridad
 - **Tests**: 13/13 suites pasando (100%)
-- **Cobertura**: 172/172 tests individuales (100%)
-- **Estabilidad**: Excelente
+- **Cobertura**: Básica - Necesita mejora
+- **Estabilidad**: Funcional pero con vulnerabilidades críticas
 - **Documentación**: Completa y actualizada
+- **Seguridad**: 🔴 CRÍTICO - Requiere correcciones inmediatas
 
 ---
 
@@ -18,10 +19,11 @@
 - **JWT Authentication** con refresh tokens
 - **Google OAuth 2.0** integrado
 - **Role-Based Access Control** (RBAC) completo
-- **Rate Limiting** y protección contra ataques
-- **Input Sanitization** y validación exhaustiva con Joi
-- **CORS** configurado para producción
-- **Helmet** para headers de seguridad
+- ⚠️ **Rate Limiting** - NO implementado (solo en package.json)
+- ⚠️ **Input Sanitization** - Validación básica implementada
+- ⚠️ **CORS** - Configurado pero con IPs hardcodeadas
+- ⚠️ **Helmet** - NO implementado (solo en package.json)
+- 🔴 **TOKEN_SECRET** - Hardcodeado (CRÍTICO)
 
 ### 🔍 **Sistema de Búsqueda Avanzado**
 - **Búsqueda Global** en todas las colecciones (eventos, usuarios, solicitudes)
@@ -158,6 +160,13 @@ docs/                    # Documentación completa
 ---
 
 ## 🚀 Instalación y Configuración
+
+### ⚠️ ADVERTENCIA IMPORTANTE
+
+**Este proyecto NO está listo para producción debido a vulnerabilidades críticas de seguridad.**
+Consulte la documentación de análisis crítico antes de usar en producción:
+- [Análisis Crítico](docs/development/CRITICAL_ANALYSIS.md)
+- [Referencia para IA](docs/development/AI_REFERENCE.md)
 
 ### **Prerrequisitos**
 - Node.js v18 o superior
