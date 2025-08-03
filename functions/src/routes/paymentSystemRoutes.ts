@@ -546,7 +546,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware, async (req, res) => 
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPendingDeposits(req, res);
 });
 
@@ -599,7 +599,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adm
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.verifyDeposit(req, res);
 });
 
@@ -632,7 +632,7 @@ router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireR
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPendingWithdrawals(req, res);
 });
 
@@ -685,7 +685,7 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.processWithdrawal(req, res);
 });
 
@@ -716,7 +716,7 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, r
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPaymentStatistics(req, res);
 });
 

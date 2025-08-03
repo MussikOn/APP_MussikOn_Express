@@ -8,6 +8,70 @@ import { logger } from '../services/loggerService';
 const router = Router();
 const paymentSystemController = new PaymentSystemController();
 
+// Rutas adicionales para compatibilidad con el frontend
+// Estas rutas redirigen a las rutas principales del payment system
+
+/**
+ * @swagger
+ * /admin/payments/statistics:
+ *   get:
+ *     summary: Obtener estadísticas de pagos (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  await paymentSystemController.getPaymentStatistics(req, res);
+});
+
+/**
+ * @swagger
+ * /admin/payments/pending-deposits:
+ *   get:
+ *     summary: Obtener depósitos pendientes (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Depósitos pendientes obtenidos exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  console.log('[paymentSystemRoutes.ts:49] Ruta /admin/payments/pending-deposits accedida');
+  await paymentSystemController.getPendingDeposits(req, res);
+});
+
+/**
+ * @swagger
+ * /admin/payments/pending-withdrawals:
+ *   get:
+ *     summary: Obtener retiros pendientes (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Retiros pendientes obtenidos exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  await paymentSystemController.getPendingWithdrawals(req, res);
+});
+
 /**
  * @swagger
  * components:
@@ -521,7 +585,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware, async (req, res) => 
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
   await paymentSystemController.getPendingDeposits(req, res);
 });
 
@@ -562,7 +626,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adm
  *       500:
  *         description: Error del servidor
  */
-router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
   await paymentSystemController.verifyDeposit(req, res);
 });
 
@@ -595,7 +659,7 @@ router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireR
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
   await paymentSystemController.getPendingWithdrawals(req, res);
 });
 
@@ -636,65 +700,8 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['
  *       500:
  *         description: Error del servidor
  */
-router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
   await paymentSystemController.processWithdrawal(req, res);
-});
-
-/**
- * @swagger
- * /admin/payments/statistics:
- *   get:
- *     summary: Obtener estadísticas de pagos (admin)
- *     tags: [Administración - Pagos]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Estadísticas obtenidas exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalDeposits:
- *                       type: number
- *                     totalWithdrawals:
- *                       type: number
- *                     totalCommissions:
- *                       type: number
- *                     pendingDeposits:
- *                       type: number
- *                     pendingWithdrawals:
- *                       type: number
- *                     averageTransactionAmount:
- *                       type: number
- *                     monthlyRevenue:
- *                       type: number
- *                     topEarningMusicians:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           musicianId:
- *                             type: string
- *                           musicianName:
- *                             type: string
- *                           totalEarnings:
- *                             type: number
- *                 message:
- *                   type: string
- *       401:
- *         description: No autorizado
- *       500:
- *         description: Error del servidor
- */
-router.get('/admin/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
-  await paymentSystemController.getPaymentStatistics(req, res);
 });
 
 /**
@@ -726,7 +733,7 @@ router.get('/admin/payments/statistics', authMiddleware, requireRole(['adminJuni
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/firestore/indexes/status', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/firestore/indexes/status', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
   try {
     const { FirestoreIndexManager } = await import('../utils/firestoreIndexes');
     const indexStatus = await FirestoreIndexManager.checkIndexStatus();
