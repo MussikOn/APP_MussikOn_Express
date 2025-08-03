@@ -21,7 +21,7 @@ export class AdvancedSearchController {
    */
   async searchAvailableMusicians(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:25] Búsqueda avanzada de músicos solicitada');
+      logger.info('[src/controllers/advancedSearchController.ts:25] Búsqueda avanzada de músicos solicitada');
       
       const {
         eventType,
@@ -175,7 +175,7 @@ export class AdvancedSearchController {
    */
   async checkMusicianAvailability(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:120] Verificando disponibilidad específica del músico');
+      logger.info('[src/controllers/advancedSearchController.ts:120] Verificando disponibilidad específica del músico');
       
       const { musicianId, eventDate, duration, location } = req.body;
 
@@ -264,7 +264,7 @@ export class AdvancedSearchController {
    */
   async updateMusicianStatus(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:190] Actualizando estado del músico');
+      logger.info('[src/controllers/advancedSearchController.ts:190] Actualizando estado del músico');
       
       const { musicianId } = req.params;
       const { isOnline, currentLocation, availability } = req.body;
@@ -304,7 +304,7 @@ export class AdvancedSearchController {
    */
   async musicianHeartbeat(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:225] Heartbeat del músico');
+      logger.info('[src/controllers/advancedSearchController.ts:225] Heartbeat del músico');
       
       const { musicianId } = req.params;
       const { location } = req.body;
@@ -338,7 +338,7 @@ export class AdvancedSearchController {
    */
   async getDailyAvailability(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:255] Obteniendo disponibilidad diaria del músico');
+      logger.info('[src/controllers/advancedSearchController.ts:255] Obteniendo disponibilidad diaria del músico');
       
       const { musicianId } = req.params;
       const { date } = req.query;
@@ -373,7 +373,7 @@ export class AdvancedSearchController {
    */
   async calculateMusicianRate(req: Request, res: Response) {
     try {
-      console.log('[src/controllers/advancedSearchController.ts:285] Calculando tarifa del músico');
+      logger.info('[src/controllers/advancedSearchController.ts:285] Calculando tarifa del músico');
       
       const {
         musicianId,

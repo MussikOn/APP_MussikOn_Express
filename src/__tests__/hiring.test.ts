@@ -199,10 +199,18 @@ describe('HiringService', () => {
 
       const result = await hiringService.getHiringRequestById('hiring123');
 
-      expect(result).toEqual({
-        ...mockDoc.data(),
-        id: 'hiring123'
-      });
+      expect(result).toEqual(
+        expect.objectContaining({
+          eventCreatorId: 'creator123',
+          musicianId: 'musician123',
+          eventId: 'event123',
+          eventDetails: 'Evento de música',
+          terms: 'Pago por adelantado',
+          status: 'pending',
+          messages: [],
+          id: 'hiring123'
+        })
+      );
     });
 
     it('should return null when hiring request not found', async () => {

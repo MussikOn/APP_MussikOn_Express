@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3 } from '../utils/idriveE2';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -34,7 +35,7 @@ export const uploadFile = async (req: Request, res: Response) => {
       key: fileKey,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error:', error as Error);
     res.status(500).json({ error: 'Upload failed' });
   }
 };
@@ -57,7 +58,7 @@ export const getFileUrl = async (req: Request, res: Response) => {
 
     res.status(200).json({ url });
   } catch (error) {
-    console.error('URL error:', error);
+    logger.error('URL error:', error as Error);
     res.status(500).json({ error: 'Failed to generate file URL' });
   }
 };

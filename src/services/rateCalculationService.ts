@@ -100,7 +100,7 @@ export class RateCalculationService {
    */
   async calculateRate(request: RateCalculationRequest): Promise<RateCalculationResult> {
     try {
-      console.log('[src/services/rateCalculationService.ts:85] Calculando tarifa para músico:', request.musicianId);
+      logger.info('Calculando tarifa para músico:', { context: 'Rate', metadata: { musicianId: request.musicianId } });
       
       // Obtener datos del músico
       const musicianData = await this.getMusicianData(request.musicianId);
@@ -463,7 +463,7 @@ export class RateCalculationService {
     rate: number
   ): Promise<void> {
     try {
-      console.log('[src/services/rateCalculationService.ts:350] Actualizando datos del mercado');
+      logger.info('[src/services/rateCalculationService.ts:350] Actualizando datos del mercado');
       
       const marketRef = db.collection(this.COLLECTION_MARKET_DATA)
         .where('instrument', '==', instrument)

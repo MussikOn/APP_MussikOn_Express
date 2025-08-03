@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 import { db } from '../utils/firebase';
 import cors from 'cors';
 import { authMiddleware } from '../middleware/authMiddleware';
@@ -65,7 +66,7 @@ adm.delete(
         .status(200)
         .json({ message: 'Todos los usuarios fueron eliminados exitosamente' });
     } catch (error) {
-      console.error('Error al eliminar todos los usuarios:', error);
+      logger.error('Error al eliminar todos los usuarios:', error as Error);
       res.status(500).json({ message: 'Error al eliminar todos los usuarios' });
     }
   }

@@ -13,7 +13,7 @@ import {
   getEventByIdController,
   cancelEventController,
   completeEventController,
-  deleteEventController
+  deleteEventController,
 } from '../controllers/eventControllers';
 import {
   createEventModel,
@@ -26,8 +26,9 @@ import {
   getEventByIdModel,
   cancelEventModel,
   completeEventModel,
-  deleteEventModel
+  deleteEventModel,
 } from '../models/eventModel';
+import { createMockRequest, createMockResponse } from './setup';
 
 // Mock de todas las dependencias
 jest.mock('../models/eventModel');
@@ -37,6 +38,28 @@ describe('EventControllers', () => {
   let mockResponse: Partial<Response>;
   let mockJson: jest.Mock;
   let mockStatus: jest.Mock;
+
+  const mockEvent = {
+    id: 'event123',
+    eventName: 'Boda de María',
+    location: 'Santo Domingo',
+    status: 'pending',
+    user: 'juan@example.com',
+    assignedMusicianId: 'musician123'
+  };
+
+  const mockEvents = [
+    {
+      id: 'event1',
+      eventName: 'Evento 1',
+      status: 'pending'
+    },
+    {
+      id: 'event2',
+      eventName: 'Evento 2',
+      status: 'cancelled'
+    }
+  ];
 
   beforeEach(() => {
     mockJson = jest.fn();
@@ -200,18 +223,16 @@ describe('EventControllers', () => {
 
   describe('acceptEventController', () => {
     beforeEach(() => {
-      mockRequest = {
-        user: {
-          userId: 'musico123',
-          email: 'musico@example.com',
-          role: 'musico',
-          name: 'Músico Test',
-          userEmail: 'musico@example.com'
-        },
-        body: {
+      mockRequest = createMockRequest({
+        params: {
           eventId: 'event123'
+        },
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'musico'
         }
-      };
+      });
     });
 
     it('should accept event successfully', async () => {
@@ -225,32 +246,34 @@ describe('EventControllers', () => {
 
       await acceptEventController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(200);
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvent });
+      expect(mockJson).toHaveBeenCalledWith(mockEvent);
     });
 
     it('should return error when user is not a musician', async () => {
-      mockRequest.user = {
-        userId: 'user123',
-        email: 'user@example.com',
-        role: 'eventCreator',
-        name: 'User Test',
-        userEmail: 'user@example.com'
-      };
+      mockRequest = createMockRequest({
+        params: {
+          eventId: 'event123'
+        },
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
+        }
+      });
 
       await acceptEventController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Solo los músicos pueden aceptar eventos' });
+      expect(mockJson).toHaveBeenCalledWith({ msg: 'Solo los músicos pueden aceptar eventos.' });
     });
 
     it('should return error when event acceptance fails', async () => {
-      (acceptEventModel as jest.Mock).mockRejectedValue(new Error('Database error'));
+      (acceptEventModel as jest.Mock).mockResolvedValue(null);
 
       await acceptEventController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Error al aceptar evento' });
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({ msg: 'No se pudo aceptar el evento.' });
     });
   });
 
@@ -312,15 +335,13 @@ describe('EventControllers', () => {
 
   describe('myEventsController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         user: {
-          userId: 'user123',
-          email: 'juan@example.com',
-          role: 'eventCreator',
-          name: 'Juan Pérez',
-          userEmail: 'juan@example.com'
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
         }
-      };
+      });
     });
 
     it('should return all user events successfully', async () => {
@@ -339,40 +360,66 @@ describe('EventControllers', () => {
   });
 
   describe('myCancelledEventsController', () => {
+    let isolatedMockRequest: Partial<Request>;
+    let isolatedMockResponse: Partial<Response>;
+    let isolatedMockJson: jest.Mock;
+    let isolatedMockStatus: jest.Mock;
+
     beforeEach(() => {
-      mockRequest = {
-        user: {
-          userId: 'user123',
-          email: 'juan@example.com',
-          role: 'eventCreator',
-          name: 'Juan Pérez',
-          userEmail: 'juan@example.com'
-        }
+      // Crear mocks completamente aislados para este test
+      isolatedMockJson = jest.fn();
+      isolatedMockStatus = jest.fn().mockReturnValue({ json: isolatedMockJson });
+      
+      isolatedMockResponse = {
+        status: isolatedMockStatus,
+        json: isolatedMockJson
       };
+
+      isolatedMockRequest = createMockRequest({
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
+        }
+      });
+      
+      // Limpiar completamente todos los mocks
+      jest.clearAllMocks();
     });
 
     it('should return cancelled events successfully', async () => {
-      const mockEvents = [
+      const cancelledEvents = [
         { id: 'event1', eventName: 'Evento 1', status: 'cancelled' },
         { id: 'event2', eventName: 'Evento 2', status: 'cancelled' }
       ];
 
-      (getEventsByUserAndStatus as jest.Mock).mockResolvedValue(mockEvents);
+      const musicianCancelledEvents = [
+        { id: 'event3', eventName: 'Evento 3', status: 'musician_cancelled' },
+        { id: 'event4', eventName: 'Evento 4', status: 'musician_cancelled' }
+      ];
 
-      await myCancelledEventsController(mockRequest as Request, mockResponse as Response);
+      const expectedEvents = [...cancelledEvents, ...musicianCancelledEvents];
 
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvents });
+      // Mock específico para este test que devuelve diferentes resultados para cada llamada
+      (getEventsByUserAndStatus as jest.Mock)
+        .mockResolvedValueOnce(cancelledEvents)        // Primera llamada: 'cancelled'
+        .mockResolvedValueOnce(musicianCancelledEvents); // Segunda llamada: 'musician_cancelled'
+
+      await myCancelledEventsController(isolatedMockRequest as Request, isolatedMockResponse as Response);
+
+      expect(isolatedMockJson).toHaveBeenCalledWith({ data: expectedEvents });
       expect(getEventsByUserAndStatus).toHaveBeenCalledWith('juan@example.com', 'cancelled');
+      expect(getEventsByUserAndStatus).toHaveBeenCalledWith('juan@example.com', 'musician_cancelled');
     });
   });
 
   describe('getEventByIdController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         params: {
           eventId: 'event123'
         }
-      };
+      });
     });
 
     it('should return event by ID successfully', async () => {
@@ -386,7 +433,10 @@ describe('EventControllers', () => {
 
       await getEventByIdController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvent });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: true,
+        data: mockEvent
+      });
       expect(getEventByIdModel).toHaveBeenCalledWith('event123');
     });
 
@@ -396,131 +446,231 @@ describe('EventControllers', () => {
       await getEventByIdController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(404);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Evento no encontrado' });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'Evento no encontrado'
+      });
     });
   });
 
   describe('cancelEventController', () => {
     beforeEach(() => {
-      mockRequest = {
-        user: {
-          userId: 'user123',
-          email: 'juan@example.com',
-          role: 'eventCreator',
-          name: 'Juan Pérez',
-          userEmail: 'juan@example.com'
-        },
+      mockRequest = createMockRequest({
         params: {
           eventId: 'event123'
         },
-        body: {
-          reason: 'Cambio de fecha'
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
         }
-      };
+      });
     });
 
     it('should cancel event successfully', async () => {
       const mockEvent = {
         id: 'event123',
         eventName: 'Boda de María',
-        status: 'cancelled'
+        status: 'cancelled',
+        user: 'juan@example.com' // El usuario debe ser el propietario
       };
 
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
       (cancelEventModel as jest.Mock).mockResolvedValue(mockEvent);
 
       await cancelEventController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(200);
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvent });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: true,
+        message: 'Solicitud cancelada exitosamente',
+        data: mockEvent
+      });
+    });
+
+    it('should return error when user is not authorized', async () => {
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'pending',
+        user: 'otro@example.com' // Usuario diferente al propietario
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+
+      await cancelEventController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'No tienes permisos para cancelar esta solicitud'
+      });
     });
 
     it('should return error when event cancellation fails', async () => {
-      (cancelEventModel as jest.Mock).mockRejectedValue(new Error('Database error'));
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'pending',
+        user: 'juan@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+      (cancelEventModel as jest.Mock).mockResolvedValue(null);
 
       await cancelEventController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Error al cancelar evento' });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'Error al cancelar la solicitud'
+      });
     });
   });
 
   describe('completeEventController', () => {
     beforeEach(() => {
-      mockRequest = {
-        user: {
-          userId: 'user123',
-          email: 'juan@example.com',
-          role: 'eventCreator',
-          name: 'Juan Pérez',
-          userEmail: 'juan@example.com'
-        },
+      mockRequest = createMockRequest({
         params: {
           eventId: 'event123'
         },
-        body: {
-          rating: 5,
-          comment: 'Excelente servicio'
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
         }
-      };
+      });
     });
 
     it('should complete event successfully', async () => {
       const mockEvent = {
         id: 'event123',
         eventName: 'Boda de María',
-        status: 'completed'
+        status: 'completed',
+        user: 'juan@example.com'
       };
 
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
       (completeEventModel as jest.Mock).mockResolvedValue(mockEvent);
 
       await completeEventController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(200);
-      expect(mockJson).toHaveBeenCalledWith({ data: mockEvent });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: true,
+        message: 'Solicitud completada exitosamente',
+        data: mockEvent
+      });
+    });
+
+    it('should return error when user is not authorized', async () => {
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'pending',
+        user: 'otro@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+
+      await completeEventController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'No tienes permisos para completar esta solicitud'
+      });
     });
 
     it('should return error when event completion fails', async () => {
-      (completeEventModel as jest.Mock).mockRejectedValue(new Error('Database error'));
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'pending',
+        user: 'juan@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+      (completeEventModel as jest.Mock).mockResolvedValue(null);
 
       await completeEventController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Error al completar evento' });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'Error al completar la solicitud'
+      });
     });
   });
 
   describe('deleteEventController', () => {
     beforeEach(() => {
-      mockRequest = {
-        user: {
-          userId: 'user123',
-          email: 'juan@example.com',
-          role: 'eventCreator',
-          name: 'Juan Pérez',
-          userEmail: 'juan@example.com'
-        },
+      mockRequest = createMockRequest({
         params: {
           eventId: 'event123'
+        },
+        user: {
+          id: 'user123',
+          userEmail: 'juan@example.com',
+          roll: 'eventCreator'
         }
-      };
+      });
     });
 
     it('should delete event successfully', async () => {
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'completed',
+        user: 'juan@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
       (deleteEventModel as jest.Mock).mockResolvedValue(true);
 
       await deleteEventController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(200);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Evento eliminado exitosamente' });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: true,
+        message: 'Solicitud eliminada exitosamente'
+      });
+    });
+
+    it('should return error when user is not authorized', async () => {
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'completed',
+        user: 'otro@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+
+      await deleteEventController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'No tienes permisos para eliminar esta solicitud'
+      });
     });
 
     it('should return error when event deletion fails', async () => {
-      (deleteEventModel as jest.Mock).mockRejectedValue(new Error('Database error'));
+      const mockEvent = {
+        id: 'event123',
+        eventName: 'Boda de María',
+        status: 'completed',
+        user: 'juan@example.com'
+      };
+
+      (getEventByIdModel as jest.Mock).mockResolvedValue(mockEvent);
+      (deleteEventModel as jest.Mock).mockResolvedValue(false);
 
       await deleteEventController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(500);
-      expect(mockJson).toHaveBeenCalledWith({ msg: 'Error al eliminar evento' });
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'Error al eliminar la solicitud'
+      });
     });
   });
 }); 

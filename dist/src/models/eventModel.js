@@ -22,12 +22,13 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventModel = exports.completeEventModel = exports.cancelEventModel = exports.getEventByIdModel = exports.getEventsByMusician = exports.getEventsByUser = exports.getEventsByMusicianAndStatus = exports.acceptEventModel = exports.getAvailableEvents = exports.getEventsByUserAndStatus = exports.createEventModel = void 0;
 const firebase_1 = require("../utils/firebase");
+const loggerService_1 = require("../services/loggerService");
 const createEventModel = (eventData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
     const eventRef = firebase_1.db.collection('events').doc();
     const event = Object.assign(Object.assign({}, eventData), { id: eventRef.id, status: 'pending_musician', createdAt: now, updatedAt: now, interestedMusicians: [] });
     yield eventRef.set(event);
-    console.log('[src/models/eventModel.ts:16] Evento guardado:', event);
+    loggerService_1.logger.info('Evento guardado:', { context: 'EventModel', metadata: event });
     return event;
 });
 exports.createEventModel = createEventModel;
@@ -45,7 +46,7 @@ const getAvailableEvents = () => __awaiter(void 0, void 0, void 0, function* () 
         .collection('events')
         .where('status', '==', 'pending_musician')
         .get();
-    console.log('[src/models/eventModel.ts:32] Eventos encontrados en BD:', snapshot.docs.length);
+    loggerService_1.logger.info('Eventos encontrados en BD:', { context: 'EventModel', metadata: { count: snapshot.docs.length } });
     return snapshot.docs.map(doc => doc.data());
 });
 exports.getAvailableEvents = getAvailableEvents;
@@ -132,7 +133,7 @@ const deleteEventModel = (eventId, deletedBy) => __awaiter(void 0, void 0, void 
     }
     // Eliminar el documento completamente
     yield eventRef.delete();
-    console.log('[src/models/eventModel.ts:130] Evento eliminado completamente:', eventId);
+    loggerService_1.logger.info('Evento eliminado completamente:', { context: 'EventModel', metadata: { eventId } });
     return { success: true, eventId };
 });
 exports.deleteEventModel = deleteEventModel;

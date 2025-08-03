@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.upload = exports.documentUpload = exports.imageUpload = exports.validateImageFile = exports.handleMulterError = void 0;
+const loggerService_1 = require("../services/loggerService");
 const multer_1 = __importDefault(require("multer"));
 /**
  * Middleware para manejar errores de multer
@@ -41,7 +42,7 @@ const handleMulterError = (error, req, res, next) => {
         });
         return;
     }
-    console.error('[src/middleware/uploadMiddleware.ts] Error de subida:', error);
+    loggerService_1.logger.error('[src/middleware/uploadMiddleware.ts] Error de subida:', error);
     res.status(500).json({
         error: 'Error interno del servidor',
         details: 'Error al procesar el archivo',

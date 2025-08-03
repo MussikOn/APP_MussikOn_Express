@@ -45,6 +45,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getChatStatsModel = exports.getConversationBetweenUsersModel = exports.archiveConversationModel = exports.deleteConversationModel = exports.searchConversationsModel = exports.markConversationAsReadModel = exports.markMessageAsReadModel = exports.updateConversationLastMessage = exports.createMessageModel = exports.getMessagesByConversationModel = exports.getConversationByIdModel = exports.getConversationsByUserModel = exports.createConversationModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const admin = __importStar(require("firebase-admin"));
+const loggerService_1 = require("../services/loggerService");
 // Crear una nueva conversación
 const createConversationModel = (participants) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
@@ -58,7 +59,7 @@ const createConversationModel = (participants) => __awaiter(void 0, void 0, void
         createdAt: now,
     };
     yield conversationRef.set(conversation);
-    console.log('[src/models/chatModel.ts:19] Conversación creada:', conversation);
+    loggerService_1.logger.info('[src/models/chatModel.ts:19] Conversación creada:', { metadata: { id: conversation } });
     return conversation;
 });
 exports.createConversationModel = createConversationModel;
@@ -97,7 +98,7 @@ const createMessageModel = (messageData) => __awaiter(void 0, void 0, void 0, fu
     const messageRef = firebase_1.db.collection("messages").doc();
     const message = Object.assign(Object.assign({}, messageData), { id: messageRef.id, timestamp: now });
     yield messageRef.set(message);
-    console.log('[src/models/chatModel.ts:68] Mensaje creado:', message);
+    loggerService_1.logger.info('[src/models/chatModel.ts:68] Mensaje creado:', { metadata: { id: message } });
     // Actualizar la conversación con el último mensaje
     yield (0, exports.updateConversationLastMessage)(message.conversationId, message);
     return message;

@@ -2,6 +2,7 @@
 import { db, dmAdmin } from '../utils/firebase';
 import nodemailer from 'nodemailer';
 import { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 
 /**
  * @swagger
@@ -49,7 +50,7 @@ export const sendEmailVerificationLink = async (
       .generateEmailVerificationLink(user.email!);
 
     // Aquí puedes enviar ese link por correo usando nodemailer o Mailgun, etc.
-    console.log('Verification link:', link);
+    logger.info('Verification link:', { metadata: { id: link  } });
 
     // Devolver el enlace directamente o enviar vía email
     res.status(200).json({ message: 'Link generado', link });

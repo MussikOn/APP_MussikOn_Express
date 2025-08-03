@@ -1,5 +1,6 @@
 import { db } from '../utils/firebase';
 import { Event, User } from '../utils/DataTypes';
+import { logger } from '../services/loggerService';
 
 // Definir tipo para MusicianRequest ya que no existe en DataTypes
 export interface MusicianRequest {
@@ -134,7 +135,7 @@ export class SearchService {
         hasMore: filteredEvents.length === limit,
       };
     } catch (error) {
-      console.error('Error en búsqueda de eventos:', error);
+      logger.error('Error en búsqueda de eventos:', error as Error);
       throw new Error('Error al buscar eventos');
     }
   }
@@ -221,7 +222,7 @@ export class SearchService {
         hasMore: filteredRequests.length === limit,
       };
     } catch (error) {
-      console.error('Error en búsqueda de solicitudes:', error);
+      logger.error('Error en búsqueda de solicitudes:', error as Error);
       throw new Error('Error al buscar solicitudes de músicos');
     }
   }
@@ -278,7 +279,7 @@ export class SearchService {
         hasMore: filteredUsers.length === limit,
       };
     } catch (error) {
-      console.error('Error en búsqueda de usuarios:', error);
+      logger.error('Error en búsqueda de usuarios:', error as Error);
       throw new Error('Error al buscar usuarios');
     }
   }
@@ -304,7 +305,7 @@ export class SearchService {
         users: usersResult.data,
       };
     } catch (error) {
-      console.error('Error en búsqueda global:', error);
+      logger.error('Error en búsqueda global:', error as Error);
       throw new Error('Error al realizar búsqueda global');
     }
   }
@@ -329,7 +330,7 @@ export class SearchService {
         requests: requestsResult.data,
       };
     } catch (error) {
-      console.error('Error en búsqueda por ubicación:', error);
+      logger.error('Error en búsqueda por ubicación:', error as Error);
       throw new Error('Error al buscar por ubicación');
     }
   }
@@ -362,7 +363,7 @@ export class SearchService {
         total: filteredEvents.length,
       };
     } catch (error) {
-      console.error('Error en búsqueda de eventos disponibles:', error);
+      logger.error('Error en búsqueda de eventos disponibles:', error as Error);
       throw new Error('Error al buscar eventos disponibles');
     }
   }
@@ -387,7 +388,7 @@ export class SearchService {
 
       return result;
     } catch (error) {
-      console.error('Error en búsqueda de músicos disponibles:', error);
+      logger.error('Error en búsqueda de músicos disponibles:', error as Error);
       throw new Error('Error al buscar músicos disponibles');
     }
   }

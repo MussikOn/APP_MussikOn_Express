@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const loggerService_1 = require("../services/loggerService");
 const firebase_1 = require("../utils/firebase");
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const adm = (0, express_1.default)();
@@ -67,7 +68,7 @@ adm.delete('/deleteAllUsers', authMiddleware_1.authMiddleware, (req, res) => __a
         res.status(200).json({ message: 'Todos los usuarios fueron eliminados exitosamente' });
     }
     catch (error) {
-        console.error('Error al eliminar todos los usuarios:', error);
+        loggerService_1.logger.error('Error al eliminar todos los usuarios:', error);
         res.status(500).json({ message: 'Error al eliminar todos los usuarios' });
     }
 }));

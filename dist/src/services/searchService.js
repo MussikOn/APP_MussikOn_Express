@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.searchService = exports.SearchService = void 0;
 const firebase_1 = require("../utils/firebase");
+const loggerService_1 = require("../services/loggerService");
 class SearchService {
     /**
      * Búsqueda avanzada de eventos
@@ -77,7 +78,7 @@ class SearchService {
                 };
             }
             catch (error) {
-                console.error('Error en búsqueda de eventos:', error);
+                loggerService_1.logger.error('Error en búsqueda de eventos:', error);
                 throw new Error('Error al buscar eventos');
             }
         });
@@ -147,7 +148,7 @@ class SearchService {
                 };
             }
             catch (error) {
-                console.error('Error en búsqueda de solicitudes:', error);
+                loggerService_1.logger.error('Error en búsqueda de solicitudes:', error);
                 throw new Error('Error al buscar solicitudes de músicos');
             }
         });
@@ -195,7 +196,7 @@ class SearchService {
                 };
             }
             catch (error) {
-                console.error('Error en búsqueda de usuarios:', error);
+                loggerService_1.logger.error('Error en búsqueda de usuarios:', error);
                 throw new Error('Error al buscar usuarios');
             }
         });
@@ -218,7 +219,7 @@ class SearchService {
                 };
             }
             catch (error) {
-                console.error('Error en búsqueda global:', error);
+                loggerService_1.logger.error('Error en búsqueda global:', error);
                 throw new Error('Error al realizar búsqueda global');
             }
         });
@@ -238,7 +239,7 @@ class SearchService {
                 };
             }
             catch (error) {
-                console.error('Error en búsqueda por ubicación:', error);
+                loggerService_1.logger.error('Error en búsqueda por ubicación:', error);
                 throw new Error('Error al buscar por ubicación');
             }
         });
@@ -260,7 +261,7 @@ class SearchService {
                 return Object.assign(Object.assign({}, result), { data: filteredEvents, total: filteredEvents.length });
             }
             catch (error) {
-                console.error('Error en búsqueda de eventos disponibles:', error);
+                loggerService_1.logger.error('Error en búsqueda de eventos disponibles:', error);
                 throw new Error('Error al buscar eventos disponibles');
             }
         });
@@ -278,7 +279,7 @@ class SearchService {
                 return result;
             }
             catch (error) {
-                console.error('Error en búsqueda de músicos disponibles:', error);
+                loggerService_1.logger.error('Error en búsqueda de músicos disponibles:', error);
                 throw new Error('Error al buscar músicos disponibles');
             }
         });

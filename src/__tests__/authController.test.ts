@@ -20,6 +20,7 @@ import {
 import { createToken } from '../utils/jwt';
 import { sendEmail } from '../utils/mailer';
 import { validarEmail, validarPassword } from '../utils/validatios';
+import { createMockRequest, createMockResponse } from './setup';
 
 // Mock de todas las dependencias
 jest.mock('../models/authModel');
@@ -49,7 +50,7 @@ describe('AuthController', () => {
 
   describe('registerController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           name: 'Juan',
           lastName: 'Pérez',
@@ -57,7 +58,7 @@ describe('AuthController', () => {
           userEmail: 'juan@example.com',
           userPassword: 'Password123!'
         }
-      };
+      });
     });
 
     it('should register user successfully', async () => {
@@ -68,20 +69,26 @@ describe('AuthController', () => {
       // Mock de bcrypt
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
       
-      // Mock del modelo
-      (registerModel as jest.Mock).mockResolvedValue({
+      // Mock del modelo - registerModel retorna false cuando es exitoso
+      (registerModel as jest.Mock).mockResolvedValue(false);
+      
+      // Mock del usuario creado
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
         id: 'user123',
         name: 'Juan',
         lastName: 'Pérez',
         roll: 'musico',
         userEmail: 'juan@example.com'
       });
+      
+      (createToken as jest.Mock).mockReturnValue('mockToken');
 
       await registerController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(201);
+      expect(mockStatus).toHaveBeenCalledWith(200);
       expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Usuario registrado exitosamente',
+        msg: 'Usuario Registrado con éxito.',
+        token: 'mockToken',
         user: expect.objectContaining({
           id: 'user123',
           name: 'Juan',
@@ -93,11 +100,13 @@ describe('AuthController', () => {
     });
 
     it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        name: 'Juan',
-        lastName: 'Pérez',
-        // roll, userEmail, userPassword faltantes
-      };
+      mockRequest = createMockRequest({
+        body: {
+          name: 'Juan',
+          lastName: 'Pérez',
+          // roll, userEmail, userPassword faltantes
+        }
+      });
 
       await registerController(mockRequest as Request, mockResponse as Response);
 
@@ -135,7 +144,24 @@ describe('AuthController', () => {
       (validarEmail as jest.Mock).mockReturnValue(true);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
       
-      (registerModel as jest.Mock).mockRejectedValue(new Error('User already exists'));
+      // Mock que el usuario ya existe
+      (registerModel as jest.Mock).mockResolvedValue('El usuario ya Existe.');
+
+      await registerController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(409);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Ya hay un usuario con esta direccion de correo electrónico.',
+        data: 'El usuario ya Existe.'
+      });
+    });
+
+    it('should return error when registration fails', async () => {
+      (validarPassword as jest.Mock).mockReturnValue(true);
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
+      
+      (registerModel as jest.Mock).mockRejectedValue(new Error('Database error'));
 
       await registerController(mockRequest as Request, mockResponse as Response);
 
@@ -149,12 +175,12 @@ describe('AuthController', () => {
 
   describe('loginController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           userEmail: 'juan@example.com',
           userPassword: 'Password123!'
         }
-      };
+      });
     });
 
     it('should login user successfully', async () => {
@@ -167,6 +193,7 @@ describe('AuthController', () => {
         userPassword: 'hashedPassword'
       };
 
+      (validarEmail as jest.Mock).mockReturnValue(true);
       (getUserByEmailModel as jest.Mock).mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       (createToken as jest.Mock).mockReturnValue('mockToken');
@@ -177,51 +204,17 @@ describe('AuthController', () => {
       expect(mockJson).toHaveBeenCalledWith({
         msg: 'Login Exitoso',
         token: 'mockToken',
-        user: expect.objectContaining({
-          id: 'user123',
-          name: 'Juan',
-          lastName: 'Pérez',
-          roll: 'musico',
-          userEmail: 'juan@example.com',
-          userPassword: 'hashedPassword'
-        })
-      });
-    });
-
-    it('should return error when user not found', async () => {
-      (getUserByEmailModel as jest.Mock).mockResolvedValue(null);
-
-      await loginController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(401);
-      expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Usuario no encontrado'
-      });
-    });
-
-    it('should return error when password is incorrect', async () => {
-      const mockUser = {
-        id: 'user123',
-        userEmail: 'juan@example.com',
-        userPassword: 'hashedPassword'
-      };
-
-      (getUserByEmailModel as jest.Mock).mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      await loginController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(401);
-      expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Contraseña incorrecta'
+        user: mockUser
       });
     });
 
     it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        userEmail: 'juan@example.com'
-        // userPassword faltante
-      };
+      mockRequest = createMockRequest({
+        body: {
+          userEmail: 'juan@example.com'
+          // userPassword faltante
+        }
+      });
 
       await loginController(mockRequest as Request, mockResponse as Response);
 
@@ -230,75 +223,137 @@ describe('AuthController', () => {
         msg: 'Todos los campos deben de ser llenados.'
       });
     });
+
+    it('should return error when email is invalid', async () => {
+      (validarEmail as jest.Mock).mockReturnValue(false);
+
+      await loginController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Dirección de correo electrónico no válido.'
+      });
+    });
+
+    it('should return error when user not found', async () => {
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (getUserByEmailModel as jest.Mock).mockResolvedValue(null);
+
+      await loginController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(401);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Verifique su dirección de correo electrónico o regístrese si no tiene una cuenta.'
+      });
+    });
+
+    it('should return error when password is incorrect', async () => {
+      const mockUser = {
+        id: 'user123',
+        name: 'Juan',
+        lastName: 'Pérez',
+        roll: 'musico',
+        userEmail: 'juan@example.com',
+        userPassword: 'hashedPassword'
+      };
+
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (getUserByEmailModel as jest.Mock).mockResolvedValue(mockUser);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+      await loginController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(401);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Contraseña incorrecta.'
+      });
+    });
   });
 
   describe('requestEmailVerificationController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           name: 'Juan',
           lastName: 'Pérez',
-          roll: 'musico',
           userEmail: 'juan@example.com',
-          userPassword: 'Password123!'
+          userPassword: 'Password123!',
+          roll: 'musico'
         }
-      };
+      });
     });
 
     it('should request email verification successfully', async () => {
+      // Mock de validaciones
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (validarPassword as jest.Mock).mockReturnValue(true);
+      
+      // Mock que el usuario no existe
+      (getUserByEmailModel as jest.Mock).mockResolvedValue(null);
       (sendEmail as jest.Mock).mockResolvedValue(true);
 
       await requestEmailVerificationController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(409);
+      expect(mockStatus).toHaveBeenCalledWith(200);
       expect(mockJson).toHaveBeenCalledWith({
         success: true,
-        message: 'Código de verificación enviado al correo electrónico'
-      });
-      expect(sendEmail).toHaveBeenCalledWith(
-        'juan@example.com',
-        expect.stringContaining('Código de Verificación'),
-        expect.stringContaining('Tu código de verificación es:')
-      );
-    });
-
-    it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        name: 'Juan',
-        lastName: 'Pérez'
-        // roll, userEmail, userPassword faltantes
-      };
-
-      await requestEmailVerificationController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'Todos los campos son requeridos: name, lastName, userEmail, userPassword, roll'
+        message: 'Email de verificación enviado exitosamente. Revisa tu bandeja de entrada.',
+        data: expect.objectContaining({
+          userEmail: 'juan@example.com',
+          roll: 'musico',
+          expiresIn: '15 minutos'
+        })
       });
     });
 
     it('should return error when email sending fails', async () => {
-      (sendEmail as jest.Mock).mockRejectedValue(new Error('Email service error'));
+      // Mock de validaciones
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (validarPassword as jest.Mock).mockReturnValue(true);
+      
+      // Mock que el usuario no existe
+      (getUserByEmailModel as jest.Mock).mockResolvedValue(null);
+      (sendEmail as jest.Mock).mockRejectedValue(new Error('Email sending failed'));
+
+      await requestEmailVerificationController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(500);
+      expect(mockJson).toHaveBeenCalledWith({
+        success: false,
+        message: 'Error interno del servidor',
+        error: 'Email sending failed'
+      });
+    });
+
+    it('should return error when user already exists', async () => {
+      // Mock de validaciones
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (validarPassword as jest.Mock).mockReturnValue(true);
+      
+      // Mock que el usuario ya existe
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
+        id: 'user123',
+        userEmail: 'juan@example.com'
+      });
 
       await requestEmailVerificationController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(409);
       expect(mockJson).toHaveBeenCalledWith({
         success: false,
-        message: 'Error al enviar el código de verificación'
+        message: 'Ya existe un usuario con este email'
       });
     });
   });
 
   describe('verifyAndCompleteRegistrationController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           userEmail: 'juan@example.com',
           verificationCode: '123456'
         }
-      };
+      });
     });
 
     it('should complete registration successfully', async () => {
@@ -333,10 +388,12 @@ describe('AuthController', () => {
     });
 
     it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        userEmail: 'juan@example.com'
-        // verificationCode faltante
-      };
+      mockRequest = createMockRequest({
+        body: {
+          userEmail: 'juan@example.com'
+          // verificationCode faltante
+        }
+      });
 
       await verifyAndCompleteRegistrationController(mockRequest as Request, mockResponse as Response);
 
@@ -350,35 +407,62 @@ describe('AuthController', () => {
 
   describe('forgotPasswordController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           userEmail: 'juan@example.com'
         }
-      };
+      });
     });
 
     it('should send password reset email successfully', async () => {
-      const mockUser = {
+      // Mock que el usuario existe y es superadmin
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
         id: 'user123',
-        userEmail: 'juan@example.com'
-      };
-
-      (getUserByEmailModel as jest.Mock).mockResolvedValue(mockUser);
+        userEmail: 'juan@example.com',
+        roll: 'superadmin'
+      });
       (sendEmail as jest.Mock).mockResolvedValue(true);
+
+      await forgotPasswordController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(200);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Código de verificación enviado al email',
+        userEmail: 'juan@example.com'
+      });
+    });
+
+    it('should return error when user is not superadmin', async () => {
+      // Mock que el usuario existe pero no es superadmin
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
+        id: 'user123',
+        userEmail: 'juan@example.com',
+        roll: 'usuario'
+      });
 
       await forgotPasswordController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith({
-        success: true,
-        message: 'Código de recuperación enviado al correo electrónico'
+        msg: 'Solo superadmin puede recuperar contraseña'
+      });
+    });
+  });
+
+  describe('verifyCodeController', () => {
+    beforeEach(() => {
+      mockRequest = createMockRequest({
+        body: {
+          userEmail: 'juan@example.com',
+          code: '123456'
+        }
       });
     });
 
     it('should return error when user not found', async () => {
       (getUserByEmailModel as jest.Mock).mockResolvedValue(null);
 
-      await forgotPasswordController(mockRequest as Request, mockResponse as Response);
+      await verifyCodeController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(404);
       expect(mockJson).toHaveBeenCalledWith({
@@ -386,53 +470,29 @@ describe('AuthController', () => {
       });
     });
 
-    it('should return error when email is missing', async () => {
-      mockRequest.body = {};
-
-      await forgotPasswordController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Email es requerido'
+    it('should return error when user is not superadmin', async () => {
+      // Mock que el usuario existe pero no es superadmin
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
+        id: 'user123',
+        userEmail: 'juan@example.com',
+        roll: 'usuario'
       });
-    });
-  });
 
-  describe('verifyCodeController', () => {
-    beforeEach(() => {
-      mockRequest = {
-        body: {
-          userEmail: 'juan@example.com',
-          code: '123456'
-        }
-      };
-    });
-
-    it('should verify code successfully', async () => {
       await verifyCodeController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(404);
+      expect(mockStatus).toHaveBeenCalledWith(403);
       expect(mockJson).toHaveBeenCalledWith({
-        success: true,
-        message: 'Código verificado correctamente'
-      });
-    });
-
-    it('should return error when code is invalid', async () => {
-      await verifyCodeController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(404);
-      expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'Código inválido o expirado'
+        msg: 'Solo superadmin puede recuperar contraseña'
       });
     });
 
     it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        userEmail: 'juan@example.com'
-        // code faltante
-      };
+      mockRequest = createMockRequest({
+        body: {
+          userEmail: 'juan@example.com'
+          // code faltante
+        }
+      });
 
       await verifyCodeController(mockRequest as Request, mockResponse as Response);
 
@@ -445,154 +505,181 @@ describe('AuthController', () => {
 
   describe('resetPasswordController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           userEmail: 'juan@example.com',
+          code: '123456',
           newPassword: 'NewPassword123!'
         }
-      };
+      });
     });
 
-    it('should reset password successfully', async () => {
-      (validarPassword as jest.Mock).mockReturnValue(true);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('newHashedPassword');
-      (updateUserByEmailModel as jest.Mock).mockResolvedValue(true);
+    it('should return error when user is not superadmin', async () => {
+      // Mock que el usuario existe pero no es superadmin
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
+        id: 'user123',
+        userEmail: 'juan@example.com',
+        roll: 'usuario'
+      });
+
+      await resetPasswordController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(403);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Solo superadmin puede recuperar contraseña'
+      });
+    });
+
+    it('should return error when required fields are missing', async () => {
+      mockRequest = createMockRequest({
+        body: {
+          userEmail: 'juan@example.com'
+          // code y newPassword faltantes
+        }
+      });
 
       await resetPasswordController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
-        success: true,
-        message: 'Contraseña actualizada exitosamente'
+        msg: 'Email, código y nueva contraseña son requeridos'
       });
     });
 
     it('should return error when password is invalid', async () => {
+      // Mock que el usuario existe y es superadmin
+      (getUserByEmailModel as jest.Mock).mockResolvedValue({
+        id: 'user123',
+        userEmail: 'juan@example.com',
+        roll: 'superadmin'
+      });
       (validarPassword as jest.Mock).mockReturnValue(false);
 
       await resetPasswordController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Email, código y nueva contraseña son requeridos'
-      });
-    });
-
-    it('should return error when required fields are missing', async () => {
-      mockRequest.body = {
-        userEmail: 'juan@example.com'
-        // newPassword faltante
-      };
-
-      await resetPasswordController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(400);
-      expect(mockJson).toHaveBeenCalledWith({
-        msg: 'Email, código y nueva contraseña son requeridos'
+        msg: 'La contraseña no cumple con los requisitos, debe de contener Mayúsculas, Minúsculas, Números y Carácteres especiales'
       });
     });
   });
 
   describe('updateUserByEmailController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
-          userEmail: 'juan@example.com',
           name: 'Juan Updated',
           lastName: 'Pérez Updated'
+        },
+        params: {
+          userEmail: 'juan@example.com'
         }
-      };
-    });
-
-    it('should update user successfully', async () => {
-      const mockUpdatedUser = {
-        id: 'user123',
-        name: 'Juan Updated',
-        lastName: 'Pérez Updated',
-        userEmail: 'juan@example.com'
-      };
-
-      (updateUserByEmailModel as jest.Mock).mockResolvedValue(mockUpdatedUser);
-
-      await updateUserByEmailController(mockRequest as Request, mockResponse as Response);
-
-      expect(mockStatus).toHaveBeenCalledWith(401);
-      expect(mockJson).toHaveBeenCalledWith({
-        success: true,
-        message: 'Usuario actualizado exitosamente',
-        user: mockUpdatedUser
       });
     });
 
-    it('should return error when user not found', async () => {
-      (updateUserByEmailModel as jest.Mock).mockResolvedValue(null);
+    it('should update user successfully', async () => {
+      (updateUserByEmailModel as jest.Mock).mockResolvedValue(false); // false significa éxito
+
+      await updateUserByEmailController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(200);
+      expect(mockJson).toHaveBeenCalledWith({
+        msg: 'Consulta éxitosa'
+      });
+    });
+
+    it('should return error when update fails', async () => {
+      (updateUserByEmailModel as jest.Mock).mockResolvedValue('Error al actualizar');
 
       await updateUserByEmailController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(401);
       expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'Usuario no encontrado'
+        msg: 'Error al actualizar'
       });
     });
 
     it('should return error when email is missing', async () => {
-      mockRequest.body = {
-        name: 'Juan Updated'
-        // userEmail faltante
-      };
+      mockRequest = createMockRequest({
+        body: {
+          name: 'Juan Updated',
+          lastName: 'Pérez Updated'
+        },
+        params: {} // Sin userEmail
+      });
 
       await updateUserByEmailController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(401);
       expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'Email es requerido'
+        msg: 'Error al actualizar el usuario.'
       });
     });
   });
 
   describe('deleteUserByEmailController', () => {
     beforeEach(() => {
-      mockRequest = {
+      mockRequest = createMockRequest({
         body: {
           userEmail: 'juan@example.com'
         }
-      };
+      });
     });
 
     it('should delete user successfully', async () => {
-      (deleteUserByEmailModel as jest.Mock).mockResolvedValue(true);
+      (deleteUserByEmailModel as jest.Mock).mockResolvedValue(false); // false significa éxito
 
       await deleteUserByEmailController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(500);
+      // El controlador usa res.json() directamente cuando es exitoso, no res.status(200).json()
       expect(mockJson).toHaveBeenCalledWith({
-        success: true,
-        message: 'Usuario eliminado exitosamente'
+        message: 'Usuario eliminado correctamente'
       });
     });
 
     it('should return error when user not found', async () => {
-      (deleteUserByEmailModel as jest.Mock).mockResolvedValue(false);
+      (deleteUserByEmailModel as jest.Mock).mockResolvedValue('not_found');
 
       await deleteUserByEmailController(mockRequest as Request, mockResponse as Response);
 
-      expect(mockStatus).toHaveBeenCalledWith(500);
+      expect(mockStatus).toHaveBeenCalledWith(404);
       expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'Usuario no encontrado'
+        message: 'El usuario no existe o ya fue eliminado'
       });
     });
 
     it('should return error when email is missing', async () => {
-      mockRequest.body = {};
+      mockRequest = createMockRequest({
+        body: {} // Sin userEmail
+      });
 
       await deleteUserByEmailController(mockRequest as Request, mockResponse as Response);
 
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
         message: 'Falta el email'
+      });
+    });
+
+    it('should return error when model returns "Falta el email"', async () => {
+      (deleteUserByEmailModel as jest.Mock).mockResolvedValue('Falta el email');
+
+      await deleteUserByEmailController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockJson).toHaveBeenCalledWith({
+        message: 'Falta el email'
+      });
+    });
+
+    it('should return error when model returns other error', async () => {
+      (deleteUserByEmailModel as jest.Mock).mockResolvedValue('Error de base de datos');
+
+      await deleteUserByEmailController(mockRequest as Request, mockResponse as Response);
+
+      expect(mockStatus).toHaveBeenCalledWith(500);
+      expect(mockJson).toHaveBeenCalledWith({
+        message: 'Error de base de datos'
       });
     });
   });

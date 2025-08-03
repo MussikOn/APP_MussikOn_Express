@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 import {
   createConversationModel,
   getConversationsByUserModel,
@@ -39,7 +40,7 @@ export const getConversations = async (req: any, res: Response) => {
       data: conversations,
     });
   } catch (error: any) {
-    console.error('Error al obtener conversaciones:', error);
+    logger.error('Error al obtener conversaciones:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -89,7 +90,7 @@ export const getMessages = async (req: any, res: Response) => {
       data: messages,
     });
   } catch (error: any) {
-    console.error('Error al obtener mensajes:', error);
+    logger.error('Error al obtener mensajes:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -155,7 +156,7 @@ export const sendMessage = async (req: any, res: Response) => {
       data: message,
     });
   } catch (error: any) {
-    console.error('Error al enviar mensaje:', error);
+    logger.error('Error al enviar mensaje:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -184,7 +185,7 @@ export const markAsRead = async (req: any, res: Response) => {
       data: null,
     });
   } catch (error: any) {
-    console.error('Error al marcar mensaje como leído:', error);
+    logger.error('Error al marcar mensaje como leído:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -241,7 +242,7 @@ export const createConversation = async (req: any, res: Response) => {
       data: conversation,
     });
   } catch (error: any) {
-    console.error('Error al crear conversación:', error);
+    logger.error('Error al crear conversación:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -277,7 +278,7 @@ export const searchConversations = async (req: any, res: Response) => {
       data: conversations,
     });
   } catch (error: any) {
-    console.error('Error al buscar conversaciones:', error);
+    logger.error('Error al buscar conversaciones:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -306,7 +307,7 @@ export const deleteConversation = async (req: any, res: Response) => {
       data: null,
     });
   } catch (error: any) {
-    console.error('Error al eliminar conversación:', error);
+    logger.error('Error al eliminar conversación:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -335,7 +336,7 @@ export const archiveConversation = async (req: any, res: Response) => {
       data: null,
     });
   } catch (error: any) {
-    console.error('Error al archivar conversación:', error);
+    logger.error('Error al archivar conversación:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -379,7 +380,7 @@ export const getConversationById = async (req: any, res: Response) => {
       data: conversation,
     });
   } catch (error: any) {
-    console.error('Error al obtener conversación:', error);
+    logger.error('Error al obtener conversación:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -407,7 +408,7 @@ export const getChatStats = async (req: any, res: Response) => {
       data: stats,
     });
   } catch (error: any) {
-    console.error('Error al obtener estadísticas de chat:', error);
+    logger.error('Error al obtener estadísticas de chat:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',
@@ -465,7 +466,7 @@ export const getAvailableUsers = async (req: any, res: Response) => {
       data: users,
     });
   } catch (error: any) {
-    console.error('Error al obtener usuarios disponibles:', error);
+    logger.error('Error al obtener usuarios disponibles:', error as Error);
     res.status(500).json({
       success: false,
       error: error.message || 'Error interno del servidor',

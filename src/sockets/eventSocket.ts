@@ -6,6 +6,7 @@
 
 import { Server, Socket } from 'socket.io';
 import { chatSocketHandler } from './chatSocket';
+import { logger } from '../services/loggerService';
 
 // const users: Record<string, string> = {};
 
@@ -14,21 +15,13 @@ export const socketHandler = (
   socket: Socket,
   users: Record<string, string>
 ) => {
-  console.log(
-    '[src/sockets/eventSocket.ts:14] 🔌 Usuario conectado:',
-    socket.id
-  );
+  logger.info('🔌 Usuario conectado:', { context: 'EventSocket', metadata: { socketId: socket.id } });
 
   // Autenticar usuario (nuevo evento)
   socket.on('authenticate', (data: { userEmail: string; userId: string }) => {
     const userEmail = data.userEmail.toLowerCase();
     users[userEmail] = socket.id;
-    console.log(
-      '[src/sockets/eventSocket.ts:20] 🔐 Usuario autenticado:',
-      userEmail,
-      'Socket ID:',
-      socket.id
-    );
+    logger.info('🔐 Usuario autenticado:', { context: 'EventSocket', metadata: { userEmail, socketId: socket.id } });
     console.log(
       '[src/sockets/eventSocket.ts:21] 📊 Usuarios conectados:',
       Object.keys(users)
@@ -80,10 +73,7 @@ export const socketHandler = (
         `[src/sockets/eventSocket.ts:57] 🧹 Usuario eliminado: ${userEmail}`
       );
     }
-    console.log(
-      '[src/sockets/eventSocket.ts:59] ❌ Usuario desconectado:',
-      socket.id
-    );
+    logger.info('❌ Usuario desconectado:', { context: 'EventSocket', metadata: { socketId: socket.id } });
     return;
   });
 

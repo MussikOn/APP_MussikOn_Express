@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { logger } from '../services/loggerService';
 import bcrypt from "bcrypt";
 import { getUserByEmailModel, registerModel, updateUserByEmailModel, addEventToUserModel, deleteUserByEmailModel } from "../models/authModel";
 import { authUserRegister } from "../utils/DataTypes";
@@ -268,14 +269,14 @@ export const addEventToUserController = async (req: Request, res: Response) => {
 export const deleteUserByEmailController = async (req: Request, res: Response) => {
   try {
     const { userEmail } = req.body;
-    console.log('[src/controllers/authController.ts:270] [DELETE] userEmail recibido:', userEmail); // LOG de depuración
+    logger.info('[DELETE] userEmail recibido:', { context: 'Auth', metadata: { userEmail } }); // LOG de depuración
     if (!userEmail) {
       res.status(400).json({ message: 'Falta el email' });
       return;
     }
     const result = await deleteUserByEmailModel(userEmail);
     console.log("[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:", result);
-    console.log('[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+    logger.info('[DELETE] Resultado de deleteUserByEmailModel:', { context: 'Auth', metadata: { result } }); // LOG de depuración
     if (result === false) {
       res.json({ message: 'Usuario eliminado correctamente' });
     } else if (result === 'Falta el email') {
@@ -287,7 +288,7 @@ export const deleteUserByEmailController = async (req: Request, res: Response) =
     }
   } catch (error) {
     console.log("[src/controllers/authController.ts:288] Error en deleteUserByEmailController");
-    console.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
+    logger.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error as Error); // LOG de error
     res.status(500).json({ message: 'Error al eliminar usuario', error: (error as Error).message });
   }
 };

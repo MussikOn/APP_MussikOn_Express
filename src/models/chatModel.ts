@@ -1,6 +1,7 @@
 import { db } from '../utils/firebase';
 import { Message, Conversation, ChatFilters } from '../utils/DataTypes';
 import * as admin from 'firebase-admin';
+import { logger } from '../services/loggerService';
 
 // Crear una nueva conversación
 export const createConversationModel = async (
@@ -19,10 +20,8 @@ export const createConversationModel = async (
   };
 
   await conversationRef.set(conversation);
-  console.log(
-    '[src/models/chatModel.ts:19] Conversación creada:',
-    conversation
-  );
+  logger.info('[src/models/chatModel.ts:19] Conversación creada:', { metadata: { id: conversation
+,    } });
   return conversation;
 };
 
@@ -108,7 +107,7 @@ export const createMessageModel = async (
   };
 
   await messageRef.set(message);
-  console.log('[src/models/chatModel.ts:68] Mensaje creado:', message);
+  logger.info('[src/models/chatModel.ts:68] Mensaje creado:', { metadata: { id: message  } });
 
   // Actualizar la conversación con el último mensaje
   await updateConversationLastMessage(message.conversationId, message);

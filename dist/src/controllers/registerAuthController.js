@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEmailVerificationLink = void 0;
 // src/controllers/authController.ts
 const firebase_1 = require("../utils/firebase");
+const loggerService_1 = require("../services/loggerService");
 /**
  * @swagger
  * /auth/sendEmailVerificationLink:
@@ -51,7 +52,7 @@ const sendEmailVerificationLink = (req, res) => __awaiter(void 0, void 0, void 0
             .auth()
             .generateEmailVerificationLink(user.email);
         // Aquí puedes enviar ese link por correo usando nodemailer o Mailgun, etc.
-        console.log('Verification link:', link);
+        loggerService_1.logger.info('Verification link:', { metadata: { id: link } });
         // Devolver el enlace directamente o enviar vía email
         res.status(200).json({ message: 'Link generado', link });
     }

@@ -85,7 +85,7 @@ class AnalyticsService {
                 };
             }
             catch (error) {
-                console.error('Error al obtener analytics de eventos:', error);
+                loggerService_1.logger.error('Error al obtener analytics de eventos:', error);
                 throw new Error('Error al obtener analytics de eventos');
             }
         });
@@ -230,7 +230,7 @@ class AnalyticsService {
                 };
             }
             catch (error) {
-                console.error('Error al obtener analytics de solicitudes:', error);
+                loggerService_1.logger.error('Error al obtener analytics de solicitudes:', error);
                 throw new Error('Error al obtener analytics de solicitudes');
             }
         });
@@ -303,7 +303,7 @@ class AnalyticsService {
                 };
             }
             catch (error) {
-                console.error('Error al obtener analytics de usuarios:', error);
+                loggerService_1.logger.error('Error al obtener analytics de usuarios:', error);
                 throw new Error('Error al obtener analytics de usuarios');
             }
         });
@@ -368,7 +368,7 @@ class AnalyticsService {
                 };
             }
             catch (error) {
-                console.error('Error al obtener analytics de plataforma:', error);
+                loggerService_1.logger.error('Error al obtener analytics de plataforma:', error);
                 throw new Error('Error al obtener analytics de plataforma');
             }
         });
@@ -416,7 +416,7 @@ class AnalyticsService {
             }
             catch (error) {
                 console.info('./src/services/analyticsService.ts line 459');
-                console.error('Error al obtener reporte de tendencias:', error);
+                loggerService_1.logger.error('Error al obtener reporte de tendencias:', error);
                 throw new Error('Error al obtener reporte de tendencias');
             }
         });
@@ -452,7 +452,7 @@ class AnalyticsService {
             }
             catch (error) {
                 console.info('./src/services/analyticsService.ts line 502');
-                console.error('Error al obtener reporte de rendimiento por ubicación:', error);
+                loggerService_1.logger.error('Error al obtener reporte de rendimiento por ubicación:', error);
                 throw new Error('Error al obtener reporte de rendimiento por ubicación');
             }
         });
@@ -480,7 +480,7 @@ class AnalyticsService {
             }
             catch (error) {
                 console.info('./src/services/analyticsService.ts line 534');
-                console.error('Error al obtener reporte de usuarios más activos:', error);
+                loggerService_1.logger.error('Error al obtener reporte de usuarios más activos:', error);
                 throw new Error('Error al obtener reporte de usuarios más activos');
             }
         });

@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFileUrl = exports.uploadFile = void 0;
+const loggerService_1 = require("../services/loggerService");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const idriveE2_1 = require("../utils/idriveE2");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
@@ -43,7 +44,7 @@ const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
     catch (error) {
-        console.error('Upload error:', error);
+        loggerService_1.logger.error('Upload error:', error);
         res.status(500).json({ error: 'Upload failed' });
     }
 });
@@ -63,7 +64,7 @@ const getFileUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(200).json({ url });
     }
     catch (error) {
-        console.error('URL error:', error);
+        loggerService_1.logger.error('URL error:', error);
         res.status(500).json({ error: 'Failed to generate file URL' });
     }
 });

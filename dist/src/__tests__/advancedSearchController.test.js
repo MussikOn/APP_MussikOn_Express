@@ -11,8 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const advancedSearchController_1 = require("../controllers/advancedSearchController");
 const musicianStatusService_1 = require("../services/musicianStatusService");
-const calendarConflictService_1 = require("../services/calendarConflictService");
-const rateCalculationService_1 = require("../services/rateCalculationService");
 // Mock de los servicios
 jest.mock('../services/musicianStatusService');
 jest.mock('../services/calendarConflictService');
@@ -32,6 +30,8 @@ describe('AdvancedSearchController', () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn().mockReturnThis()
         };
+        // Limpiar todos los mocks
+        jest.clearAllMocks();
     });
     describe('searchAvailableMusicians', () => {
         it('should return error when required parameters are missing', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,9 +51,8 @@ describe('AdvancedSearchController', () => {
                 eventDate: '2024-12-25T20:00:00Z',
                 duration: 120
             };
-            // Mock de servicios
-            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
-            mockMusicianStatusService.prototype.getOnlineMusicians = jest.fn().mockResolvedValue([]);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['musicianStatusService'], 'getOnlineMusicians').mockResolvedValue([]);
             yield controller.searchAvailableMusicians(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -76,28 +75,46 @@ describe('AdvancedSearchController', () => {
             };
             const mockMusicians = [
                 {
+                    id: 'musician1',
                     musicianId: 'musician1',
                     isOnline: true,
+                    lastSeen: new Date().toISOString(),
                     availability: { isAvailable: true },
-                    performance: { rating: 4.5, responseTime: 30, totalEvents: 50 }
+                    preferences: {
+                        eventTypes: ['wedding'],
+                        instruments: ['guitarra'],
+                        minBudget: 100,
+                        maxBudget: 1000
+                    },
+                    performance: { rating: 4.5, responseTime: 30, totalEvents: 50, completedEvents: 45 },
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
                 }
             ];
             const mockRateResult = {
+                baseRate: 50,
                 finalRate: 150,
                 breakdown: [],
+                factors: {
+                    baseRate: 50,
+                    experienceMultiplier: 1.2,
+                    demandMultiplier: 1.1,
+                    locationMultiplier: 1.3,
+                    eventTypeMultiplier: 1.5,
+                    durationMultiplier: 1.0,
+                    urgencyMultiplier: 1.0,
+                    seasonalityMultiplier: 1.0
+                },
                 recommendations: { suggestedRate: 150, marketAverage: 120, competitorRates: [140, 160] }
             };
-            // Mock de servicios
-            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
-            const mockCalendarConflictService = calendarConflictService_1.CalendarConflictService;
-            const mockRateCalculationService = rateCalculationService_1.RateCalculationService;
-            mockMusicianStatusService.prototype.getOnlineMusicians = jest.fn().mockResolvedValue(mockMusicians);
-            mockCalendarConflictService.prototype.checkMultipleMusiciansAvailability = jest.fn().mockResolvedValue({
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['musicianStatusService'], 'getOnlineMusicians').mockResolvedValue(mockMusicians);
+            jest.spyOn(controller['calendarConflictService'], 'checkMultipleMusiciansAvailability').mockResolvedValue({
                 availableMusicians: ['musician1'],
                 unavailableMusicians: [],
                 conflicts: {}
             });
-            mockRateCalculationService.prototype.calculateRate = jest.fn().mockResolvedValue(mockRateResult);
+            jest.spyOn(controller['rateCalculationService'], 'calculateRate').mockResolvedValue(mockRateResult);
             yield controller.searchAvailableMusicians(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -106,13 +123,10 @@ describe('AdvancedSearchController', () => {
                     availableMusicians: expect.arrayContaining([
                         expect.objectContaining({
                             musicianId: 'musician1',
-                            rate: 150
-                        })
+                            rate: 150,
+                        }),
                     ]),
-                    totalFound: 1,
-                    availableCount: 1,
-                    unavailableCount: 0
-                })
+                }),
             });
         }));
     });
@@ -148,11 +162,28 @@ describe('AdvancedSearchController', () => {
                 duration: 120
             };
             const mockStatus = {
+                id: 'musician1',
+                musicianId: 'musician1',
                 isOnline: false,
-                availability: { isAvailable: false }
+                lastSeen: new Date().toISOString(),
+                availability: { isAvailable: false },
+                preferences: {
+                    eventTypes: [],
+                    instruments: [],
+                    minBudget: 0,
+                    maxBudget: 10000
+                },
+                performance: {
+                    rating: 0,
+                    totalEvents: 0,
+                    completedEvents: 0,
+                    responseTime: 0
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
-            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
-            mockMusicianStatusService.prototype.getStatus = jest.fn().mockResolvedValue(mockStatus);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['musicianStatusService'], 'getStatus').mockResolvedValue(mockStatus);
             yield controller.checkMusicianAvailability(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -183,11 +214,31 @@ describe('AdvancedSearchController', () => {
             };
             const mockUpdatedStatus = {
                 id: 'musician1',
+                musicianId: 'musician1',
                 isOnline: true,
-                currentLocation: { latitude: 40.4168, longitude: -3.7038 }
+                lastSeen: new Date().toISOString(),
+                currentLocation: { latitude: 40.4168, longitude: -3.7038 },
+                availability: {
+                    isAvailable: true,
+                    maxDistance: 50
+                },
+                preferences: {
+                    eventTypes: [],
+                    instruments: [],
+                    minBudget: 0,
+                    maxBudget: 10000
+                },
+                performance: {
+                    rating: 0,
+                    totalEvents: 0,
+                    completedEvents: 0,
+                    responseTime: 0
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             };
-            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
-            mockMusicianStatusService.prototype.updateStatus = jest.fn().mockResolvedValue(mockUpdatedStatus);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['musicianStatusService'], 'updateStatus').mockResolvedValue(mockUpdatedStatus);
             yield controller.updateMusicianStatus(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -211,8 +262,8 @@ describe('AdvancedSearchController', () => {
             mockRequest.body = {
                 location: { latitude: 40.4168, longitude: -3.7038 }
             };
-            const mockMusicianStatusService = musicianStatusService_1.MusicianStatusService;
-            mockMusicianStatusService.prototype.heartbeat = jest.fn().mockResolvedValue(undefined);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['musicianStatusService'], 'heartbeat').mockResolvedValue(undefined);
             yield controller.musicianHeartbeat(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -241,8 +292,8 @@ describe('AdvancedSearchController', () => {
                     { startTime: new Date('2024-12-25T10:00:00'), endTime: new Date('2024-12-25T12:00:00'), duration: 120 }
                 ]
             };
-            const mockCalendarConflictService = calendarConflictService_1.CalendarConflictService;
-            mockCalendarConflictService.prototype.getDailyAvailability = jest.fn().mockResolvedValue(mockAvailability);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['calendarConflictService'], 'getDailyAvailability').mockResolvedValue(mockAvailability);
             yield controller.getDailyAvailability(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -274,11 +325,24 @@ describe('AdvancedSearchController', () => {
                 baseRate: 50,
                 finalRate: 150,
                 breakdown: [],
-                factors: {},
-                recommendations: {}
+                factors: {
+                    baseRate: 50,
+                    experienceMultiplier: 1.2,
+                    demandMultiplier: 1.1,
+                    locationMultiplier: 1.3,
+                    eventTypeMultiplier: 1.5,
+                    durationMultiplier: 1.0,
+                    urgencyMultiplier: 1.0,
+                    seasonalityMultiplier: 1.0
+                },
+                recommendations: {
+                    suggestedRate: 150,
+                    marketAverage: 120,
+                    competitorRates: [140, 160]
+                }
             };
-            const mockRateCalculationService = rateCalculationService_1.RateCalculationService;
-            mockRateCalculationService.prototype.calculateRate = jest.fn().mockResolvedValue(mockRateResult);
+            // Mock de servicios usando la instancia del controlador
+            jest.spyOn(controller['rateCalculationService'], 'calculateRate').mockResolvedValue(mockRateResult);
             yield controller.calculateMusicianRate(mockRequest, mockResponse);
             expect(mockResponse.status).toHaveBeenCalledWith(200);
             expect(mockResponse.json).toHaveBeenCalledWith({

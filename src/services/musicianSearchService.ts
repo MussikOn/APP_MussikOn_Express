@@ -1,5 +1,6 @@
 import { db } from '../utils/firebase';
-import { Event } from '../utils/DataTypes';
+import { Event, Musician, MusicianSearchRequest, MusicianSearchResponse } from '../utils/DataTypes';
+import { logger } from '../services/loggerService';
 
 // Interfaz para los criterios de búsqueda
 export interface MusicianSearchCriteria {
@@ -65,29 +66,23 @@ export class MusicianSearchService {
     event: Event,
     criteria: MusicianSearchCriteria
   ): Promise<MusicianSearchResult[]> {
-    console.log(
-      '[src/services/musicianSearchService.ts:75] 🔍 Iniciando búsqueda de músicos para evento:',
-      event.id
-    );
+    logger.info('[src/services/musicianSearchService.ts:75] 🔍 Iniciando búsqueda de músicos para evento:', { metadata: { id: event.id
+,    } });
 
     try {
       // 1. Obtener todos los músicos aprobados y disponibles
       const musicians = await this.getAvailableMusicians();
 
-      console.log(
-        '[src/services/musicianSearchService.ts:82] 📊 Músicos disponibles encontrados:',
-        musicians.length
-      );
+      logger.info('[src/services/musicianSearchService.ts:82] 📊 Músicos disponibles encontrados:', { metadata: { id: musicians.length
+,    } });
 
       // 2. Filtrar por instrumento requerido
       const musiciansWithInstrument = musicians.filter(musician =>
         musician.instruments.includes(criteria.instrument)
       );
 
-      console.log(
-        '[src/services/musicianSearchService.ts:89] 🎵 Músicos con instrumento requerido:',
-        musiciansWithInstrument.length
-      );
+      logger.info('[src/services/musicianSearchService.ts:89] 🎵 Músicos con instrumento requerido:', { metadata: { id: musiciansWithInstrument.length
+,    } });
 
       // 3. Verificar disponibilidad de tiempo
       const availableMusicians = await this.checkAvailability(
@@ -95,10 +90,8 @@ export class MusicianSearchService {
         event
       );
 
-      console.log(
-        '[src/services/musicianSearchService.ts:96] ⏰ Músicos disponibles en fecha/hora:',
-        availableMusicians.length
-      );
+      logger.info('[src/services/musicianSearchService.ts:96] ⏰ Músicos disponibles en fecha/hora:', { metadata: { id: availableMusicians.length
+,    } });
 
       // 4. Calcular puntuaciones de matching
       const scoredMusicians = await this.calculateMatchScores(
@@ -112,17 +105,12 @@ export class MusicianSearchService {
         (a, b) => b.matchScore - a.matchScore
       );
 
-      console.log(
-        '[src/services/musicianSearchService.ts:108] 🏆 Búsqueda completada. Músicos encontrados:',
-        sortedMusicians.length
-      );
+      logger.info('[src/services/musicianSearchService.ts:108] 🏆 Búsqueda completada. Músicos encontrados:', { metadata: { id: sortedMusicians.length
+,    } });
 
       return sortedMusicians;
     } catch (error) {
-      console.error(
-        '[src/services/musicianSearchService.ts:115] ❌ Error en búsqueda de músicos:',
-        error
-      );
+      logger.error('[src/services/musicianSearchService.ts:115] ❌ Error en búsqueda de músicos:', error as Error);
       throw error;
     }
   }

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 import {
   createEventModel,
   getEventsByUserAndStatus,
@@ -25,10 +26,7 @@ export const requestMusicianController = async (
   try {
     const user = (req as any).user;
     const eventData = req.body;
-    console.log(
-      '[src/controllers/eventControllers.ts:27] Payload recibido en /events/request-musician:',
-      eventData
-    );
+    logger.info('Payload recibido en /events/request-musician:', { context: 'Event', metadata: eventData });
     const event = await createEventModel({
       ...eventData,
       user: user.userEmail,
@@ -36,7 +34,7 @@ export const requestMusicianController = async (
     // io.emit('new_event_request', event); // Comentado temporalmente
     res.status(201).json({ data: event });
   } catch (error) {
-    console.error('Error al crear solicitud:', error);
+    logger.error('Error al crear solicitud:', error as Error);
     res.status(500).json({ msg: 'Error al crear solicitud' });
   }
 };
@@ -58,19 +56,13 @@ export const myAssignedEventsController = async (
   res: Response
 ): Promise<void> => {
   const user = (req as any).user;
-  console.log(
-    '[src/controllers/eventControllers.ts:45] 🔍 Buscando eventos asignados para:',
-    user.userEmail
-  );
+  logger.info('🔍 Buscando eventos asignados para:', { context: 'Event', metadata: user.userEmail });
   const events = await getEventsByUserAndStatus(
     user.userEmail,
     'musician_assigned'
   );
-  console.log(
-    '[src/controllers/eventControllers.ts:47] 📦 Eventos asignados encontrados:',
-    events.length
-  );
-  console.log('[src/controllers/eventControllers.ts:48] 📦 Eventos:', events);
+  logger.info('📦 Eventos asignados encontrados:', { context: 'Event', metadata: { count: events.length } });
+  logger.info('📦 Eventos:', { context: 'Event', metadata: events });
   res.json({ data: events });
 };
 
@@ -110,7 +102,7 @@ export const acceptEventController = async (
     // Comentado temporalmente - notificaciones por socket
     res.json(updatedEvent);
   } catch (error) {
-    console.error('Error al aceptar evento:', error);
+    logger.error('Error al aceptar evento:', error as Error);
     res.status(500).json({ msg: 'Error al aceptar evento' });
   }
 };
@@ -202,7 +194,7 @@ export const getEventByIdController = async (
       data: event,
     });
   } catch (error) {
-    console.error('Error al obtener el evento:', error);
+    logger.error('Error al obtener el evento:', error as Error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener el evento',
@@ -219,18 +211,13 @@ export const cancelEventController = async (
     const user = (req as any).user;
     const { eventId } = req.params;
 
-    console.log(
-      '🔄 Cancelando solicitud:',
-      eventId,
-      'por usuario:',
-      user.userEmail
-    );
+    logger.info('🔄 Cancelando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
 
     // Obtener el evento antes de cancelarlo
     const originalEvent = await getEventByIdModel(eventId);
 
     if (!originalEvent) {
-      console.log('❌ Solicitud no encontrada:', eventId);
+      logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
       res.status(404).json({
         success: false,
         message: 'Solicitud no encontrada',
@@ -240,7 +227,7 @@ export const cancelEventController = async (
 
     // Verificar permisos
     if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
-      console.log('❌ Usuario no autorizado para cancelar esta solicitud');
+      logger.info('❌ Usuario no autorizado para cancelar esta solicitud');
       res.status(403).json({
         success: false,
         message: 'No tienes permisos para cancelar esta solicitud',
@@ -252,7 +239,7 @@ export const cancelEventController = async (
       user.roll === 'musico' &&
       originalEvent.assignedMusicianId !== user.userEmail
     ) {
-      console.log('❌ Músico no autorizado para cancelar esta solicitud');
+      logger.info('❌ Músico no autorizado para cancelar esta solicitud');
       res.status(403).json({
         success: false,
         message: 'No tienes permisos para cancelar esta solicitud',
@@ -264,7 +251,7 @@ export const cancelEventController = async (
     const cancelledEvent = await cancelEventModel(eventId, user.userEmail);
 
     if (!cancelledEvent) {
-      console.log('❌ Error al cancelar solicitud en la base de datos');
+      logger.info('❌ Error al cancelar solicitud en la base de datos');
       res.status(500).json({
         success: false,
         message: 'Error al cancelar la solicitud',
@@ -272,7 +259,7 @@ export const cancelEventController = async (
       return;
     }
 
-    console.log('✅ Solicitud cancelada exitosamente:', eventId);
+    logger.info('✅ Solicitud cancelada exitosamente:', { metadata: { eventId } });
 
     // Comentado temporalmente - notificaciones por socket
 
@@ -282,7 +269,7 @@ export const cancelEventController = async (
       data: cancelledEvent,
     });
   } catch (error) {
-    console.error('❌ Error al cancelar solicitud:', error);
+    logger.error('❌ Error al cancelar solicitud:', error as Error);
     res.status(500).json({
       success: false,
       message: 'Error al cancelar la solicitud',
@@ -299,18 +286,13 @@ export const completeEventController = async (
     const user = (req as any).user;
     const { eventId } = req.params;
 
-    console.log(
-      '🔄 Completando solicitud:',
-      eventId,
-      'por usuario:',
-      user.userEmail
-    );
+    logger.info('🔄 Completando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
 
     // Obtener el evento antes de completarlo
     const originalEvent = await getEventByIdModel(eventId);
 
     if (!originalEvent) {
-      console.log('❌ Solicitud no encontrada:', eventId);
+      logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
       res.status(404).json({
         success: false,
         message: 'Solicitud no encontrada',
@@ -320,7 +302,7 @@ export const completeEventController = async (
 
     // Verificar permisos
     if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
-      console.log('❌ Usuario no autorizado para completar esta solicitud');
+      logger.info('❌ Usuario no autorizado para completar esta solicitud');
       res.status(403).json({
         success: false,
         message: 'No tienes permisos para completar esta solicitud',
@@ -332,7 +314,7 @@ export const completeEventController = async (
       user.roll === 'musico' &&
       originalEvent.assignedMusicianId !== user.userEmail
     ) {
-      console.log('❌ Músico no autorizado para completar esta solicitud');
+      logger.info('❌ Músico no autorizado para completar esta solicitud');
       res.status(403).json({
         success: false,
         message: 'No tienes permisos para completar esta solicitud',
@@ -344,7 +326,7 @@ export const completeEventController = async (
     const completedEvent = await completeEventModel(eventId, user.userEmail);
 
     if (!completedEvent) {
-      console.log('❌ Error al completar solicitud en la base de datos');
+      logger.info('❌ Error al completar solicitud en la base de datos');
       res.status(500).json({
         success: false,
         message: 'Error al completar la solicitud',
@@ -352,7 +334,7 @@ export const completeEventController = async (
       return;
     }
 
-    console.log('✅ Solicitud completada exitosamente:', eventId);
+    logger.info('✅ Solicitud completada exitosamente:', { metadata: { eventId } });
 
     // Comentado temporalmente - notificaciones por socket
 
@@ -364,7 +346,7 @@ export const completeEventController = async (
 
     res.json(response);
   } catch (error) {
-    console.error('❌ Error al completar solicitud:', error);
+    logger.error('❌ Error al completar solicitud:', error as Error);
     res.status(500).json({
       success: false,
       message: 'Error al completar la solicitud',
@@ -381,18 +363,13 @@ export const deleteEventController = async (
     const user = (req as any).user;
     const { eventId } = req.params;
 
-    console.log(
-      '🗑️ Eliminando solicitud:',
-      eventId,
-      'por usuario:',
-      user.userEmail
-    );
+    logger.info('🗑️ Eliminando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
 
     // Obtener el evento antes de eliminarlo
     const originalEvent = await getEventByIdModel(eventId);
 
     if (!originalEvent) {
-      console.log('❌ Solicitud no encontrada:', eventId);
+      logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
       res.status(404).json({
         success: false,
         message: 'Solicitud no encontrada',
@@ -402,7 +379,7 @@ export const deleteEventController = async (
 
     // Verificar permisos
     if (user.roll !== 'eventCreator') {
-      console.log('❌ Solo los organizadores pueden eliminar solicitudes');
+      logger.info('❌ Solo los organizadores pueden eliminar solicitudes');
       res.status(403).json({
         success: false,
         message: 'Solo los organizadores pueden eliminar solicitudes',
@@ -411,7 +388,7 @@ export const deleteEventController = async (
     }
 
     if (originalEvent.user !== user.userEmail) {
-      console.log('❌ Usuario no autorizado para eliminar esta solicitud');
+      logger.info('❌ Usuario no autorizado para eliminar esta solicitud');
       res.status(403).json({
         success: false,
         message: 'No tienes permisos para eliminar esta solicitud',
@@ -423,7 +400,7 @@ export const deleteEventController = async (
     const deleteResult = await deleteEventModel(eventId, user.userEmail);
 
     if (!deleteResult) {
-      console.log('❌ Error al eliminar solicitud en la base de datos');
+      logger.info('❌ Error al eliminar solicitud en la base de datos');
       res.status(500).json({
         success: false,
         message: 'Error al eliminar la solicitud',
@@ -431,7 +408,7 @@ export const deleteEventController = async (
       return;
     }
 
-    console.log('✅ Solicitud eliminada exitosamente:', eventId);
+    logger.info('✅ Solicitud eliminada exitosamente:', { metadata: { eventId } });
 
     // Comentado temporalmente - notificaciones por socket
 
@@ -440,7 +417,7 @@ export const deleteEventController = async (
       message: 'Solicitud eliminada exitosamente',
     });
   } catch (error) {
-    console.error('❌ Error al eliminar solicitud:', error);
+    logger.error('❌ Error al eliminar solicitud:', error as Error);
     res.status(500).json({
       success: false,
       message: 'Error al eliminar la solicitud',

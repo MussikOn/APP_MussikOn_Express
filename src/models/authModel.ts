@@ -1,6 +1,7 @@
 import { authUserRegister, UpdateUser, User } from '../utils/DataTypes';
 import { db } from '../utils/firebase';
 import * as admin from 'firebase-admin';
+import { logger } from '../services/loggerService';
 
 export const registerModel = async (
   name: string,
@@ -58,10 +59,7 @@ export const getUserByEmailModel = async (userEmail: string) => {
     const data = querySnapshot.docs[0].data();
     return data;
   } catch (error) {
-    console.log(
-      '[src/models/authModel.ts:40] Error en getUserByEmailModel:',
-      error
-    );
+    logger.info('Error en getUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
     console.log(
       '[src/models/authModel.ts:41] Ubicación: ./src/models/authModel.ts linea 41'
     );
@@ -94,10 +92,7 @@ export const updateUserByEmailModel = async (
 
     return false;
   } catch (error) {
-    console.log(
-      '[src/models/authModel.ts:61] Error en updateUserByEmailModel:',
-      error
-    );
+    logger.info('Error en updateUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
     console.log(
       '[src/models/authModel.ts:62] Ubicación: ./src/models/authModel.ts linea 62'
     );
@@ -122,10 +117,7 @@ export const addEventToUserModel = async (
     });
     return false;
   } catch (error) {
-    console.log(
-      '[src/models/authModel.ts:81] Error en addEventToUserModel:',
-      error
-    );
+    logger.info('Error en addEventToUserModel:', { context: 'AuthModel', metadata: { error: String(error) } });
     console.log(
       '[src/models/authModel.ts:82] Ubicación: ./src/models/authModel.ts linea 82'
     );
@@ -144,10 +136,7 @@ export const deleteUserByEmailModel = async (userEmail: string) => {
     await db.collection('users').doc(userEmail.toLowerCase()).delete();
     return false;
   } catch (error) {
-    console.log(
-      '[src/models/authModel.ts:96] Error en deleteUserByEmailModel:',
-      error
-    );
+    logger.info('Error en deleteUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
     console.log(
       '[src/models/authModel.ts:97] Ubicación: ./src/models/authModel.ts linea 97'
     );

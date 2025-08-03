@@ -58,7 +58,7 @@ export class MusicianStatusService {
    */
   async updateStatus(musicianId: string, data: StatusUpdateData): Promise<MusicianStatus> {
     try {
-      console.log('[src/services/musicianStatusService.ts:45] Actualizando estado del músico:', musicianId);
+      logger.info('Actualizando estado del músico:', { context: 'Status', metadata: { musicianId } });
       
       const now = new Date();
       const statusRef = db.collection(this.COLLECTION).doc(musicianId);
@@ -130,7 +130,7 @@ export class MusicianStatusService {
    */
   async getStatus(musicianId: string): Promise<MusicianStatus | null> {
     try {
-      console.log('[src/services/musicianStatusService.ts:95] Obteniendo estado del músico:', musicianId);
+      logger.info('Obteniendo estado del músico:', { context: 'Status', metadata: { musicianId } });
       
       const statusRef = db.collection(this.COLLECTION).doc(musicianId);
       const doc = await statusRef.get();
@@ -169,7 +169,7 @@ export class MusicianStatusService {
     maxBudget?: number;
   }): Promise<MusicianStatus[]> {
     try {
-      console.log('[src/services/musicianStatusService.ts:125] Buscando músicos online disponibles');
+      logger.info('[src/services/musicianStatusService.ts:125] Buscando músicos online disponibles');
       
       let query = db.collection(this.COLLECTION)
         .where('isOnline', '==', true)
@@ -205,7 +205,7 @@ export class MusicianStatusService {
    */
   async heartbeat(musicianId: string, location?: { latitude: number; longitude: number }): Promise<void> {
     try {
-      console.log('[src/services/musicianStatusService.ts:155] Heartbeat del músico:', musicianId);
+      logger.info('Heartbeat del músico:', { context: 'Status', metadata: { musicianId } });
       
       const updateData: StatusUpdateData = {
         isOnline: true
@@ -229,7 +229,7 @@ export class MusicianStatusService {
    */
   async setOffline(musicianId: string): Promise<void> {
     try {
-      console.log('[src/services/musicianStatusService.ts:175] Marcando músico como offline:', musicianId);
+      logger.info('Marcando músico como offline:', { context: 'Status', metadata: { musicianId } });
       
       await this.updateStatus(musicianId, { isOnline: false });
     } catch (error) {
@@ -248,7 +248,7 @@ export class MusicianStatusService {
     preferences: Partial<MusicianStatus['preferences']>
   ): Promise<MusicianStatus> {
     try {
-      console.log('[src/services/musicianStatusService.ts:190] Actualizando preferencias del músico:', musicianId);
+      logger.info('Actualizando preferencias del músico:', { context: 'Status', metadata: { musicianId } });
       
       const statusRef = db.collection(this.COLLECTION).doc(musicianId);
       const doc = await statusRef.get();
@@ -283,7 +283,7 @@ export class MusicianStatusService {
     performance: Partial<MusicianStatus['performance']>
   ): Promise<MusicianStatus> {
     try {
-      console.log('[src/services/musicianStatusService.ts:220] Actualizando rendimiento del músico:', musicianId);
+      logger.info('Actualizando rendimiento del músico:', { context: 'Status', metadata: { musicianId } });
       
       const statusRef = db.collection(this.COLLECTION).doc(musicianId);
       const doc = await statusRef.get();
@@ -315,7 +315,7 @@ export class MusicianStatusService {
    */
   async cleanupOfflineStatuses(): Promise<number> {
     try {
-      console.log('[src/services/musicianStatusService.ts:250] Limpiando estados offline antiguos');
+      logger.info('[src/services/musicianStatusService.ts:250] Limpiando estados offline antiguos');
       
       const cutoffTime = new Date(Date.now() - (24 * 60 * 60 * 1000)); // 24 horas
       

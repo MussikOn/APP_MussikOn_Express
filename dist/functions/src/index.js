@@ -40,6 +40,7 @@ exports.helloWorld = exports.websocket = exports.api = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const admin = __importStar(require("firebase-admin"));
 const express_1 = __importDefault(require("express"));
+const loggerService_1 = require("./services/loggerService");
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // Importar rutas
@@ -119,7 +120,7 @@ app.get('/', (req, res) => {
 });
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {
-    console.error('Error en la API:', err);
+    loggerService_1.logger.error('Error en la API:', err);
     res.status(err.status || 500).json({
         error: err.message || 'Error interno del servidor',
         timestamp: new Date().toISOString()

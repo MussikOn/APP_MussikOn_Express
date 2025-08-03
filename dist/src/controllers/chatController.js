@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAvailableUsers = exports.getChatStats = exports.getConversationById = exports.archiveConversation = exports.deleteConversation = exports.searchConversations = exports.createConversation = exports.markAsRead = exports.sendMessage = exports.getMessages = exports.getConversations = void 0;
+const loggerService_1 = require("../services/loggerService");
 const chatModel_1 = require("../models/chatModel");
 // Obtener todas las conversaciones del usuario
 const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,7 +31,7 @@ const getConversations = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
     }
     catch (error) {
-        console.error('Error al obtener conversaciones:', error);
+        loggerService_1.logger.error('Error al obtener conversaciones:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -76,7 +77,7 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        console.error('Error al obtener mensajes:', error);
+        loggerService_1.logger.error('Error al obtener mensajes:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -137,7 +138,7 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        console.error('Error al enviar mensaje:', error);
+        loggerService_1.logger.error('Error al enviar mensaje:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -165,7 +166,7 @@ const markAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
     catch (error) {
-        console.error('Error al marcar mensaje como leído:', error);
+        loggerService_1.logger.error('Error al marcar mensaje como leído:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -213,7 +214,7 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
     catch (error) {
-        console.error('Error al crear conversación:', error);
+        loggerService_1.logger.error('Error al crear conversación:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -247,7 +248,7 @@ const searchConversations = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
     }
     catch (error) {
-        console.error('Error al buscar conversaciones:', error);
+        loggerService_1.logger.error('Error al buscar conversaciones:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -275,7 +276,7 @@ const deleteConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
     catch (error) {
-        console.error('Error al eliminar conversación:', error);
+        loggerService_1.logger.error('Error al eliminar conversación:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -303,7 +304,7 @@ const archiveConversation = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
     }
     catch (error) {
-        console.error('Error al archivar conversación:', error);
+        loggerService_1.logger.error('Error al archivar conversación:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -345,7 +346,7 @@ const getConversationById = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
     }
     catch (error) {
-        console.error('Error al obtener conversación:', error);
+        loggerService_1.logger.error('Error al obtener conversación:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -372,7 +373,7 @@ const getChatStats = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
     catch (error) {
-        console.error('Error al obtener estadísticas de chat:', error);
+        loggerService_1.logger.error('Error al obtener estadísticas de chat:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -424,7 +425,7 @@ const getAvailableUsers = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
     }
     catch (error) {
-        console.error('Error al obtener usuarios disponibles:', error);
+        loggerService_1.logger.error('Error al obtener usuarios disponibles:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',

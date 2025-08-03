@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { logger } from '../services/loggerService';
 import {
   uploadImage,
   getImageById,
@@ -112,10 +113,7 @@ export const uploadImageController = async (
       image,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:', error as Error);
     res.status(500).json({
       error: 'Error al subir imagen',
       details: error.message,
@@ -180,10 +178,7 @@ export const getImageByIdController = async (
       image,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:', error as Error);
     res.status(500).json({
       error: 'Error al obtener imagen',
       details: error.message,
@@ -284,10 +279,7 @@ export const listImagesController = async (
       filters,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:', error as Error);
     res.status(500).json({
       error: 'Error al listar imágenes',
       details: error.message,
@@ -386,10 +378,7 @@ export const updateImageController = async (
       image: updatedImage,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:', error as Error);
     res.status(500).json({
       error: 'Error al actualizar imagen',
       details: error.message,
@@ -455,10 +444,7 @@ export const deleteImageController = async (
       message: 'Imagen eliminada exitosamente',
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:', error as Error);
     res.status(500).json({
       error: 'Error al eliminar imagen',
       details: error.message,
@@ -516,10 +502,7 @@ export const getImageStatsController = async (
       stats,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:', error as Error);
     res.status(500).json({
       error: 'Error al obtener estadísticas',
       details: error.message,
@@ -578,10 +561,7 @@ export const getUserProfileImagesController = async (
       images,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:', error as Error);
     res.status(500).json({
       error: 'Error al obtener imágenes de perfil',
       details: error.message,
@@ -634,10 +614,7 @@ export const getPostImagesController = async (
       images,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:', error as Error);
     res.status(500).json({
       error: 'Error al obtener imágenes de posts',
       details: error.message,
@@ -690,10 +667,7 @@ export const getEventImagesController = async (
       images,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:', error as Error);
     res.status(500).json({
       error: 'Error al obtener imágenes de eventos',
       details: error.message,
@@ -749,10 +723,7 @@ export const cleanupExpiredImagesController = async (
       message: `${deletedCount} imágenes expiradas eliminadas`,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:', error as Error);
     res.status(500).json({
       error: 'Error en limpieza de imágenes',
       details: error.message,
@@ -773,10 +744,7 @@ export const getAllImagesController = async (
       images,
     });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:', error as Error);
     res.status(500).json({
       error: 'Error al obtener galería de imágenes',
       details: error.message,
@@ -803,10 +771,7 @@ export const getImageUrlController = async (
 
     res.status(200).json({ url: image.url });
   } catch (error: any) {
-    console.error(
-      '[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:',
-      error
-    );
+    logger.error('[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:', error as Error);
     res.status(500).json({
       error: 'Error al generar URL de archivo',
       details: error.message,
