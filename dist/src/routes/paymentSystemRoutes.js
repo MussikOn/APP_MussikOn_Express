@@ -50,6 +50,65 @@ const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const loggerService_1 = require("../services/loggerService");
 const router = (0, express_1.Router)();
 const paymentSystemController = new paymentSystemController_1.PaymentSystemController();
+// Rutas adicionales para compatibilidad con el frontend
+// Estas rutas redirigen a las rutas principales del payment system
+/**
+ * @swagger
+ * /admin/payments/statistics:
+ *   get:
+ *     summary: Obtener estadísticas de pagos (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield paymentSystemController.getPaymentStatistics(req, res);
+}));
+/**
+ * @swagger
+ * /admin/payments/pending-deposits:
+ *   get:
+ *     summary: Obtener depósitos pendientes (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Depósitos pendientes obtenidos exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield paymentSystemController.getPendingDeposits(req, res);
+}));
+/**
+ * @swagger
+ * /admin/payments/pending-withdrawals:
+ *   get:
+ *     summary: Obtener retiros pendientes (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Retiros pendientes obtenidos exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield paymentSystemController.getPendingWithdrawals(req, res);
+}));
 /**
  * @swagger
  * components:
@@ -666,62 +725,6 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddlewar
  */
 router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.processWithdrawal(req, res);
-}));
-/**
- * @swagger
- * /admin/payments/statistics:
- *   get:
- *     summary: Obtener estadísticas de pagos (admin)
- *     tags: [Administración - Pagos]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Estadísticas obtenidas exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalDeposits:
- *                       type: number
- *                     totalWithdrawals:
- *                       type: number
- *                     totalCommissions:
- *                       type: number
- *                     pendingDeposits:
- *                       type: number
- *                     pendingWithdrawals:
- *                       type: number
- *                     averageTransactionAmount:
- *                       type: number
- *                     monthlyRevenue:
- *                       type: number
- *                     topEarningMusicians:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           musicianId:
- *                             type: string
- *                           musicianName:
- *                             type: string
- *                           totalEarnings:
- *                             type: number
- *                 message:
- *                   type: string
- *       401:
- *         description: No autorizado
- *       500:
- *         description: Error del servidor
- */
-router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.getPaymentStatistics(req, res);
 }));
 /**
  * @swagger

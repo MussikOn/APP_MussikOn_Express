@@ -362,6 +362,7 @@ const swaggerUiOptions = {
 };
 // Configurar rutas
 app.use("/auth", authRoutes_1.default);
+app.use("/admin", paymentSystemRoutes_1.default); // Rutas de compatibilidad para /admin/payments/* (debe ir antes)
 app.use("/admin", adminRoutes_1.default);
 app.use("/superAdmin", superAdminRouter_1.default);
 app.use("/imgs", imagesRoutes_1.default);

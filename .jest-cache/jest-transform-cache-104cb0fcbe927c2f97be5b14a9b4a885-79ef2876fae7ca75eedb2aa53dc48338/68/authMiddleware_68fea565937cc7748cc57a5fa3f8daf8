@@ -1,0 +1,541 @@
+b19438b6fb214719c44fd32a38c41de1
+"use strict";
+
+/* istanbul ignore next */
+function cov_866s1yfvi() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\middleware\\authMiddleware.ts";
+  var hash = "f05550dee2fe7f6e2f42b3c64f4bc9bf24488c4a";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\middleware\\authMiddleware.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 22
+        },
+        end: {
+          line: 4,
+          column: 1
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 4
+        },
+        end: {
+          line: 3,
+          column: 62
+        }
+      },
+      "2": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 62
+        }
+      },
+      "3": {
+        start: {
+          line: 6,
+          column: 0
+        },
+        end: {
+          line: 6,
+          column: 40
+        }
+      },
+      "4": {
+        start: {
+          line: 7,
+          column: 23
+        },
+        end: {
+          line: 7,
+          column: 63
+        }
+      },
+      "5": {
+        start: {
+          line: 8,
+          column: 14
+        },
+        end: {
+          line: 8,
+          column: 34
+        }
+      },
+      "6": {
+        start: {
+          line: 10,
+          column: 23
+        },
+        end: {
+          line: 10,
+          column: 48
+        }
+      },
+      "7": {
+        start: {
+          line: 11,
+          column: 4
+        },
+        end: {
+          line: 14,
+          column: 5
+        }
+      },
+      "8": {
+        start: {
+          line: 12,
+          column: 8
+        },
+        end: {
+          line: 12,
+          column: 68
+        }
+      },
+      "9": {
+        start: {
+          line: 13,
+          column: 8
+        },
+        end: {
+          line: 13,
+          column: 15
+        }
+      },
+      "10": {
+        start: {
+          line: 15,
+          column: 18
+        },
+        end: {
+          line: 15,
+          column: 42
+        }
+      },
+      "11": {
+        start: {
+          line: 16,
+          column: 4
+        },
+        end: {
+          line: 24,
+          column: 5
+        }
+      },
+      "12": {
+        start: {
+          line: 17,
+          column: 24
+        },
+        end: {
+          line: 17,
+          column: 80
+        }
+      },
+      "13": {
+        start: {
+          line: 19,
+          column: 8
+        },
+        end: {
+          line: 19,
+          column: 27
+        }
+      },
+      "14": {
+        start: {
+          line: 20,
+          column: 8
+        },
+        end: {
+          line: 20,
+          column: 15
+        }
+      },
+      "15": {
+        start: {
+          line: 23,
+          column: 8
+        },
+        end: {
+          line: 23,
+          column: 71
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 2,
+            column: 57
+          }
+        },
+        loc: {
+          start: {
+            line: 2,
+            column: 71
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        line: 2
+      },
+      "1": {
+        name: "authMiddleware",
+        decl: {
+          start: {
+            line: 9,
+            column: 9
+          },
+          end: {
+            line: 9,
+            column: 23
+          }
+        },
+        loc: {
+          start: {
+            line: 9,
+            column: 40
+          },
+          end: {
+            line: 25,
+            column: 1
+          }
+        },
+        line: 9
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 2,
+            column: 22
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 2,
+            column: 23
+          },
+          end: {
+            line: 2,
+            column: 27
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 31
+          },
+          end: {
+            line: 2,
+            column: 51
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        }],
+        line: 2
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 3,
+            column: 11
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 37
+          },
+          end: {
+            line: 3,
+            column: 40
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 43
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        }],
+        line: 3
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 15
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 19
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        }],
+        line: 3
+      },
+      "3": {
+        loc: {
+          start: {
+            line: 11,
+            column: 4
+          },
+          end: {
+            line: 14,
+            column: 5
+          }
+        },
+        type: "if",
+        locations: [{
+          start: {
+            line: 11,
+            column: 4
+          },
+          end: {
+            line: 14,
+            column: 5
+          }
+        }, {
+          start: {
+            line: undefined,
+            column: undefined
+          },
+          end: {
+            line: undefined,
+            column: undefined
+          }
+        }],
+        line: 11
+      },
+      "4": {
+        loc: {
+          start: {
+            line: 11,
+            column: 8
+          },
+          end: {
+            line: 11,
+            column: 56
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 11,
+            column: 8
+          },
+          end: {
+            line: 11,
+            column: 19
+          }
+        }, {
+          start: {
+            line: 11,
+            column: 23
+          },
+          end: {
+            line: 11,
+            column: 56
+          }
+        }],
+        line: 11
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {
+      "0": [0, 0, 0],
+      "1": [0, 0],
+      "2": [0, 0],
+      "3": [0, 0],
+      "4": [0, 0]
+    },
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\middleware\\authMiddleware.ts",
+      mappings: ";;;;;AAIA,wCAsBC;AAzBD,gEAA+B;AAC/B,mCAAyC;AAEzC,SAAgB,cAAc,CAC5B,GAAY,EACZ,GAAa,EACb,IAAkB;IAElB,MAAM,UAAU,GAAG,GAAG,CAAC,OAAO,CAAC,aAAa,CAAC;IAE7C,IAAI,CAAC,UAAU,IAAI,CAAC,UAAU,CAAC,UAAU,CAAC,SAAS,CAAC,EAAE,CAAC;QACrD,GAAG,CAAC,MAAM,CAAC,GAAG,CAAC,CAAC,IAAI,CAAC,EAAE,OAAO,EAAE,wBAAwB,EAAE,CAAC,CAAC;QAC5D,OAAO;IACT,CAAC;IAED,MAAM,KAAK,GAAG,UAAU,CAAC,KAAK,CAAC,GAAG,CAAC,CAAC,CAAC,CAAC,CAAC;IAEvC,IAAI,CAAC;QACH,MAAM,OAAO,GAAG,sBAAG,CAAC,MAAM,CAAC,KAAK,EAAE,kBAAY,CAAC,CAAC;QAChD,8CAA8C;QAC7C,GAAW,CAAC,IAAI,GAAG,OAAO,CAAC;QAC5B,IAAI,EAAE,CAAC;IACT,CAAC;IAAC,OAAO,GAAG,EAAE,CAAC;QACb,GAAG,CAAC,MAAM,CAAC,GAAG,CAAC,CAAC,IAAI,CAAC,EAAE,OAAO,EAAE,2BAA2B,EAAE,CAAC,CAAC;IACjE,CAAC;AACH,CAAC",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\middleware\\authMiddleware.ts"],
+      sourcesContent: ["import { Request, Response, NextFunction } from 'express';\r\nimport jwt from 'jsonwebtoken';\r\nimport { TOKEN_SECRET } from '../../ENV';\r\n\r\nexport function authMiddleware(\r\n  req: Request,\r\n  res: Response,\r\n  next: NextFunction\r\n): void {\r\n  const authHeader = req.headers.authorization;\r\n\r\n  if (!authHeader || !authHeader.startsWith('Bearer ')) {\r\n    res.status(401).json({ message: 'Token no proporcionado' });\r\n    return;\r\n  }\r\n\r\n  const token = authHeader.split(' ')[1];\r\n\r\n  try {\r\n    const decoded = jwt.verify(token, TOKEN_SECRET);\r\n    // Agregar el usuario decodificado en req.user\r\n    (req as any).user = decoded;\r\n    next();\r\n  } catch (err) {\r\n    res.status(401).json({ message: 'Token inv\xE1lido o expirado' });\r\n  }\r\n}\r\n\r\n\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "f05550dee2fe7f6e2f42b3c64f4bc9bf24488c4a"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_866s1yfvi = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_866s1yfvi();
+var __importDefault =
+/* istanbul ignore next */
+(cov_866s1yfvi().s[0]++,
+/* istanbul ignore next */
+(cov_866s1yfvi().b[0][0]++, this) &&
+/* istanbul ignore next */
+(cov_866s1yfvi().b[0][1]++, this.__importDefault) ||
+/* istanbul ignore next */
+(cov_866s1yfvi().b[0][2]++, function (mod) {
+  /* istanbul ignore next */
+  cov_866s1yfvi().f[0]++;
+  cov_866s1yfvi().s[1]++;
+  return /* istanbul ignore next */(cov_866s1yfvi().b[2][0]++, mod) &&
+  /* istanbul ignore next */
+  (cov_866s1yfvi().b[2][1]++, mod.__esModule) ?
+  /* istanbul ignore next */
+  (cov_866s1yfvi().b[1][0]++, mod) :
+  /* istanbul ignore next */
+  (cov_866s1yfvi().b[1][1]++, {
+    "default": mod
+  });
+}));
+/* istanbul ignore next */
+cov_866s1yfvi().s[2]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_866s1yfvi().s[3]++;
+exports.authMiddleware = authMiddleware;
+const jsonwebtoken_1 =
+/* istanbul ignore next */
+(cov_866s1yfvi().s[4]++, __importDefault(require("jsonwebtoken")));
+const ENV_1 =
+/* istanbul ignore next */
+(cov_866s1yfvi().s[5]++, require("../../ENV"));
+function authMiddleware(req, res, next) {
+  /* istanbul ignore next */
+  cov_866s1yfvi().f[1]++;
+  const authHeader =
+  /* istanbul ignore next */
+  (cov_866s1yfvi().s[6]++, req.headers.authorization);
+  /* istanbul ignore next */
+  cov_866s1yfvi().s[7]++;
+  if (
+  /* istanbul ignore next */
+  (cov_866s1yfvi().b[4][0]++, !authHeader) ||
+  /* istanbul ignore next */
+  (cov_866s1yfvi().b[4][1]++, !authHeader.startsWith('Bearer '))) {
+    /* istanbul ignore next */
+    cov_866s1yfvi().b[3][0]++;
+    cov_866s1yfvi().s[8]++;
+    res.status(401).json({
+      message: 'Token no proporcionado'
+    });
+    /* istanbul ignore next */
+    cov_866s1yfvi().s[9]++;
+    return;
+  } else
+  /* istanbul ignore next */
+  {
+    cov_866s1yfvi().b[3][1]++;
+  }
+  const token =
+  /* istanbul ignore next */
+  (cov_866s1yfvi().s[10]++, authHeader.split(' ')[1]);
+  /* istanbul ignore next */
+  cov_866s1yfvi().s[11]++;
+  try {
+    const decoded =
+    /* istanbul ignore next */
+    (cov_866s1yfvi().s[12]++, jsonwebtoken_1.default.verify(token, ENV_1.TOKEN_SECRET));
+    // Agregar el usuario decodificado en req.user
+    /* istanbul ignore next */
+    cov_866s1yfvi().s[13]++;
+    req.user = decoded;
+    /* istanbul ignore next */
+    cov_866s1yfvi().s[14]++;
+    next();
+  } catch (err) {
+    /* istanbul ignore next */
+    cov_866s1yfvi().s[15]++;
+    res.status(401).json({
+      message: 'Token inválido o expirado'
+    });
+  }
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfODY2czF5ZnZpIiwiYWN0dWFsQ292ZXJhZ2UiLCJleHBvcnRzIiwiYXV0aE1pZGRsZXdhcmUiLCJqc29ud2VidG9rZW5fMSIsInMiLCJfX2ltcG9ydERlZmF1bHQiLCJyZXF1aXJlIiwiRU5WXzEiLCJyZXEiLCJyZXMiLCJuZXh0IiwiZiIsImF1dGhIZWFkZXIiLCJoZWFkZXJzIiwiYXV0aG9yaXphdGlvbiIsImIiLCJzdGFydHNXaXRoIiwic3RhdHVzIiwianNvbiIsIm1lc3NhZ2UiLCJ0b2tlbiIsInNwbGl0IiwiZGVjb2RlZCIsImRlZmF1bHQiLCJ2ZXJpZnkiLCJUT0tFTl9TRUNSRVQiLCJ1c2VyIiwiZXJyIl0sInNvdXJjZXMiOlsiQzpcXHNyY1xcQVBQX011c3Npa09uXFxBUFBfTXVzc2lrT25fRXhwcmVzc1xcc3JjXFxtaWRkbGV3YXJlXFxhdXRoTWlkZGxld2FyZS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBSZXF1ZXN0LCBSZXNwb25zZSwgTmV4dEZ1bmN0aW9uIH0gZnJvbSAnZXhwcmVzcyc7XHJcbmltcG9ydCBqd3QgZnJvbSAnanNvbndlYnRva2VuJztcclxuaW1wb3J0IHsgVE9LRU5fU0VDUkVUIH0gZnJvbSAnLi4vLi4vRU5WJztcclxuXHJcbmV4cG9ydCBmdW5jdGlvbiBhdXRoTWlkZGxld2FyZShcclxuICByZXE6IFJlcXVlc3QsXHJcbiAgcmVzOiBSZXNwb25zZSxcclxuICBuZXh0OiBOZXh0RnVuY3Rpb25cclxuKTogdm9pZCB7XHJcbiAgY29uc3QgYXV0aEhlYWRlciA9IHJlcS5oZWFkZXJzLmF1dGhvcml6YXRpb247XHJcblxyXG4gIGlmICghYXV0aEhlYWRlciB8fCAhYXV0aEhlYWRlci5zdGFydHNXaXRoKCdCZWFyZXIgJykpIHtcclxuICAgIHJlcy5zdGF0dXMoNDAxKS5qc29uKHsgbWVzc2FnZTogJ1Rva2VuIG5vIHByb3BvcmNpb25hZG8nIH0pO1xyXG4gICAgcmV0dXJuO1xyXG4gIH1cclxuXHJcbiAgY29uc3QgdG9rZW4gPSBhdXRoSGVhZGVyLnNwbGl0KCcgJylbMV07XHJcblxyXG4gIHRyeSB7XHJcbiAgICBjb25zdCBkZWNvZGVkID0gand0LnZlcmlmeSh0b2tlbiwgVE9LRU5fU0VDUkVUKTtcclxuICAgIC8vIEFncmVnYXIgZWwgdXN1YXJpbyBkZWNvZGlmaWNhZG8gZW4gcmVxLnVzZXJcclxuICAgIChyZXEgYXMgYW55KS51c2VyID0gZGVjb2RlZDtcclxuICAgIG5leHQoKTtcclxuICB9IGNhdGNoIChlcnIpIHtcclxuICAgIHJlcy5zdGF0dXMoNDAxKS5qc29uKHsgbWVzc2FnZTogJ1Rva2VuIGludsOhbGlkbyBvIGV4cGlyYWRvJyB9KTtcclxuICB9XHJcbn1cclxuXHJcblxyXG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztJQWtCTztJQUFBQSxhQUFBLFlBQUFBLENBQUE7TUFBQSxPQUFBQyxjQUFBO0lBQUE7RUFBQTtFQUFBLE9BQUFBLGNBQUE7QUFBQTtBQUFBRCxhQUFBOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFkUEUsT0FBQSxDQUFBQyxjQUFBLEdBQUFBLGNBQUE7QUFIQSxNQUFBQyxjQUFBO0FBQUE7QUFBQSxDQUFBSixhQUFBLEdBQUFLLENBQUEsT0FBQUMsZUFBQSxDQUFBQyxPQUFBO0FBQ0EsTUFBQUMsS0FBQTtBQUFBO0FBQUEsQ0FBQVIsYUFBQSxHQUFBSyxDQUFBLE9BQUFFLE9BQUE7QUFFQSxTQUFnQkosY0FBY0EsQ0FDNUJNLEdBQVksRUFDWkMsR0FBYSxFQUNiQyxJQUFrQjtFQUFBO0VBQUFYLGFBQUEsR0FBQVksQ0FBQTtFQUVsQixNQUFNQyxVQUFVO0VBQUE7RUFBQSxDQUFBYixhQUFBLEdBQUFLLENBQUEsT0FBR0ksR0FBRyxDQUFDSyxPQUFPLENBQUNDLGFBQWE7RUFBQztFQUFBZixhQUFBLEdBQUFLLENBQUE7RUFFN0M7RUFBSTtFQUFBLENBQUFMLGFBQUEsR0FBQWdCLENBQUEsV0FBQ0gsVUFBVTtFQUFBO0VBQUEsQ0FBQWIsYUFBQSxHQUFBZ0IsQ0FBQSxVQUFJLENBQUNILFVBQVUsQ0FBQ0ksVUFBVSxDQUFDLFNBQVMsQ0FBQyxHQUFFO0lBQUE7SUFBQWpCLGFBQUEsR0FBQWdCLENBQUE7SUFBQWhCLGFBQUEsR0FBQUssQ0FBQTtJQUNwREssR0FBRyxDQUFDUSxNQUFNLENBQUMsR0FBRyxDQUFDLENBQUNDLElBQUksQ0FBQztNQUFFQyxPQUFPLEVBQUU7SUFBd0IsQ0FBRSxDQUFDO0lBQUM7SUFBQXBCLGFBQUEsR0FBQUssQ0FBQTtJQUM1RDtFQUNGLENBQUM7RUFBQTtFQUFBO0lBQUFMLGFBQUEsR0FBQWdCLENBQUE7RUFBQTtFQUVELE1BQU1LLEtBQUs7RUFBQTtFQUFBLENBQUFyQixhQUFBLEdBQUFLLENBQUEsUUFBR1EsVUFBVSxDQUFDUyxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQyxDQUFDO0VBQUM7RUFBQXRCLGFBQUEsR0FBQUssQ0FBQTtFQUV2QyxJQUFJO0lBQ0YsTUFBTWtCLE9BQU87SUFBQTtJQUFBLENBQUF2QixhQUFBLEdBQUFLLENBQUEsUUFBR0QsY0FBQSxDQUFBb0IsT0FBRyxDQUFDQyxNQUFNLENBQUNKLEtBQUssRUFBRWIsS0FBQSxDQUFBa0IsWUFBWSxDQUFDO0lBQy9DO0lBQUE7SUFBQTFCLGFBQUEsR0FBQUssQ0FBQTtJQUNDSSxHQUFXLENBQUNrQixJQUFJLEdBQUdKLE9BQU87SUFBQztJQUFBdkIsYUFBQSxHQUFBSyxDQUFBO0lBQzVCTSxJQUFJLEVBQUU7RUFDUixDQUFDLENBQUMsT0FBT2lCLEdBQUcsRUFBRTtJQUFBO0lBQUE1QixhQUFBLEdBQUFLLENBQUE7SUFDWkssR0FBRyxDQUFDUSxNQUFNLENBQUMsR0FBRyxDQUFDLENBQUNDLElBQUksQ0FBQztNQUFFQyxPQUFPLEVBQUU7SUFBMkIsQ0FBRSxDQUFDO0VBQ2hFO0FBQ0YiLCJpZ25vcmVMaXN0IjpbXX0=

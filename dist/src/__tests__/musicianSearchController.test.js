@@ -10,32 +10,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const musicianSearchController_1 = require("../controllers/musicianSearchController");
-// Mock de las dependencias
-jest.mock('../models/eventModel', () => ({
-    getEventByIdModel: jest.fn()
-}));
-jest.mock('../services/musicianSearchService', () => ({
-    MusicianSearchService: {
-        searchMusiciansForEvent: jest.fn(),
-        getRecommendedMusicians: jest.fn()
-    }
-}));
-// Importar los mocks
-const eventModel_1 = require("../models/eventModel");
 const musicianSearchService_1 = require("../services/musicianSearchService");
+const eventModel_1 = require("../models/eventModel");
+// Mock de los servicios
+jest.mock('../services/musicianSearchService');
+jest.mock('../models/eventModel');
 describe('MusicianSearchController', () => {
     let mockRequest;
     let mockResponse;
     let mockJson;
     let mockStatus;
     beforeEach(() => {
-        mockJson = jest.fn();
-        mockStatus = jest.fn().mockReturnValue({ json: mockJson });
+        mockJson = jest.fn().mockReturnThis();
+        mockStatus = jest.fn().mockReturnThis();
         mockResponse = {
+            json: mockJson,
             status: mockStatus,
-            json: mockJson
         };
-        // Reset de todos los mocks
+        // Limpiar todos los mocks
         jest.clearAllMocks();
     });
     describe('searchMusiciansForEvent', () => {
@@ -53,11 +45,11 @@ describe('MusicianSearchController', () => {
                     eventId: 'event123',
                     criteria: {
                         instrument: 'guitarra',
-                        location: 'Madrid',
-                        budget: 500,
-                        date: '2024-12-25',
-                        time: '20:00',
-                        duration: 120,
+                        location: 'Santiago, RD',
+                        budget: 5000,
+                        date: '2025-02-15',
+                        time: '18:00',
+                        duration: '03:00',
                         eventType: 'wedding',
                         maxDistance: 50
                     }
@@ -69,14 +61,23 @@ describe('MusicianSearchController', () => {
             const mockEvent = {
                 id: 'event123',
                 user: 'user@example.com',
-                eventName: 'Boda de María',
+                eventName: 'Boda en Santiago',
+                eventType: 'wedding',
+                date: '2025-02-15',
+                time: '18:00',
+                location: 'Santiago, RD',
+                duration: '03:00',
                 instrument: 'guitarra',
-                location: 'Madrid',
-                budget: '500',
-                date: '2024-12-25',
-                time: '20:00',
-                duration: '120',
-                eventType: 'wedding'
+                bringInstrument: false,
+                comment: 'Necesito un guitarrista para mi boda',
+                budget: '5000',
+                flyerUrl: '',
+                songs: ['Canción 1', 'Canción 2'],
+                recommendations: [],
+                mapsLink: '',
+                status: 'pending_musician',
+                createdAt: '2025-01-15T10:00:00Z',
+                updatedAt: '2025-01-15T10:00:00Z'
             };
             // Mock de músicos encontrados
             const mockMusicians = [
@@ -136,6 +137,28 @@ describe('MusicianSearchController', () => {
             };
         });
         it('should get recommended musicians successfully', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Mock del evento
+            const mockEvent = {
+                id: 'event123',
+                user: 'user@example.com',
+                eventName: 'Boda en Santiago',
+                eventType: 'wedding',
+                date: '2025-02-15',
+                time: '18:00',
+                location: 'Santiago, RD',
+                duration: '03:00',
+                instrument: 'guitarra',
+                bringInstrument: false,
+                comment: 'Necesito un guitarrista para mi boda',
+                budget: '5000',
+                flyerUrl: '',
+                songs: ['Canción 1', 'Canción 2'],
+                recommendations: [],
+                mapsLink: '',
+                status: 'pending_musician',
+                createdAt: '2025-01-15T10:00:00Z',
+                updatedAt: '2025-01-15T10:00:00Z'
+            };
             // Mock de músicos recomendados
             const mockMusicians = [
                 {
@@ -147,6 +170,7 @@ describe('MusicianSearchController', () => {
                 }
             ];
             // Configurar mocks
+            eventModel_1.getEventByIdModel.mockResolvedValue(mockEvent);
             musicianSearchService_1.MusicianSearchService.getRecommendedMusicians.mockResolvedValue(mockMusicians);
             yield musicianSearchController_1.MusicianSearchController.getRecommendedMusicians(mockRequest, mockResponse);
             expect(mockJson).toHaveBeenCalledWith(expect.objectContaining({

@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/84</span>
+                <span class='fraction'>0/91</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/84</span>
+                <span class='fraction'>0/91</span>
             </div>
         
             
@@ -343,7 +343,28 @@
 <a name='L278'></a><a href='#L278'>278</a>
 <a name='L279'></a><a href='#L279'>279</a>
 <a name='L280'></a><a href='#L280'>280</a>
-<a name='L281'></a><a href='#L281'>281</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -613,6 +634,27 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -633,13 +675,13 @@ const paymentService = <span class="cstat-no" title="statement not covered" >new
 // Crear método de pago
 export const <span class="cstat-no" title="statement not covered" >createPaymentMethodController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { type, cardNumber, expiryMonth, expiryYear, cvc, billingAddress } =
 <span class="cstat-no" title="statement not covered" >      req.body;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    logger.info('Creating payment method', { userId, metadata: { type } });</span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Creating payment method', { userId: userEmail, metadata: { type } });</span>
 &nbsp;
-    const paymentMethod = <span class="cstat-no" title="statement not covered" >await paymentService.createPaymentMethod(userId, {</span>
+    const paymentMethod = <span class="cstat-no" title="statement not covered" >await paymentService.createPaymentMethod(userEmail, {</span>
       type,
       cardNumber,
       expiryMonth,
@@ -659,11 +701,11 @@ export const <span class="cstat-no" title="statement not covered" >createPayment
 // Obtener métodos de pago del usuario
 export const <span class="cstat-no" title="statement not covered" >getPaymentMethodsController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    logger.info('Getting payment methods', { userId });</span>
+<span class="cstat-no" title="statement not covered" >    logger.info('Getting payment methods', { userId: userEmail });</span>
 &nbsp;
-    const paymentMethods = <span class="cstat-no" title="statement not covered" >await paymentService.getPaymentMethods(userId);</span>
+    const paymentMethods = <span class="cstat-no" title="statement not covered" >await paymentService.getPaymentMethods(userEmail);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    res.status(200).json({</span>
       success: true,
@@ -676,15 +718,15 @@ export const <span class="cstat-no" title="statement not covered" >getPaymentMet
 // Establecer método de pago por defecto
 export const <span class="cstat-no" title="statement not covered" >setDefaultPaymentMethodController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { paymentMethodId } = <span class="cstat-no" title="statement not covered" >req.params;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Setting default payment method', {</span>
-      userId,
+      userId: userEmail,
       metadata: { paymentMethodId },
     });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    await paymentService.setDefaultPaymentMethod(userId, paymentMethodId);</span>
+<span class="cstat-no" title="statement not covered" >    await paymentService.setDefaultPaymentMethod(userEmail, paymentMethodId);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    res.status(200).json({</span>
       success: true,
@@ -696,16 +738,16 @@ export const <span class="cstat-no" title="statement not covered" >setDefaultPay
 // Crear intent de pago
 export const <span class="cstat-no" title="statement not covered" >createPaymentIntentController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { amount, currency, description, metadata } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Creating payment intent', {</span>
-      userId,
+      userId: userEmail,
       metadata: { amount, currency },
     });
 &nbsp;
     const paymentIntent = <span class="cstat-no" title="statement not covered" >await paymentService.createPaymentIntent(</span>
-      userId,
+      userEmail,
       amount,
       currency,
       description,
@@ -723,11 +765,11 @@ export const <span class="cstat-no" title="statement not covered" >createPayment
 // Procesar pago
 export const <span class="cstat-no" title="statement not covered" >processPaymentController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { paymentIntentId, paymentMethodId } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Processing payment', {</span>
-      userId,
+      userId: userEmail,
       metadata: { paymentIntentId, paymentMethodId },
     });
 &nbsp;
@@ -750,16 +792,16 @@ export const <span class="cstat-no" title="statement not covered" >processPaymen
 // Crear factura
 export const <span class="cstat-no" title="statement not covered" >createInvoiceController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { items, dueDate, eventId } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Creating invoice', {</span>
-      userId,
+      userId: userEmail,
       metadata: { itemsCount: items.length },
     });
 &nbsp;
     const invoice = <span class="cstat-no" title="statement not covered" >await paymentService.createInvoice(</span>
-      userId,
+      userEmail,
       items,
       new Date(dueDate),
       eventId
@@ -776,15 +818,15 @@ export const <span class="cstat-no" title="statement not covered" >createInvoice
 // Obtener facturas del usuario
 export const <span class="cstat-no" title="statement not covered" >getInvoicesController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { status } = <span class="cstat-no" title="statement not covered" >req.query;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Getting invoices', {</span>
-      userId,
+      userId: userEmail,
       metadata: { status: status as string },
     });
 &nbsp;
-    const invoices = <span class="cstat-no" title="statement not covered" >await paymentService.getInvoices(userId, status as string);</span>
+    const invoices = <span class="cstat-no" title="statement not covered" >await paymentService.getInvoices(userEmail, status as string);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    res.status(200).json({</span>
       success: true,
@@ -797,12 +839,12 @@ export const <span class="cstat-no" title="statement not covered" >getInvoicesCo
 // Marcar factura como pagada
 export const <span class="cstat-no" title="statement not covered" >markInvoiceAsPaidController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { invoiceId } = <span class="cstat-no" title="statement not covered" >req.params;</span>
     const { paymentMethodId } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Marking invoice as paid', {</span>
-      userId,
+      userId: userEmail,
       metadata: { invoiceId, paymentMethodId },
     });
 &nbsp;
@@ -822,11 +864,11 @@ export const <span class="cstat-no" title="statement not covered" >markInvoiceAs
 // Procesar reembolso
 export const <span class="cstat-no" title="statement not covered" >processRefundController = asyncHandler(</span>
 <span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
-    const { userId } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
     const { paymentIntentId, amount, reason } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    logger.info('Processing refund', {</span>
-      userId,
+      userId: userEmail,
       metadata: { paymentIntentId, amount, reason },
     });
 &nbsp;
@@ -903,6 +945,27 @@ export const <span class="cstat-no" title="statement not covered" >getPaymentGat
     });
   }
 );
+&nbsp;
+// Obtener payment intents del usuario
+export const <span class="cstat-no" title="statement not covered" >getPaymentIntentsController = asyncHandler(</span>
+<span class="fstat-no" title="function not covered" >  async (r</span>eq: Request, res: Response) =&gt;<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" > {</span></span>
+    const { userEmail } = <span class="cstat-no" title="statement not covered" >req.user!;</span>
+    const { status } = <span class="cstat-no" title="statement not covered" >req.query;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    logger.info('Getting payment intents', {</span>
+      userId: userEmail,
+      metadata: { status: status as string },
+    });
+&nbsp;
+    const paymentIntents = <span class="cstat-no" title="statement not covered" >await paymentService.getPaymentIntents(userEmail, status as string);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    res.status(200).json({</span>
+      success: true,
+      data: paymentIntents,
+      message: 'Payment intents obtenidos exitosamente',
+    });
+  }
+);
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -910,7 +973,7 @@ export const <span class="cstat-no" title="statement not covered" >getPaymentGat
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-03T19:06:30.851Z
+                at 2025-08-03T21:51:07.704Z
             </div>
         <script src="../prettify.js"></script>
         <script>

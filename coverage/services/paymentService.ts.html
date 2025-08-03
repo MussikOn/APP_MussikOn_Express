@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/185</span>
+                <span class='fraction'>0/196</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/44</span>
+                <span class='fraction'>0/45</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/33</span>
+                <span class='fraction'>0/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/181</span>
+                <span class='fraction'>0/192</span>
             </div>
         
             
@@ -819,7 +819,32 @@
 <a name='L754'></a><a href='#L754'>754</a>
 <a name='L755'></a><a href='#L755'>755</a>
 <a name='L756'></a><a href='#L756'>756</a>
-<a name='L757'></a><a href='#L757'>757</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L757'></a><a href='#L757'>757</a>
+<a name='L758'></a><a href='#L758'>758</a>
+<a name='L759'></a><a href='#L759'>759</a>
+<a name='L760'></a><a href='#L760'>760</a>
+<a name='L761'></a><a href='#L761'>761</a>
+<a name='L762'></a><a href='#L762'>762</a>
+<a name='L763'></a><a href='#L763'>763</a>
+<a name='L764'></a><a href='#L764'>764</a>
+<a name='L765'></a><a href='#L765'>765</a>
+<a name='L766'></a><a href='#L766'>766</a>
+<a name='L767'></a><a href='#L767'>767</a>
+<a name='L768'></a><a href='#L768'>768</a>
+<a name='L769'></a><a href='#L769'>769</a>
+<a name='L770'></a><a href='#L770'>770</a>
+<a name='L771'></a><a href='#L771'>771</a>
+<a name='L772'></a><a href='#L772'>772</a>
+<a name='L773'></a><a href='#L773'>773</a>
+<a name='L774'></a><a href='#L774'>774</a>
+<a name='L775'></a><a href='#L775'>775</a>
+<a name='L776'></a><a href='#L776'>776</a>
+<a name='L777'></a><a href='#L777'>777</a>
+<a name='L778'></a><a href='#L778'>778</a>
+<a name='L779'></a><a href='#L779'>779</a>
+<a name='L780'></a><a href='#L780'>780</a>
+<a name='L781'></a><a href='#L781'>781</a>
+<a name='L782'></a><a href='#L782'>782</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1232,6 +1257,31 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1588,7 +1638,7 @@ export interface PaymentMethod {
   expiryMonth?: number;
   expiryYear?: number;
   isDefault: boolean;
-  userId: string;
+  userEmail: string;
 }
 &nbsp;
 export interface PaymentIntent {
@@ -1597,7 +1647,7 @@ export interface PaymentIntent {
   currency: string;
   status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
   paymentMethodId: string;
-  userId: string;
+  userEmail: string;
   eventId?: string;
   description: string;
   metadata: Record&lt;string, any&gt;;
@@ -1613,7 +1663,7 @@ export interface Invoice {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   dueDate: Date;
   paidAt?: Date;
-  userId: string;
+  userEmail: string;
   eventId?: string;
   items: InvoiceItem[];
   subtotal: number;
@@ -1655,12 +1705,12 @@ export interface Refund {
    * Crear un método de pago
    */
   async <span class="fstat-no" title="function not covered" >createPaymentMethod(</span>
-    userId: string,
+    userEmail: string,
     paymentData: any
   ): Promise&lt;PaymentMethod&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      logger.info('Creando método de pago', {</span>
-        userId,
+        userId: userEmail,
         metadata: { paymentData },
       });
 &nbsp;
@@ -1673,7 +1723,7 @@ export interface Refund {
         expiryMonth: paymentData.expiryMonth,
         expiryYear: paymentData.expiryYear,
         isDefault: paymentData.isDefault || false,
-        userId,
+        userEmail,
       };
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      await db</span>
@@ -1683,17 +1733,17 @@ export interface Refund {
 &nbsp;
       // Si es el método por defecto, actualizar otros métodos
 <span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (paymentMethod.isDefault) {</span>
-<span class="cstat-no" title="statement not covered" >        await this.setDefaultPaymentMethod(userId, paymentMethod.id);</span>
+<span class="cstat-no" title="statement not covered" >        await this.setDefaultPaymentMethod(userEmail, paymentMethod.id);</span>
       }
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      logger.info('Método de pago creado', {</span>
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId: paymentMethod.id },
       });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return paymentMethod;</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      logger.error('Error creando método de pago', error as Error, { userId });</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Error creando método de pago', error as Error, { userId: userEmail });</span>
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
   }
@@ -1701,11 +1751,11 @@ export interface Refund {
   /**
    * Obtener métodos de pago de un usuario
    */
-  async <span class="fstat-no" title="function not covered" >getPaymentMethods(</span>userId: string): Promise&lt;PaymentMethod[]&gt; {
+  async <span class="fstat-no" title="function not covered" >getPaymentMethods(</span>userEmail: string): Promise&lt;PaymentMethod[]&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
       const snapshot = <span class="cstat-no" title="statement not covered" >await db</span>
         .collection('paymentMethods')
-        .where('userId', '==', userId)
+        .where('userEmail', '==', userEmail)
         .orderBy('isDefault', 'desc')
         .get();
 &nbsp;
@@ -1717,7 +1767,7 @@ export interface Refund {
 <span class="cstat-no" title="statement not covered" >      return paymentMethods;</span>
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      logger.error('Error obteniendo métodos de pago', error as Error, {</span>
-        userId,
+        userId: userEmail,
       });
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
@@ -1727,7 +1777,7 @@ export interface Refund {
    * Establecer método de pago por defecto
    */
   async <span class="fstat-no" title="function not covered" >setDefaultPaymentMethod(</span>
-    userId: string,
+    userEmail: string,
     paymentMethodId: string
   ): Promise&lt;void&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
@@ -1736,7 +1786,7 @@ export interface Refund {
       // Remover default de otros métodos
       const snapshot = <span class="cstat-no" title="statement not covered" >await db</span>
         .collection('paymentMethods')
-        .where('userId', '==', userId)
+        .where('userEmail', '==', userEmail)
         .where('isDefault', '==', true)
         .get();
 &nbsp;
@@ -1752,12 +1802,12 @@ export interface Refund {
 <span class="cstat-no" title="statement not covered" >      await batch.commit();</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      logger.info('Método de pago por defecto actualizado', {</span>
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId },
       });
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      logger.error('Error estableciendo método por defecto', error as Error, {</span>
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId },
       });
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
@@ -1768,7 +1818,7 @@ export interface Refund {
    * Crear intento de pago
    */
   async <span class="fstat-no" title="function not covered" >createPaymentIntent(</span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >    userId: string,</span></span>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >    userEmail: string,</span></span>
     amount: number,
     currency: string = <span class="branch-0 cbranch-no" title="branch not covered" >'EUR',</span>
     description: string,
@@ -1776,7 +1826,7 @@ export interface Refund {
   ): Promise&lt;PaymentIntent&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      logger.info('Creando intento de pago', {</span>
-        userId,
+        userId: userEmail,
         metadata: { amount, currency, description },
       });
 &nbsp;
@@ -1788,7 +1838,7 @@ export interface Refund {
           : this.defaultCurrency,
         status: 'pending',
         paymentMethodId: '',
-        userId,
+        userEmail,
         description,
         metadata,
         createdAt: new Date(),
@@ -1801,14 +1851,14 @@ export interface Refund {
         .set(paymentIntent);
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      logger.info('Intento de pago creado', {</span>
-        userId,
+        userId: userEmail,
         metadata: { paymentIntentId: paymentIntent.id },
       });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return paymentIntent;</span>
     } catch (error) {
 <span class="cstat-no" title="statement not covered" >      logger.error('Error creando intento de pago', error as Error, {</span>
-        userId,
+        userId: userEmail,
         metadata: { amount },
       });
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
@@ -1903,7 +1953,7 @@ export interface Refund {
         status: 'paid',
         dueDate: new Date(),
         paidAt: new Date(),
-        userId: paymentIntent.userId,
+        userEmail: paymentIntent.userEmail,
         eventId: paymentIntent.eventId,
         items: [
           {
@@ -1944,14 +1994,14 @@ export interface Refund {
    * Crear factura manual
    */
   async <span class="fstat-no" title="function not covered" >createInvoice(</span>
-    userId: string,
+    userEmail: string,
     items: Omit&lt;InvoiceItem, 'id'&gt;[],
     dueDate: Date,
     eventId?: string
   ): Promise&lt;Invoice&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
 <span class="cstat-no" title="statement not covered" >      logger.info('Creando factura manual', {</span>
-        userId,
+        userId: userEmail,
         metadata: { items, dueDate },
       });
 &nbsp;
@@ -1969,7 +2019,7 @@ export interface Refund {
         currency: this.defaultCurrency,
         status: 'draft',
         dueDate,
-        userId,
+        userEmail,
         eventId,
         items: items.map(<span class="fstat-no" title="function not covered" >(i</span>tem, index) =&gt; <span class="cstat-no" title="statement not covered" >({</span>
           id: `item_${Date.now()}_${index}`,
@@ -1986,13 +2036,38 @@ export interface Refund {
 <span class="cstat-no" title="statement not covered" >      await db.collection('invoices').doc(invoice.id).set(invoice);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      logger.info('Factura manual creada', {</span>
-        userId,
+        userId: userEmail,
         metadata: { invoiceId: invoice.id },
       });
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return invoice;</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      logger.error('Error creando factura manual', error as Error, { userId });</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Error creando factura manual', error as Error, { userId: userEmail });</span>
+<span class="cstat-no" title="statement not covered" >      throw error;</span>
+    }
+  }
+&nbsp;
+  /**
+   * Obtener payment intents de un usuario
+   */
+  async <span class="fstat-no" title="function not covered" >getPaymentIntents(</span>userEmail: string, status?: string): Promise&lt;PaymentIntent[]&gt; {
+<span class="cstat-no" title="statement not covered" >    try {</span>
+      let query = <span class="cstat-no" title="statement not covered" >db.collection('paymentIntents').where('userEmail', '==', userEmail);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (status) {</span>
+<span class="cstat-no" title="statement not covered" >        query = query.where('status', '==', status);</span>
+      }
+&nbsp;
+      const snapshot = <span class="cstat-no" title="statement not covered" >await query.orderBy('createdAt', 'desc').get();</span>
+&nbsp;
+      const paymentIntents: PaymentIntent[] = <span class="cstat-no" title="statement not covered" >[];</span>
+<span class="cstat-no" title="statement not covered" >      snapshot.forEach(<span class="fstat-no" title="function not covered" >(d</span>oc: any) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        paymentIntents.push({ id: doc.id, ...doc.data() });</span>
+      });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return paymentIntents;</span>
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >      logger.error('Error obteniendo payment intents', error as Error, { userId: userEmail });</span>
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
   }
@@ -2000,9 +2075,9 @@ export interface Refund {
   /**
    * Obtener facturas de un usuario
    */
-  async <span class="fstat-no" title="function not covered" >getInvoices(</span>userId: string, status?: string): Promise&lt;Invoice[]&gt; {
+  async <span class="fstat-no" title="function not covered" >getInvoices(</span>userEmail: string, status?: string): Promise&lt;Invoice[]&gt; {
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      let query = <span class="cstat-no" title="statement not covered" >db.collection('invoices').where('userId', '==', userId);</span>
+      let query = <span class="cstat-no" title="statement not covered" >db.collection('invoices').where('userEmail', '==', userEmail);</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (status) {</span>
 <span class="cstat-no" title="statement not covered" >        query = query.where('status', '==', status);</span>
@@ -2017,7 +2092,7 @@ export interface Refund {
 &nbsp;
 <span class="cstat-no" title="statement not covered" >      return invoices;</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      logger.error('Error obteniendo facturas', error as Error, { userId });</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Error obteniendo facturas', error as Error, { userId: userEmail });</span>
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
   }
@@ -2045,7 +2120,7 @@ export interface Refund {
 &nbsp;
       // Crear payment intent para la factura
       const paymentIntent = <span class="cstat-no" title="statement not covered" >await this.createPaymentIntent(</span>
-        invoice.userId,
+        invoice.userEmail,
         invoice.total,
         invoice.currency,
         `Pago de factura ${invoice.number}`,
@@ -2338,7 +2413,7 @@ export interface Refund {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-03T19:06:30.851Z
+                at 2025-08-03T21:51:07.704Z
             </div>
         <script src="../prettify.js"></script>
         <script>

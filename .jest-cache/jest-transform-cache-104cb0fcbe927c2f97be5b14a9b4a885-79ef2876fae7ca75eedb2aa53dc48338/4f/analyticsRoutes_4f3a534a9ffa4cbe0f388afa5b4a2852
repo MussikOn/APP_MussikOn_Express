@@ -1,0 +1,1032 @@
+475efb626c7c45afbf48a49e42c30301
+"use strict";
+
+/* istanbul ignore next */
+function cov_6w9u1m7o7() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\analyticsRoutes.ts";
+  var hash = "c9d47e83f05130b1bfc22df31af3cf6cfaf688a5";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\analyticsRoutes.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 22
+        },
+        end: {
+          line: 4,
+          column: 1
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 4
+        },
+        end: {
+          line: 3,
+          column: 62
+        }
+      },
+      "2": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 62
+        }
+      },
+      "3": {
+        start: {
+          line: 6,
+          column: 18
+        },
+        end: {
+          line: 6,
+          column: 53
+        }
+      },
+      "4": {
+        start: {
+          line: 7,
+          column: 25
+        },
+        end: {
+          line: 7,
+          column: 64
+        }
+      },
+      "5": {
+        start: {
+          line: 8,
+          column: 20
+        },
+        end: {
+          line: 8,
+          column: 54
+        }
+      },
+      "6": {
+        start: {
+          line: 9,
+          column: 30
+        },
+        end: {
+          line: 9,
+          column: 75
+        }
+      },
+      "7": {
+        start: {
+          line: 10,
+          column: 15
+        },
+        end: {
+          line: 10,
+          column: 41
+        }
+      },
+      "8": {
+        start: {
+          line: 87,
+          column: 0
+        },
+        end: {
+          line: 87,
+          column: 190
+        }
+      },
+      "9": {
+        start: {
+          line: 158,
+          column: 0
+        },
+        end: {
+          line: 158,
+          column: 194
+        }
+      },
+      "10": {
+        start: {
+          line: 215,
+          column: 0
+        },
+        end: {
+          line: 215,
+          column: 157
+        }
+      },
+      "11": {
+        start: {
+          line: 319,
+          column: 0
+        },
+        end: {
+          line: 319,
+          column: 195
+        }
+      },
+      "12": {
+        start: {
+          line: 386,
+          column: 0
+        },
+        end: {
+          line: 386,
+          column: 188
+        }
+      },
+      "13": {
+        start: {
+          line: 429,
+          column: 0
+        },
+        end: {
+          line: 429,
+          column: 184
+        }
+      },
+      "14": {
+        start: {
+          line: 477,
+          column: 0
+        },
+        end: {
+          line: 477,
+          column: 168
+        }
+      },
+      "15": {
+        start: {
+          line: 527,
+          column: 0
+        },
+        end: {
+          line: 527,
+          column: 188
+        }
+      },
+      "16": {
+        start: {
+          line: 596,
+          column: 0
+        },
+        end: {
+          line: 596,
+          column: 154
+        }
+      },
+      "17": {
+        start: {
+          line: 597,
+          column: 0
+        },
+        end: {
+          line: 597,
+          column: 25
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 2,
+            column: 57
+          }
+        },
+        loc: {
+          start: {
+            line: 2,
+            column: 71
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        line: 2
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 2,
+            column: 22
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 2,
+            column: 23
+          },
+          end: {
+            line: 2,
+            column: 27
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 31
+          },
+          end: {
+            line: 2,
+            column: 51
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        }],
+        line: 2
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 3,
+            column: 11
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 37
+          },
+          end: {
+            line: 3,
+            column: 40
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 43
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        }],
+        line: 3
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 15
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 19
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        }],
+        line: 3
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 0,
+      "17": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {
+      "0": [0, 0, 0],
+      "1": [0, 0],
+      "2": [0, 0]
+    },
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\analyticsRoutes.ts",
+      mappings: ";;;;;AAAA,sDAA8B;AAC9B,iEAA8D;AAC9D,uDAAsD;AACtD,4EAU4C;AAE5C,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAC;AAEhC;;;;;GAKG;AAEH;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAqEG;AACH,MAAM,CAAC,GAAG,CACR,SAAS,EACT,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,EAAE,cAAc,EAAE,aAAa,CAAC,EACjE,iDAA2B,CAC5B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAqEG;AACH,MAAM,CAAC,GAAG,CACR,WAAW,EACX,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,EAAE,cAAc,EAAE,aAAa,CAAC,EACjE,mDAA6B,CAC9B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAuDG;AACH,MAAM,CAAC,GAAG,CACR,QAAQ,EACR,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,CAAC,EAClC,gDAA0B,CAC3B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAsGG;AACH,MAAM,CAAC,GAAG,CACR,WAAW,EACX,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,EAAE,cAAc,EAAE,aAAa,CAAC,EACjE,oDAA8B,CAC/B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAiEG;AACH,MAAM,CAAC,GAAG,CACR,SAAS,EACT,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,EAAE,cAAc,EAAE,aAAa,CAAC,EACjE,+CAAyB,CAC1B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAyCG;AACH,MAAM,CAAC,GAAG,CACR,uBAAuB,EACvB,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,CAAC,EAClC,4DAAsC,CACvC,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GA8CG;AACH,MAAM,CAAC,GAAG,CACR,YAAY,EACZ,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,CAAC,EAClC,uDAAiC,CAClC,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAgDG;AACH,MAAM,CAAC,GAAG,CACR,YAAY,EACZ,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,EAAE,cAAc,EAAE,aAAa,CAAC,EACjE,4CAAsB,CACvB,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAmEG;AACH,MAAM,CAAC,GAAG,CACR,SAAS,EACT,+BAAc,EACd,IAAA,uBAAW,EAAC,OAAO,EAAE,YAAY,CAAC,EAClC,4CAAsB,CACvB,CAAC;AAEF,kBAAe,MAAM,CAAC",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\analyticsRoutes.ts"],
+      sourcesContent: ["import express from 'express';\r\nimport { authMiddleware } from '../middleware/authMiddleware';\r\nimport { requireRole } from '../middleware/adminOnly';\r\nimport {\r\n  getEventAnalyticsController,\r\n  getRequestAnalyticsController,\r\n  getUserAnalyticsController,\r\n  getPlatformAnalyticsController,\r\n  getTrendsReportController,\r\n  getLocationPerformanceReportController,\r\n  getTopActiveUsersReportController,\r\n  getDashboardController,\r\n  exportReportController,\r\n} from '../controllers/analyticsController';\r\n\r\nconst router = express.Router();\r\n\r\n/**\r\n * @swagger\r\n * tags:\r\n *   name: Analytics\r\n *   description: Endpoints de analytics, reportes y m\xE9tricas de la plataforma\r\n */\r\n\r\n/**\r\n * @swagger\r\n * /analytics/events:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Analytics de eventos\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *         description: Estado del evento\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Analytics de eventos\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     totalEvents:\r\n *                       type: integer\r\n *                     eventsByStatus:\r\n *                       type: object\r\n *                     eventsByType:\r\n *                       type: object\r\n *                     eventsByMonth:\r\n *                       type: object\r\n *                     averageBudget:\r\n *                       type: number\r\n *                     totalBudget:\r\n *                       type: number\r\n *                     completionRate:\r\n *                       type: number\r\n *                     cancellationRate:\r\n *                       type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/events',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),\r\n  getEventAnalyticsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/requests:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Analytics de solicitudes de m\xFAsicos\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *         description: Estado de la solicitud\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Analytics de solicitudes\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     totalRequests:\r\n *                       type: integer\r\n *                     requestsByStatus:\r\n *                       type: object\r\n *                     requestsByType:\r\n *                       type: object\r\n *                     requestsByMonth:\r\n *                       type: object\r\n *                     averageBudget:\r\n *                       type: number\r\n *                     totalBudget:\r\n *                       type: number\r\n *                     acceptanceRate:\r\n *                       type: number\r\n *                     averageResponseTime:\r\n *                       type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/requests',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),\r\n  getRequestAnalyticsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/users:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Analytics de usuarios\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: userRole\r\n *         schema:\r\n *           type: string\r\n *         description: Rol de usuario\r\n *     responses:\r\n *       200:\r\n *         description: Analytics de usuarios\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     totalUsers:\r\n *                       type: integer\r\n *                     usersByRole:\r\n *                       type: object\r\n *                     usersByMonth:\r\n *                       type: object\r\n *                     activeUsers:\r\n *                       type: integer\r\n *                     newUsersThisMonth:\r\n *                       type: integer\r\n *                     userGrowthRate:\r\n *                       type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/users',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin'),\r\n  getUserAnalyticsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/platform:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Analytics de la plataforma completa\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *         description: Estado\r\n *       - in: query\r\n *         name: userRole\r\n *         schema:\r\n *           type: string\r\n *         description: Rol de usuario\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Analytics de la plataforma\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     totalRevenue:\r\n *                       type: number\r\n *                     averageEventValue:\r\n *                       type: number\r\n *                     topEventTypes:\r\n *                       type: array\r\n *                       items:\r\n *                         type: object\r\n *                         properties:\r\n *                           type:\r\n *                             type: string\r\n *                           count:\r\n *                             type: integer\r\n *                           revenue:\r\n *                             type: number\r\n *                     topLocations:\r\n *                       type: array\r\n *                       items:\r\n *                         type: object\r\n *                         properties:\r\n *                           location:\r\n *                             type: string\r\n *                           count:\r\n *                             type: integer\r\n *                           revenue:\r\n *                             type: number\r\n *                     userEngagement:\r\n *                       type: object\r\n *                       properties:\r\n *                         eventsPerUser:\r\n *                           type: number\r\n *                         requestsPerUser:\r\n *                           type: number\r\n *                         averageSessionDuration:\r\n *                           type: number\r\n *                     performance:\r\n *                       type: object\r\n *                       properties:\r\n *                         averageResponseTime:\r\n *                           type: number\r\n *                         successRate:\r\n *                           type: number\r\n *                         errorRate:\r\n *                           type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/platform',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),\r\n  getPlatformAnalyticsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/trends:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Reporte de tendencias\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: months\r\n *         schema:\r\n *           type: integer\r\n *           default: 6\r\n *         description: N\xFAmero de meses a analizar\r\n *     responses:\r\n *       200:\r\n *         description: Reporte de tendencias\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     eventTrends:\r\n *                       type: array\r\n *                       items:\r\n *                         type: object\r\n *                         properties:\r\n *                           month:\r\n *                             type: string\r\n *                           count:\r\n *                             type: integer\r\n *                           revenue:\r\n *                             type: number\r\n *                     requestTrends:\r\n *                       type: array\r\n *                       items:\r\n *                         type: object\r\n *                         properties:\r\n *                           month:\r\n *                             type: string\r\n *                           count:\r\n *                             type: integer\r\n *                           acceptanceRate:\r\n *                             type: number\r\n *                     userTrends:\r\n *                       type: array\r\n *                       items:\r\n *                         type: object\r\n *                         properties:\r\n *                           month:\r\n *                             type: string\r\n *                           newUsers:\r\n *                             type: integer\r\n *                           activeUsers:\r\n *                             type: integer\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/trends',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),\r\n  getTrendsReportController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/location-performance:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Reporte de rendimiento por ubicaci\xF3n\r\n *     security:\r\n *       - bearerAuth: []\r\n *     responses:\r\n *       200:\r\n *         description: Reporte de rendimiento por ubicaci\xF3n\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     type: object\r\n *                     properties:\r\n *                       location:\r\n *                         type: string\r\n *                       totalEvents:\r\n *                         type: integer\r\n *                       totalRequests:\r\n *                         type: integer\r\n *                       totalRevenue:\r\n *                         type: number\r\n *                       averageEventValue:\r\n *                         type: number\r\n *                       completionRate:\r\n *                         type: number\r\n *                       acceptanceRate:\r\n *                         type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/location-performance',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin'),\r\n  getLocationPerformanceReportController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/top-users:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Reporte de usuarios m\xE1s activos\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 10\r\n *         description: N\xFAmero de usuarios a mostrar\r\n *     responses:\r\n *       200:\r\n *         description: Reporte de usuarios m\xE1s activos\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     type: object\r\n *                     properties:\r\n *                       user:\r\n *                         $ref: '#/components/schemas/User'\r\n *                       eventsCreated:\r\n *                         type: integer\r\n *                       requestsCreated:\r\n *                         type: integer\r\n *                       eventsCompleted:\r\n *                         type: integer\r\n *                       requestsAccepted:\r\n *                         type: integer\r\n *                       totalRevenue:\r\n *                         type: number\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/top-users',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin'),\r\n  getTopActiveUsersReportController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/dashboard:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Dashboard de analytics completo\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *     responses:\r\n *       200:\r\n *         description: Dashboard completo de analytics\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     events:\r\n *                       type: object\r\n *                     requests:\r\n *                       type: object\r\n *                     users:\r\n *                       type: object\r\n *                     platform:\r\n *                       type: object\r\n *                     trends:\r\n *                       type: object\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n */\r\nrouter.get(\r\n  '/dashboard',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin', 'eventCreator', 'organizador'),\r\n  getDashboardController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /analytics/export:\r\n *   get:\r\n *     tags: [Analytics]\r\n *     summary: Exportar reporte en formato CSV\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: type\r\n *         required: true\r\n *         schema:\r\n *           type: string\r\n *           enum: [events, requests, users, platform, trends, location]\r\n *         description: Tipo de reporte a exportar\r\n *       - in: query\r\n *         name: format\r\n *         schema:\r\n *           type: string\r\n *           default: csv\r\n *         description: Formato de exportaci\xF3n\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *         description: Estado\r\n *       - in: query\r\n *         name: userRole\r\n *         schema:\r\n *           type: string\r\n *         description: Rol de usuario\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Archivo CSV descargado\r\n *         content:\r\n *           text/csv:\r\n *             schema:\r\n *               type: string\r\n *       401:\r\n *         description: No autorizado\r\n *       403:\r\n *         description: Acceso denegado\r\n *       400:\r\n *         description: Tipo de reporte no v\xE1lido\r\n */\r\nrouter.get(\r\n  '/export',\r\n  authMiddleware,\r\n  requireRole('admin', 'superadmin'),\r\n  exportReportController\r\n);\r\n\r\nexport default router;\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "c9d47e83f05130b1bfc22df31af3cf6cfaf688a5"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_6w9u1m7o7 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_6w9u1m7o7();
+var __importDefault =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[0]++,
+/* istanbul ignore next */
+(cov_6w9u1m7o7().b[0][0]++, this) &&
+/* istanbul ignore next */
+(cov_6w9u1m7o7().b[0][1]++, this.__importDefault) ||
+/* istanbul ignore next */
+(cov_6w9u1m7o7().b[0][2]++, function (mod) {
+  /* istanbul ignore next */
+  cov_6w9u1m7o7().f[0]++;
+  cov_6w9u1m7o7().s[1]++;
+  return /* istanbul ignore next */(cov_6w9u1m7o7().b[2][0]++, mod) &&
+  /* istanbul ignore next */
+  (cov_6w9u1m7o7().b[2][1]++, mod.__esModule) ?
+  /* istanbul ignore next */
+  (cov_6w9u1m7o7().b[1][0]++, mod) :
+  /* istanbul ignore next */
+  (cov_6w9u1m7o7().b[1][1]++, {
+    "default": mod
+  });
+}));
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[2]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const express_1 =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[3]++, __importDefault(require("express")));
+const authMiddleware_1 =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[4]++, require("../middleware/authMiddleware"));
+const adminOnly_1 =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[5]++, require("../middleware/adminOnly"));
+const analyticsController_1 =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[6]++, require("../controllers/analyticsController"));
+const router =
+/* istanbul ignore next */
+(cov_6w9u1m7o7().s[7]++, express_1.default.Router());
+/**
+ * @swagger
+ * tags:
+ *   name: Analytics
+ *   description: Endpoints de analytics, reportes y métricas de la plataforma
+ */
+/**
+ * @swagger
+ * /analytics/events:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Analytics de eventos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Estado del evento
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *     responses:
+ *       200:
+ *         description: Analytics de eventos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalEvents:
+ *                       type: integer
+ *                     eventsByStatus:
+ *                       type: object
+ *                     eventsByType:
+ *                       type: object
+ *                     eventsByMonth:
+ *                       type: object
+ *                     averageBudget:
+ *                       type: number
+ *                     totalBudget:
+ *                       type: number
+ *                     completionRate:
+ *                       type: number
+ *                     cancellationRate:
+ *                       type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[8]++;
+router.get('/events', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getEventAnalyticsController);
+/**
+ * @swagger
+ * /analytics/requests:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Analytics de solicitudes de músicos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Estado de la solicitud
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *     responses:
+ *       200:
+ *         description: Analytics de solicitudes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalRequests:
+ *                       type: integer
+ *                     requestsByStatus:
+ *                       type: object
+ *                     requestsByType:
+ *                       type: object
+ *                     requestsByMonth:
+ *                       type: object
+ *                     averageBudget:
+ *                       type: number
+ *                     totalBudget:
+ *                       type: number
+ *                     acceptanceRate:
+ *                       type: number
+ *                     averageResponseTime:
+ *                       type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[9]++;
+router.get('/requests', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getRequestAnalyticsController);
+/**
+ * @swagger
+ * /analytics/users:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Analytics de usuarios
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: userRole
+ *         schema:
+ *           type: string
+ *         description: Rol de usuario
+ *     responses:
+ *       200:
+ *         description: Analytics de usuarios
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: integer
+ *                     usersByRole:
+ *                       type: object
+ *                     usersByMonth:
+ *                       type: object
+ *                     activeUsers:
+ *                       type: integer
+ *                     newUsersThisMonth:
+ *                       type: integer
+ *                     userGrowthRate:
+ *                       type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[10]++;
+router.get('/users', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getUserAnalyticsController);
+/**
+ * @swagger
+ * /analytics/platform:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Analytics de la plataforma completa
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Estado
+ *       - in: query
+ *         name: userRole
+ *         schema:
+ *           type: string
+ *         description: Rol de usuario
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *     responses:
+ *       200:
+ *         description: Analytics de la plataforma
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalRevenue:
+ *                       type: number
+ *                     averageEventValue:
+ *                       type: number
+ *                     topEventTypes:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           type:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                           revenue:
+ *                             type: number
+ *                     topLocations:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           location:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                           revenue:
+ *                             type: number
+ *                     userEngagement:
+ *                       type: object
+ *                       properties:
+ *                         eventsPerUser:
+ *                           type: number
+ *                         requestsPerUser:
+ *                           type: number
+ *                         averageSessionDuration:
+ *                           type: number
+ *                     performance:
+ *                       type: object
+ *                       properties:
+ *                         averageResponseTime:
+ *                           type: number
+ *                         successRate:
+ *                           type: number
+ *                         errorRate:
+ *                           type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[11]++;
+router.get('/platform', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getPlatformAnalyticsController);
+/**
+ * @swagger
+ * /analytics/trends:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Reporte de tendencias
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: months
+ *         schema:
+ *           type: integer
+ *           default: 6
+ *         description: Número de meses a analizar
+ *     responses:
+ *       200:
+ *         description: Reporte de tendencias
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     eventTrends:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           month:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                           revenue:
+ *                             type: number
+ *                     requestTrends:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           month:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                           acceptanceRate:
+ *                             type: number
+ *                     userTrends:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           month:
+ *                             type: string
+ *                           newUsers:
+ *                             type: integer
+ *                           activeUsers:
+ *                             type: integer
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[12]++;
+router.get('/trends', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getTrendsReportController);
+/**
+ * @swagger
+ * /analytics/location-performance:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Reporte de rendimiento por ubicación
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Reporte de rendimiento por ubicación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       location:
+ *                         type: string
+ *                       totalEvents:
+ *                         type: integer
+ *                       totalRequests:
+ *                         type: integer
+ *                       totalRevenue:
+ *                         type: number
+ *                       averageEventValue:
+ *                         type: number
+ *                       completionRate:
+ *                         type: number
+ *                       acceptanceRate:
+ *                         type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[13]++;
+router.get('/location-performance', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getLocationPerformanceReportController);
+/**
+ * @swagger
+ * /analytics/top-users:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Reporte de usuarios más activos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Número de usuarios a mostrar
+ *     responses:
+ *       200:
+ *         description: Reporte de usuarios más activos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user:
+ *                         $ref: '#/components/schemas/User'
+ *                       eventsCreated:
+ *                         type: integer
+ *                       requestsCreated:
+ *                         type: integer
+ *                       eventsCompleted:
+ *                         type: integer
+ *                       requestsAccepted:
+ *                         type: integer
+ *                       totalRevenue:
+ *                         type: number
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[14]++;
+router.get('/top-users', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.getTopActiveUsersReportController);
+/**
+ * @swagger
+ * /analytics/dashboard:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Dashboard de analytics completo
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *     responses:
+ *       200:
+ *         description: Dashboard completo de analytics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     events:
+ *                       type: object
+ *                     requests:
+ *                       type: object
+ *                     users:
+ *                       type: object
+ *                     platform:
+ *                       type: object
+ *                     trends:
+ *                       type: object
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[15]++;
+router.get('/dashboard', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin', 'eventCreator', 'organizador'), analyticsController_1.getDashboardController);
+/**
+ * @swagger
+ * /analytics/export:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Exportar reporte en formato CSV
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [events, requests, users, platform, trends, location]
+ *         description: Tipo de reporte a exportar
+ *       - in: query
+ *         name: format
+ *         schema:
+ *           type: string
+ *           default: csv
+ *         description: Formato de exportación
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Estado
+ *       - in: query
+ *         name: userRole
+ *         schema:
+ *           type: string
+ *         description: Rol de usuario
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *     responses:
+ *       200:
+ *         description: Archivo CSV descargado
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ *       400:
+ *         description: Tipo de reporte no válido
+ */
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[16]++;
+router.get('/export', authMiddleware_1.authMiddleware, (0, adminOnly_1.requireRole)('admin', 'superadmin'), analyticsController_1.exportReportController);
+/* istanbul ignore next */
+cov_6w9u1m7o7().s[17]++;
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfNnc5dTFtN283IiwiYWN0dWFsQ292ZXJhZ2UiLCJleHByZXNzXzEiLCJzIiwiX19pbXBvcnREZWZhdWx0IiwicmVxdWlyZSIsImF1dGhNaWRkbGV3YXJlXzEiLCJhZG1pbk9ubHlfMSIsImFuYWx5dGljc0NvbnRyb2xsZXJfMSIsInJvdXRlciIsImRlZmF1bHQiLCJSb3V0ZXIiLCJnZXQiLCJhdXRoTWlkZGxld2FyZSIsInJlcXVpcmVSb2xlIiwiZ2V0RXZlbnRBbmFseXRpY3NDb250cm9sbGVyIiwiZ2V0UmVxdWVzdEFuYWx5dGljc0NvbnRyb2xsZXIiLCJnZXRVc2VyQW5hbHl0aWNzQ29udHJvbGxlciIsImdldFBsYXRmb3JtQW5hbHl0aWNzQ29udHJvbGxlciIsImdldFRyZW5kc1JlcG9ydENvbnRyb2xsZXIiLCJnZXRMb2NhdGlvblBlcmZvcm1hbmNlUmVwb3J0Q29udHJvbGxlciIsImdldFRvcEFjdGl2ZVVzZXJzUmVwb3J0Q29udHJvbGxlciIsImdldERhc2hib2FyZENvbnRyb2xsZXIiLCJleHBvcnRSZXBvcnRDb250cm9sbGVyIiwiZXhwb3J0cyJdLCJzb3VyY2VzIjpbIkM6XFxzcmNcXEFQUF9NdXNzaWtPblxcQVBQX011c3Npa09uX0V4cHJlc3NcXHNyY1xccm91dGVzXFxhbmFseXRpY3NSb3V0ZXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGV4cHJlc3MgZnJvbSAnZXhwcmVzcyc7XHJcbmltcG9ydCB7IGF1dGhNaWRkbGV3YXJlIH0gZnJvbSAnLi4vbWlkZGxld2FyZS9hdXRoTWlkZGxld2FyZSc7XHJcbmltcG9ydCB7IHJlcXVpcmVSb2xlIH0gZnJvbSAnLi4vbWlkZGxld2FyZS9hZG1pbk9ubHknO1xyXG5pbXBvcnQge1xyXG4gIGdldEV2ZW50QW5hbHl0aWNzQ29udHJvbGxlcixcclxuICBnZXRSZXF1ZXN0QW5hbHl0aWNzQ29udHJvbGxlcixcclxuICBnZXRVc2VyQW5hbHl0aWNzQ29udHJvbGxlcixcclxuICBnZXRQbGF0Zm9ybUFuYWx5dGljc0NvbnRyb2xsZXIsXHJcbiAgZ2V0VHJlbmRzUmVwb3J0Q29udHJvbGxlcixcclxuICBnZXRMb2NhdGlvblBlcmZvcm1hbmNlUmVwb3J0Q29udHJvbGxlcixcclxuICBnZXRUb3BBY3RpdmVVc2Vyc1JlcG9ydENvbnRyb2xsZXIsXHJcbiAgZ2V0RGFzaGJvYXJkQ29udHJvbGxlcixcclxuICBleHBvcnRSZXBvcnRDb250cm9sbGVyLFxyXG59IGZyb20gJy4uL2NvbnRyb2xsZXJzL2FuYWx5dGljc0NvbnRyb2xsZXInO1xyXG5cclxuY29uc3Qgcm91dGVyID0gZXhwcmVzcy5Sb3V0ZXIoKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiB0YWdzOlxyXG4gKiAgIG5hbWU6IEFuYWx5dGljc1xyXG4gKiAgIGRlc2NyaXB0aW9uOiBFbmRwb2ludHMgZGUgYW5hbHl0aWNzLCByZXBvcnRlcyB5IG3DqXRyaWNhcyBkZSBsYSBwbGF0YWZvcm1hXHJcbiAqL1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIC9hbmFseXRpY3MvZXZlbnRzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtBbmFseXRpY3NdXHJcbiAqICAgICBzdW1tYXJ5OiBBbmFseXRpY3MgZGUgZXZlbnRvc1xyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHBhcmFtZXRlcnM6XHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZUZyb21cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBkZXNkZVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVUb1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGhhc3RhXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZXZlbnRUeXBlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFRpcG8gZGUgZXZlbnRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc3RhdHVzXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEVzdGFkbyBkZWwgZXZlbnRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbG9jYXRpb25cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVWJpY2FjacOzblxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFuYWx5dGljcyBkZSBldmVudG9zXHJcbiAqICAgICAgICAgY29udGVudDpcclxuICogICAgICAgICAgIGFwcGxpY2F0aW9uL2pzb246XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgc3VjY2VzczpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICAgICAgICAgICAgZGF0YTpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWxFdmVudHM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgZXZlbnRzQnlTdGF0dXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICBldmVudHNCeVR5cGU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICBldmVudHNCeU1vbnRoOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgYXZlcmFnZUJ1ZGdldDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHRvdGFsQnVkZ2V0OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgY29tcGxldGlvblJhdGU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICAgICAgICAgICAgICBjYW5jZWxsYXRpb25SYXRlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgIDQwMTpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTm8gYXV0b3JpemFkb1xyXG4gKiAgICAgICA0MDM6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFjY2VzbyBkZW5lZ2Fkb1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL2V2ZW50cycsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgcmVxdWlyZVJvbGUoJ2FkbWluJywgJ3N1cGVyYWRtaW4nLCAnZXZlbnRDcmVhdG9yJywgJ29yZ2FuaXphZG9yJyksXHJcbiAgZ2V0RXZlbnRBbmFseXRpY3NDb250cm9sbGVyXHJcbik7XHJcblxyXG4vKipcclxuICogQHN3YWdnZXJcclxuICogL2FuYWx5dGljcy9yZXF1ZXN0czpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogQW5hbHl0aWNzIGRlIHNvbGljaXR1ZGVzIGRlIG3DunNpY29zXHJcbiAqICAgICBzZWN1cml0eTpcclxuICogICAgICAgLSBiZWFyZXJBdXRoOiBbXVxyXG4gKiAgICAgcGFyYW1ldGVyczpcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBkYXRlRnJvbVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGRlc2RlXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZVRvXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBmb3JtYXQ6IGRhdGVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRmVjaGEgaGFzdGFcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBldmVudFR5cGVcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVGlwbyBkZSBldmVudG9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBzdGF0dXNcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRXN0YWRvIGRlIGxhIHNvbGljaXR1ZFxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxvY2F0aW9uXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFViaWNhY2nDs25cclxuICogICAgIHJlc3BvbnNlczpcclxuICogICAgICAgMjAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBBbmFseXRpY3MgZGUgc29saWNpdHVkZXNcclxuICogICAgICAgICBjb250ZW50OlxyXG4gKiAgICAgICAgICAgYXBwbGljYXRpb24vanNvbjpcclxuICogICAgICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICBzdWNjZXNzOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBib29sZWFuXHJcbiAqICAgICAgICAgICAgICAgICBkYXRhOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICB0b3RhbFJlcXVlc3RzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHJlcXVlc3RzQnlTdGF0dXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICByZXF1ZXN0c0J5VHlwZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHJlcXVlc3RzQnlNb250aDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGF2ZXJhZ2VCdWRnZXQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICAgICAgICAgICAgICB0b3RhbEJ1ZGdldDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGFjY2VwdGFuY2VSYXRlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgYXZlcmFnZVJlc3BvbnNlVGltZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAzOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBBY2Nlc28gZGVuZWdhZG9cclxuICovXHJcbnJvdXRlci5nZXQoXHJcbiAgJy9yZXF1ZXN0cycsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgcmVxdWlyZVJvbGUoJ2FkbWluJywgJ3N1cGVyYWRtaW4nLCAnZXZlbnRDcmVhdG9yJywgJ29yZ2FuaXphZG9yJyksXHJcbiAgZ2V0UmVxdWVzdEFuYWx5dGljc0NvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvYW5hbHl0aWNzL3VzZXJzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtBbmFseXRpY3NdXHJcbiAqICAgICBzdW1tYXJ5OiBBbmFseXRpY3MgZGUgdXN1YXJpb3NcclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVGcm9tXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBmb3JtYXQ6IGRhdGVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRmVjaGEgZGVzZGVcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBkYXRlVG9cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBoYXN0YVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHVzZXJSb2xlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJvbCBkZSB1c3VhcmlvXHJcbiAqICAgICByZXNwb25zZXM6XHJcbiAqICAgICAgIDIwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogQW5hbHl0aWNzIGRlIHVzdWFyaW9zXHJcbiAqICAgICAgICAgY29udGVudDpcclxuICogICAgICAgICAgIGFwcGxpY2F0aW9uL2pzb246XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgc3VjY2VzczpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICAgICAgICAgICAgZGF0YTpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWxVc2VyczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICB1c2Vyc0J5Um9sZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHVzZXJzQnlNb250aDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGFjdGl2ZVVzZXJzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIG5ld1VzZXJzVGhpc01vbnRoOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHVzZXJHcm93dGhSYXRlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgIDQwMTpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTm8gYXV0b3JpemFkb1xyXG4gKiAgICAgICA0MDM6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFjY2VzbyBkZW5lZ2Fkb1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL3VzZXJzJyxcclxuICBhdXRoTWlkZGxld2FyZSxcclxuICByZXF1aXJlUm9sZSgnYWRtaW4nLCAnc3VwZXJhZG1pbicpLFxyXG4gIGdldFVzZXJBbmFseXRpY3NDb250cm9sbGVyXHJcbik7XHJcblxyXG4vKipcclxuICogQHN3YWdnZXJcclxuICogL2FuYWx5dGljcy9wbGF0Zm9ybTpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogQW5hbHl0aWNzIGRlIGxhIHBsYXRhZm9ybWEgY29tcGxldGFcclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVGcm9tXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBmb3JtYXQ6IGRhdGVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRmVjaGEgZGVzZGVcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBkYXRlVG9cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBoYXN0YVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGV2ZW50VHlwZVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBUaXBvIGRlIGV2ZW50b1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHN0YXR1c1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBFc3RhZG9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiB1c2VyUm9sZVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBSb2wgZGUgdXN1YXJpb1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxvY2F0aW9uXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFViaWNhY2nDs25cclxuICogICAgIHJlc3BvbnNlczpcclxuICogICAgICAgMjAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBBbmFseXRpY3MgZGUgbGEgcGxhdGFmb3JtYVxyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHRvdGFsUmV2ZW51ZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGF2ZXJhZ2VFdmVudFZhbHVlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG9wRXZlbnRUeXBlczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGFycmF5XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvdW50OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIHJldmVudWU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICAgICAgICAgICAgICB0b3BMb2NhdGlvbnM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBhcnJheVxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgaXRlbXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIGxvY2F0aW9uOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgY291bnQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV2ZW51ZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHVzZXJFbmdhZ2VtZW50OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICBldmVudHNQZXJVc2VyOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICByZXF1ZXN0c1BlclVzZXI6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIGF2ZXJhZ2VTZXNzaW9uRHVyYXRpb246XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgcGVyZm9ybWFuY2U6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIGF2ZXJhZ2VSZXNwb25zZVRpbWU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHN1Y2Nlc3NSYXRlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICBlcnJvclJhdGU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgIDQwMTpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTm8gYXV0b3JpemFkb1xyXG4gKiAgICAgICA0MDM6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFjY2VzbyBkZW5lZ2Fkb1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL3BsYXRmb3JtJyxcclxuICBhdXRoTWlkZGxld2FyZSxcclxuICByZXF1aXJlUm9sZSgnYWRtaW4nLCAnc3VwZXJhZG1pbicsICdldmVudENyZWF0b3InLCAnb3JnYW5pemFkb3InKSxcclxuICBnZXRQbGF0Zm9ybUFuYWx5dGljc0NvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvYW5hbHl0aWNzL3RyZW5kczpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogUmVwb3J0ZSBkZSB0ZW5kZW5jaWFzXHJcbiAqICAgICBzZWN1cml0eTpcclxuICogICAgICAgLSBiZWFyZXJBdXRoOiBbXVxyXG4gKiAgICAgcGFyYW1ldGVyczpcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBtb250aHNcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiA2XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgbWVzZXMgYSBhbmFsaXphclxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJlcG9ydGUgZGUgdGVuZGVuY2lhc1xyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGV2ZW50VHJlbmRzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICBtb250aDpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvdW50OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIHJldmVudWU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICAgICAgICAgICAgICByZXF1ZXN0VHJlbmRzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICBtb250aDpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvdW50OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgIGFjY2VwdGFuY2VSYXRlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgdXNlclRyZW5kczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGFycmF5XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgbW9udGg6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICBuZXdVc2VyczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICBhY3RpdmVVc2VyczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgNDAxOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBObyBhdXRvcml6YWRvXHJcbiAqICAgICAgIDQwMzpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogQWNjZXNvIGRlbmVnYWRvXHJcbiAqL1xyXG5yb3V0ZXIuZ2V0KFxyXG4gICcvdHJlbmRzJyxcclxuICBhdXRoTWlkZGxld2FyZSxcclxuICByZXF1aXJlUm9sZSgnYWRtaW4nLCAnc3VwZXJhZG1pbicsICdldmVudENyZWF0b3InLCAnb3JnYW5pemFkb3InKSxcclxuICBnZXRUcmVuZHNSZXBvcnRDb250cm9sbGVyXHJcbik7XHJcblxyXG4vKipcclxuICogQHN3YWdnZXJcclxuICogL2FuYWx5dGljcy9sb2NhdGlvbi1wZXJmb3JtYW5jZTpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogUmVwb3J0ZSBkZSByZW5kaW1pZW50byBwb3IgdWJpY2FjacOzblxyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHJlc3BvbnNlczpcclxuICogICAgICAgMjAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBSZXBvcnRlIGRlIHJlbmRpbWllbnRvIHBvciB1YmljYWNpw7NuXHJcbiAqICAgICAgICAgY29udGVudDpcclxuICogICAgICAgICAgIGFwcGxpY2F0aW9uL2pzb246XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgc3VjY2VzczpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICAgICAgICAgICAgZGF0YTpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgaXRlbXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIGxvY2F0aW9uOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgICAgICAgICAgICAgIHRvdGFsRXZlbnRzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0b3RhbFJlcXVlc3RzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0b3RhbFJldmVudWU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgYXZlcmFnZUV2ZW50VmFsdWU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgY29tcGxldGlvblJhdGU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgYWNjZXB0YW5jZVJhdGU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAzOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBBY2Nlc28gZGVuZWdhZG9cclxuICovXHJcbnJvdXRlci5nZXQoXHJcbiAgJy9sb2NhdGlvbi1wZXJmb3JtYW5jZScsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgcmVxdWlyZVJvbGUoJ2FkbWluJywgJ3N1cGVyYWRtaW4nKSxcclxuICBnZXRMb2NhdGlvblBlcmZvcm1hbmNlUmVwb3J0Q29udHJvbGxlclxyXG4pO1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIC9hbmFseXRpY3MvdG9wLXVzZXJzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtBbmFseXRpY3NdXHJcbiAqICAgICBzdW1tYXJ5OiBSZXBvcnRlIGRlIHVzdWFyaW9zIG3DoXMgYWN0aXZvc1xyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHBhcmFtZXRlcnM6XHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbGltaXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAxMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBOw7ptZXJvIGRlIHVzdWFyaW9zIGEgbW9zdHJhclxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJlcG9ydGUgZGUgdXN1YXJpb3MgbcOhcyBhY3Rpdm9zXHJcbiAqICAgICAgICAgY29udGVudDpcclxuICogICAgICAgICAgIGFwcGxpY2F0aW9uL2pzb246XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgc3VjY2VzczpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICAgICAgICAgICAgZGF0YTpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgaXRlbXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHVzZXI6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgICRyZWY6ICcjL2NvbXBvbmVudHMvc2NoZW1hcy9Vc2VyJ1xyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgZXZlbnRzQ3JlYXRlZDpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgcmVxdWVzdHNDcmVhdGVkOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBldmVudHNDb21wbGV0ZWQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICAgIHJlcXVlc3RzQWNjZXB0ZWQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICAgIHRvdGFsUmV2ZW51ZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgIDQwMTpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTm8gYXV0b3JpemFkb1xyXG4gKiAgICAgICA0MDM6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFjY2VzbyBkZW5lZ2Fkb1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL3RvcC11c2VycycsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgcmVxdWlyZVJvbGUoJ2FkbWluJywgJ3N1cGVyYWRtaW4nKSxcclxuICBnZXRUb3BBY3RpdmVVc2Vyc1JlcG9ydENvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvYW5hbHl0aWNzL2Rhc2hib2FyZDpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogRGFzaGJvYXJkIGRlIGFuYWx5dGljcyBjb21wbGV0b1xyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHBhcmFtZXRlcnM6XHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZUZyb21cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBkZXNkZVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVUb1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGhhc3RhXHJcbiAqICAgICByZXNwb25zZXM6XHJcbiAqICAgICAgIDIwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRGFzaGJvYXJkIGNvbXBsZXRvIGRlIGFuYWx5dGljc1xyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGV2ZW50czpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHJlcXVlc3RzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdXNlcnM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgICBwbGF0Zm9ybTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHRyZW5kczpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAzOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBBY2Nlc28gZGVuZWdhZG9cclxuICovXHJcbnJvdXRlci5nZXQoXHJcbiAgJy9kYXNoYm9hcmQnLFxyXG4gIGF1dGhNaWRkbGV3YXJlLFxyXG4gIHJlcXVpcmVSb2xlKCdhZG1pbicsICdzdXBlcmFkbWluJywgJ2V2ZW50Q3JlYXRvcicsICdvcmdhbml6YWRvcicpLFxyXG4gIGdldERhc2hib2FyZENvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvYW5hbHl0aWNzL2V4cG9ydDpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbQW5hbHl0aWNzXVxyXG4gKiAgICAgc3VtbWFyeTogRXhwb3J0YXIgcmVwb3J0ZSBlbiBmb3JtYXRvIENTVlxyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHBhcmFtZXRlcnM6XHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogdHlwZVxyXG4gKiAgICAgICAgIHJlcXVpcmVkOiB0cnVlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbZXZlbnRzLCByZXF1ZXN0cywgdXNlcnMsIHBsYXRmb3JtLCB0cmVuZHMsIGxvY2F0aW9uXVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBUaXBvIGRlIHJlcG9ydGUgYSBleHBvcnRhclxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGZvcm1hdFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZGVmYXVsdDogY3N2XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZvcm1hdG8gZGUgZXhwb3J0YWNpw7NuXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZUZyb21cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBkZXNkZVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVUb1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGhhc3RhXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZXZlbnRUeXBlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFRpcG8gZGUgZXZlbnRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc3RhdHVzXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEVzdGFkb1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHVzZXJSb2xlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJvbCBkZSB1c3VhcmlvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbG9jYXRpb25cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVWJpY2FjacOzblxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEFyY2hpdm8gQ1NWIGRlc2NhcmdhZG9cclxuICogICAgICAgICBjb250ZW50OlxyXG4gKiAgICAgICAgICAgdGV4dC9jc3Y6XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgNDAxOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBObyBhdXRvcml6YWRvXHJcbiAqICAgICAgIDQwMzpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogQWNjZXNvIGRlbmVnYWRvXHJcbiAqICAgICAgIDQwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVGlwbyBkZSByZXBvcnRlIG5vIHbDoWxpZG9cclxuICovXHJcbnJvdXRlci5nZXQoXHJcbiAgJy9leHBvcnQnLFxyXG4gIGF1dGhNaWRkbGV3YXJlLFxyXG4gIHJlcXVpcmVSb2xlKCdhZG1pbicsICdzdXBlcmFkbWluJyksXHJcbiAgZXhwb3J0UmVwb3J0Q29udHJvbGxlclxyXG4pO1xyXG5cclxuZXhwb3J0IGRlZmF1bHQgcm91dGVyO1xyXG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SUFzQkc7SUFBQUEsYUFBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsYUFB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

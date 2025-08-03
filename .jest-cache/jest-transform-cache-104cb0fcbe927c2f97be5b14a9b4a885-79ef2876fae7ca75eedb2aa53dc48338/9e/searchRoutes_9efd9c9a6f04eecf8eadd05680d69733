@@ -1,0 +1,1118 @@
+484848751f365b8a2b7a25270963e547
+"use strict";
+
+/* istanbul ignore next */
+function cov_2d06xl7m9l() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\searchRoutes.ts";
+  var hash = "1e63daa872ff5f5aac1e583d4182cc32c7c4ce42";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\searchRoutes.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 22
+        },
+        end: {
+          line: 4,
+          column: 1
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 4
+        },
+        end: {
+          line: 3,
+          column: 62
+        }
+      },
+      "2": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 62
+        }
+      },
+      "3": {
+        start: {
+          line: 6,
+          column: 18
+        },
+        end: {
+          line: 6,
+          column: 53
+        }
+      },
+      "4": {
+        start: {
+          line: 7,
+          column: 25
+        },
+        end: {
+          line: 7,
+          column: 64
+        }
+      },
+      "5": {
+        start: {
+          line: 8,
+          column: 31
+        },
+        end: {
+          line: 8,
+          column: 76
+        }
+      },
+      "6": {
+        start: {
+          line: 9,
+          column: 27
+        },
+        end: {
+          line: 9,
+          column: 69
+        }
+      },
+      "7": {
+        start: {
+          line: 10,
+          column: 15
+        },
+        end: {
+          line: 10,
+          column: 41
+        }
+      },
+      "8": {
+        start: {
+          line: 132,
+          column: 0
+        },
+        end: {
+          line: 132,
+          column: 141
+        }
+      },
+      "9": {
+        start: {
+          line: 248,
+          column: 0
+        },
+        end: {
+          line: 248,
+          column: 162
+        }
+      },
+      "10": {
+        start: {
+          line: 336,
+          column: 0
+        },
+        end: {
+          line: 336,
+          column: 139
+        }
+      },
+      "11": {
+        start: {
+          line: 427,
+          column: 0
+        },
+        end: {
+          line: 427,
+          column: 141
+        }
+      },
+      "12": {
+        start: {
+          line: 531,
+          column: 0
+        },
+        end: {
+          line: 531,
+          column: 147
+        }
+      },
+      "13": {
+        start: {
+          line: 625,
+          column: 0
+        },
+        end: {
+          line: 625,
+          column: 171
+        }
+      },
+      "14": {
+        start: {
+          line: 708,
+          column: 0
+        },
+        end: {
+          line: 708,
+          column: 174
+        }
+      },
+      "15": {
+        start: {
+          line: 709,
+          column: 0
+        },
+        end: {
+          line: 709,
+          column: 25
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 2,
+            column: 57
+          }
+        },
+        loc: {
+          start: {
+            line: 2,
+            column: 71
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        line: 2
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 2,
+            column: 22
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 2,
+            column: 23
+          },
+          end: {
+            line: 2,
+            column: 27
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 31
+          },
+          end: {
+            line: 2,
+            column: 51
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        }],
+        line: 2
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 3,
+            column: 11
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 37
+          },
+          end: {
+            line: 3,
+            column: 40
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 43
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        }],
+        line: 3
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 15
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 19
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        }],
+        line: 3
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {
+      "0": [0, 0, 0],
+      "1": [0, 0],
+      "2": [0, 0]
+    },
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\searchRoutes.ts",
+      mappings: ";;;;;AAAA,sDAA8B;AAC9B,iEAA8D;AAC9D,6EAAwE;AACxE,sEAQyC;AAEzC,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAC;AAEhC;;;;;GAKG;AAEH;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAkHG;AACH,MAAM,CAAC,GAAG,CACR,SAAS,EACT,+BAAc,EACd,yCAAkB,EAClB,yCAAsB,CACvB,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAkHG;AACH,MAAM,CAAC,GAAG,CACR,oBAAoB,EACpB,+BAAc,EACd,yCAAkB,EAClB,mDAAgC,CACjC,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAsFG;AACH,MAAM,CAAC,GAAG,CAAC,QAAQ,EAAE,+BAAc,EAAE,yCAAkB,EAAE,wCAAqB,CAAC,CAAC;AAEhF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAyFG;AACH,MAAM,CAAC,GAAG,CACR,SAAS,EACT,+BAAc,EACd,yCAAkB,EAClB,yCAAsB,CACvB,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAsGG;AACH,MAAM,CAAC,GAAG,CACR,WAAW,EACX,+BAAc,EACd,yCAAkB,EAClB,6CAA0B,CAC3B,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GA4FG;AACH,MAAM,CAAC,GAAG,CACR,mBAAmB,EACnB,+BAAc,EACd,yCAAkB,EAClB,6DAA0C,CAC3C,CAAC;AAEF;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;GAiFG;AACH,MAAM,CAAC,GAAG,CACR,sBAAsB,EACtB,+BAAc,EACd,yCAAkB,EAClB,6DAA0C,CAC3C,CAAC;AAEF,kBAAe,MAAM,CAAC",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\searchRoutes.ts"],
+      sourcesContent: ["import express from 'express';\r\nimport { authMiddleware } from '../middleware/authMiddleware';\r\nimport { validatePagination } from '../middleware/validationMiddleware';\r\nimport {\r\n  searchEventsController,\r\n  searchMusicianRequestsController,\r\n  searchUsersController,\r\n  globalSearchController,\r\n  searchByLocationController,\r\n  searchAvailableEventsForMusicianController,\r\n  searchAvailableMusiciansForEventController,\r\n} from '../controllers/searchController';\r\n\r\nconst router = express.Router();\r\n\r\n/**\r\n * @swagger\r\n * tags:\r\n *   name: Search\r\n *   description: Endpoints de b\xFAsqueda avanzada y filtros\r\n */\r\n\r\n/**\r\n * @swagger\r\n * /search/events:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: B\xFAsqueda avanzada de eventos\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: query\r\n *         schema:\r\n *           type: string\r\n *         description: T\xE9rmino de b\xFAsqueda en texto\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *           enum: [pending_musician, musician_assigned, completed, cancelled, musician_cancelled]\r\n *         description: Estado del evento\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *           enum: [concierto, boda, culto, evento_corporativo, festival, fiesta_privada, graduacion, cumpleanos, otro]\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: instrument\r\n *         schema:\r\n *           type: string\r\n *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]\r\n *         description: Instrumento requerido\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *       - in: query\r\n *         name: budget\r\n *         schema:\r\n *           type: number\r\n *         description: Presupuesto m\xEDnimo\r\n *       - in: query\r\n *         name: budgetMax\r\n *         schema:\r\n *           type: number\r\n *         description: Presupuesto m\xE1ximo\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [createdAt, updatedAt, date, eventName]\r\n *           default: createdAt\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: desc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Resultados de b\xFAsqueda\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     $ref: '#/components/schemas/Event'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/events',\r\n  authMiddleware,\r\n  validatePagination,\r\n  searchEventsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /search/musician-requests:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: B\xFAsqueda avanzada de solicitudes de m\xFAsicos\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: query\r\n *         schema:\r\n *           type: string\r\n *         description: T\xE9rmino de b\xFAsqueda en texto\r\n *       - in: query\r\n *         name: status\r\n *         schema:\r\n *           type: string\r\n *           enum: [pendiente, asignada, cancelada, completada, no_asignada]\r\n *         description: Estado de la solicitud\r\n *       - in: query\r\n *         name: eventType\r\n *         schema:\r\n *           type: string\r\n *           enum: [concierto, boda, culto, evento_corporativo, festival, fiesta_privada, graduacion, cumpleanos, otro]\r\n *         description: Tipo de evento\r\n *       - in: query\r\n *         name: instrument\r\n *         schema:\r\n *           type: string\r\n *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]\r\n *         description: Instrumento requerido\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *       - in: query\r\n *         name: budget\r\n *         schema:\r\n *           type: number\r\n *         description: Presupuesto m\xEDnimo\r\n *       - in: query\r\n *         name: budgetMax\r\n *         schema:\r\n *           type: number\r\n *         description: Presupuesto m\xE1ximo\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [createdAt, updatedAt, date, eventName]\r\n *           default: createdAt\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: desc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Resultados de b\xFAsqueda\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     $ref: '#/components/schemas/MusicianRequest'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/musician-requests',\r\n  authMiddleware,\r\n  validatePagination,\r\n  searchMusicianRequestsController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /search/users:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: B\xFAsqueda avanzada de usuarios\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: query\r\n *         schema:\r\n *           type: string\r\n *         description: T\xE9rmino de b\xFAsqueda en texto\r\n *       - in: query\r\n *         name: role\r\n *         schema:\r\n *           type: string\r\n *           enum: [user, musician, admin, super_admin]\r\n *         description: Rol del usuario\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *       - in: query\r\n *         name: instrument\r\n *         schema:\r\n *           type: string\r\n *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]\r\n *         description: Instrumento (solo para m\xFAsicos)\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [createdAt, updatedAt, name, email]\r\n *           default: createdAt\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: desc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Resultados de b\xFAsqueda\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     $ref: '#/components/schemas/User'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get('/users', authMiddleware, validatePagination, searchUsersController);\r\n\r\n/**\r\n * @swagger\r\n * /search/global:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: B\xFAsqueda global en toda la plataforma\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: query\r\n *         schema:\r\n *           type: string\r\n *         required: true\r\n *         description: T\xE9rmino de b\xFAsqueda\r\n *       - in: query\r\n *         name: types\r\n *         schema:\r\n *           type: array\r\n *           items:\r\n *             type: string\r\n *             enum: [events, users, musician-requests]\r\n *         description: Tipos de contenido a buscar\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [relevance, createdAt, updatedAt]\r\n *           default: relevance\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: desc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Resultados de b\xFAsqueda global\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     events:\r\n *                       type: array\r\n *                       items:\r\n *                         $ref: '#/components/schemas/Event'\r\n *                     users:\r\n *                       type: array\r\n *                       items:\r\n *                         $ref: '#/components/schemas/User'\r\n *                     musicianRequests:\r\n *                       type: array\r\n *                       items:\r\n *                         $ref: '#/components/schemas/MusicianRequest'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/global',\r\n  authMiddleware,\r\n  validatePagination,\r\n  globalSearchController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /search/location:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: B\xFAsqueda por ubicaci\xF3n geogr\xE1fica\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: latitude\r\n *         schema:\r\n *           type: number\r\n *           minimum: -90\r\n *           maximum: 90\r\n *         required: true\r\n *         description: Latitud\r\n *       - in: query\r\n *         name: longitude\r\n *         schema:\r\n *           type: number\r\n *           minimum: -180\r\n *           maximum: 180\r\n *         required: true\r\n *         description: Longitud\r\n *       - in: query\r\n *         name: radius\r\n *         schema:\r\n *           type: number\r\n *           minimum: 0.1\r\n *           maximum: 100\r\n *           default: 10\r\n *         description: Radio de b\xFAsqueda en kil\xF3metros\r\n *       - in: query\r\n *         name: type\r\n *         schema:\r\n *           type: string\r\n *           enum: [events, users, all]\r\n *           default: all\r\n *         description: Tipo de contenido a buscar\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [distance, createdAt, updatedAt]\r\n *           default: distance\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: asc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Resultados de b\xFAsqueda por ubicaci\xF3n\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: object\r\n *                   properties:\r\n *                     events:\r\n *                       type: array\r\n *                       items:\r\n *                         $ref: '#/components/schemas/Event'\r\n *                     users:\r\n *                       type: array\r\n *                       items:\r\n *                         $ref: '#/components/schemas/User'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/location',\r\n  authMiddleware,\r\n  validatePagination,\r\n  searchByLocationController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /search/available-events:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: Buscar eventos disponibles para un m\xFAsico\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: instrument\r\n *         schema:\r\n *           type: string\r\n *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]\r\n *         description: Instrumento del m\xFAsico\r\n *       - in: query\r\n *         name: dateFrom\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha desde\r\n *       - in: query\r\n *         name: dateTo\r\n *         schema:\r\n *           type: string\r\n *           format: date\r\n *         description: Fecha hasta\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n\r\n *       - in: query\r\n *         name: budget\r\n *         schema:\r\n *           type: number\r\n *         description: Presupuesto m\xEDnimo\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [date, budget, createdAt]\r\n *           default: date\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: asc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: Eventos disponibles para el m\xFAsico\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     $ref: '#/components/schemas/Event'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/available-events',\r\n  authMiddleware,\r\n  validatePagination,\r\n  searchAvailableEventsForMusicianController\r\n);\r\n\r\n/**\r\n * @swagger\r\n * /search/available-musicians:\r\n *   get:\r\n *     tags: [Search]\r\n *     summary: Buscar m\xFAsicos disponibles para un evento\r\n *     security:\r\n *       - bearerAuth: []\r\n *     parameters:\r\n *       - in: query\r\n *         name: eventId\r\n *         schema:\r\n *           type: string\r\n *         required: true\r\n *         description: ID del evento\r\n *       - in: query\r\n *         name: instrument\r\n *         schema:\r\n *           type: string\r\n *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]\r\n *         description: Instrumento requerido\r\n *       - in: query\r\n *         name: location\r\n *         schema:\r\n *           type: string\r\n *         description: Ubicaci\xF3n preferida\r\n *       - in: query\r\n *         name: limit\r\n *         schema:\r\n *           type: integer\r\n *           default: 20\r\n *         description: N\xFAmero de resultados por p\xE1gina\r\n *       - in: query\r\n *         name: offset\r\n *         schema:\r\n *           type: integer\r\n *           default: 0\r\n *         description: N\xFAmero de resultados a omitir\r\n *       - in: query\r\n *         name: sortBy\r\n *         schema:\r\n *           type: string\r\n *           enum: [rating, experience, distance]\r\n *           default: rating\r\n *         description: Campo por el cual ordenar\r\n *       - in: query\r\n *         name: sortOrder\r\n *         schema:\r\n *           type: string\r\n *           enum: [asc, desc]\r\n *           default: desc\r\n *         description: Orden de clasificaci\xF3n\r\n *     responses:\r\n *       200:\r\n *         description: M\xFAsicos disponibles para el evento\r\n *         content:\r\n *           application/json:\r\n *             schema:\r\n *               type: object\r\n *               properties:\r\n *                 success:\r\n *                   type: boolean\r\n *                 data:\r\n *                   type: array\r\n *                   items:\r\n *                     $ref: '#/components/schemas/User'\r\n *                 pagination:\r\n *                   type: object\r\n *                   properties:\r\n *                     total:\r\n *                       type: integer\r\n *                     page:\r\n *                       type: integer\r\n *                     limit:\r\n *                       type: integer\r\n *                     hasMore:\r\n *                       type: boolean\r\n *       401:\r\n *         description: No autorizado\r\n *       400:\r\n *         description: Par\xE1metros de b\xFAsqueda inv\xE1lidos\r\n */\r\nrouter.get(\r\n  '/available-musicians',\r\n  authMiddleware,\r\n  validatePagination,\r\n  searchAvailableMusiciansForEventController\r\n);\r\n\r\nexport default router;\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "1e63daa872ff5f5aac1e583d4182cc32c7c4ce42"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_2d06xl7m9l = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_2d06xl7m9l();
+var __importDefault =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[0]++,
+/* istanbul ignore next */
+(cov_2d06xl7m9l().b[0][0]++, this) &&
+/* istanbul ignore next */
+(cov_2d06xl7m9l().b[0][1]++, this.__importDefault) ||
+/* istanbul ignore next */
+(cov_2d06xl7m9l().b[0][2]++, function (mod) {
+  /* istanbul ignore next */
+  cov_2d06xl7m9l().f[0]++;
+  cov_2d06xl7m9l().s[1]++;
+  return /* istanbul ignore next */(cov_2d06xl7m9l().b[2][0]++, mod) &&
+  /* istanbul ignore next */
+  (cov_2d06xl7m9l().b[2][1]++, mod.__esModule) ?
+  /* istanbul ignore next */
+  (cov_2d06xl7m9l().b[1][0]++, mod) :
+  /* istanbul ignore next */
+  (cov_2d06xl7m9l().b[1][1]++, {
+    "default": mod
+  });
+}));
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[2]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const express_1 =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[3]++, __importDefault(require("express")));
+const authMiddleware_1 =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[4]++, require("../middleware/authMiddleware"));
+const validationMiddleware_1 =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[5]++, require("../middleware/validationMiddleware"));
+const searchController_1 =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[6]++, require("../controllers/searchController"));
+const router =
+/* istanbul ignore next */
+(cov_2d06xl7m9l().s[7]++, express_1.default.Router());
+/**
+ * @swagger
+ * tags:
+ *   name: Search
+ *   description: Endpoints de búsqueda avanzada y filtros
+ */
+/**
+ * @swagger
+ * /search/events:
+ *   get:
+ *     tags: [Search]
+ *     summary: Búsqueda avanzada de eventos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Término de búsqueda en texto
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending_musician, musician_assigned, completed, cancelled, musician_cancelled]
+ *         description: Estado del evento
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *           enum: [concierto, boda, culto, evento_corporativo, festival, fiesta_privada, graduacion, cumpleanos, otro]
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento requerido
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *       - in: query
+ *         name: budget
+ *         schema:
+ *           type: number
+ *         description: Presupuesto mínimo
+ *       - in: query
+ *         name: budgetMax
+ *         schema:
+ *           type: number
+ *         description: Presupuesto máximo
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, date, eventName]
+ *           default: createdAt
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[8]++;
+router.get('/events', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchEventsController);
+/**
+ * @swagger
+ * /search/musician-requests:
+ *   get:
+ *     tags: [Search]
+ *     summary: Búsqueda avanzada de solicitudes de músicos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Término de búsqueda en texto
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pendiente, asignada, cancelada, completada, no_asignada]
+ *         description: Estado de la solicitud
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *           enum: [concierto, boda, culto, evento_corporativo, festival, fiesta_privada, graduacion, cumpleanos, otro]
+ *         description: Tipo de evento
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento requerido
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *       - in: query
+ *         name: budget
+ *         schema:
+ *           type: number
+ *         description: Presupuesto mínimo
+ *       - in: query
+ *         name: budgetMax
+ *         schema:
+ *           type: number
+ *         description: Presupuesto máximo
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, date, eventName]
+ *           default: createdAt
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/MusicianRequest'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[9]++;
+router.get('/musician-requests', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchMusicianRequestsController);
+/**
+ * @swagger
+ * /search/users:
+ *   get:
+ *     tags: [Search]
+ *     summary: Búsqueda avanzada de usuarios
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Término de búsqueda en texto
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [user, musician, admin, super_admin]
+ *         description: Rol del usuario
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento (solo para músicos)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, updatedAt, name, email]
+ *           default: createdAt
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[10]++;
+router.get('/users', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchUsersController);
+/**
+ * @swagger
+ * /search/global:
+ *   get:
+ *     tags: [Search]
+ *     summary: Búsqueda global en toda la plataforma
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Término de búsqueda
+ *       - in: query
+ *         name: types
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [events, users, musician-requests]
+ *         description: Tipos de contenido a buscar
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [relevance, createdAt, updatedAt]
+ *           default: relevance
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda global
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     events:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/User'
+ *                     musicianRequests:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/MusicianRequest'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[11]++;
+router.get('/global', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.globalSearchController);
+/**
+ * @swagger
+ * /search/location:
+ *   get:
+ *     tags: [Search]
+ *     summary: Búsqueda por ubicación geográfica
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: latitude
+ *         schema:
+ *           type: number
+ *           minimum: -90
+ *           maximum: 90
+ *         required: true
+ *         description: Latitud
+ *       - in: query
+ *         name: longitude
+ *         schema:
+ *           type: number
+ *           minimum: -180
+ *           maximum: 180
+ *         required: true
+ *         description: Longitud
+ *       - in: query
+ *         name: radius
+ *         schema:
+ *           type: number
+ *           minimum: 0.1
+ *           maximum: 100
+ *           default: 10
+ *         description: Radio de búsqueda en kilómetros
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [events, users, all]
+ *           default: all
+ *         description: Tipo de contenido a buscar
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [distance, createdAt, updatedAt]
+ *           default: distance
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda por ubicación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     events:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[12]++;
+router.get('/location', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchByLocationController);
+/**
+ * @swagger
+ * /search/available-events:
+ *   get:
+ *     tags: [Search]
+ *     summary: Buscar eventos disponibles para un músico
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento del músico
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha desde
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha hasta
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación
+ *       - in: query
+ *         name: budget
+ *         schema:
+ *           type: number
+ *         description: Presupuesto mínimo
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [date, budget, createdAt]
+ *           default: date
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Eventos disponibles para el músico
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[13]++;
+router.get('/available-events', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchAvailableEventsForMusicianController);
+/**
+ * @swagger
+ * /search/available-musicians:
+ *   get:
+ *     tags: [Search]
+ *     summary: Buscar músicos disponibles para un evento
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento
+ *       - in: query
+ *         name: instrument
+ *         schema:
+ *           type: string
+ *           enum: [guitarra, piano, bajo, bateria, saxofon, trompeta, violin, canto, teclado, flauta, otro]
+ *         description: Instrumento requerido
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Ubicación preferida
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Número de resultados por página
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de resultados a omitir
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [rating, experience, distance]
+ *           default: rating
+ *         description: Campo por el cual ordenar
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de clasificación
+ *     responses:
+ *       200:
+ *         description: Músicos disponibles para el evento
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *       401:
+ *         description: No autorizado
+ *       400:
+ *         description: Parámetros de búsqueda inválidos
+ */
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[14]++;
+router.get('/available-musicians', authMiddleware_1.authMiddleware, validationMiddleware_1.validatePagination, searchController_1.searchAvailableMusiciansForEventController);
+/* istanbul ignore next */
+cov_2d06xl7m9l().s[15]++;
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMmQwNnhsN205bCIsImFjdHVhbENvdmVyYWdlIiwiZXhwcmVzc18xIiwicyIsIl9faW1wb3J0RGVmYXVsdCIsInJlcXVpcmUiLCJhdXRoTWlkZGxld2FyZV8xIiwidmFsaWRhdGlvbk1pZGRsZXdhcmVfMSIsInNlYXJjaENvbnRyb2xsZXJfMSIsInJvdXRlciIsImRlZmF1bHQiLCJSb3V0ZXIiLCJnZXQiLCJhdXRoTWlkZGxld2FyZSIsInZhbGlkYXRlUGFnaW5hdGlvbiIsInNlYXJjaEV2ZW50c0NvbnRyb2xsZXIiLCJzZWFyY2hNdXNpY2lhblJlcXVlc3RzQ29udHJvbGxlciIsInNlYXJjaFVzZXJzQ29udHJvbGxlciIsImdsb2JhbFNlYXJjaENvbnRyb2xsZXIiLCJzZWFyY2hCeUxvY2F0aW9uQ29udHJvbGxlciIsInNlYXJjaEF2YWlsYWJsZUV2ZW50c0Zvck11c2ljaWFuQ29udHJvbGxlciIsInNlYXJjaEF2YWlsYWJsZU11c2ljaWFuc0ZvckV2ZW50Q29udHJvbGxlciIsImV4cG9ydHMiXSwic291cmNlcyI6WyJDOlxcc3JjXFxBUFBfTXVzc2lrT25cXEFQUF9NdXNzaWtPbl9FeHByZXNzXFxzcmNcXHJvdXRlc1xcc2VhcmNoUm91dGVzLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBleHByZXNzIGZyb20gJ2V4cHJlc3MnO1xyXG5pbXBvcnQgeyBhdXRoTWlkZGxld2FyZSB9IGZyb20gJy4uL21pZGRsZXdhcmUvYXV0aE1pZGRsZXdhcmUnO1xyXG5pbXBvcnQgeyB2YWxpZGF0ZVBhZ2luYXRpb24gfSBmcm9tICcuLi9taWRkbGV3YXJlL3ZhbGlkYXRpb25NaWRkbGV3YXJlJztcclxuaW1wb3J0IHtcclxuICBzZWFyY2hFdmVudHNDb250cm9sbGVyLFxyXG4gIHNlYXJjaE11c2ljaWFuUmVxdWVzdHNDb250cm9sbGVyLFxyXG4gIHNlYXJjaFVzZXJzQ29udHJvbGxlcixcclxuICBnbG9iYWxTZWFyY2hDb250cm9sbGVyLFxyXG4gIHNlYXJjaEJ5TG9jYXRpb25Db250cm9sbGVyLFxyXG4gIHNlYXJjaEF2YWlsYWJsZUV2ZW50c0Zvck11c2ljaWFuQ29udHJvbGxlcixcclxuICBzZWFyY2hBdmFpbGFibGVNdXNpY2lhbnNGb3JFdmVudENvbnRyb2xsZXIsXHJcbn0gZnJvbSAnLi4vY29udHJvbGxlcnMvc2VhcmNoQ29udHJvbGxlcic7XHJcblxyXG5jb25zdCByb3V0ZXIgPSBleHByZXNzLlJvdXRlcigpO1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIHRhZ3M6XHJcbiAqICAgbmFtZTogU2VhcmNoXHJcbiAqICAgZGVzY3JpcHRpb246IEVuZHBvaW50cyBkZSBiw7pzcXVlZGEgYXZhbnphZGEgeSBmaWx0cm9zXHJcbiAqL1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIC9zZWFyY2gvZXZlbnRzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtTZWFyY2hdXHJcbiAqICAgICBzdW1tYXJ5OiBCw7pzcXVlZGEgYXZhbnphZGEgZGUgZXZlbnRvc1xyXG4gKiAgICAgc2VjdXJpdHk6XHJcbiAqICAgICAgIC0gYmVhcmVyQXV0aDogW11cclxuICogICAgIHBhcmFtZXRlcnM6XHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogcXVlcnlcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVMOpcm1pbm8gZGUgYsO6c3F1ZWRhIGVuIHRleHRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc3RhdHVzXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbcGVuZGluZ19tdXNpY2lhbiwgbXVzaWNpYW5fYXNzaWduZWQsIGNvbXBsZXRlZCwgY2FuY2VsbGVkLCBtdXNpY2lhbl9jYW5jZWxsZWRdXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEVzdGFkbyBkZWwgZXZlbnRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZXZlbnRUeXBlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbY29uY2llcnRvLCBib2RhLCBjdWx0bywgZXZlbnRvX2NvcnBvcmF0aXZvLCBmZXN0aXZhbCwgZmllc3RhX3ByaXZhZGEsIGdyYWR1YWNpb24sIGN1bXBsZWFub3MsIG90cm9dXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFRpcG8gZGUgZXZlbnRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogaW5zdHJ1bWVudFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW2d1aXRhcnJhLCBwaWFubywgYmFqbywgYmF0ZXJpYSwgc2F4b2ZvbiwgdHJvbXBldGEsIHZpb2xpbiwgY2FudG8sIHRlY2xhZG8sIGZsYXV0YSwgb3Ryb11cclxuICogICAgICAgICBkZXNjcmlwdGlvbjogSW5zdHJ1bWVudG8gcmVxdWVyaWRvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZUZyb21cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBkZXNkZVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVUb1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGhhc3RhXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbG9jYXRpb25cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVWJpY2FjacOzblxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGJ1ZGdldFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQcmVzdXB1ZXN0byBtw61uaW1vXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogYnVkZ2V0TWF4XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFByZXN1cHVlc3RvIG3DoXhpbW9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBsaW1pdFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDIwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBwb3IgcMOhZ2luYVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IG9mZnNldFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDBcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTsO6bWVybyBkZSByZXN1bHRhZG9zIGEgb21pdGlyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydEJ5XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbY3JlYXRlZEF0LCB1cGRhdGVkQXQsIGRhdGUsIGV2ZW50TmFtZV1cclxuICogICAgICAgICAgIGRlZmF1bHQ6IGNyZWF0ZWRBdFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBDYW1wbyBwb3IgZWwgY3VhbCBvcmRlbmFyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydE9yZGVyXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbYXNjLCBkZXNjXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogZGVzY1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBPcmRlbiBkZSBjbGFzaWZpY2FjacOzblxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJlc3VsdGFkb3MgZGUgYsO6c3F1ZWRhXHJcbiAqICAgICAgICAgY29udGVudDpcclxuICogICAgICAgICAgIGFwcGxpY2F0aW9uL2pzb246XHJcbiAqICAgICAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgc3VjY2VzczpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICAgICAgICAgICAgZGF0YTpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgaXRlbXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgJHJlZjogJyMvY29tcG9uZW50cy9zY2hlbWFzL0V2ZW50J1xyXG4gKiAgICAgICAgICAgICAgICAgcGFnaW5hdGlvbjpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWw6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgcGFnZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBsaW1pdDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBoYXNNb3JlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQYXLDoW1ldHJvcyBkZSBiw7pzcXVlZGEgaW52w6FsaWRvc1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL2V2ZW50cycsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgdmFsaWRhdGVQYWdpbmF0aW9uLFxyXG4gIHNlYXJjaEV2ZW50c0NvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvc2VhcmNoL211c2ljaWFuLXJlcXVlc3RzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtTZWFyY2hdXHJcbiAqICAgICBzdW1tYXJ5OiBCw7pzcXVlZGEgYXZhbnphZGEgZGUgc29saWNpdHVkZXMgZGUgbcO6c2ljb3NcclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHF1ZXJ5XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFTDqXJtaW5vIGRlIGLDunNxdWVkYSBlbiB0ZXh0b1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHN0YXR1c1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW3BlbmRpZW50ZSwgYXNpZ25hZGEsIGNhbmNlbGFkYSwgY29tcGxldGFkYSwgbm9fYXNpZ25hZGFdXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEVzdGFkbyBkZSBsYSBzb2xpY2l0dWRcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBldmVudFR5cGVcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFtjb25jaWVydG8sIGJvZGEsIGN1bHRvLCBldmVudG9fY29ycG9yYXRpdm8sIGZlc3RpdmFsLCBmaWVzdGFfcHJpdmFkYSwgZ3JhZHVhY2lvbiwgY3VtcGxlYW5vcywgb3Ryb11cclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVGlwbyBkZSBldmVudG9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBpbnN0cnVtZW50XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbZ3VpdGFycmEsIHBpYW5vLCBiYWpvLCBiYXRlcmlhLCBzYXhvZm9uLCB0cm9tcGV0YSwgdmlvbGluLCBjYW50bywgdGVjbGFkbywgZmxhdXRhLCBvdHJvXVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBJbnN0cnVtZW50byByZXF1ZXJpZG9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBkYXRlRnJvbVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGRlc2RlXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZVRvXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBmb3JtYXQ6IGRhdGVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRmVjaGEgaGFzdGFcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBsb2NhdGlvblxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBVYmljYWNpw7NuXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogYnVkZ2V0XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFByZXN1cHVlc3RvIG3DrW5pbW9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBidWRnZXRNYXhcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogUHJlc3VwdWVzdG8gbcOheGltb1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxpbWl0XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogMjBcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTsO6bWVybyBkZSByZXN1bHRhZG9zIHBvciBww6FnaW5hXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogb2Zmc2V0XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBOw7ptZXJvIGRlIHJlc3VsdGFkb3MgYSBvbWl0aXJcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBzb3J0QnlcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFtjcmVhdGVkQXQsIHVwZGF0ZWRBdCwgZGF0ZSwgZXZlbnROYW1lXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogY3JlYXRlZEF0XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IENhbXBvIHBvciBlbCBjdWFsIG9yZGVuYXJcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBzb3J0T3JkZXJcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFthc2MsIGRlc2NdXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiBkZXNjXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE9yZGVuIGRlIGNsYXNpZmljYWNpw7NuXHJcbiAqICAgICByZXNwb25zZXM6XHJcbiAqICAgICAgIDIwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogUmVzdWx0YWRvcyBkZSBiw7pzcXVlZGFcclxuICogICAgICAgICBjb250ZW50OlxyXG4gKiAgICAgICAgICAgYXBwbGljYXRpb24vanNvbjpcclxuICogICAgICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICBzdWNjZXNzOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBib29sZWFuXHJcbiAqICAgICAgICAgICAgICAgICBkYXRhOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBhcnJheVxyXG4gKiAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvTXVzaWNpYW5SZXF1ZXN0J1xyXG4gKiAgICAgICAgICAgICAgICAgcGFnaW5hdGlvbjpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWw6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgcGFnZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBsaW1pdDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBoYXNNb3JlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQYXLDoW1ldHJvcyBkZSBiw7pzcXVlZGEgaW52w6FsaWRvc1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL211c2ljaWFuLXJlcXVlc3RzJyxcclxuICBhdXRoTWlkZGxld2FyZSxcclxuICB2YWxpZGF0ZVBhZ2luYXRpb24sXHJcbiAgc2VhcmNoTXVzaWNpYW5SZXF1ZXN0c0NvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvc2VhcmNoL3VzZXJzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtTZWFyY2hdXHJcbiAqICAgICBzdW1tYXJ5OiBCw7pzcXVlZGEgYXZhbnphZGEgZGUgdXN1YXJpb3NcclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHF1ZXJ5XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFTDqXJtaW5vIGRlIGLDunNxdWVkYSBlbiB0ZXh0b1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHJvbGVcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFt1c2VyLCBtdXNpY2lhbiwgYWRtaW4sIHN1cGVyX2FkbWluXVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBSb2wgZGVsIHVzdWFyaW9cclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBsb2NhdGlvblxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBVYmljYWNpw7NuXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogaW5zdHJ1bWVudFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW2d1aXRhcnJhLCBwaWFubywgYmFqbywgYmF0ZXJpYSwgc2F4b2ZvbiwgdHJvbXBldGEsIHZpb2xpbiwgY2FudG8sIHRlY2xhZG8sIGZsYXV0YSwgb3Ryb11cclxuICogICAgICAgICBkZXNjcmlwdGlvbjogSW5zdHJ1bWVudG8gKHNvbG8gcGFyYSBtw7pzaWNvcylcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBsaW1pdFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDIwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBwb3IgcMOhZ2luYVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IG9mZnNldFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDBcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTsO6bWVybyBkZSByZXN1bHRhZG9zIGEgb21pdGlyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydEJ5XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbY3JlYXRlZEF0LCB1cGRhdGVkQXQsIG5hbWUsIGVtYWlsXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogY3JlYXRlZEF0XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IENhbXBvIHBvciBlbCBjdWFsIG9yZGVuYXJcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBzb3J0T3JkZXJcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFthc2MsIGRlc2NdXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiBkZXNjXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE9yZGVuIGRlIGNsYXNpZmljYWNpw7NuXHJcbiAqICAgICByZXNwb25zZXM6XHJcbiAqICAgICAgIDIwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogUmVzdWx0YWRvcyBkZSBiw7pzcXVlZGFcclxuICogICAgICAgICBjb250ZW50OlxyXG4gKiAgICAgICAgICAgYXBwbGljYXRpb24vanNvbjpcclxuICogICAgICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICBzdWNjZXNzOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBib29sZWFuXHJcbiAqICAgICAgICAgICAgICAgICBkYXRhOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBhcnJheVxyXG4gKiAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvVXNlcidcclxuICogICAgICAgICAgICAgICAgIHBhZ2luYXRpb246XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHRvdGFsOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHBhZ2U6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgbGltaXQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgaGFzTW9yZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgNDAxOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBObyBhdXRvcml6YWRvXHJcbiAqICAgICAgIDQwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogUGFyw6FtZXRyb3MgZGUgYsO6c3F1ZWRhIGludsOhbGlkb3NcclxuICovXHJcbnJvdXRlci5nZXQoJy91c2VycycsIGF1dGhNaWRkbGV3YXJlLCB2YWxpZGF0ZVBhZ2luYXRpb24sIHNlYXJjaFVzZXJzQ29udHJvbGxlcik7XHJcblxyXG4vKipcclxuICogQHN3YWdnZXJcclxuICogL3NlYXJjaC9nbG9iYWw6XHJcbiAqICAgZ2V0OlxyXG4gKiAgICAgdGFnczogW1NlYXJjaF1cclxuICogICAgIHN1bW1hcnk6IELDunNxdWVkYSBnbG9iYWwgZW4gdG9kYSBsYSBwbGF0YWZvcm1hXHJcbiAqICAgICBzZWN1cml0eTpcclxuICogICAgICAgLSBiZWFyZXJBdXRoOiBbXVxyXG4gKiAgICAgcGFyYW1ldGVyczpcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBxdWVyeVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgIHJlcXVpcmVkOiB0cnVlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFTDqXJtaW5vIGRlIGLDunNxdWVkYVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHR5cGVzXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgICAgZW51bTogW2V2ZW50cywgdXNlcnMsIG11c2ljaWFuLXJlcXVlc3RzXVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBUaXBvcyBkZSBjb250ZW5pZG8gYSBidXNjYXJcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBsaW1pdFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDIwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBwb3IgcMOhZ2luYVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IG9mZnNldFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgIGRlZmF1bHQ6IDBcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTsO6bWVybyBkZSByZXN1bHRhZG9zIGEgb21pdGlyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydEJ5XHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbcmVsZXZhbmNlLCBjcmVhdGVkQXQsIHVwZGF0ZWRBdF1cclxuICogICAgICAgICAgIGRlZmF1bHQ6IHJlbGV2YW5jZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBDYW1wbyBwb3IgZWwgY3VhbCBvcmRlbmFyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydE9yZGVyXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbYXNjLCBkZXNjXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogZGVzY1xyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBPcmRlbiBkZSBjbGFzaWZpY2FjacOzblxyXG4gKiAgICAgcmVzcG9uc2VzOlxyXG4gKiAgICAgICAyMDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFJlc3VsdGFkb3MgZGUgYsO6c3F1ZWRhIGdsb2JhbFxyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGV2ZW50czpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGFycmF5XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgJHJlZjogJyMvY29tcG9uZW50cy9zY2hlbWFzL0V2ZW50J1xyXG4gKiAgICAgICAgICAgICAgICAgICAgIHVzZXJzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvVXNlcidcclxuICogICAgICAgICAgICAgICAgICAgICBtdXNpY2lhblJlcXVlc3RzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvTXVzaWNpYW5SZXF1ZXN0J1xyXG4gKiAgICAgICAgICAgICAgICAgcGFnaW5hdGlvbjpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWw6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgcGFnZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBsaW1pdDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBoYXNNb3JlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQYXLDoW1ldHJvcyBkZSBiw7pzcXVlZGEgaW52w6FsaWRvc1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL2dsb2JhbCcsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgdmFsaWRhdGVQYWdpbmF0aW9uLFxyXG4gIGdsb2JhbFNlYXJjaENvbnRyb2xsZXJcclxuKTtcclxuXHJcbi8qKlxyXG4gKiBAc3dhZ2dlclxyXG4gKiAvc2VhcmNoL2xvY2F0aW9uOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtTZWFyY2hdXHJcbiAqICAgICBzdW1tYXJ5OiBCw7pzcXVlZGEgcG9yIHViaWNhY2nDs24gZ2VvZ3LDoWZpY2FcclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxhdGl0dWRlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogbnVtYmVyXHJcbiAqICAgICAgICAgICBtaW5pbXVtOiAtOTBcclxuICogICAgICAgICAgIG1heGltdW06IDkwXHJcbiAqICAgICAgICAgcmVxdWlyZWQ6IHRydWVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTGF0aXR1ZFxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxvbmdpdHVkZVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgICAgbWluaW11bTogLTE4MFxyXG4gKiAgICAgICAgICAgbWF4aW11bTogMTgwXHJcbiAqICAgICAgICAgcmVxdWlyZWQ6IHRydWVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTG9uZ2l0dWRcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiByYWRpdXNcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBudW1iZXJcclxuICogICAgICAgICAgIG1pbmltdW06IDAuMVxyXG4gKiAgICAgICAgICAgbWF4aW11bTogMTAwXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAxMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBSYWRpbyBkZSBiw7pzcXVlZGEgZW4ga2lsw7NtZXRyb3NcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiB0eXBlXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbZXZlbnRzLCB1c2VycywgYWxsXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogYWxsXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFRpcG8gZGUgY29udGVuaWRvIGEgYnVzY2FyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbGltaXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAyMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBOw7ptZXJvIGRlIHJlc3VsdGFkb3MgcG9yIHDDoWdpbmFcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBvZmZzZXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBhIG9taXRpclxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHNvcnRCeVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW2Rpc3RhbmNlLCBjcmVhdGVkQXQsIHVwZGF0ZWRBdF1cclxuICogICAgICAgICAgIGRlZmF1bHQ6IGRpc3RhbmNlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IENhbXBvIHBvciBlbCBjdWFsIG9yZGVuYXJcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBzb3J0T3JkZXJcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFthc2MsIGRlc2NdXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiBhc2NcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogT3JkZW4gZGUgY2xhc2lmaWNhY2nDs25cclxuICogICAgIHJlc3BvbnNlczpcclxuICogICAgICAgMjAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBSZXN1bHRhZG9zIGRlIGLDunNxdWVkYSBwb3IgdWJpY2FjacOzblxyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGV2ZW50czpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGFycmF5XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAgICAgJHJlZjogJyMvY29tcG9uZW50cy9zY2hlbWFzL0V2ZW50J1xyXG4gKiAgICAgICAgICAgICAgICAgICAgIHVzZXJzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYXJyYXlcclxuICogICAgICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvVXNlcidcclxuICogICAgICAgICAgICAgICAgIHBhZ2luYXRpb246XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgICAgICBwcm9wZXJ0aWVzOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHRvdGFsOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIHBhZ2U6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgbGltaXQ6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgaGFzTW9yZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgNDAxOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBObyBhdXRvcml6YWRvXHJcbiAqICAgICAgIDQwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogUGFyw6FtZXRyb3MgZGUgYsO6c3F1ZWRhIGludsOhbGlkb3NcclxuICovXHJcbnJvdXRlci5nZXQoXHJcbiAgJy9sb2NhdGlvbicsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgdmFsaWRhdGVQYWdpbmF0aW9uLFxyXG4gIHNlYXJjaEJ5TG9jYXRpb25Db250cm9sbGVyXHJcbik7XHJcblxyXG4vKipcclxuICogQHN3YWdnZXJcclxuICogL3NlYXJjaC9hdmFpbGFibGUtZXZlbnRzOlxyXG4gKiAgIGdldDpcclxuICogICAgIHRhZ3M6IFtTZWFyY2hdXHJcbiAqICAgICBzdW1tYXJ5OiBCdXNjYXIgZXZlbnRvcyBkaXNwb25pYmxlcyBwYXJhIHVuIG3DunNpY29cclxuICogICAgIHNlY3VyaXR5OlxyXG4gKiAgICAgICAtIGJlYXJlckF1dGg6IFtdXHJcbiAqICAgICBwYXJhbWV0ZXJzOlxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGluc3RydW1lbnRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFtndWl0YXJyYSwgcGlhbm8sIGJham8sIGJhdGVyaWEsIHNheG9mb24sIHRyb21wZXRhLCB2aW9saW4sIGNhbnRvLCB0ZWNsYWRvLCBmbGF1dGEsIG90cm9dXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEluc3RydW1lbnRvIGRlbCBtw7pzaWNvXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogZGF0ZUZyb21cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGZvcm1hdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBGZWNoYSBkZXNkZVxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGRhdGVUb1xyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZm9ybWF0OiBkYXRlXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEZlY2hhIGhhc3RhXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbG9jYXRpb25cclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogVWJpY2FjacOzblxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGJ1ZGdldFxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IG51bWJlclxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQcmVzdXB1ZXN0byBtw61uaW1vXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbGltaXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAyMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBOw7ptZXJvIGRlIHJlc3VsdGFkb3MgcG9yIHDDoWdpbmFcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBvZmZzZXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBhIG9taXRpclxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHNvcnRCeVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW2RhdGUsIGJ1ZGdldCwgY3JlYXRlZEF0XVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogZGF0ZVxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBDYW1wbyBwb3IgZWwgY3VhbCBvcmRlbmFyXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogc29ydE9yZGVyXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgICBlbnVtOiBbYXNjLCBkZXNjXVxyXG4gKiAgICAgICAgICAgZGVmYXVsdDogYXNjXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE9yZGVuIGRlIGNsYXNpZmljYWNpw7NuXHJcbiAqICAgICByZXNwb25zZXM6XHJcbiAqICAgICAgIDIwMDpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogRXZlbnRvcyBkaXNwb25pYmxlcyBwYXJhIGVsIG3DunNpY29cclxuICogICAgICAgICBjb250ZW50OlxyXG4gKiAgICAgICAgICAgYXBwbGljYXRpb24vanNvbjpcclxuICogICAgICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgICAgIHR5cGU6IG9iamVjdFxyXG4gKiAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICBzdWNjZXNzOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBib29sZWFuXHJcbiAqICAgICAgICAgICAgICAgICBkYXRhOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBhcnJheVxyXG4gKiAgICAgICAgICAgICAgICAgICBpdGVtczpcclxuICogICAgICAgICAgICAgICAgICAgICAkcmVmOiAnIy9jb21wb25lbnRzL3NjaGVtYXMvRXZlbnQnXHJcbiAqICAgICAgICAgICAgICAgICBwYWdpbmF0aW9uOlxyXG4gKiAgICAgICAgICAgICAgICAgICB0eXBlOiBvYmplY3RcclxuICogICAgICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgICAgICB0b3RhbDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBwYWdlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGxpbWl0OlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogaW50ZWdlclxyXG4gKiAgICAgICAgICAgICAgICAgICAgIGhhc01vcmU6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBib29sZWFuXHJcbiAqICAgICAgIDQwMTpcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogTm8gYXV0b3JpemFkb1xyXG4gKiAgICAgICA0MDA6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFBhcsOhbWV0cm9zIGRlIGLDunNxdWVkYSBpbnbDoWxpZG9zXHJcbiAqL1xyXG5yb3V0ZXIuZ2V0KFxyXG4gICcvYXZhaWxhYmxlLWV2ZW50cycsXHJcbiAgYXV0aE1pZGRsZXdhcmUsXHJcbiAgdmFsaWRhdGVQYWdpbmF0aW9uLFxyXG4gIHNlYXJjaEF2YWlsYWJsZUV2ZW50c0Zvck11c2ljaWFuQ29udHJvbGxlclxyXG4pO1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIC9zZWFyY2gvYXZhaWxhYmxlLW11c2ljaWFuczpcclxuICogICBnZXQ6XHJcbiAqICAgICB0YWdzOiBbU2VhcmNoXVxyXG4gKiAgICAgc3VtbWFyeTogQnVzY2FyIG3DunNpY29zIGRpc3BvbmlibGVzIHBhcmEgdW4gZXZlbnRvXHJcbiAqICAgICBzZWN1cml0eTpcclxuICogICAgICAgLSBiZWFyZXJBdXRoOiBbXVxyXG4gKiAgICAgcGFyYW1ldGVyczpcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBldmVudElkXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgcmVxdWlyZWQ6IHRydWVcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogSUQgZGVsIGV2ZW50b1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGluc3RydW1lbnRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBzdHJpbmdcclxuICogICAgICAgICAgIGVudW06IFtndWl0YXJyYSwgcGlhbm8sIGJham8sIGJhdGVyaWEsIHNheG9mb24sIHRyb21wZXRhLCB2aW9saW4sIGNhbnRvLCB0ZWNsYWRvLCBmbGF1dGEsIG90cm9dXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IEluc3RydW1lbnRvIHJlcXVlcmlkb1xyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IGxvY2F0aW9uXHJcbiAqICAgICAgICAgc2NoZW1hOlxyXG4gKiAgICAgICAgICAgdHlwZTogc3RyaW5nXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IFViaWNhY2nDs24gcHJlZmVyaWRhXHJcbiAqICAgICAgIC0gaW46IHF1ZXJ5XHJcbiAqICAgICAgICAgbmFtZTogbGltaXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAyMFxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBOw7ptZXJvIGRlIHJlc3VsdGFkb3MgcG9yIHDDoWdpbmFcclxuICogICAgICAgLSBpbjogcXVlcnlcclxuICogICAgICAgICBuYW1lOiBvZmZzZXRcclxuICogICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiAwXHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE7Dum1lcm8gZGUgcmVzdWx0YWRvcyBhIG9taXRpclxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHNvcnRCeVxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW3JhdGluZywgZXhwZXJpZW5jZSwgZGlzdGFuY2VdXHJcbiAqICAgICAgICAgICBkZWZhdWx0OiByYXRpbmdcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogQ2FtcG8gcG9yIGVsIGN1YWwgb3JkZW5hclxyXG4gKiAgICAgICAtIGluOiBxdWVyeVxyXG4gKiAgICAgICAgIG5hbWU6IHNvcnRPcmRlclxyXG4gKiAgICAgICAgIHNjaGVtYTpcclxuICogICAgICAgICAgIHR5cGU6IHN0cmluZ1xyXG4gKiAgICAgICAgICAgZW51bTogW2FzYywgZGVzY11cclxuICogICAgICAgICAgIGRlZmF1bHQ6IGRlc2NcclxuICogICAgICAgICBkZXNjcmlwdGlvbjogT3JkZW4gZGUgY2xhc2lmaWNhY2nDs25cclxuICogICAgIHJlc3BvbnNlczpcclxuICogICAgICAgMjAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBNw7pzaWNvcyBkaXNwb25pYmxlcyBwYXJhIGVsIGV2ZW50b1xyXG4gKiAgICAgICAgIGNvbnRlbnQ6XHJcbiAqICAgICAgICAgICBhcHBsaWNhdGlvbi9qc29uOlxyXG4gKiAgICAgICAgICAgICBzY2hlbWE6XHJcbiAqICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgcHJvcGVydGllczpcclxuICogICAgICAgICAgICAgICAgIHN1Y2Nlc3M6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGJvb2xlYW5cclxuICogICAgICAgICAgICAgICAgIGRhdGE6XHJcbiAqICAgICAgICAgICAgICAgICAgIHR5cGU6IGFycmF5XHJcbiAqICAgICAgICAgICAgICAgICAgIGl0ZW1zOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICRyZWY6ICcjL2NvbXBvbmVudHMvc2NoZW1hcy9Vc2VyJ1xyXG4gKiAgICAgICAgICAgICAgICAgcGFnaW5hdGlvbjpcclxuICogICAgICAgICAgICAgICAgICAgdHlwZTogb2JqZWN0XHJcbiAqICAgICAgICAgICAgICAgICAgIHByb3BlcnRpZXM6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgdG90YWw6XHJcbiAqICAgICAgICAgICAgICAgICAgICAgICB0eXBlOiBpbnRlZ2VyXHJcbiAqICAgICAgICAgICAgICAgICAgICAgcGFnZTpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBsaW1pdDpcclxuICogICAgICAgICAgICAgICAgICAgICAgIHR5cGU6IGludGVnZXJcclxuICogICAgICAgICAgICAgICAgICAgICBoYXNNb3JlOlxyXG4gKiAgICAgICAgICAgICAgICAgICAgICAgdHlwZTogYm9vbGVhblxyXG4gKiAgICAgICA0MDE6XHJcbiAqICAgICAgICAgZGVzY3JpcHRpb246IE5vIGF1dG9yaXphZG9cclxuICogICAgICAgNDAwOlxyXG4gKiAgICAgICAgIGRlc2NyaXB0aW9uOiBQYXLDoW1ldHJvcyBkZSBiw7pzcXVlZGEgaW52w6FsaWRvc1xyXG4gKi9cclxucm91dGVyLmdldChcclxuICAnL2F2YWlsYWJsZS1tdXNpY2lhbnMnLFxyXG4gIGF1dGhNaWRkbGV3YXJlLFxyXG4gIHZhbGlkYXRlUGFnaW5hdGlvbixcclxuICBzZWFyY2hBdmFpbGFibGVNdXNpY2lhbnNGb3JFdmVudENvbnRyb2xsZXJcclxuKTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlcjtcclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SUFvQkc7SUFBQUEsY0FBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsY0FBQTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQXBCSCxNQUFBRSxTQUFBO0FBQUE7QUFBQSxDQUFBRixjQUFBLEdBQUFHLENBQUEsT0FBQUMsZUFBQSxDQUFBQyxPQUFBO0FBQ0EsTUFBQUMsZ0JBQUE7QUFBQTtBQUFBLENBQUFOLGNBQUEsR0FBQUcsQ0FBQSxPQUFBRSxPQUFBO0FBQ0EsTUFBQUUsc0JBQUE7QUFBQTtBQUFBLENBQUFQLGNBQUEsR0FBQUcsQ0FBQSxPQUFBRSxPQUFBO0FBQ0EsTUFBQUcsa0JBQUE7QUFBQTtBQUFBLENBQUFSLGNBQUEsR0FBQUcsQ0FBQSxPQUFBRSxPQUFBO0FBVUEsTUFBTUksTUFBTTtBQUFBO0FBQUEsQ0FBQVQsY0FBQSxHQUFBRyxDQUFBLE9BQUdELFNBQUEsQ0FBQVEsT0FBTyxDQUFDQyxNQUFNLEVBQUU7QUFFL0I7Ozs7OztBQU9BOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFBQVgsY0FBQSxHQUFBRyxDQUFBO0FBbUhBTSxNQUFNLENBQUNHLEdBQUcsQ0FDUixTQUFTLEVBQ1ROLGdCQUFBLENBQUFPLGNBQWMsRUFDZE4sc0JBQUEsQ0FBQU8sa0JBQWtCLEVBQ2xCTixrQkFBQSxDQUFBTyxzQkFBc0IsQ0FDdkI7QUFFRDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQUFmLGNBQUEsR0FBQUcsQ0FBQTtBQW1IQU0sTUFBTSxDQUFDRyxHQUFHLENBQ1Isb0JBQW9CLEVBQ3BCTixnQkFBQSxDQUFBTyxjQUFjLEVBQ2ROLHNCQUFBLENBQUFPLGtCQUFrQixFQUNsQk4sa0JBQUEsQ0FBQVEsZ0NBQWdDLENBQ2pDO0FBRUQ7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQUFoQixjQUFBLEdBQUFHLENBQUE7QUF1RkFNLE1BQU0sQ0FBQ0csR0FBRyxDQUFDLFFBQVEsRUFBRU4sZ0JBQUEsQ0FBQU8sY0FBYyxFQUFFTixzQkFBQSxDQUFBTyxrQkFBa0IsRUFBRU4sa0JBQUEsQ0FBQVMscUJBQXFCLENBQUM7QUFFL0U7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQUFqQixjQUFBLEdBQUFHLENBQUE7QUEwRkFNLE1BQU0sQ0FBQ0csR0FBRyxDQUNSLFNBQVMsRUFDVE4sZ0JBQUEsQ0FBQU8sY0FBYyxFQUNkTixzQkFBQSxDQUFBTyxrQkFBa0IsRUFDbEJOLGtCQUFBLENBQUFVLHNCQUFzQixDQUN2QjtBQUVEOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFBQWxCLGNBQUEsR0FBQUcsQ0FBQTtBQXVHQU0sTUFBTSxDQUFDRyxHQUFHLENBQ1IsV0FBVyxFQUNYTixnQkFBQSxDQUFBTyxjQUFjLEVBQ2ROLHNCQUFBLENBQUFPLGtCQUFrQixFQUNsQk4sa0JBQUEsQ0FBQVcsMEJBQTBCLENBQzNCO0FBRUQ7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBO0FBQUFuQixjQUFBLEdBQUFHLENBQUE7QUE2RkFNLE1BQU0sQ0FBQ0csR0FBRyxDQUNSLG1CQUFtQixFQUNuQk4sZ0JBQUEsQ0FBQU8sY0FBYyxFQUNkTixzQkFBQSxDQUFBTyxrQkFBa0IsRUFDbEJOLGtCQUFBLENBQUFZLDBDQUEwQyxDQUMzQztBQUVEOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUE7QUFBQXBCLGNBQUEsR0FBQUcsQ0FBQTtBQWtGQU0sTUFBTSxDQUFDRyxHQUFHLENBQ1Isc0JBQXNCLEVBQ3RCTixnQkFBQSxDQUFBTyxjQUFjLEVBQ2ROLHNCQUFBLENBQUFPLGtCQUFrQixFQUNsQk4sa0JBQUEsQ0FBQWEsMENBQTBDLENBQzNDO0FBQUM7QUFBQXJCLGNBQUEsR0FBQUcsQ0FBQTtBQUVGbUIsT0FBQSxDQUFBWixPQUFBLEdBQWVELE1BQU0iLCJpZ25vcmVMaXN0IjpbXX0=
