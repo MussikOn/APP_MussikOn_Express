@@ -84,8 +84,8 @@ export async function registerController(req: Request, res: Response) {
       status,
     }: authUserRegister = req.body;
     console.log(
-      '[src/controllers/authController.ts:72] Datos de registro recibidos:',
-      req.body
+      '[src/controllers/authController.ts:82] Registro de usuario iniciado para:',
+      { email: userEmail, roll, name, lastName }
     );
     if (!name || !lastName || !roll || !userEmail || !userPassword) {
       res.status(400).json({

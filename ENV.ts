@@ -21,4 +21,4 @@ function obtenerIpLocal(): string {
 export const IP = obtenerIpLocal();
 export const SERVER_PORT = 10000;
 export const URL_API = `http://${IP}:`;
-export const TOKEN_SECRET = `0ch1n@gu@01`; 
+export const TOKEN_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-me-in-production'; 
