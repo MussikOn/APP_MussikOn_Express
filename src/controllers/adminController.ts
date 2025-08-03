@@ -1122,11 +1122,16 @@ export const adminGetMobilePayments = asyncHandler(
 
     // Obtener información adicional de usuarios
     const userIds = [...new Set(mobilePayments.map(payment => (payment as any).userId))];
-    const usersSnapshot = await db.collection('users').where('_id', 'in', userIds).get();
-    const users = usersSnapshot.docs.reduce((acc, doc) => {
-      acc[doc.id] = { id: doc.id, ...doc.data() };
-      return acc;
-    }, {} as Record<string, any>);
+    let users: Record<string, any> = {};
+    
+    // Solo hacer la consulta si hay userIds
+    if (userIds.length > 0) {
+      const usersSnapshot = await db.collection('users').where('_id', 'in', userIds).get();
+      users = usersSnapshot.docs.reduce((acc, doc) => {
+        acc[doc.id] = { id: doc.id, ...doc.data() };
+        return acc;
+      }, {} as Record<string, any>);
+    }
 
     // Combinar datos
     const paymentsWithUserInfo = mobilePayments.map(payment => ({
