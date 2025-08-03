@@ -388,18 +388,28 @@ describe('EventControllers', () => {
     });
 
     it('should return cancelled events successfully', async () => {
-      const expectedEvents = [
+      const cancelledEvents = [
         { id: 'event1', eventName: 'Evento 1', status: 'cancelled' },
         { id: 'event2', eventName: 'Evento 2', status: 'cancelled' }
       ];
 
-      // Mock específico para este test que devuelve exactamente lo esperado
-      (getEventsByUserAndStatus as jest.Mock).mockResolvedValueOnce(expectedEvents);
+      const musicianCancelledEvents = [
+        { id: 'event3', eventName: 'Evento 3', status: 'musician_cancelled' },
+        { id: 'event4', eventName: 'Evento 4', status: 'musician_cancelled' }
+      ];
+
+      const expectedEvents = [...cancelledEvents, ...musicianCancelledEvents];
+
+      // Mock específico para este test que devuelve diferentes resultados para cada llamada
+      (getEventsByUserAndStatus as jest.Mock)
+        .mockResolvedValueOnce(cancelledEvents)        // Primera llamada: 'cancelled'
+        .mockResolvedValueOnce(musicianCancelledEvents); // Segunda llamada: 'musician_cancelled'
 
       await myCancelledEventsController(isolatedMockRequest as Request, isolatedMockResponse as Response);
 
       expect(isolatedMockJson).toHaveBeenCalledWith({ data: expectedEvents });
       expect(getEventsByUserAndStatus).toHaveBeenCalledWith('juan@example.com', 'cancelled');
+      expect(getEventsByUserAndStatus).toHaveBeenCalledWith('juan@example.com', 'musician_cancelled');
     });
   });
 
