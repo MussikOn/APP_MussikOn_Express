@@ -1,4 +1,5 @@
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+import { logger } from '../services/loggerService';
 
 // Inicializar Expo SDK
 const expo = new Expo();
@@ -215,7 +216,7 @@ export class PushNotificationService {
       this.isInitialized = true;
       return true;
     } catch (error) {
-      console.error('Error inicializando PushNotificationService:', error);
+      logger.error('Error inicializando PushNotificationService:', error as Error);
       return false;
     }
   }
@@ -259,7 +260,7 @@ export class PushNotificationService {
       const permission = await Notification.requestPermission();
       return permission === 'granted';
     } catch (error) {
-      console.error('Error solicitando permiso:', error);
+      logger.error('Error solicitando permiso:', error as Error);
       return false;
     }
   }
@@ -278,7 +279,7 @@ export class PushNotificationService {
         throw new Error('No se pudo obtener la VAPID key');
       }
     } catch (error) {
-      console.error('Error cargando VAPID key:', error);
+      logger.error('Error cargando VAPID key:', error as Error);
       throw error;
     }
   }
@@ -289,9 +290,9 @@ export class PushNotificationService {
   private async registerServiceWorker(): Promise<void> {
     try {
       this.registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service Worker registrado:', this.registration);
+      logger.info('Service Worker registrado:', { metadata: { id: this.registration  } });
     } catch (error) {
-      console.error('Error registrando Service Worker:', error);
+      logger.error('Error registrando Service Worker:', error as Error);
       throw error;
     }
   }
@@ -352,7 +353,7 @@ export class PushNotificationService {
         throw new Error('Error guardando suscripción en el backend');
       }
     } catch (error) {
-      console.error('Error suscribiéndose a notificaciones push:', error);
+      logger.error('Error suscribiéndose a notificaciones push:', error as Error);
       return null;
     }
   }
@@ -367,7 +368,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : [];
     } catch (error) {
-      console.error('Error obteniendo suscripciones:', error);
+      logger.error('Error obteniendo suscripciones:', error as Error);
       return [];
     }
   }
@@ -396,7 +397,7 @@ export class PushNotificationService {
       }
       throw new Error('Error guardando suscripción');
     } catch (error) {
-      console.error('Error guardando suscripción:', error);
+      logger.error('Error guardando suscripción:', error as Error);
       throw error;
     }
   }
@@ -430,7 +431,7 @@ export class PushNotificationService {
       }
       return false;
     } catch (error) {
-      console.error('Error eliminando suscripción:', error);
+      logger.error('Error eliminando suscripción:', error as Error);
       return false;
     }
   }
@@ -480,7 +481,7 @@ export class PushNotificationService {
           const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
           tickets.push(...ticketChunk);
         } catch (error) {
-          console.error('Error enviando chunk de notificaciones:', error);
+          logger.error('Error enviando chunk de notificaciones:', error as Error);
         }
       }
 
@@ -505,24 +506,21 @@ export class PushNotificationService {
               }
             }
           } catch (error) {
-            console.error('Error verificando receipts:', error);
+            logger.error('Error verificando receipts:', error as Error);
           }
         }
       }
 
-      console.log('Notificación enviada exitosamente', {
+      logger.info('Notificación enviada exitosamente', { metadata: {
         userId,
         title: notification.title,
         ticketsSent: tickets.length,
         errors: receiptIds.length,
-      });
+      } });
 
       return true;
     } catch (error) {
-      console.error('Error enviando notificación', {
-        userId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      logger.error('Error enviando notificación', error as Error);
       return false;
     }
   }
@@ -581,24 +579,21 @@ export class PushNotificationService {
             }
           });
         } catch (error) {
-          console.error(
-            'Error enviando chunk de notificaciones masivas:',
-            error
-          );
+          logger.error('Error enviando chunk de notificaciones masivas:', error as Error);
           failedCount += chunk.length;
         }
       }
 
-      console.log('Notificación masiva enviada', {
+      logger.info('Notificación masiva enviada', { metadata: {
         totalUsers: request.userIds.length,
         successCount,
         failedCount,
         ticketsSent: tickets.length,
-      });
+      } });
 
       return { success: successCount, failed: failedCount };
     } catch (error) {
-      console.error('Error enviando notificación masiva:', error);
+      logger.error('Error enviando notificación masiva:', error as Error);
       return null;
     }
   }
@@ -616,7 +611,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : null;
     } catch (error) {
-      console.error('Error creando template:', error);
+      logger.error('Error creando template:', error as Error);
       return null;
     }
   }
@@ -631,7 +626,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : [];
     } catch (error) {
-      console.error('Error obteniendo templates:', error);
+      logger.error('Error obteniendo templates:', error as Error);
       return [];
     }
   }
@@ -648,7 +643,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : null;
     } catch (error) {
-      console.error('Error obteniendo template:', error);
+      logger.error('Error obteniendo template:', error as Error);
       return null;
     }
   }
@@ -667,7 +662,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : null;
     } catch (error) {
-      console.error('Error actualizando template:', error);
+      logger.error('Error actualizando template:', error as Error);
       return null;
     }
   }
@@ -682,7 +677,7 @@ export class PushNotificationService {
       );
       return response.success;
     } catch (error) {
-      console.error('Error eliminando template:', error);
+      logger.error('Error eliminando template:', error as Error);
       return false;
     }
   }
@@ -697,7 +692,7 @@ export class PushNotificationService {
       );
       return response.success && response.data ? response.data : null;
     } catch (error) {
-      console.error('Error obteniendo estadísticas:', error);
+      logger.error('Error obteniendo estadísticas:', error as Error);
       return null;
     }
   }
@@ -743,24 +738,21 @@ export class PushNotificationService {
           // Verificar resultado
           const ticket = tickets[0];
           if (ticket.status === 'ok') {
-            console.log('✅ Notificación de prueba enviada exitosamente');
+            logger.info('✅ Notificación de prueba enviada exitosamente');
             return true;
           } else {
-            console.error(
-              '❌ Error enviando notificación de prueba:',
-              ticket.message
-            );
+            logger.error('❌ Error enviando notificación de prueba:', new Error(ticket.message));
             return false;
           }
         } catch (error) {
-          console.error('❌ Error enviando notificación de prueba:', error);
+          logger.error('❌ Error enviando notificación de prueba:', error as Error);
           return false;
         }
       }
 
       return false;
     } catch (error) {
-      console.error('Error enviando notificación de prueba:', error);
+      logger.error('Error enviando notificación de prueba:', error as Error);
       return false;
     }
   }
@@ -829,7 +821,7 @@ export class PushNotificationService {
         return response.data;
       }
     } catch (error) {
-      console.error('Error obteniendo configuración:', error);
+      logger.error('Error obteniendo configuración:', error as Error);
     }
 
     // Configuración por defecto
@@ -866,7 +858,7 @@ export class PushNotificationService {
       );
       return response.success;
     } catch (error) {
-      console.error('Error actualizando configuración:', error);
+      logger.error('Error actualizando configuración:', error as Error);
       return false;
     }
   }

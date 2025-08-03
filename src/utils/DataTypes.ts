@@ -187,3 +187,68 @@ export interface ChatFilters {
   dateFrom?: string;
   dateTo?: string;
 }
+
+// Interfaces para búsqueda de músicos
+export interface EventRequest {
+  id: string;
+  eventName: string;
+  eventType: string;
+  date: string;
+  time: string;
+  location: string;
+  duration: string;
+  instrument: string;
+  budget: string;
+  description?: string;
+  requirements?: string;
+}
+
+export interface Musician {
+  userEmail: string;
+  name: string;
+  lastName: string;
+  instruments: string[];
+  hasOwnInstruments: boolean;
+  experience: number;
+  bio?: string;
+  location: string;
+  hourlyRate: number;
+  isApproved: boolean;
+  isAvailable: boolean;
+  phone?: string;
+  socialMedia?: Record<string, string>;
+  rating: number;
+  totalEvents: number;
+  completedEvents: number;
+}
+
+export interface MusicianSearchRequest {
+  eventId: string;
+  instrument: string;
+  location?: string;
+  budget?: number;
+  date?: string;
+  time?: string;
+  duration?: string;
+  eventType?: string;
+  maxDistance?: number;
+}
+
+export interface MusicianSearchResponse {
+  userEmail: string;
+  name: string;
+  lastName: string;
+  instruments: string[];
+  hasOwnInstruments: boolean;
+  experience: number;
+  hourlyRate: number;
+  location: string;
+  isAvailable: boolean;
+  rating: number;
+  distance?: number;
+  matchScore: number;
+  availability: {
+    isAvailable: boolean;
+    conflicts: string[];
+  };
+}

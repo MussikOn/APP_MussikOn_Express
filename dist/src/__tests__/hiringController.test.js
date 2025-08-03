@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const hiringController_1 = require("../controllers/hiringController");
 const hiringService_1 = require("../services/hiringService");
+const setup_1 = require("./setup");
 // Mock del servicio
 jest.mock('../services/hiringService');
 describe('HiringController', () => {
@@ -44,11 +45,11 @@ describe('HiringController', () => {
     });
     describe('createHiringRequest', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 },
@@ -58,7 +59,7 @@ describe('HiringController', () => {
                     eventDetails: 'Evento de música en vivo',
                     terms: 'Pago por adelantado'
                 }
-            };
+            });
         });
         it('should create hiring request successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockHiringRequest = {
@@ -90,7 +91,14 @@ describe('HiringController', () => {
             });
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                body: {
+                    eventId: 'event123',
+                    musicianId: 'musician123',
+                    eventDetails: 'Evento de música en vivo',
+                    terms: 'Pago por adelantado'
+                }
+            });
             yield hiringController.createHiringRequest(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -98,29 +106,30 @@ describe('HiringController', () => {
                 message: 'Usuario no autenticado'
             });
         }));
-        it('should return error when required fields are missing', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.body = {
-                eventId: 'event123'
-                // musicianId, eventDetails, terms faltantes
-            };
+        it('should return error when service fails', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockHiringService.createHiringRequest.mockRejectedValue(new Error('Service error'));
             yield hiringController.createHiringRequest(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockJson).toHaveBeenCalledWith({
+                success: false,
+                message: 'Service error'
+            });
         }));
     });
     describe('getHiringRequestById', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 },
                 params: {
                     requestId: 'hiring123'
                 }
-            };
+            });
         });
         it('should return hiring request by ID successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockHiringRequest = {
@@ -137,6 +146,7 @@ describe('HiringController', () => {
             };
             mockHiringService.getHiringRequestById.mockResolvedValue(mockHiringRequest);
             yield hiringController.getHiringRequestById(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
                 data: mockHiringRequest
@@ -153,7 +163,11 @@ describe('HiringController', () => {
             });
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                params: {
+                    requestId: 'hiring123'
+                }
+            });
             yield hiringController.getHiringRequestById(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -164,11 +178,11 @@ describe('HiringController', () => {
     });
     describe('updateHiringRequestStatus', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 },
@@ -178,7 +192,7 @@ describe('HiringController', () => {
                 body: {
                     status: 'accepted'
                 }
-            };
+            });
         });
         it('should update hiring request status successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockUpdatedRequest = {
@@ -195,15 +209,23 @@ describe('HiringController', () => {
             };
             mockHiringService.updateHiringRequestStatus.mockResolvedValue(mockUpdatedRequest);
             yield hiringController.updateHiringRequestStatus(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
                 message: 'Estado de solicitud actualizado exitosamente',
                 data: mockUpdatedRequest
             });
-            expect(mockHiringService.updateHiringRequestStatus).toHaveBeenCalledWith('hiring123', 'accepted');
+            expect(mockHiringService.updateHiringRequestStatus).toHaveBeenCalledWith('hiring123', 'accepted', 'user123');
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                params: {
+                    requestId: 'hiring123'
+                },
+                body: {
+                    status: 'accepted'
+                }
+            });
             yield hiringController.updateHiringRequestStatus(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -214,15 +236,18 @@ describe('HiringController', () => {
     });
     describe('getHiringRequestsByUser', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
+                },
+                query: {
+                    status: 'pending'
                 }
-            };
+            });
         });
         it('should return hiring requests by user successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockRequests = [
@@ -241,14 +266,20 @@ describe('HiringController', () => {
             ];
             mockHiringService.getHiringRequestsByUser.mockResolvedValue(mockRequests);
             yield hiringController.getHiringRequestsByUser(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                data: mockRequests
+                data: mockRequests,
+                count: mockRequests.length
             });
-            expect(mockHiringService.getHiringRequestsByUser).toHaveBeenCalledWith('user123');
+            expect(mockHiringService.getHiringRequestsByUser).toHaveBeenCalledWith('user123', 'eventCreator', 'pending');
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                query: {
+                    status: 'pending'
+                }
+            });
             yield hiringController.getHiringRequestsByUser(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -256,14 +287,43 @@ describe('HiringController', () => {
                 message: 'Usuario no autenticado'
             });
         }));
+        it('should return error when user role is invalid', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockRequest = (0, setup_1.createMockRequest)({
+                user: {
+                    id: 'user123',
+                    email: 'user@example.com',
+                    roll: 'admin', // Rol inválido
+                    name: 'Test User',
+                    userEmail: 'user@example.com'
+                },
+                query: {
+                    status: 'pending'
+                }
+            });
+            yield hiringController.getHiringRequestsByUser(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockJson).toHaveBeenCalledWith({
+                success: false,
+                message: 'Rol de usuario inválido'
+            });
+        }));
+        it('should return error when service fails', () => __awaiter(void 0, void 0, void 0, function* () {
+            mockHiringService.getHiringRequestsByUser.mockRejectedValue(new Error('Service error'));
+            yield hiringController.getHiringRequestsByUser(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(500);
+            expect(mockJson).toHaveBeenCalledWith({
+                success: false,
+                message: 'Error al obtener solicitudes de contratación'
+            });
+        }));
     });
     describe('addMessage', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 },
@@ -271,10 +331,9 @@ describe('HiringController', () => {
                     requestId: 'hiring123'
                 },
                 body: {
-                    content: 'Mensaje de prueba',
-                    senderType: 'eventCreator'
+                    content: 'Mensaje de prueba'
                 }
-            };
+            });
         });
         it('should add message successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockMessage = {
@@ -287,19 +346,23 @@ describe('HiringController', () => {
             };
             mockHiringService.addMessage.mockResolvedValue(mockMessage);
             yield hiringController.addMessage(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(201);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                message: 'Mensaje agregado exitosamente',
+                message: 'Mensaje enviado exitosamente',
                 data: mockMessage
             });
-            expect(mockHiringService.addMessage).toHaveBeenCalledWith('hiring123', {
-                content: 'Mensaje de prueba',
-                senderId: 'user123',
-                senderType: 'eventCreator'
-            });
+            expect(mockHiringService.addMessage).toHaveBeenCalledWith('hiring123', 'user123', 'eventCreator', 'Mensaje de prueba');
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                params: {
+                    requestId: 'hiring123'
+                },
+                body: {
+                    content: 'Mensaje de prueba'
+                }
+            });
             yield hiringController.addMessage(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -310,30 +373,35 @@ describe('HiringController', () => {
     });
     describe('markMessagesAsRead', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 },
                 params: {
                     requestId: 'hiring123'
                 }
-            };
+            });
         });
         it('should mark messages as read successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             mockHiringService.markMessagesAsRead.mockResolvedValue();
             yield hiringController.markMessagesAsRead(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                message: 'Mensajes marcados como leídos'
+                message: 'Mensajes marcados como leídos exitosamente'
             });
             expect(mockHiringService.markMessagesAsRead).toHaveBeenCalledWith('hiring123', 'user123');
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({
+                params: {
+                    requestId: 'hiring123'
+                }
+            });
             yield hiringController.markMessagesAsRead(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -344,35 +412,36 @@ describe('HiringController', () => {
     });
     describe('getHiringStats', () => {
         beforeEach(() => {
-            mockRequest = {
+            mockRequest = (0, setup_1.createMockRequest)({
                 user: {
-                    userId: 'user123',
+                    id: 'user123',
                     email: 'user@example.com',
-                    role: 'eventCreator',
+                    roll: 'eventCreator',
                     name: 'Test User',
                     userEmail: 'user@example.com'
                 }
-            };
+            });
         });
         it('should return hiring stats successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockStats = {
-                total: 10,
-                pending: 3,
-                accepted: 5,
-                rejected: 2,
-                completed: 0,
-                cancelled: 0
+                totalRequests: 10,
+                pendingRequests: 3,
+                acceptedRequests: 5,
+                rejectedRequests: 2,
+                completedRequests: 0,
+                averageResponseTime: 2.5
             };
             mockHiringService.getHiringStats.mockResolvedValue(mockStats);
             yield hiringController.getHiringStats(mockRequest, mockResponse);
+            expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
                 data: mockStats
             });
-            expect(mockHiringService.getHiringStats).toHaveBeenCalledWith('user123');
+            expect(mockHiringService.getHiringStats).toHaveBeenCalledWith('user123', 'eventCreator');
         }));
         it('should return error when user is not authenticated', () => __awaiter(void 0, void 0, void 0, function* () {
-            mockRequest.user = undefined;
+            mockRequest = (0, setup_1.createMockRequest)({});
             yield hiringController.getHiringStats(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({

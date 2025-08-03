@@ -11,9 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotificationToUser = exports.getConnectedUsers = exports.chatSocketHandler = void 0;
 const chatModel_1 = require("../models/chatModel");
+const loggerService_1 = require("../services/loggerService");
 const connectedUsers = {};
 const chatSocketHandler = (io, socket) => {
-    console.log('[src/sockets/chatSocket.ts:18] 💬 Usuario conectado al chat:', socket.id);
+    loggerService_1.logger.info('💬 Usuario conectado al chat:', { context: 'ChatSocket', metadata: { socketId: socket.id } });
     // Registrar usuario en el chat
     socket.on('chat-register', (userData) => {
         const { userEmail, userName } = userData;
@@ -24,7 +25,7 @@ const chatSocketHandler = (io, socket) => {
         };
         // Unirse a la sala personal del usuario
         socket.join(userEmail.toLowerCase());
-        console.log('[src/sockets/chatSocket.ts:32] 📝 Usuario registrado en chat:', userEmail);
+        loggerService_1.logger.info('📝 Usuario registrado en chat:', { context: 'ChatSocket', metadata: { userEmail } });
         console.log('[src/sockets/chatSocket.ts:33] 👥 Usuarios conectados al chat:', Object.keys(connectedUsers));
     });
     // Unirse a una conversación
@@ -82,8 +83,8 @@ const chatSocketHandler = (io, socket) => {
             console.log(`[src/sockets/chatSocket.ts:89] 💬 Mensaje enviado en conversación ${conversationId}:`, savedMessage.content);
         }
         catch (error) {
-            console.log('[src/sockets/chatSocket.ts:91] Error en send-message');
-            console.error('[src/sockets/chatSocket.ts:92] Error al enviar mensaje:', error);
+            loggerService_1.logger.info('[src/sockets/chatSocket.ts:91] Error en send-message');
+            loggerService_1.logger.error('[src/sockets/chatSocket.ts:92] Error al enviar mensaje:', error);
             socket.emit('message-error', {
                 error: error.message || 'Error al enviar mensaje',
             });
@@ -100,7 +101,7 @@ const chatSocketHandler = (io, socket) => {
         }
         catch (error) {
             console.log('[src/sockets/chatSocket.ts:107] Error en mark-message-read');
-            console.error('[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:', error);
+            loggerService_1.logger.error('[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:', error);
             socket.emit('message-error', {
                 error: error.message || 'Error al marcar mensaje como leído',
             });
@@ -134,7 +135,7 @@ const chatSocketHandler = (io, socket) => {
             console.log(`[src/sockets/chatSocket.ts:135] ❌ Usuario desconectado del chat: ${disconnectedUser}`);
             console.log('[src/sockets/chatSocket.ts:136] 👥 Usuarios conectados al chat:', Object.keys(connectedUsers));
         }
-        console.log('[src/sockets/chatSocket.ts:140] 💬 Usuario desconectado del chat:', socket.id);
+        loggerService_1.logger.info('💬 Usuario desconectado del chat:', { context: 'ChatSocket', metadata: { socketId: socket.id } });
     });
 };
 exports.chatSocketHandler = chatSocketHandler;

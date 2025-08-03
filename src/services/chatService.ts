@@ -1,6 +1,7 @@
 import { db } from '../utils/firebase';
 import { User } from '../utils/DataTypes';
 import { FieldValue } from 'firebase-admin/firestore';
+import { logger } from '../services/loggerService';
 
 export interface Message {
   id: string;
@@ -81,7 +82,7 @@ export class ChatService {
 
       return conversation;
     } catch (error) {
-      console.error('Error al crear conversación:', error);
+      logger.error('Error al crear conversación:', error as Error);
       throw new Error('Error al crear conversación');
     }
   }
@@ -121,7 +122,7 @@ export class ChatService {
 
       return conversations;
     } catch (error) {
-      console.error('Error al obtener conversaciones:', error);
+      logger.error('Error al obtener conversaciones:', error as Error);
       throw new Error('Error al obtener conversaciones');
     }
   }
@@ -146,7 +147,7 @@ export class ChatService {
       const snapshot = await query.get();
       return snapshot.docs.map(doc => doc.data() as Message);
     } catch (error) {
-      console.error('Error al obtener mensajes:', error);
+      logger.error('Error al obtener mensajes:', error as Error);
       throw new Error('Error al obtener mensajes');
     }
   }
@@ -213,7 +214,7 @@ export class ChatService {
 
       return message;
     } catch (error) {
-      console.error('Error al enviar mensaje:', error);
+      logger.error('Error al enviar mensaje:', error as Error);
       throw new Error('Error al enviar mensaje');
     }
   }
@@ -264,7 +265,7 @@ export class ChatService {
         await batch.commit();
       }
     } catch (error) {
-      console.error('Error al marcar mensajes como leídos:', error);
+      logger.error('Error al marcar mensajes como leídos:', error as Error);
       throw new Error('Error al marcar mensajes como leídos');
     }
   }
@@ -286,7 +287,7 @@ export class ChatService {
       const snapshot = await query.get();
       return snapshot.size;
     } catch (error) {
-      console.error('Error al obtener conteo de mensajes no leídos:', error);
+      logger.error('Error al obtener conteo de mensajes no leídos:', error as Error);
       return 0;
     }
   }
@@ -307,7 +308,7 @@ export class ChatService {
       }
       return null;
     } catch (error) {
-      console.error('Error al obtener conversación:', error);
+      logger.error('Error al obtener conversación:', error as Error);
       throw new Error('Error al obtener conversación');
     }
   }
@@ -347,7 +348,7 @@ export class ChatService {
         return nameMatch || groupMatch || messageMatch;
       });
     } catch (error) {
-      console.error('Error al buscar conversaciones:', error);
+      logger.error('Error al buscar conversaciones:', error as Error);
       throw new Error('Error al buscar conversaciones');
     }
   }
@@ -376,7 +377,7 @@ export class ChatService {
         message.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
     } catch (error) {
-      console.error('Error al buscar mensajes:', error);
+      logger.error('Error al buscar mensajes:', error as Error);
       throw new Error('Error al buscar mensajes');
     }
   }
@@ -415,7 +416,7 @@ export class ChatService {
         .doc(messageId)
         .delete();
     } catch (error) {
-      console.error('Error al eliminar mensaje:', error);
+      logger.error('Error al eliminar mensaje:', error as Error);
       throw new Error('Error al eliminar mensaje');
     }
   }
@@ -469,7 +470,7 @@ export class ChatService {
           updatedAt: new Date(),
         });
     } catch (error) {
-      console.error('Error al agregar participante:', error);
+      logger.error('Error al agregar participante:', error as Error);
       throw new Error('Error al agregar participante');
     }
   }
@@ -514,7 +515,7 @@ export class ChatService {
           updatedAt: new Date(),
         });
     } catch (error) {
-      console.error('Error al remover participante:', error);
+      logger.error('Error al remover participante:', error as Error);
       throw new Error('Error al remover participante');
     }
   }
@@ -563,7 +564,7 @@ export class ChatService {
         activeConversations,
       };
     } catch (error) {
-      console.error('Error al obtener estadísticas de chat:', error);
+      logger.error('Error al obtener estadísticas de chat:', error as Error);
       throw new Error('Error al obtener estadísticas de chat');
     }
   }

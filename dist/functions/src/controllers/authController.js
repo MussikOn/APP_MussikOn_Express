@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUserByEmailController = exports.addEventToUserController = exports.validNumberGetByEmail = exports.emailRegisterController = exports.updateUserByEmailController = void 0;
 exports.registerController = registerController;
 exports.loginController = loginController;
+const loggerService_1 = require("../services/loggerService");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const authModel_1 = require("../models/authModel");
 const validatios_1 = require("../utils/validatios");
@@ -327,14 +328,14 @@ exports.addEventToUserController = addEventToUserController;
 const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userEmail } = req.body;
-        console.log('[src/controllers/authController.ts:270] [DELETE] userEmail recibido:', userEmail); // LOG de depuración
+        loggerService_1.logger.info('[DELETE] userEmail recibido:', { context: 'Auth', metadata: { userEmail } }); // LOG de depuración
         if (!userEmail) {
             res.status(400).json({ message: 'Falta el email' });
             return;
         }
         const result = yield (0, authModel_1.deleteUserByEmailModel)(userEmail);
         console.log("[src/controllers/authController.ts:276] Resultado de deleteUserByEmailModel:", result);
-        console.log('[src/controllers/authController.ts:277] [DELETE] Resultado de deleteUserByEmailModel:', result); // LOG de depuración
+        loggerService_1.logger.info('[DELETE] Resultado de deleteUserByEmailModel:', { context: 'Auth', metadata: { result } }); // LOG de depuración
         if (result === false) {
             res.json({ message: 'Usuario eliminado correctamente' });
         }
@@ -350,7 +351,7 @@ const deleteUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
     }
     catch (error) {
         console.log("[src/controllers/authController.ts:288] Error en deleteUserByEmailController");
-        console.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
+        loggerService_1.logger.error('[src/controllers/authController.ts:289] [DELETE] Error al eliminar usuario:', error); // LOG de error
         res.status(500).json({ message: 'Error al eliminar usuario', error: error.message });
     }
 });

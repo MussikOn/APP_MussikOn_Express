@@ -45,6 +45,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUserByEmailModel = exports.addEventToUserModel = exports.updateUserByEmailModel = exports.getUserByEmailModel = exports.registerModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const admin = __importStar(require("firebase-admin"));
+const loggerService_1 = require("../services/loggerService");
 const registerModel = (name_1, lastName_1, roll_1, userEmail_1, userPassword_1, ...args_1) => __awaiter(void 0, [name_1, lastName_1, roll_1, userEmail_1, userPassword_1, ...args_1], void 0, function* (name, lastName, roll, userEmail, userPassword, status = true) {
     try {
         if (!name || !lastName || !roll || !userEmail || !userPassword) {
@@ -91,7 +92,7 @@ const getUserByEmailModel = (userEmail) => __awaiter(void 0, void 0, void 0, fun
         return data;
     }
     catch (error) {
-        console.log('[src/models/authModel.ts:40] Error en getUserByEmailModel:', error);
+        loggerService_1.logger.info('Error en getUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
         console.log('[src/models/authModel.ts:41] Ubicación: ./src/models/authModel.ts linea 41');
         console.info('[src/models/authModel.ts:42] Error en la peticion getUserByEmail.\n\n');
         return null;
@@ -111,7 +112,7 @@ const updateUserByEmailModel = (userEmail, updatedData) => __awaiter(void 0, voi
         return false;
     }
     catch (error) {
-        console.log('[src/models/authModel.ts:61] Error en updateUserByEmailModel:', error);
+        loggerService_1.logger.info('Error en updateUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
         console.log('[src/models/authModel.ts:62] Ubicación: ./src/models/authModel.ts linea 62');
         console.info('[src/models/authModel.ts:63] Error al actualizar los datos.');
         return 'Error al actualizar los datos.';
@@ -132,7 +133,7 @@ const addEventToUserModel = (userEmail, eventData) => __awaiter(void 0, void 0, 
         return false;
     }
     catch (error) {
-        console.log('[src/models/authModel.ts:81] Error en addEventToUserModel:', error);
+        loggerService_1.logger.info('Error en addEventToUserModel:', { context: 'AuthModel', metadata: { error: String(error) } });
         console.log('[src/models/authModel.ts:82] Ubicación: ./src/models/authModel.ts linea 82');
         console.info('[src/models/authModel.ts:83] Error al guardar el evento en el usuario.');
         return 'Error al guardar el evento.';
@@ -150,7 +151,7 @@ const deleteUserByEmailModel = (userEmail) => __awaiter(void 0, void 0, void 0, 
         return false;
     }
     catch (error) {
-        console.log('[src/models/authModel.ts:96] Error en deleteUserByEmailModel:', error);
+        loggerService_1.logger.info('Error en deleteUserByEmailModel:', { context: 'AuthModel', metadata: { error: String(error) } });
         console.log('[src/models/authModel.ts:97] Ubicación: ./src/models/authModel.ts linea 97');
         console.info('[src/models/authModel.ts:98] Error al eliminar el usuario:', error);
         return 'Error al eliminar el usuario';

@@ -25,7 +25,7 @@ class MusicianStatusService {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f, _g;
             try {
-                console.log('[src/services/musicianStatusService.ts:45] Actualizando estado del músico:', musicianId);
+                loggerService_1.logger.info('Actualizando estado del músico:', { context: 'Status', metadata: { musicianId } });
                 const now = new Date();
                 const statusRef = firebase_1.db.collection(this.COLLECTION).doc(musicianId);
                 const updateData = Object.assign(Object.assign({}, data), { lastSeen: now, updatedAt: now });
@@ -88,7 +88,7 @@ class MusicianStatusService {
     getStatus(musicianId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:95] Obteniendo estado del músico:', musicianId);
+                loggerService_1.logger.info('Obteniendo estado del músico:', { context: 'Status', metadata: { musicianId } });
                 const statusRef = firebase_1.db.collection(this.COLLECTION).doc(musicianId);
                 const doc = yield statusRef.get();
                 if (!doc.exists) {
@@ -118,7 +118,7 @@ class MusicianStatusService {
     getOnlineMusicians(filters) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:125] Buscando músicos online disponibles');
+                loggerService_1.logger.info('[src/services/musicianStatusService.ts:125] Buscando músicos online disponibles');
                 let query = firebase_1.db.collection(this.COLLECTION)
                     .where('isOnline', '==', true)
                     .where('availability.isAvailable', '==', true);
@@ -151,7 +151,7 @@ class MusicianStatusService {
     heartbeat(musicianId, location) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:155] Heartbeat del músico:', musicianId);
+                loggerService_1.logger.info('Heartbeat del músico:', { context: 'Status', metadata: { musicianId } });
                 const updateData = {
                     isOnline: true
                 };
@@ -174,7 +174,7 @@ class MusicianStatusService {
     setOffline(musicianId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:175] Marcando músico como offline:', musicianId);
+                loggerService_1.logger.info('Marcando músico como offline:', { context: 'Status', metadata: { musicianId } });
                 yield this.updateStatus(musicianId, { isOnline: false });
             }
             catch (error) {
@@ -191,7 +191,7 @@ class MusicianStatusService {
     updatePreferences(musicianId, preferences) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:190] Actualizando preferencias del músico:', musicianId);
+                loggerService_1.logger.info('Actualizando preferencias del músico:', { context: 'Status', metadata: { musicianId } });
                 const statusRef = firebase_1.db.collection(this.COLLECTION).doc(musicianId);
                 const doc = yield statusRef.get();
                 if (!doc.exists) {
@@ -220,7 +220,7 @@ class MusicianStatusService {
     updatePerformance(musicianId, performance) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:220] Actualizando rendimiento del músico:', musicianId);
+                loggerService_1.logger.info('Actualizando rendimiento del músico:', { context: 'Status', metadata: { musicianId } });
                 const statusRef = firebase_1.db.collection(this.COLLECTION).doc(musicianId);
                 const doc = yield statusRef.get();
                 if (!doc.exists) {
@@ -249,7 +249,7 @@ class MusicianStatusService {
     cleanupOfflineStatuses() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/musicianStatusService.ts:250] Limpiando estados offline antiguos');
+                loggerService_1.logger.info('[src/services/musicianStatusService.ts:250] Limpiando estados offline antiguos');
                 const cutoffTime = new Date(Date.now() - (24 * 60 * 60 * 1000)); // 24 horas
                 const query = firebase_1.db.collection(this.COLLECTION)
                     .where('isOnline', '==', false)

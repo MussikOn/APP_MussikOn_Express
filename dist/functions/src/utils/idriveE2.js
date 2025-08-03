@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadToS3 = exports.s3 = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
+const loggerService_1 = require("../services/loggerService");
 exports.s3 = new client_s3_1.S3Client({
     region: process.env.IDRIVE_E2_REGION,
     endpoint: process.env.IDRIVE_E2_ENDPOINT,
@@ -38,7 +39,7 @@ const uploadToS3 = (file_1, fileName_1, contentType_1, ...args_1) => __awaiter(v
         return `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET}/${key}`;
     }
     catch (error) {
-        console.error('[functions/src/utils/idriveE2.ts] Error al subir archivo a S3:', error);
+        loggerService_1.logger.error('[functions/src/utils/idriveE2.ts] Error al subir archivo a S3:', error);
         throw new Error('Error al subir archivo a S3');
     }
 });

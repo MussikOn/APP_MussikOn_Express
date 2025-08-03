@@ -16,6 +16,7 @@ import {
 } from '../utils/DataTypes';
 import { db } from '../utils/firebase';
 import * as admin from 'firebase-admin';
+import { logger } from '../services/loggerService';
 
 // Configuración de idriveE2
 const s3Client = new S3Client({
@@ -105,10 +106,7 @@ export const uploadImageToS3 = async (
       mimetype: file.mimetype,
     };
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:uploadImageToS3] Error al subir imagen a idriveE2:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:uploadImageToS3] Error al subir imagen a idriveE2:', error as Error);
     throw error;
   }
 };
@@ -129,10 +127,7 @@ export const generateSignedUrl = async (
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn });
     return signedUrl;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:generateSignedUrl] Error al generar URL firmada:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:generateSignedUrl] Error al generar URL firmada:', error as Error);
     throw error;
   }
 };
@@ -160,10 +155,7 @@ export const createImageRecord = async (
     );
     return image;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:createImageRecord] Error al crear registro de imagen:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:createImageRecord] Error al crear registro de imagen:', error as Error);
     throw error;
   }
 };
@@ -215,10 +207,7 @@ export const uploadImage = async (
     );
     return image;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:uploadImage] Error al subir imagen:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:uploadImage] Error al subir imagen:', error as Error);
     throw error;
   }
 };
@@ -263,10 +252,7 @@ export const getImageById = async (imageId: string): Promise<Image | null> => {
 
     return image;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:getImageById] Error al obtener imagen:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:getImageById] Error al obtener imagen:', error as Error);
     throw error;
   }
 };
@@ -356,10 +342,7 @@ export const listImages = async (
     );
     return imagesWithUrls;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:listImages] Error al listar imágenes:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:listImages] Error al listar imágenes:', error as Error);
     throw error;
   }
 };
@@ -395,10 +378,7 @@ export const updateImage = async (
     );
     return updatedImage;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:updateImage] Error al actualizar imagen:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:updateImage] Error al actualizar imagen:', error as Error);
     throw error;
   }
 };
@@ -440,10 +420,7 @@ export const deleteImage = async (
     );
     return true;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:deleteImage] Error al eliminar imagen:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:deleteImage] Error al eliminar imagen:', error as Error);
     throw error;
   }
 };
@@ -464,10 +441,7 @@ export const deleteImageFromS3 = async (key: string): Promise<boolean> => {
     );
     return true;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:deleteImageFromS3] Error al eliminar imagen de idriveE2:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:deleteImageFromS3] Error al eliminar imagen de idriveE2:', error as Error);
     throw error;
   }
 };
@@ -515,10 +489,7 @@ export const getImageStats = async (): Promise<ImageStats> => {
     );
     return stats;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:getImageStats] Error al obtener estadísticas:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:getImageStats] Error al obtener estadísticas:', error as Error);
     throw error;
   }
 };
@@ -536,10 +507,7 @@ export const getUserProfileImages = async (
       isActive: true,
     });
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:getUserProfileImages] Error al obtener imágenes de perfil:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:getUserProfileImages] Error al obtener imágenes de perfil:', error as Error);
     throw error;
   }
 };
@@ -561,10 +529,7 @@ export const getPostImages = async (userId?: string): Promise<Image[]> => {
 
     return await listImages(filters);
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:getPostImages] Error al obtener imágenes de posts:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:getPostImages] Error al obtener imágenes de posts:', error as Error);
     throw error;
   }
 };
@@ -585,10 +550,7 @@ export const getEventImages = async (eventId?: string): Promise<Image[]> => {
 
     return await listImages(filters);
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:getEventImages] Error al obtener imágenes de eventos:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:getEventImages] Error al obtener imágenes de eventos:', error as Error);
     throw error;
   }
 };
@@ -627,10 +589,7 @@ export const cleanupExpiredImages = async (): Promise<number> => {
     );
     return deletedCount;
   } catch (error) {
-    console.error(
-      '[src/models/imagesModel.ts:cleanupExpiredImages] Error al limpiar imágenes expiradas:',
-      error
-    );
+    logger.error('[src/models/imagesModel.ts:cleanupExpiredImages] Error al limpiar imágenes expiradas:', error as Error);
     throw error;
   }
 };

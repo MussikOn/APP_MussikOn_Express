@@ -4,6 +4,7 @@ import {
   getConversationByIdModel,
 } from '../models/chatModel';
 import { Message } from '../utils/DataTypes';
+import { logger } from '../services/loggerService';
 
 interface ChatUser {
   socketId: string;
@@ -18,10 +19,7 @@ interface ConnectedUsers {
 const connectedUsers: ConnectedUsers = {};
 
 export const chatSocketHandler = (io: Server, socket: Socket) => {
-  console.log(
-    '[src/sockets/chatSocket.ts:18] 💬 Usuario conectado al chat:',
-    socket.id
-  );
+  logger.info('💬 Usuario conectado al chat:', { context: 'ChatSocket', metadata: { socketId: socket.id } });
 
   // Registrar usuario en el chat
   socket.on(
@@ -37,10 +35,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
       // Unirse a la sala personal del usuario
       socket.join(userEmail.toLowerCase());
 
-      console.log(
-        '[src/sockets/chatSocket.ts:32] 📝 Usuario registrado en chat:',
-        userEmail
-      );
+      logger.info('📝 Usuario registrado en chat:', { context: 'ChatSocket', metadata: { userEmail } });
       console.log(
         '[src/sockets/chatSocket.ts:33] 👥 Usuarios conectados al chat:',
         Object.keys(connectedUsers)
@@ -134,11 +129,8 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
           savedMessage.content
         );
       } catch (error: any) {
-        console.log('[src/sockets/chatSocket.ts:91] Error en send-message');
-        console.error(
-          '[src/sockets/chatSocket.ts:92] Error al enviar mensaje:',
-          error
-        );
+        logger.info('[src/sockets/chatSocket.ts:91] Error en send-message');
+        logger.error('[src/sockets/chatSocket.ts:92] Error al enviar mensaje:', error as Error);
         socket.emit('message-error', {
           error: error.message || 'Error al enviar mensaje',
         });
@@ -164,10 +156,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
         console.log(
           '[src/sockets/chatSocket.ts:107] Error en mark-message-read'
         );
-        console.error(
-          '[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:',
-          error
-        );
+        logger.error('[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:', error as Error);
         socket.emit('message-error', {
           error: error.message || 'Error al marcar mensaje como leído',
         });
@@ -226,10 +215,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
       );
     }
 
-    console.log(
-      '[src/sockets/chatSocket.ts:140] 💬 Usuario desconectado del chat:',
-      socket.id
-    );
+    logger.info('💬 Usuario desconectado del chat:', { context: 'ChatSocket', metadata: { socketId: socket.id } });
   });
 };
 

@@ -1,6 +1,7 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import express from 'express';
+import { logger } from './services/loggerService';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -93,7 +94,7 @@ app.get('/', (req, res) => {
 
 // Middleware de manejo de errores
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error en la API:', err);
+  logger.error('Error en la API:', err as Error);
   res.status(err.status || 500).json({ 
     error: err.message || 'Error interno del servidor',
     timestamp: new Date().toISOString()

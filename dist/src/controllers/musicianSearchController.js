@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MusicianSearchController = void 0;
+const loggerService_1 = require("../services/loggerService");
 const musicianSearchService_1 = require("../services/musicianSearchService");
 const eventModel_1 = require("../models/eventModel");
 /**
@@ -26,7 +27,8 @@ class MusicianSearchController {
             try {
                 const { eventId, criteria } = req.body;
                 const user = req.user;
-                console.log('[src/controllers/musicianSearchController.ts:20] 🔍 Búsqueda de músicos solicitada:', { eventId, userEmail: user.userEmail });
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:20] 🔍 Búsqueda de músicos solicitada:', { metadata: { eventId, userEmail: user.userEmail }
+                });
                 // Validar que el usuario sea un creador de eventos
                 if (user.roll !== 'eventCreator') {
                     res.status(403).json({
@@ -64,7 +66,8 @@ class MusicianSearchController {
                 };
                 // Realizar búsqueda
                 const musicians = yield musicianSearchService_1.MusicianSearchService.searchMusiciansForEvent(event, searchCriteria);
-                console.log('[src/controllers/musicianSearchController.ts:65] ✅ Búsqueda completada. Músicos encontrados:', musicians.length);
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:65] ✅ Búsqueda completada. Músicos encontrados:', { metadata: { id: musicians.length,
+                    } });
                 res.status(200).json({
                     success: true,
                     message: 'Búsqueda de músicos completada exitosamente',
@@ -77,7 +80,7 @@ class MusicianSearchController {
                 });
             }
             catch (error) {
-                console.error('[src/controllers/musicianSearchController.ts:80] ❌ Error en búsqueda de músicos:', error);
+                loggerService_1.logger.error('[src/controllers/musicianSearchController.ts:80] ❌ Error en búsqueda de músicos:', error);
                 res.status(500).json({
                     success: false,
                     message: 'Error interno del servidor',
@@ -95,7 +98,8 @@ class MusicianSearchController {
             try {
                 const { eventId } = req.params;
                 const user = req.user;
-                console.log('[src/controllers/musicianSearchController.ts:95] 🎯 Obteniendo recomendaciones para evento:', eventId);
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:95] 🎯 Obteniendo recomendaciones para evento:', { metadata: { id: eventId,
+                    } });
                 // Validar que el usuario sea un creador de eventos
                 if (user.roll !== 'eventCreator') {
                     res.status(403).json({
@@ -122,7 +126,8 @@ class MusicianSearchController {
                 }
                 // Obtener recomendaciones
                 const recommendations = yield musicianSearchService_1.MusicianSearchService.getRecommendedMusicians(eventId);
-                console.log('[src/controllers/musicianSearchController.ts:125] ✅ Recomendaciones obtenidas:', recommendations.length);
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:125] ✅ Recomendaciones obtenidas:', { metadata: { id: recommendations.length,
+                    } });
                 res.status(200).json({
                     success: true,
                     message: 'Recomendaciones obtenidas exitosamente',
@@ -134,7 +139,7 @@ class MusicianSearchController {
                 });
             }
             catch (error) {
-                console.error('[src/controllers/musicianSearchController.ts:140] ❌ Error obteniendo recomendaciones:', error);
+                loggerService_1.logger.error('[src/controllers/musicianSearchController.ts:140] ❌ Error obteniendo recomendaciones:', error);
                 res.status(500).json({
                     success: false,
                     message: 'Error interno del servidor',
@@ -153,7 +158,8 @@ class MusicianSearchController {
             try {
                 const { criteria } = req.body;
                 const user = req.user;
-                console.log('[src/controllers/musicianSearchController.ts:155] 🔍 Búsqueda avanzada solicitada:', { criteria, userEmail: user.userEmail });
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:155] 🔍 Búsqueda avanzada solicitada:', { metadata: { criteria, userEmail: user.userEmail }
+                });
                 // Validar que el usuario sea un creador de eventos
                 if (user.roll !== 'eventCreator') {
                     res.status(403).json({
@@ -194,7 +200,8 @@ class MusicianSearchController {
                 };
                 // Realizar búsqueda
                 const musicians = yield musicianSearchService_1.MusicianSearchService.searchMusiciansForEvent(tempEvent, criteria);
-                console.log('[src/controllers/musicianSearchController.ts:195] ✅ Búsqueda avanzada completada. Músicos encontrados:', musicians.length);
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:195] ✅ Búsqueda avanzada completada. Músicos encontrados:', { metadata: { id: musicians.length,
+                    } });
                 res.status(200).json({
                     success: true,
                     message: 'Búsqueda avanzada completada exitosamente',
@@ -206,7 +213,7 @@ class MusicianSearchController {
                 });
             }
             catch (error) {
-                console.error('[src/controllers/musicianSearchController.ts:210] ❌ Error en búsqueda avanzada:', error);
+                loggerService_1.logger.error('[src/controllers/musicianSearchController.ts:210] ❌ Error en búsqueda avanzada:', error);
                 res.status(500).json({
                     success: false,
                     message: 'Error interno del servidor',
@@ -223,7 +230,8 @@ class MusicianSearchController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = req.user;
-                console.log('[src/controllers/musicianSearchController.ts:225] 📊 Obteniendo estadísticas de búsqueda para:', user.userEmail);
+                loggerService_1.logger.info('[src/controllers/musicianSearchController.ts:225] 📊 Obteniendo estadísticas de búsqueda para:', { metadata: { id: user.userEmail,
+                    } });
                 // Validar que el usuario sea un creador de eventos
                 if (user.roll !== 'eventCreator') {
                     res.status(403).json({
@@ -247,7 +255,7 @@ class MusicianSearchController {
                 });
             }
             catch (error) {
-                console.error('[src/controllers/musicianSearchController.ts:250] ❌ Error obteniendo estadísticas:', error);
+                loggerService_1.logger.error('[src/controllers/musicianSearchController.ts:250] ❌ Error obteniendo estadísticas:', error);
                 res.status(500).json({
                     success: false,
                     message: 'Error interno del servidor',

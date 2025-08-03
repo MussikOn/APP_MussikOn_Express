@@ -1,6 +1,7 @@
 import { db } from "../utils/firebase";
 import { Event } from "../utils/DataTypes";
 import * as admin from "firebase-admin";
+import { logger } from "../services/loggerService";
 
 export const createEventModel = async (eventData: Omit<Event, 'id' | 'status' | 'assignedMusicianId' | 'interestedMusicians' | 'createdAt' | 'updatedAt'> & { user: string }) => {
   const now = new Date().toISOString();
@@ -14,7 +15,7 @@ export const createEventModel = async (eventData: Omit<Event, 'id' | 'status' | 
     interestedMusicians: [],
   };
   await eventRef.set(event);
-  console.log('[src/models/eventModel.ts:16] Evento guardado:', event);
+  logger.info('Evento guardado:', { context: 'EventModel', metadata: event });
   return event;
 };
 
@@ -30,7 +31,7 @@ export const getAvailableEvents = async () => {
   const snapshot = await db.collection("events")
     .where("status", "==", "pending_musician")
     .get();
-  console.log('[src/models/eventModel.ts:32] Eventos encontrados en BD:', snapshot.docs.length);
+  logger.info('Eventos encontrados en BD:', { context: 'EventModel', metadata: { count: snapshot.docs.length } });
   return snapshot.docs.map(doc => doc.data() as Event);
 };
 
@@ -128,7 +129,7 @@ export const deleteEventModel = async (eventId: string, deletedBy: string) => {
   
   // Eliminar el documento completamente
   await eventRef.delete();
-  console.log('[src/models/eventModel.ts:130] Evento eliminado completamente:', eventId);
+  logger.info('Evento eliminado completamente:', { context: 'EventModel', metadata: { eventId } });
   
   return { success: true, eventId };
 }; 

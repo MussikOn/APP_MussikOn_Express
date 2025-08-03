@@ -13,6 +13,7 @@ exports.cleanupExpiredImages = exports.getEventImages = exports.getPostImages = 
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const firebase_1 = require("../utils/firebase");
+const loggerService_1 = require("../services/loggerService");
 // Configuración de idriveE2
 const s3Client = new client_s3_1.S3Client({
     region: process.env.IDRIVE_E2_REGION || 'us-east-1',
@@ -79,7 +80,7 @@ const uploadImageToS3 = (file, key) => __awaiter(void 0, void 0, void 0, functio
         };
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:uploadImageToS3] Error al subir imagen a idriveE2:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:uploadImageToS3] Error al subir imagen a idriveE2:', error);
         throw error;
     }
 });
@@ -97,7 +98,7 @@ const generateSignedUrl = (key_1, ...args_1) => __awaiter(void 0, [key_1, ...arg
         return signedUrl;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:generateSignedUrl] Error al generar URL firmada:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:generateSignedUrl] Error al generar URL firmada:', error);
         throw error;
     }
 });
@@ -115,7 +116,7 @@ const createImageRecord = (imageData) => __awaiter(void 0, void 0, void 0, funct
         return image;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:createImageRecord] Error al crear registro de imagen:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:createImageRecord] Error al crear registro de imagen:', error);
         throw error;
     }
 });
@@ -152,7 +153,7 @@ const uploadImage = (file_1, userId_1, category_1, ...args_1) => __awaiter(void 
         return image;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:uploadImage] Error al subir imagen:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:uploadImage] Error al subir imagen:', error);
         throw error;
     }
 });
@@ -194,7 +195,7 @@ const getImageById = (imageId) => __awaiter(void 0, void 0, void 0, function* ()
         return image;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:getImageById] Error al obtener imagen:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:getImageById] Error al obtener imagen:', error);
         throw error;
     }
 });
@@ -271,7 +272,7 @@ const listImages = (...args_1) => __awaiter(void 0, [...args_1], void 0, functio
         return imagesWithUrls;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:listImages] Error al listar imágenes:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:listImages] Error al listar imágenes:', error);
         throw error;
     }
 });
@@ -295,7 +296,7 @@ const updateImage = (imageId, updateData) => __awaiter(void 0, void 0, void 0, f
         return updatedImage;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:updateImage] Error al actualizar imagen:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:updateImage] Error al actualizar imagen:', error);
         throw error;
     }
 });
@@ -329,7 +330,7 @@ const deleteImage = (imageId, userId) => __awaiter(void 0, void 0, void 0, funct
         return true;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:deleteImage] Error al eliminar imagen:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:deleteImage] Error al eliminar imagen:', error);
         throw error;
     }
 });
@@ -348,7 +349,7 @@ const deleteImageFromS3 = (key) => __awaiter(void 0, void 0, void 0, function* (
         return true;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:deleteImageFromS3] Error al eliminar imagen de idriveE2:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:deleteImageFromS3] Error al eliminar imagen de idriveE2:', error);
         throw error;
     }
 });
@@ -386,7 +387,7 @@ const getImageStats = () => __awaiter(void 0, void 0, void 0, function* () {
         return stats;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:getImageStats] Error al obtener estadísticas:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:getImageStats] Error al obtener estadísticas:', error);
         throw error;
     }
 });
@@ -403,7 +404,7 @@ const getUserProfileImages = (userId) => __awaiter(void 0, void 0, void 0, funct
         });
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:getUserProfileImages] Error al obtener imágenes de perfil:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:getUserProfileImages] Error al obtener imágenes de perfil:', error);
         throw error;
     }
 });
@@ -424,7 +425,7 @@ const getPostImages = (userId) => __awaiter(void 0, void 0, void 0, function* ()
         return yield (0, exports.listImages)(filters);
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:getPostImages] Error al obtener imágenes de posts:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:getPostImages] Error al obtener imágenes de posts:', error);
         throw error;
     }
 });
@@ -444,7 +445,7 @@ const getEventImages = (eventId) => __awaiter(void 0, void 0, void 0, function* 
         return yield (0, exports.listImages)(filters);
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:getEventImages] Error al obtener imágenes de eventos:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:getEventImages] Error al obtener imágenes de eventos:', error);
         throw error;
     }
 });
@@ -476,7 +477,7 @@ const cleanupExpiredImages = () => __awaiter(void 0, void 0, void 0, function* (
         return deletedCount;
     }
     catch (error) {
-        console.error('[src/models/imagesModel.ts:cleanupExpiredImages] Error al limpiar imágenes expiradas:', error);
+        loggerService_1.logger.error('[src/models/imagesModel.ts:cleanupExpiredImages] Error al limpiar imágenes expiradas:', error);
         throw error;
     }
 });

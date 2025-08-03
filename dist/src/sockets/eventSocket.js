@@ -7,14 +7,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.socketHandler = void 0;
 const chatSocket_1 = require("./chatSocket");
+const loggerService_1 = require("../services/loggerService");
 // const users: Record<string, string> = {};
 const socketHandler = (io, socket, users) => {
-    console.log('[src/sockets/eventSocket.ts:14] 🔌 Usuario conectado:', socket.id);
+    loggerService_1.logger.info('🔌 Usuario conectado:', { context: 'EventSocket', metadata: { socketId: socket.id } });
     // Autenticar usuario (nuevo evento)
     socket.on('authenticate', (data) => {
         const userEmail = data.userEmail.toLowerCase();
         users[userEmail] = socket.id;
-        console.log('[src/sockets/eventSocket.ts:20] 🔐 Usuario autenticado:', userEmail, 'Socket ID:', socket.id);
+        loggerService_1.logger.info('🔐 Usuario autenticado:', { context: 'EventSocket', metadata: { userEmail, socketId: socket.id } });
         console.log('[src/sockets/eventSocket.ts:21] 📊 Usuarios conectados:', Object.keys(users));
         // Confirmar autenticación
         socket.emit('authenticated', { success: true, userEmail });
@@ -47,7 +48,7 @@ const socketHandler = (io, socket, users) => {
             delete users[userEmail];
             console.log(`[src/sockets/eventSocket.ts:57] 🧹 Usuario eliminado: ${userEmail}`);
         }
-        console.log('[src/sockets/eventSocket.ts:59] ❌ Usuario desconectado:', socket.id);
+        loggerService_1.logger.info('❌ Usuario desconectado:', { context: 'EventSocket', metadata: { socketId: socket.id } });
         return;
     });
     // Inicializar el handler de chat

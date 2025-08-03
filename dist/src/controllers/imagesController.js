@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getImageUrlController = exports.getAllImagesController = exports.cleanupExpiredImagesController = exports.getEventImagesController = exports.getPostImagesController = exports.getUserProfileImagesController = exports.getImageStatsController = exports.deleteImageController = exports.updateImageController = exports.listImagesController = exports.getImageByIdController = exports.uploadImageController = void 0;
+const loggerService_1 = require("../services/loggerService");
 const imagesModel_1 = require("../models/imagesModel");
 /**
  * @swagger
@@ -90,7 +91,7 @@ const uploadImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:uploadImageController] Error al subir imagen:', error);
         res.status(500).json({
             error: 'Error al subir imagen',
             details: error.message,
@@ -145,7 +146,7 @@ const getImageByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getImageByIdController] Error al obtener imagen:', error);
         res.status(500).json({
             error: 'Error al obtener imagen',
             details: error.message,
@@ -236,7 +237,7 @@ const listImagesController = (req, res) => __awaiter(void 0, void 0, void 0, fun
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:listImagesController] Error al listar imágenes:', error);
         res.status(500).json({
             error: 'Error al listar imágenes',
             details: error.message,
@@ -323,7 +324,7 @@ const updateImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:updateImageController] Error al actualizar imagen:', error);
         res.status(500).json({
             error: 'Error al actualizar imagen',
             details: error.message,
@@ -379,7 +380,7 @@ const deleteImageController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:deleteImageController] Error al eliminar imagen:', error);
         res.status(500).json({
             error: 'Error al eliminar imagen',
             details: error.message,
@@ -426,7 +427,7 @@ const getImageStatsController = (req, res) => __awaiter(void 0, void 0, void 0, 
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getImageStatsController] Error al obtener estadísticas:', error);
         res.status(500).json({
             error: 'Error al obtener estadísticas',
             details: error.message,
@@ -477,7 +478,7 @@ const getUserProfileImagesController = (req, res) => __awaiter(void 0, void 0, v
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getUserProfileImagesController] Error al obtener imágenes de perfil:', error);
         res.status(500).json({
             error: 'Error al obtener imágenes de perfil',
             details: error.message,
@@ -523,7 +524,7 @@ const getPostImagesController = (req, res) => __awaiter(void 0, void 0, void 0, 
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getPostImagesController] Error al obtener imágenes de posts:', error);
         res.status(500).json({
             error: 'Error al obtener imágenes de posts',
             details: error.message,
@@ -569,7 +570,7 @@ const getEventImagesController = (req, res) => __awaiter(void 0, void 0, void 0,
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getEventImagesController] Error al obtener imágenes de eventos:', error);
         res.status(500).json({
             error: 'Error al obtener imágenes de eventos',
             details: error.message,
@@ -618,7 +619,7 @@ const cleanupExpiredImagesController = (req, res) => __awaiter(void 0, void 0, v
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:cleanupExpiredImagesController] Error en limpieza:', error);
         res.status(500).json({
             error: 'Error en limpieza de imágenes',
             details: error.message,
@@ -637,7 +638,7 @@ const getAllImagesController = (req, res) => __awaiter(void 0, void 0, void 0, f
         });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getAllImagesController] Error al obtener galería:', error);
         res.status(500).json({
             error: 'Error al obtener galería de imágenes',
             details: error.message,
@@ -660,7 +661,7 @@ const getImageUrlController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(200).json({ url: image.url });
     }
     catch (error) {
-        console.error('[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:', error);
+        loggerService_1.logger.error('[src/controllers/imagesController.ts:getImageUrlController] Error al obtener URL:', error);
         res.status(500).json({
             error: 'Error al generar URL de archivo',
             details: error.message,

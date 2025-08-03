@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEventController = exports.completeEventController = exports.cancelEventController = exports.getEventByIdController = exports.myCancelledEventsController = exports.myEventsController = exports.myPastPerformancesController = exports.myScheduledEventsController = exports.acceptEventController = exports.availableRequestsController = exports.myCompletedEventsController = exports.myAssignedEventsController = exports.myPendingEventsController = exports.requestMusicianController = void 0;
+const loggerService_1 = require("../services/loggerService");
 const eventModel_1 = require("../models/eventModel");
 // Comentado temporalmente para evitar dependencias circulares
 // import { io, users } from "../../index";
@@ -18,13 +19,13 @@ const requestMusicianController = (req, res) => __awaiter(void 0, void 0, void 0
     try {
         const user = req.user;
         const eventData = req.body;
-        console.log('[src/controllers/eventControllers.ts:27] Payload recibido en /events/request-musician:', eventData);
+        loggerService_1.logger.info('Payload recibido en /events/request-musician:', { context: 'Event', metadata: eventData });
         const event = yield (0, eventModel_1.createEventModel)(Object.assign(Object.assign({}, eventData), { user: user.userEmail }));
         // io.emit('new_event_request', event); // Comentado temporalmente
         res.status(201).json({ data: event });
     }
     catch (error) {
-        console.error('Error al crear solicitud:', error);
+        loggerService_1.logger.error('Error al crear solicitud:', error);
         res.status(500).json({ msg: 'Error al crear solicitud' });
     }
 });
@@ -37,10 +38,10 @@ const myPendingEventsController = (req, res) => __awaiter(void 0, void 0, void 0
 exports.myPendingEventsController = myPendingEventsController;
 const myAssignedEventsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    console.log('[src/controllers/eventControllers.ts:45] 🔍 Buscando eventos asignados para:', user.userEmail);
+    loggerService_1.logger.info('🔍 Buscando eventos asignados para:', { context: 'Event', metadata: user.userEmail });
     const events = yield (0, eventModel_1.getEventsByUserAndStatus)(user.userEmail, 'musician_assigned');
-    console.log('[src/controllers/eventControllers.ts:47] 📦 Eventos asignados encontrados:', events.length);
-    console.log('[src/controllers/eventControllers.ts:48] 📦 Eventos:', events);
+    loggerService_1.logger.info('📦 Eventos asignados encontrados:', { context: 'Event', metadata: { count: events.length } });
+    loggerService_1.logger.info('📦 Eventos:', { context: 'Event', metadata: events });
     res.json({ data: events });
 });
 exports.myAssignedEventsController = myAssignedEventsController;
@@ -72,7 +73,7 @@ const acceptEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.json(updatedEvent);
     }
     catch (error) {
-        console.error('Error al aceptar evento:', error);
+        loggerService_1.logger.error('Error al aceptar evento:', error);
         res.status(500).json({ msg: 'Error al aceptar evento' });
     }
 });
@@ -136,7 +137,7 @@ const getEventByIdController = (req, res) => __awaiter(void 0, void 0, void 0, f
         });
     }
     catch (error) {
-        console.error('Error al obtener el evento:', error);
+        loggerService_1.logger.error('Error al obtener el evento:', error);
         res.status(500).json({
             success: false,
             message: 'Error al obtener el evento',
@@ -149,11 +150,11 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         const { eventId } = req.params;
-        console.log('🔄 Cancelando solicitud:', eventId, 'por usuario:', user.userEmail);
+        loggerService_1.logger.info('🔄 Cancelando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
         // Obtener el evento antes de cancelarlo
         const originalEvent = yield (0, eventModel_1.getEventByIdModel)(eventId);
         if (!originalEvent) {
-            console.log('❌ Solicitud no encontrada:', eventId);
+            loggerService_1.logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
             res.status(404).json({
                 success: false,
                 message: 'Solicitud no encontrada',
@@ -162,7 +163,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         // Verificar permisos
         if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
-            console.log('❌ Usuario no autorizado para cancelar esta solicitud');
+            loggerService_1.logger.info('❌ Usuario no autorizado para cancelar esta solicitud');
             res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para cancelar esta solicitud',
@@ -171,7 +172,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         if (user.roll === 'musico' &&
             originalEvent.assignedMusicianId !== user.userEmail) {
-            console.log('❌ Músico no autorizado para cancelar esta solicitud');
+            loggerService_1.logger.info('❌ Músico no autorizado para cancelar esta solicitud');
             res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para cancelar esta solicitud',
@@ -181,14 +182,14 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // Cancelar el evento
         const cancelledEvent = yield (0, eventModel_1.cancelEventModel)(eventId, user.userEmail);
         if (!cancelledEvent) {
-            console.log('❌ Error al cancelar solicitud en la base de datos');
+            loggerService_1.logger.info('❌ Error al cancelar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
                 message: 'Error al cancelar la solicitud',
             });
             return;
         }
-        console.log('✅ Solicitud cancelada exitosamente:', eventId);
+        loggerService_1.logger.info('✅ Solicitud cancelada exitosamente:', { metadata: { eventId } });
         // Comentado temporalmente - notificaciones por socket
         res.json({
             success: true,
@@ -197,7 +198,7 @@ const cancelEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (error) {
-        console.error('❌ Error al cancelar solicitud:', error);
+        loggerService_1.logger.error('❌ Error al cancelar solicitud:', error);
         res.status(500).json({
             success: false,
             message: 'Error al cancelar la solicitud',
@@ -210,11 +211,11 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
     try {
         const user = req.user;
         const { eventId } = req.params;
-        console.log('🔄 Completando solicitud:', eventId, 'por usuario:', user.userEmail);
+        loggerService_1.logger.info('🔄 Completando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
         // Obtener el evento antes de completarlo
         const originalEvent = yield (0, eventModel_1.getEventByIdModel)(eventId);
         if (!originalEvent) {
-            console.log('❌ Solicitud no encontrada:', eventId);
+            loggerService_1.logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
             res.status(404).json({
                 success: false,
                 message: 'Solicitud no encontrada',
@@ -223,7 +224,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
         // Verificar permisos
         if (user.roll === 'eventCreator' && originalEvent.user !== user.userEmail) {
-            console.log('❌ Usuario no autorizado para completar esta solicitud');
+            loggerService_1.logger.info('❌ Usuario no autorizado para completar esta solicitud');
             res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para completar esta solicitud',
@@ -232,7 +233,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         }
         if (user.roll === 'musico' &&
             originalEvent.assignedMusicianId !== user.userEmail) {
-            console.log('❌ Músico no autorizado para completar esta solicitud');
+            loggerService_1.logger.info('❌ Músico no autorizado para completar esta solicitud');
             res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para completar esta solicitud',
@@ -242,14 +243,14 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         // Completar el evento
         const completedEvent = yield (0, eventModel_1.completeEventModel)(eventId, user.userEmail);
         if (!completedEvent) {
-            console.log('❌ Error al completar solicitud en la base de datos');
+            loggerService_1.logger.info('❌ Error al completar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
                 message: 'Error al completar la solicitud',
             });
             return;
         }
-        console.log('✅ Solicitud completada exitosamente:', eventId);
+        loggerService_1.logger.info('✅ Solicitud completada exitosamente:', { metadata: { eventId } });
         // Comentado temporalmente - notificaciones por socket
         const response = {
             success: true,
@@ -259,7 +260,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         res.json(response);
     }
     catch (error) {
-        console.error('❌ Error al completar solicitud:', error);
+        loggerService_1.logger.error('❌ Error al completar solicitud:', error);
         res.status(500).json({
             success: false,
             message: 'Error al completar la solicitud',
@@ -272,11 +273,11 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const user = req.user;
         const { eventId } = req.params;
-        console.log('🗑️ Eliminando solicitud:', eventId, 'por usuario:', user.userEmail);
+        loggerService_1.logger.info('🗑️ Eliminando solicitud:', { metadata: { eventId, userEmail: user.userEmail } });
         // Obtener el evento antes de eliminarlo
         const originalEvent = yield (0, eventModel_1.getEventByIdModel)(eventId);
         if (!originalEvent) {
-            console.log('❌ Solicitud no encontrada:', eventId);
+            loggerService_1.logger.info('❌ Solicitud no encontrada:', { metadata: { eventId } });
             res.status(404).json({
                 success: false,
                 message: 'Solicitud no encontrada',
@@ -285,7 +286,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         }
         // Verificar permisos
         if (user.roll !== 'eventCreator') {
-            console.log('❌ Solo los organizadores pueden eliminar solicitudes');
+            loggerService_1.logger.info('❌ Solo los organizadores pueden eliminar solicitudes');
             res.status(403).json({
                 success: false,
                 message: 'Solo los organizadores pueden eliminar solicitudes',
@@ -293,7 +294,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return;
         }
         if (originalEvent.user !== user.userEmail) {
-            console.log('❌ Usuario no autorizado para eliminar esta solicitud');
+            loggerService_1.logger.info('❌ Usuario no autorizado para eliminar esta solicitud');
             res.status(403).json({
                 success: false,
                 message: 'No tienes permisos para eliminar esta solicitud',
@@ -303,14 +304,14 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         // Eliminar el evento
         const deleteResult = yield (0, eventModel_1.deleteEventModel)(eventId, user.userEmail);
         if (!deleteResult) {
-            console.log('❌ Error al eliminar solicitud en la base de datos');
+            loggerService_1.logger.info('❌ Error al eliminar solicitud en la base de datos');
             res.status(500).json({
                 success: false,
                 message: 'Error al eliminar la solicitud',
             });
             return;
         }
-        console.log('✅ Solicitud eliminada exitosamente:', eventId);
+        loggerService_1.logger.info('✅ Solicitud eliminada exitosamente:', { metadata: { eventId } });
         // Comentado temporalmente - notificaciones por socket
         res.json({
             success: true,
@@ -318,7 +319,7 @@ const deleteEventController = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
     catch (error) {
-        console.error('❌ Error al eliminar solicitud:', error);
+        loggerService_1.logger.error('❌ Error al eliminar solicitud:', error);
         res.status(500).json({
             success: false,
             message: 'Error al eliminar la solicitud',

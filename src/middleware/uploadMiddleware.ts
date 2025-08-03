@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../services/loggerService';
 import multer from 'multer';
 
 /**
@@ -46,7 +47,7 @@ export const handleMulterError = (
     return;
   }
 
-  console.error('[src/middleware/uploadMiddleware.ts] Error de subida:', error);
+  logger.error('[src/middleware/uploadMiddleware.ts] Error de subida:', error as Error);
   res.status(500).json({
     error: 'Error interno del servidor',
     details: 'Error al procesar el archivo',

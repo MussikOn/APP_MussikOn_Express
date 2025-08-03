@@ -30,6 +30,7 @@ const searchRoutes_1 = __importDefault(require("./src/routes/searchRoutes"));
 const analyticsRoutes_1 = __importDefault(require("./src/routes/analyticsRoutes"));
 const geolocationRoutes_1 = __importDefault(require("./src/routes/geolocationRoutes"));
 const paymentRoutes_1 = __importDefault(require("./src/routes/paymentRoutes"));
+const paymentSystemRoutes_1 = __importDefault(require("./src/routes/paymentSystemRoutes"));
 const notificationRoutes_1 = __importDefault(require("./src/routes/notificationRoutes"));
 const pushNotificationRoutes_1 = __importDefault(require("./src/routes/pushNotificationRoutes"));
 const musicianSearchRoutes_1 = __importDefault(require("./src/routes/musicianSearchRoutes"));
@@ -51,6 +52,7 @@ const io = new socket_io_1.Server(server, {
             'http://localhost:5173',
             'http://localhost:5173/analytics',
             'http://192.168.54.59:5173',
+            'http://192.168.54.26:5173',
             'http://192.168.54.86:5173',
             'http://192.168.54.59:1000',
             'http://172.20.10.2:5173',
@@ -71,6 +73,7 @@ const allowedOrigins = [
     'http://192.168.54.59:5173',
     'http://172.20.10.2:3001/api-docs',
     'http://192.168.54.86:5173',
+    'http://192.168.54.26:5173',
     'http://192.168.54.59:1000',
     'http://172.20.10.2:5173',
     'http://192.168.54.131:5173',
@@ -357,6 +360,7 @@ app.use('/search', searchRoutes_1.default);
 app.use('/analytics', analyticsRoutes_1.default);
 app.use('/geolocation', geolocationRoutes_1.default);
 app.use('/payments', paymentRoutes_1.default);
+app.use('/payment-system', paymentSystemRoutes_1.default);
 app.use('/notifications', notificationRoutes_1.default);
 app.use('/push-notifications', pushNotificationRoutes_1.default);
 app.use('/musician-search', musicianSearchRoutes_1.default);

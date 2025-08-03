@@ -1,5 +1,6 @@
 // Jest setup file for MussikOn API tests
 import dotenv from 'dotenv';
+import { logger } from '../services/loggerService';
 
 // Load environment variables for testing
 dotenv.config({ path: '.env.test' });
@@ -87,7 +88,7 @@ jest.mock('firebase-admin', () => ({
 // Global test setup
 beforeAll(() => {
   // Setup any global test configuration
-  console.log('Setting up test environment...');
+  logger.info('Setting up test environment...', { context: 'TestSetup' });
   
   // Mock console methods to reduce noise in tests
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -98,7 +99,7 @@ beforeAll(() => {
 
 afterAll(() => {
   // Cleanup after all tests
-  console.log('Cleaning up test environment...');
+  logger.info('Cleaning up test environment...', { context: 'TestSetup' });
   
   // Restore console methods
   jest.restoreAllMocks();

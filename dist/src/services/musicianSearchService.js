@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MusicianSearchService = void 0;
 const firebase_1 = require("../utils/firebase");
+const loggerService_1 = require("../services/loggerService");
 /**
  * Algoritmo de búsqueda de músicos para eventos
  * Implementa un sistema de scoring basado en múltiples criterios
@@ -21,26 +22,31 @@ class MusicianSearchService {
      */
     static searchMusiciansForEvent(event, criteria) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('[src/services/musicianSearchService.ts:75] 🔍 Iniciando búsqueda de músicos para evento:', event.id);
+            loggerService_1.logger.info('[src/services/musicianSearchService.ts:75] 🔍 Iniciando búsqueda de músicos para evento:', { metadata: { id: event.id,
+                } });
             try {
                 // 1. Obtener todos los músicos aprobados y disponibles
                 const musicians = yield this.getAvailableMusicians();
-                console.log('[src/services/musicianSearchService.ts:82] 📊 Músicos disponibles encontrados:', musicians.length);
+                loggerService_1.logger.info('[src/services/musicianSearchService.ts:82] 📊 Músicos disponibles encontrados:', { metadata: { id: musicians.length,
+                    } });
                 // 2. Filtrar por instrumento requerido
                 const musiciansWithInstrument = musicians.filter(musician => musician.instruments.includes(criteria.instrument));
-                console.log('[src/services/musicianSearchService.ts:89] 🎵 Músicos con instrumento requerido:', musiciansWithInstrument.length);
+                loggerService_1.logger.info('[src/services/musicianSearchService.ts:89] 🎵 Músicos con instrumento requerido:', { metadata: { id: musiciansWithInstrument.length,
+                    } });
                 // 3. Verificar disponibilidad de tiempo
                 const availableMusicians = yield this.checkAvailability(musiciansWithInstrument, event);
-                console.log('[src/services/musicianSearchService.ts:96] ⏰ Músicos disponibles en fecha/hora:', availableMusicians.length);
+                loggerService_1.logger.info('[src/services/musicianSearchService.ts:96] ⏰ Músicos disponibles en fecha/hora:', { metadata: { id: availableMusicians.length,
+                    } });
                 // 4. Calcular puntuaciones de matching
                 const scoredMusicians = yield this.calculateMatchScores(availableMusicians, event, criteria);
                 // 5. Ordenar por puntuación (mayor a menor)
                 const sortedMusicians = scoredMusicians.sort((a, b) => b.matchScore - a.matchScore);
-                console.log('[src/services/musicianSearchService.ts:108] 🏆 Búsqueda completada. Músicos encontrados:', sortedMusicians.length);
+                loggerService_1.logger.info('[src/services/musicianSearchService.ts:108] 🏆 Búsqueda completada. Músicos encontrados:', { metadata: { id: sortedMusicians.length,
+                    } });
                 return sortedMusicians;
             }
             catch (error) {
-                console.error('[src/services/musicianSearchService.ts:115] ❌ Error en búsqueda de músicos:', error);
+                loggerService_1.logger.error('[src/services/musicianSearchService.ts:115] ❌ Error en búsqueda de músicos:', error);
                 throw error;
             }
         });

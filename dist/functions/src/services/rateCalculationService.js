@@ -64,7 +64,7 @@ class RateCalculationService {
     calculateRate(request) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/rateCalculationService.ts:85] Calculando tarifa para músico:', request.musicianId);
+                loggerService_1.logger.info('Calculando tarifa para músico:', { context: 'Rate', metadata: { musicianId: request.musicianId } });
                 // Obtener datos del músico
                 const musicianData = yield this.getMusicianData(request.musicianId);
                 // Obtener datos del mercado
@@ -384,7 +384,7 @@ class RateCalculationService {
     updateMarketData(instrument, location, eventType, rate) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/services/rateCalculationService.ts:350] Actualizando datos del mercado');
+                loggerService_1.logger.info('[src/services/rateCalculationService.ts:350] Actualizando datos del mercado');
                 const marketRef = firebase_1.db.collection(this.COLLECTION_MARKET_DATA)
                     .where('instrument', '==', instrument)
                     .where('location', '==', location)

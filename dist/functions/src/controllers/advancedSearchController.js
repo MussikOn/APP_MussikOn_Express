@@ -27,7 +27,7 @@ class AdvancedSearchController {
     searchAvailableMusicians(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:25] Búsqueda avanzada de músicos solicitada');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:25] Búsqueda avanzada de músicos solicitada');
                 const { eventType, instrument, location, eventDate, duration, budget, isUrgent = false, radius = 50 } = req.body;
                 // Validar parámetros requeridos
                 if (!eventType || !instrument || !location || !eventDate || !duration) {
@@ -151,7 +151,7 @@ class AdvancedSearchController {
     checkMusicianAvailability(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:120] Verificando disponibilidad específica del músico');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:120] Verificando disponibilidad específica del músico');
                 const { musicianId, eventDate, duration, location } = req.body;
                 if (!musicianId || !eventDate || !duration) {
                     return res.status(400).json({
@@ -232,7 +232,7 @@ class AdvancedSearchController {
     updateMusicianStatus(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:190] Actualizando estado del músico');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:190] Actualizando estado del músico');
                 const { musicianId } = req.params;
                 const { isOnline, currentLocation, availability } = req.body;
                 if (!musicianId) {
@@ -269,7 +269,7 @@ class AdvancedSearchController {
     musicianHeartbeat(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:225] Heartbeat del músico');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:225] Heartbeat del músico');
                 const { musicianId } = req.params;
                 const { location } = req.body;
                 if (!musicianId) {
@@ -301,7 +301,7 @@ class AdvancedSearchController {
     getDailyAvailability(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:255] Obteniendo disponibilidad diaria del músico');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:255] Obteniendo disponibilidad diaria del músico');
                 const { musicianId } = req.params;
                 const { date } = req.query;
                 if (!musicianId) {
@@ -334,7 +334,7 @@ class AdvancedSearchController {
     calculateMusicianRate(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log('[src/controllers/advancedSearchController.ts:285] Calculando tarifa del músico');
+                loggerService_1.logger.info('[src/controllers/advancedSearchController.ts:285] Calculando tarifa del músico');
                 const { musicianId, eventType, duration, location, eventDate, instrument, isUrgent = false } = req.body;
                 if (!musicianId || !eventType || !duration || !location || !eventDate || !instrument) {
                     return res.status(400).json({

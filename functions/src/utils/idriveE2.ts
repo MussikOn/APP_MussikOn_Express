@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { logger } from '../services/loggerService';
 
 export const s3 = new S3Client({
   region: process.env.IDRIVE_E2_REGION,
@@ -35,7 +36,7 @@ export const uploadToS3 = async (
     // Retorna la URL del archivo
     return `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET}/${key}`;
   } catch (error) {
-    console.error('[functions/src/utils/idriveE2.ts] Error al subir archivo a S3:', error);
+    logger.error('[functions/src/utils/idriveE2.ts] Error al subir archivo a S3:', error as Error);
     throw new Error('Error al subir archivo a S3');
   }
 };
