@@ -628,6 +628,30 @@ interface Message {
   - Navegación intuitiva
   - Responsive design
 
+### 📋 Documentación por Módulos
+
+#### 💳 Sistema de Pagos
+- **Backend API:** `/docs/api/payment-system.md` - Documentación completa del sistema de pagos por transferencia
+- **App Móvil:** `/docs/mobile-app/payment-transfer-flow.md` - Flujo de pagos en la aplicación móvil
+- **Panel Admin:** `/docs/admin-system/payment-verification.md` - Sistema de verificación de pagos para administradores
+
+#### 🔔 Notificaciones
+- **Push Notifications:** `/docs/api/push-notifications.md` - Sistema de notificaciones push
+- **Integración:** `/docs/api/push-notifications-integration.md` - Guía de integración
+- **Resumen:** `/docs/api/push-notifications-summary.md` - Resumen ejecutivo
+
+#### 📊 Analytics y Reportes
+- **Analytics API:** `/docs/api/analytics.md` - Sistema de análisis y métricas
+- **Búsqueda Avanzada:** `/docs/api/search.md` - Sistema de búsqueda inteligente
+
+#### 🖼️ Gestión de Imágenes
+- **Images API:** `/docs/api/images.md` - Sistema de gestión de imágenes
+- **Upload Service:** Documentación de subida y procesamiento de archivos
+
+#### 👥 Gestión de Usuarios
+- **Authentication:** `/docs/api/authentication.md` - Sistema de autenticación
+- **Musician Requests:** `/docs/api/musician-requests.md` - Solicitudes de músicos
+
 ### Configuración
 
 ```typescript

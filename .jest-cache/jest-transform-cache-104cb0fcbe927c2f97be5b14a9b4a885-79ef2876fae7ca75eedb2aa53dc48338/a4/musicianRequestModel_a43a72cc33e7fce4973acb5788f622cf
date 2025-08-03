@@ -1,0 +1,60 @@
+31c7dd4543b4fd7283ffe672f26f2be8
+"use strict";
+
+/* istanbul ignore next */
+function cov_1qaordnyqb() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\models\\musicianRequestModel.ts";
+  var hash = "fed667c2e8e757c42562ccedecc4c3e3ad6c2364";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\models\\musicianRequestModel.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      }
+    },
+    fnMap: {},
+    branchMap: {},
+    s: {
+      "0": 0
+    },
+    f: {},
+    b: {},
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\models\\musicianRequestModel.ts",
+      mappings: "",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\models\\musicianRequestModel.ts"],
+      sourcesContent: ["// Modelo de datos para Firestore (solo tipado, no esquema)\r\nexport interface MusicianRequest {\r\n  id?: string; // Firestore autogenerado\r\n  userId: string;\r\n  eventType: string;\r\n  date: string;\r\n  time: string;\r\n  location: string;\r\n  instrument: string;\r\n  budget: number;\r\n  comments?: string;\r\n  status: 'pendiente' | 'asignada' | 'no_asignada' | 'cancelada' | 'completada';\r\n  assignedMusicianId?: string;\r\n  createdAt: FirebaseFirestore.Timestamp;\r\n  updatedAt: FirebaseFirestore.Timestamp;\r\n}\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "fed667c2e8e757c42562ccedecc4c3e3ad6c2364"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1qaordnyqb = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1qaordnyqb();
+cov_1qaordnyqb().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiQzpcXHNyY1xcQVBQX011c3Npa09uXFxBUFBfTXVzc2lrT25fRXhwcmVzc1xcc3JjXFxtb2RlbHNcXG11c2ljaWFuUmVxdWVzdE1vZGVsLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIE1vZGVsbyBkZSBkYXRvcyBwYXJhIEZpcmVzdG9yZSAoc29sbyB0aXBhZG8sIG5vIGVzcXVlbWEpXHJcbmV4cG9ydCBpbnRlcmZhY2UgTXVzaWNpYW5SZXF1ZXN0IHtcclxuICBpZD86IHN0cmluZzsgLy8gRmlyZXN0b3JlIGF1dG9nZW5lcmFkb1xyXG4gIHVzZXJJZDogc3RyaW5nO1xyXG4gIGV2ZW50VHlwZTogc3RyaW5nO1xyXG4gIGRhdGU6IHN0cmluZztcclxuICB0aW1lOiBzdHJpbmc7XHJcbiAgbG9jYXRpb246IHN0cmluZztcclxuICBpbnN0cnVtZW50OiBzdHJpbmc7XHJcbiAgYnVkZ2V0OiBudW1iZXI7XHJcbiAgY29tbWVudHM/OiBzdHJpbmc7XHJcbiAgc3RhdHVzOiAncGVuZGllbnRlJyB8ICdhc2lnbmFkYScgfCAnbm9fYXNpZ25hZGEnIHwgJ2NhbmNlbGFkYScgfCAnY29tcGxldGFkYSc7XHJcbiAgYXNzaWduZWRNdXNpY2lhbklkPzogc3RyaW5nO1xyXG4gIGNyZWF0ZWRBdDogRmlyZWJhc2VGaXJlc3RvcmUuVGltZXN0YW1wO1xyXG4gIHVwZGF0ZWRBdDogRmlyZWJhc2VGaXJlc3RvcmUuVGltZXN0YW1wO1xyXG59XHJcbiJdLCJtYXBwaW5ncyI6IiIsImlnbm9yZUxpc3QiOltdfQ==

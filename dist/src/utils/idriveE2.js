@@ -27,7 +27,7 @@ const uploadToS3 = (file_1, fileName_1, contentType_1, ...args_1) => __awaiter(v
     try {
         const key = `${folder}/${Date.now()}-${fileName}`;
         const command = new client_s3_1.PutObjectCommand({
-            Bucket: process.env.IDRIVE_E2_BUCKET,
+            Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
             Key: key,
             Body: file,
             ContentType: contentType,
@@ -35,7 +35,7 @@ const uploadToS3 = (file_1, fileName_1, contentType_1, ...args_1) => __awaiter(v
         });
         yield exports.s3.send(command);
         // Retorna la URL del archivo
-        return `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET}/${key}`;
+        return `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${key}`;
     }
     catch (error) {
         console.error('[src/utils/idriveE2.ts] Error al subir archivo a S3:', error);

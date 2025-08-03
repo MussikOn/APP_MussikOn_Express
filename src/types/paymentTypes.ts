@@ -23,10 +23,27 @@ export interface UserDeposit {
     filename: string;
     uploadedAt: string;
   };
+  // Información del depósito bancario
+  accountHolderName: string;
+  accountNumber?: string;
+  bankName: string;
+  depositDate?: string;
+  depositTime?: string;
+  referenceNumber?: string;
+  comments?: string;
+  // Estado y verificación
   status: 'pending' | 'approved' | 'rejected';
   verifiedBy?: string;
   verifiedAt?: string;
   notes?: string;
+  // Datos de verificación del administrador
+  verificationData?: {
+    bankDepositDate: string;
+    bankDepositTime: string;
+    referenceNumber: string;
+    accountLastFourDigits: string;
+    verifiedBy: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -106,6 +123,13 @@ export interface PaymentStatistics {
 export interface DepositRequest {
   amount: number;
   voucherFile: Express.Multer.File;
+  accountHolderName: string;
+  accountNumber?: string;
+  bankName: string;
+  depositDate?: string;
+  depositTime?: string;
+  referenceNumber?: string;
+  comments?: string;
 }
 
 export interface WithdrawalRequestData {

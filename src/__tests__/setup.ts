@@ -85,25 +85,15 @@ jest.mock('firebase-admin', () => ({
   }))
 }));
 
-// Global test setup
-beforeAll(() => {
-  // Setup any global test configuration
-  logger.info('Setting up test environment...', { context: 'TestSetup' });
-  
-  // Mock console methods to reduce noise in tests
-  jest.spyOn(console, 'log').mockImplementation(() => {});
-  jest.spyOn(console, 'info').mockImplementation(() => {});
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
+// 🆕 CONFIGURACIÓN MEJORADA DEL SETUP
+// Setup any global test configuration
+logger.info('Setting up test environment...', { context: 'TestSetup' });
 
-afterAll(() => {
-  // Cleanup after all tests
-  logger.info('Cleaning up test environment...', { context: 'TestSetup' });
-  
-  // Restore console methods
-  jest.restoreAllMocks();
-});
+// Mock console methods to reduce noise in tests
+jest.spyOn(console, 'log').mockImplementation(() => {});
+jest.spyOn(console, 'info').mockImplementation(() => {});
+jest.spyOn(console, 'warn').mockImplementation(() => {});
+jest.spyOn(console, 'error').mockImplementation(() => {});
 
 // Global test utilities
 export const createMockRequest = (overrides: any = {}) => ({
@@ -140,4 +130,96 @@ export const mockErrorHandler = (err: any, req: any, res: any, next: any) => {
     success: false,
     message: err.message || 'Internal server error'
   });
+};
+
+// 🆕 UTILIDADES ADICIONALES PARA TESTS MEJORADOS
+
+// Función para limpiar mocks después de cada test
+export const cleanupMocks = () => {
+  jest.clearAllMocks();
+  jest.resetAllMocks();
+};
+
+// Función para crear un mock de Firebase más realista
+export const createFirebaseMock = () => ({
+  collection: jest.fn().mockReturnValue({
+    doc: jest.fn().mockReturnValue({
+      get: jest.fn().mockResolvedValue({
+        exists: true,
+        data: jest.fn().mockReturnValue({})
+      }),
+      set: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({})
+    }),
+    where: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    get: jest.fn().mockResolvedValue({
+      docs: [],
+      size: 0
+    }),
+    add: jest.fn().mockResolvedValue({
+      id: 'generated-id'
+    })
+  })
+});
+
+// Función para validar respuestas de API
+export const validateApiResponse = (response: any, expectedSuccess: boolean, expectedMessage?: string) => {
+  expect(response).toHaveProperty('success', expectedSuccess);
+  if (expectedMessage) {
+    expect(response).toHaveProperty('message', expectedMessage);
+  }
+};
+
+// Función para crear datos de prueba válidos
+export const createTestData = {
+  user: {
+    id: 'test-user-id',
+    email: 'test@example.com',
+    role: 'usuario',
+    name: 'Test User'
+  },
+  rating: {
+    eventId: 'event123',
+    musicianId: 'musician123',
+    rating: 5,
+    review: 'Excellent performance!',
+    category: 'musician'
+  },
+  payment: {
+    amount: 1000,
+    currency: 'RD$',
+    description: 'Test payment'
+  }
+};
+
+// Función para simular delays en tests
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Función para validar que un string no contenga caracteres peligrosos
+export const validateSafeString = (str: string) => {
+  const dangerousPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // XSS scripts
+    /javascript:/gi, // JavaScript protocol
+    /on\w+\s*=/gi, // Event handlers
+    /data:text\/html/gi, // Data URLs
+    /vbscript:/gi, // VBScript
+    /expression\s*\(/gi, // CSS expressions
+  ];
+  
+  return !dangerousPatterns.some(pattern => pattern.test(str));
+};
+
+// Función para validar formato de email
+export const validateEmailFormat = (email: string) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Función para validar formato de ID
+export const validateIdFormat = (id: string) => {
+  const idRegex = /^[a-zA-Z0-9_-]{3,50}$/;
+  return idRegex.test(id);
 }; 

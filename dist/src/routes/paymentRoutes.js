@@ -235,6 +235,34 @@ router.put('/methods/:paymentMethodId/default', authMiddleware_1.authMiddleware,
 router.post('/intents', authMiddleware_1.authMiddleware, (0, validationMiddleware_1.validate)(dtos_1.createPaymentIntentDTO), paymentController_1.createPaymentIntentController);
 /**
  * @swagger
+ * /api/payments/intents:
+ *   get:
+ *     summary: Obtener intents de pago del usuario
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Intents de pago obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PaymentIntent'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/intents', authMiddleware_1.authMiddleware, paymentController_1.getPaymentIntentsController);
+/**
+ * @swagger
  * /api/payments/process:
  *   post:
  *     summary: Procesar pago
@@ -503,7 +531,7 @@ router.post('/refunds', authMiddleware_1.authMiddleware, (0, validationMiddlewar
  *       403:
  *         description: Acceso denegado
  */
-router.get('/stats', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'super_admin']), paymentController_1.getPaymentStatsController);
+router.get('/stats', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'superadmin']), paymentController_1.getPaymentStatsController);
 /**
  * @swagger
  * /api/payments/validate:

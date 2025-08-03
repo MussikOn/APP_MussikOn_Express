@@ -33,6 +33,9 @@ import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
 import musicianSearchRoutes from './src/routes/musicianSearchRoutes';
 import hiringRoutes from './src/routes/hiringRoutes';
 
+// Importar gestor de índices
+import { FirestoreIndexManager } from './src/utils/firestoreIndexes';
+
 // Importar sockets (comentado temporalmente hasta que se implementen)
 // import { setupChatSocket } from './src/sockets/chatSocket';
 // import { setupEventSocket } from './src/sockets/eventSocket';
@@ -57,6 +60,7 @@ const io = new Server(server, {
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
       'http://192.168.54.131:5173',
+      'http://192.168.54.68:5173',
       'http://192.168.100.101:5173',
       'https://mussikon.web.app',
       'https://mussikon.firebaseapp.com'
@@ -73,6 +77,7 @@ const allowedOrigins = [
   'http://172.20.10.2:3001/api-docs',
   'http://192.168.54.86:5173',
   'http://192.168.54.26:5173',
+  'http://192.168.54.68:5173',
   'http://192.168.54.59:1000',
   'http://172.20.10.2:5173',
   'http://192.168.54.131:5173',
@@ -454,12 +459,29 @@ export { app, server, io };
 const URL = URL_API;
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
-    metadata: {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      url: URL_API
-    }
-  });
-});
+
+// Función para inicializar el servidor
+async function initializeServer() {
+  try {
+    // Inicializar índices de Firestore
+    logger.info('🔧 Inicializando índices de Firestore...');
+    await FirestoreIndexManager.initializeIndexes();
+    
+    // Iniciar servidor
+    server.listen(PORT, () => {
+      logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
+        metadata: {
+          port: PORT,
+          environment: process.env.NODE_ENV || 'development',
+          url: URL_API
+        }
+      });
+    });
+  } catch (error) {
+    logger.error('❌ Error inicializando servidor:', error as Error);
+    process.exit(1);
+  }
+}
+
+// Inicializar servidor
+initializeServer();

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import {
   getUserByEmailModel,
   registerModel,
@@ -795,8 +795,10 @@ function cleanupExpiredCodes() {
   }
 }
 
-// Ejecutar limpieza cada 5 minutos
-setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
+// Ejecutar limpieza cada 5 minutos solo en producción
+if (process.env.NODE_ENV === 'production') {
+  setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
+}
 
 // Solicitar recuperación de contraseña (solo superadmin)
 export const forgotPasswordController = async (req: Request, res: Response) => {

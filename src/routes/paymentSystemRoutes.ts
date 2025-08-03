@@ -3,6 +3,7 @@ import { PaymentSystemController } from '../controllers/paymentSystemController'
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/requireRole';
 import { upload } from '../middleware/uploadMiddleware';
+import { logger } from '../services/loggerService';
 
 const router = Router();
 const paymentSystemController = new PaymentSystemController();
@@ -694,6 +695,54 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, r
  */
 router.get('/admin/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPaymentStatistics(req, res);
+});
+
+/**
+ * @swagger
+ * /admin/firestore/indexes/status:
+ *   get:
+ *     summary: Verificar estado de índices de Firestore (admin)
+ *     tags: [Administración - Sistema]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estado de índices obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/firestore/indexes/status', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+  try {
+    const { FirestoreIndexManager } = await import('../utils/firestoreIndexes');
+    const indexStatus = await FirestoreIndexManager.checkIndexStatus();
+    
+    res.json({
+      success: true,
+      data: indexStatus,
+      message: 'Estado de índices obtenido exitosamente'
+    });
+  } catch (error) {
+    logger.error('Error verificando estado de índices', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Error verificando estado de índices'
+    });
+  }
 });
 
 export default router; 

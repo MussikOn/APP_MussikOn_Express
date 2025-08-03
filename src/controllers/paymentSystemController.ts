@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PaymentSystemService } from '../services/paymentSystemService';
 import { logger } from '../services/loggerService';
+import { db } from '../utils/firebase';
 import { 
   BankAccountData, 
   DepositRequest, 
@@ -29,7 +30,7 @@ export class PaymentSystemController {
 
       const balance = await this.paymentService.getUserBalance(userId);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: balance
       });
@@ -67,7 +68,7 @@ export class PaymentSystemController {
 
       const bankAccount = await this.paymentService.registerBankAccount(userId, accountData);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: bankAccount
       });
@@ -97,7 +98,7 @@ export class PaymentSystemController {
 
       const accounts = await this.paymentService.getUserBankAccounts(userId);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: accounts
       });
@@ -130,25 +131,50 @@ export class PaymentSystemController {
         return;
       }
 
-      const { amount } = req.body;
+      const { 
+        amount, 
+        accountHolderName, 
+        accountNumber, 
+        bankName, 
+        depositDate, 
+        depositTime, 
+        referenceNumber, 
+        comments 
+      } = req.body;
       
       if (!amount || isNaN(Number(amount))) {
         res.status(400).json({ error: 'Monto inválido' });
         return;
       }
 
+      if (!accountHolderName || !bankName) {
+        res.status(400).json({ error: 'Nombre del titular y banco son obligatorios' });
+        return;
+      }
+
       const depositData: DepositRequest = {
         amount: Number(amount),
-        voucherFile: req.file
+        voucherFile: req.file,
+        accountHolderName,
+        accountNumber,
+        bankName,
+        depositDate,
+        depositTime,
+        referenceNumber,
+        comments
       };
 
       logger.info('Subiendo comprobante de depósito', { metadata: { userId, amount } });
 
       const deposit = await this.paymentService.uploadDepositVoucher(userId, depositData);
       
-      res.json({
+      // Notificar automáticamente a todos los administradores
+      await this.notifyAdminsAboutNewDeposit(deposit, userId);
+      
+      res.status(201).json({
         success: true,
-        data: deposit
+        data: deposit,
+        message: 'Depósito subido exitosamente. Pendiente de verificación por administrador.'
       });
     } catch (error) {
       logger.error('Error subiendo comprobante de depósito', error as Error, { 
@@ -159,6 +185,78 @@ export class PaymentSystemController {
         success: false,
         error: 'Error subiendo comprobante de depósito'
       });
+    }
+  }
+
+  /**
+   * Notificar a administradores sobre nuevo depósito
+   */
+  private async notifyAdminsAboutNewDeposit(deposit: any, userId: string): Promise<void> {
+    try {
+      // Obtener todos los usuarios administradores
+      const adminsSnapshot = await db.collection('users')
+        .where('roll', 'in', ['admin', 'superadmin'])
+        .get();
+
+      const adminEmails = adminsSnapshot.docs.map(doc => doc.data().userEmail);
+
+      // Crear notificación para cada administrador
+      const notificationPromises = adminEmails.map(adminEmail => 
+        db.collection('notifications').add({
+          userId: adminEmail,
+          title: 'Nuevo Depósito Pendiente',
+          message: `Usuario ${userId} ha subido un depósito de RD$ ${deposit.amount.toLocaleString()}`,
+          type: 'info',
+          category: 'payment',
+          isRead: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          metadata: {
+            depositId: deposit.id,
+            userId: userId,
+            amount: deposit.amount,
+            voucherUrl: deposit.voucherFile.url,
+            accountHolderName: deposit.accountHolderName,
+            bankName: deposit.bankName
+          }
+        })
+      );
+
+      await Promise.all(notificationPromises);
+
+      logger.info('Notificaciones enviadas a administradores', { 
+        metadata: { 
+          depositId: deposit.id, 
+          adminCount: adminEmails.length 
+        } 
+      });
+
+      // Enviar push notifications si está disponible
+      try {
+        const { pushNotificationService } = await import('../services/pushNotificationService');
+        
+        const pushPromises = adminEmails.map(adminEmail =>
+                    pushNotificationService.sendNotificationToUser(adminEmail, {
+            title: 'Nuevo Depósito Pendiente',
+            body: `Usuario ${userId} ha subido un depósito de RD$ ${deposit.amount.toLocaleString()}`,
+            data: {
+              depositId: deposit.id,
+              type: 'new_deposit',
+              amount: deposit.amount,
+              userId: userId
+            },
+            type: 'payment',
+            category: 'deposit'
+          })
+        );
+
+        await Promise.all(pushPromises);
+      } catch (pushError) {
+        logger.warn('Error enviando push notifications a administradores', pushError as Error);
+      }
+
+    } catch (error) {
+      logger.error('Error notificando a administradores sobre nuevo depósito', error as Error);
     }
   }
 
@@ -175,7 +273,7 @@ export class PaymentSystemController {
       }
 
       // TODO: Implementar método en el servicio
-      res.json({
+      res.status(200).json({
         success: true,
         data: [],
         message: 'Funcionalidad en desarrollo'
@@ -230,7 +328,7 @@ export class PaymentSystemController {
 
       const payment = await this.paymentService.processEventPayment(paymentData);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: payment
       });
@@ -260,7 +358,7 @@ export class PaymentSystemController {
 
       const earnings = await this.paymentService.getMusicianEarnings(userId);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: earnings
       });
@@ -304,7 +402,7 @@ export class PaymentSystemController {
 
       const withdrawal = await this.paymentService.requestWithdrawal(userId, withdrawalData);
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: withdrawal
       });
@@ -329,7 +427,7 @@ export class PaymentSystemController {
     try {
       const deposits = await this.paymentService.getPendingDeposits();
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: deposits
       });
@@ -350,19 +448,37 @@ export class PaymentSystemController {
     try {
       const adminId = (req as any).user?.userEmail;
       const { depositId } = req.params;
-      const { approved, notes } = req.body;
+      const { approved, notes, verificationData } = req.body;
       
       if (typeof approved !== 'boolean') {
         res.status(400).json({ error: 'Estado de aprobación inválido' });
         return;
       }
 
+      // Si se aprueba, validar que se proporcionen los datos de verificación
+      if (approved && (!verificationData || !verificationData.bankDepositDate || !verificationData.referenceNumber)) {
+        res.status(400).json({ 
+          error: 'Para aprobar un depósito, debe proporcionar fecha del depósito y número de referencia' 
+        });
+        return;
+      }
+
       logger.info('Verificando depósito', { metadata: { depositId, adminId, approved } });
 
-      await this.paymentService.verifyDeposit(depositId, adminId, approved, notes);
+      await this.paymentService.verifyDeposit(depositId, adminId, approved, notes, verificationData);
       
-      res.json({
+      // Notificar al usuario sobre el resultado
+      await this.notifyUserAboutDepositVerification(depositId, approved, notes);
+      
+      res.status(200).json({
         success: true,
+        data: {
+          depositId,
+          status: approved ? 'approved' : 'rejected',
+          verifiedBy: adminId,
+          verifiedAt: new Date().toISOString(),
+          userBalanceUpdated: approved
+        },
         message: `Depósito ${approved ? 'aprobado' : 'rechazado'} exitosamente`
       });
     } catch (error) {
@@ -378,13 +494,75 @@ export class PaymentSystemController {
   }
 
   /**
+   * Notificar al usuario sobre la verificación de su depósito
+   */
+  private async notifyUserAboutDepositVerification(depositId: string, approved: boolean, notes?: string): Promise<void> {
+    try {
+      // Obtener información del depósito
+      const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+      if (!depositDoc.exists) return;
+
+      const deposit = depositDoc.data() as any;
+      const userId = deposit.userId;
+
+      // Crear notificación para el usuario
+      await db.collection('notifications').add({
+        userId: userId,
+        title: approved ? 'Depósito Aprobado' : 'Depósito Rechazado',
+        message: approved 
+          ? `Tu depósito de RD$ ${deposit.amount.toLocaleString()} ha sido aprobado y agregado a tu balance`
+          : `Tu depósito ha sido rechazado: ${notes || 'Sin especificar'}`,
+        type: approved ? 'success' : 'error',
+        category: 'payment',
+        isRead: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        metadata: {
+          depositId: depositId,
+          amount: deposit.amount,
+          status: approved ? 'approved' : 'rejected',
+          notes: notes
+        }
+      });
+
+      // Enviar push notification si está disponible
+      try {
+        const { pushNotificationService } = await import('../services/pushNotificationService');
+        
+                await pushNotificationService.sendNotificationToUser(userId, {
+          title: approved ? 'Depósito Aprobado' : 'Depósito Rechazado',
+          body: approved
+            ? `Tu depósito de RD$ ${deposit.amount.toLocaleString()} ha sido aprobado`
+            : `Tu depósito ha sido rechazado: ${notes || 'Sin especificar'}`,
+          data: {
+            depositId: depositId,
+            type: approved ? 'deposit_approved' : 'deposit_rejected',
+            amount: deposit.amount
+          },
+          type: 'payment',
+          category: 'deposit'
+        });
+      } catch (pushError) {
+        logger.warn('Error enviando push notification al usuario', pushError as Error);
+      }
+
+      logger.info('Usuario notificado sobre verificación de depósito', { 
+        metadata: { depositId, userId, approved } 
+      });
+
+    } catch (error) {
+      logger.error('Error notificando al usuario sobre verificación de depósito', error as Error);
+    }
+  }
+
+  /**
    * Obtener retiros pendientes (admin)
    */
   async getPendingWithdrawals(req: Request, res: Response): Promise<void> {
     try {
       const withdrawals = await this.paymentService.getPendingWithdrawals();
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: withdrawals
       });
@@ -416,7 +594,7 @@ export class PaymentSystemController {
 
       await this.paymentService.processWithdrawal(withdrawalId, adminId, approved, notes);
       
-      res.json({
+      res.status(200).json({
         success: true,
         message: `Retiro ${approved ? 'aprobado' : 'rechazado'} exitosamente`
       });
@@ -439,7 +617,7 @@ export class PaymentSystemController {
     try {
       const statistics = await this.paymentService.getPaymentStatistics();
       
-      res.json({
+      res.status(200).json({
         success: true,
         data: statistics
       });

@@ -11,7 +11,7 @@ export interface PaymentMethod {
   expiryMonth?: number;
   expiryYear?: number;
   isDefault: boolean;
-  userId: string;
+  userEmail: string;
 }
 
 export interface PaymentIntent {
@@ -20,7 +20,7 @@ export interface PaymentIntent {
   currency: string;
   status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
   paymentMethodId: string;
-  userId: string;
+  userEmail: string;
   eventId?: string;
   description: string;
   metadata: Record<string, any>;
@@ -36,7 +36,7 @@ export interface Invoice {
   status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
   dueDate: Date;
   paidAt?: Date;
-  userId: string;
+  userEmail: string;
   eventId?: string;
   items: InvoiceItem[];
   subtotal: number;
@@ -78,12 +78,12 @@ export class PaymentService {
    * Crear un método de pago
    */
   async createPaymentMethod(
-    userId: string,
+    userEmail: string,
     paymentData: any
   ): Promise<PaymentMethod> {
     try {
       logger.info('Creando método de pago', {
-        userId,
+        userId: userEmail,
         metadata: { paymentData },
       });
 
@@ -96,7 +96,7 @@ export class PaymentService {
         expiryMonth: paymentData.expiryMonth,
         expiryYear: paymentData.expiryYear,
         isDefault: paymentData.isDefault || false,
-        userId,
+        userEmail,
       };
 
       await db
@@ -106,17 +106,17 @@ export class PaymentService {
 
       // Si es el método por defecto, actualizar otros métodos
       if (paymentMethod.isDefault) {
-        await this.setDefaultPaymentMethod(userId, paymentMethod.id);
+        await this.setDefaultPaymentMethod(userEmail, paymentMethod.id);
       }
 
       logger.info('Método de pago creado', {
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId: paymentMethod.id },
       });
 
       return paymentMethod;
     } catch (error) {
-      logger.error('Error creando método de pago', error as Error, { userId });
+      logger.error('Error creando método de pago', error as Error, { userId: userEmail });
       throw error;
     }
   }
@@ -124,11 +124,11 @@ export class PaymentService {
   /**
    * Obtener métodos de pago de un usuario
    */
-  async getPaymentMethods(userId: string): Promise<PaymentMethod[]> {
+  async getPaymentMethods(userEmail: string): Promise<PaymentMethod[]> {
     try {
       const snapshot = await db
         .collection('paymentMethods')
-        .where('userId', '==', userId)
+        .where('userEmail', '==', userEmail)
         .orderBy('isDefault', 'desc')
         .get();
 
@@ -140,7 +140,7 @@ export class PaymentService {
       return paymentMethods;
     } catch (error) {
       logger.error('Error obteniendo métodos de pago', error as Error, {
-        userId,
+        userId: userEmail,
       });
       throw error;
     }
@@ -150,7 +150,7 @@ export class PaymentService {
    * Establecer método de pago por defecto
    */
   async setDefaultPaymentMethod(
-    userId: string,
+    userEmail: string,
     paymentMethodId: string
   ): Promise<void> {
     try {
@@ -159,7 +159,7 @@ export class PaymentService {
       // Remover default de otros métodos
       const snapshot = await db
         .collection('paymentMethods')
-        .where('userId', '==', userId)
+        .where('userEmail', '==', userEmail)
         .where('isDefault', '==', true)
         .get();
 
@@ -175,12 +175,12 @@ export class PaymentService {
       await batch.commit();
 
       logger.info('Método de pago por defecto actualizado', {
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId },
       });
     } catch (error) {
       logger.error('Error estableciendo método por defecto', error as Error, {
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId },
       });
       throw error;
@@ -191,7 +191,7 @@ export class PaymentService {
    * Crear intento de pago
    */
   async createPaymentIntent(
-    userId: string,
+    userEmail: string,
     amount: number,
     currency: string = 'EUR',
     description: string,
@@ -199,7 +199,7 @@ export class PaymentService {
   ): Promise<PaymentIntent> {
     try {
       logger.info('Creando intento de pago', {
-        userId,
+        userId: userEmail,
         metadata: { amount, currency, description },
       });
 
@@ -211,7 +211,7 @@ export class PaymentService {
           : this.defaultCurrency,
         status: 'pending',
         paymentMethodId: '',
-        userId,
+        userEmail,
         description,
         metadata,
         createdAt: new Date(),
@@ -224,14 +224,14 @@ export class PaymentService {
         .set(paymentIntent);
 
       logger.info('Intento de pago creado', {
-        userId,
+        userId: userEmail,
         metadata: { paymentIntentId: paymentIntent.id },
       });
 
       return paymentIntent;
     } catch (error) {
       logger.error('Error creando intento de pago', error as Error, {
-        userId,
+        userId: userEmail,
         metadata: { amount },
       });
       throw error;
@@ -326,7 +326,7 @@ export class PaymentService {
         status: 'paid',
         dueDate: new Date(),
         paidAt: new Date(),
-        userId: paymentIntent.userId,
+        userEmail: paymentIntent.userEmail,
         eventId: paymentIntent.eventId,
         items: [
           {
@@ -367,14 +367,14 @@ export class PaymentService {
    * Crear factura manual
    */
   async createInvoice(
-    userId: string,
+    userEmail: string,
     items: Omit<InvoiceItem, 'id'>[],
     dueDate: Date,
     eventId?: string
   ): Promise<Invoice> {
     try {
       logger.info('Creando factura manual', {
-        userId,
+        userId: userEmail,
         metadata: { items, dueDate },
       });
 
@@ -392,7 +392,7 @@ export class PaymentService {
         currency: this.defaultCurrency,
         status: 'draft',
         dueDate,
-        userId,
+        userEmail,
         eventId,
         items: items.map((item, index) => ({
           id: `item_${Date.now()}_${index}`,
@@ -409,13 +409,38 @@ export class PaymentService {
       await db.collection('invoices').doc(invoice.id).set(invoice);
 
       logger.info('Factura manual creada', {
-        userId,
+        userId: userEmail,
         metadata: { invoiceId: invoice.id },
       });
 
       return invoice;
     } catch (error) {
-      logger.error('Error creando factura manual', error as Error, { userId });
+      logger.error('Error creando factura manual', error as Error, { userId: userEmail });
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener payment intents de un usuario
+   */
+  async getPaymentIntents(userEmail: string, status?: string): Promise<PaymentIntent[]> {
+    try {
+      let query = db.collection('paymentIntents').where('userEmail', '==', userEmail);
+
+      if (status) {
+        query = query.where('status', '==', status);
+      }
+
+      const snapshot = await query.orderBy('createdAt', 'desc').get();
+
+      const paymentIntents: PaymentIntent[] = [];
+      snapshot.forEach((doc: any) => {
+        paymentIntents.push({ id: doc.id, ...doc.data() });
+      });
+
+      return paymentIntents;
+    } catch (error) {
+      logger.error('Error obteniendo payment intents', error as Error, { userId: userEmail });
       throw error;
     }
   }
@@ -423,9 +448,9 @@ export class PaymentService {
   /**
    * Obtener facturas de un usuario
    */
-  async getInvoices(userId: string, status?: string): Promise<Invoice[]> {
+  async getInvoices(userEmail: string, status?: string): Promise<Invoice[]> {
     try {
-      let query = db.collection('invoices').where('userId', '==', userId);
+      let query = db.collection('invoices').where('userEmail', '==', userEmail);
 
       if (status) {
         query = query.where('status', '==', status);
@@ -440,7 +465,7 @@ export class PaymentService {
 
       return invoices;
     } catch (error) {
-      logger.error('Error obteniendo facturas', error as Error, { userId });
+      logger.error('Error obteniendo facturas', error as Error, { userId: userEmail });
       throw error;
     }
   }
@@ -468,7 +493,7 @@ export class PaymentService {
 
       // Crear payment intent para la factura
       const paymentIntent = await this.createPaymentIntent(
-        invoice.userId,
+        invoice.userEmail,
         invoice.total,
         invoice.currency,
         `Pago de factura ${invoice.number}`,

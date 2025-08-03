@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVapidConfig = exports.getExpoConfig = exports.getRateLimitConfig = exports.getCorsConfig = exports.getBaseUrl = exports.isTest = exports.isProduction = exports.isDevelopment = exports.validateEnv = exports.ENV = exports.FIREBASE_CREDENTIALS = exports.EMAIL_PASSWORD = exports.EMAIL_USER = exports.IDRIVE_E2_REGION = exports.IDRIVE_E2_SECRET_KEY = exports.IDRIVE_E2_ACCESS_KEY = exports.IDRIVE_E2_ENDPOINT = exports.URL_API = exports.PORT = exports.IP = void 0;
+exports.getVapidConfig = exports.getExpoConfig = exports.getRateLimitConfig = exports.getCorsConfig = exports.getBaseUrl = exports.isTest = exports.isProduction = exports.isDevelopment = exports.validateEnv = exports.ENV = exports.FIREBASE_CREDENTIALS = exports.EMAIL_PASSWORD = exports.EMAIL_USER = exports.IDRIVE_E2_BUCKET_NAME = exports.IDRIVE_E2_REGION = exports.IDRIVE_E2_SECRET_KEY = exports.IDRIVE_E2_ACCESS_KEY = exports.IDRIVE_E2_ENDPOINT = exports.URL_API = exports.PORT = exports.IP = void 0;
 const os_1 = __importDefault(require("os"));
 function obtenerIpLocal() {
     const interfaces = os_1.default.networkInterfaces();
@@ -29,6 +29,7 @@ exports.IDRIVE_E2_ENDPOINT = ""; // ejemplo: https://musikon-media.c8q1.va03.idr
 exports.IDRIVE_E2_ACCESS_KEY = "";
 exports.IDRIVE_E2_SECRET_KEY = "";
 exports.IDRIVE_E2_REGION = "";
+exports.IDRIVE_E2_BUCKET_NAME = ""; // ejemplo: musikon-media
 // Email
 exports.EMAIL_USER = "";
 exports.EMAIL_PASSWORD = "";

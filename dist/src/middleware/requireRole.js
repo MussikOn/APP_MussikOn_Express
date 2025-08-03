@@ -8,11 +8,19 @@ const requireRole = (allowedRoles) => {
         try {
             const user = req.user;
             if (!user) {
+                console.log('[src/middleware/requireRole.ts:10] Usuario no autenticado');
                 throw new errorHandler_1.OperationalError('Usuario no autenticado', 401);
             }
-            if (!allowedRoles.includes(user.role)) {
+            console.log('[src/middleware/requireRole.ts:15] Usuario autenticado:', {
+                email: user.userEmail,
+                roll: user.roll,
+                allowedRoles
+            });
+            if (!allowedRoles.includes(user.roll)) {
+                console.log('[src/middleware/requireRole.ts:22] Acceso denegado - Rol no permitido');
                 throw new errorHandler_1.OperationalError(`Acceso denegado. Roles permitidos: ${allowedRoles.join(', ')}`, 403);
             }
+            console.log('[src/middleware/requireRole.ts:28] Acceso permitido');
             next();
         }
         catch (error) {
@@ -21,17 +29,17 @@ const requireRole = (allowedRoles) => {
     };
 };
 exports.requireRole = requireRole;
-// Middleware específicos para roles comunes
-exports.requireAdmin = (0, exports.requireRole)(['admin', 'super_admin']);
-exports.requireSuperAdmin = (0, exports.requireRole)(['super_admin']);
+// Middleware específicos para roles comunes 
+exports.requireAdmin = (0, exports.requireRole)(['admin', 'superadmin']);
+exports.requireSuperAdmin = (0, exports.requireRole)(['superadmin']);
 exports.requireMusician = (0, exports.requireRole)([
     'musician',
     'admin',
-    'super_admin',
+    'superadmin',
 ]);
 exports.requireUser = (0, exports.requireRole)([
     'user',
     'musician',
     'admin',
-    'super_admin',
+    'superadmin',
 ]);

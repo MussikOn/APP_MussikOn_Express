@@ -1,0 +1,495 @@
+7eccb135957e092ac7c45331073f4863
+"use strict";
+
+/* istanbul ignore next */
+function cov_e0o7et3kb() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\chatRoutes.ts";
+  var hash = "de7da102e71efcded81f10cdaf8062566faf71af";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\chatRoutes.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 22
+        },
+        end: {
+          line: 4,
+          column: 1
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 4
+        },
+        end: {
+          line: 3,
+          column: 62
+        }
+      },
+      "2": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 62
+        }
+      },
+      "3": {
+        start: {
+          line: 6,
+          column: 18
+        },
+        end: {
+          line: 6,
+          column: 53
+        }
+      },
+      "4": {
+        start: {
+          line: 7,
+          column: 25
+        },
+        end: {
+          line: 7,
+          column: 64
+        }
+      },
+      "5": {
+        start: {
+          line: 8,
+          column: 25
+        },
+        end: {
+          line: 8,
+          column: 65
+        }
+      },
+      "6": {
+        start: {
+          line: 9,
+          column: 15
+        },
+        end: {
+          line: 9,
+          column: 41
+        }
+      },
+      "7": {
+        start: {
+          line: 11,
+          column: 0
+        },
+        end: {
+          line: 11,
+          column: 44
+        }
+      },
+      "8": {
+        start: {
+          line: 13,
+          column: 0
+        },
+        end: {
+          line: 13,
+          column: 64
+        }
+      },
+      "9": {
+        start: {
+          line: 15,
+          column: 0
+        },
+        end: {
+          line: 15,
+          column: 74
+        }
+      },
+      "10": {
+        start: {
+          line: 17,
+          column: 0
+        },
+        end: {
+          line: 17,
+          column: 52
+        }
+      },
+      "11": {
+        start: {
+          line: 19,
+          column: 0
+        },
+        end: {
+          line: 19,
+          column: 67
+        }
+      },
+      "12": {
+        start: {
+          line: 21,
+          column: 0
+        },
+        end: {
+          line: 21,
+          column: 67
+        }
+      },
+      "13": {
+        start: {
+          line: 23,
+          column: 0
+        },
+        end: {
+          line: 23,
+          column: 83
+        }
+      },
+      "14": {
+        start: {
+          line: 25,
+          column: 0
+        },
+        end: {
+          line: 25,
+          column: 84
+        }
+      },
+      "15": {
+        start: {
+          line: 27,
+          column: 0
+        },
+        end: {
+          line: 27,
+          column: 85
+        }
+      },
+      "16": {
+        start: {
+          line: 29,
+          column: 0
+        },
+        end: {
+          line: 29,
+          column: 71
+        }
+      },
+      "17": {
+        start: {
+          line: 31,
+          column: 0
+        },
+        end: {
+          line: 31,
+          column: 93
+        }
+      },
+      "18": {
+        start: {
+          line: 33,
+          column: 0
+        },
+        end: {
+          line: 33,
+          column: 85
+        }
+      },
+      "19": {
+        start: {
+          line: 34,
+          column: 0
+        },
+        end: {
+          line: 34,
+          column: 25
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 2,
+            column: 57
+          }
+        },
+        loc: {
+          start: {
+            line: 2,
+            column: 71
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        line: 2
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 2,
+            column: 22
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 2,
+            column: 23
+          },
+          end: {
+            line: 2,
+            column: 27
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 31
+          },
+          end: {
+            line: 2,
+            column: 51
+          }
+        }, {
+          start: {
+            line: 2,
+            column: 56
+          },
+          end: {
+            line: 4,
+            column: 1
+          }
+        }],
+        line: 2
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 3,
+            column: 11
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 37
+          },
+          end: {
+            line: 3,
+            column: 40
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 43
+          },
+          end: {
+            line: 3,
+            column: 61
+          }
+        }],
+        line: 3
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 3,
+            column: 12
+          },
+          end: {
+            line: 3,
+            column: 15
+          }
+        }, {
+          start: {
+            line: 3,
+            column: 19
+          },
+          end: {
+            line: 3,
+            column: 33
+          }
+        }],
+        line: 3
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "19": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {
+      "0": [0, 0, 0],
+      "1": [0, 0],
+      "2": [0, 0]
+    },
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\chatRoutes.ts",
+      mappings: ";;;;;AAAA,sDAA8B;AAC9B,iEAA8D;AAC9D,kEAYuC;AAEvC,MAAM,MAAM,GAAG,iBAAO,CAAC,MAAM,EAAE,CAAC;AAEhC,wDAAwD;AACxD,MAAM,CAAC,GAAG,CAAC,+BAAc,CAAC,CAAC;AAE3B,+CAA+C;AAC/C,MAAM,CAAC,GAAG,CAAC,gBAAgB,EAAE,iCAAgB,CAAC,CAAC;AAE/C,oCAAoC;AACpC,MAAM,CAAC,GAAG,CAAC,uBAAuB,EAAE,oCAAmB,CAAC,CAAC;AAEzD,+BAA+B;AAC/B,MAAM,CAAC,GAAG,CAAC,QAAQ,EAAE,6BAAY,CAAC,CAAC;AAEnC,yCAAyC;AACzC,MAAM,CAAC,GAAG,CAAC,kBAAkB,EAAE,kCAAiB,CAAC,CAAC;AAElD,+BAA+B;AAC/B,MAAM,CAAC,IAAI,CAAC,gBAAgB,EAAE,mCAAkB,CAAC,CAAC;AAElD,8BAA8B;AAC9B,MAAM,CAAC,GAAG,CAAC,gCAAgC,EAAE,oCAAmB,CAAC,CAAC;AAElE,uCAAuC;AACvC,MAAM,CAAC,GAAG,CAAC,yCAAyC,EAAE,4BAAW,CAAC,CAAC;AAEnE,oCAAoC;AACpC,MAAM,CAAC,IAAI,CAAC,yCAAyC,EAAE,4BAAW,CAAC,CAAC;AAEpE,4BAA4B;AAC5B,MAAM,CAAC,KAAK,CAAC,2BAA2B,EAAE,2BAAU,CAAC,CAAC;AAEtD,wBAAwB;AACxB,MAAM,CAAC,KAAK,CAAC,wCAAwC,EAAE,oCAAmB,CAAC,CAAC;AAE5E,wBAAwB;AACxB,MAAM,CAAC,MAAM,CAAC,gCAAgC,EAAE,mCAAkB,CAAC,CAAC;AAEpE,kBAAe,MAAM,CAAC",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\routes\\chatRoutes.ts"],
+      sourcesContent: ["import express from 'express';\r\nimport { authMiddleware } from '../middleware/authMiddleware';\r\nimport {\r\n  getConversations,\r\n  getMessages,\r\n  sendMessage,\r\n  markAsRead,\r\n  createConversation,\r\n  searchConversations,\r\n  deleteConversation,\r\n  archiveConversation,\r\n  getConversationById,\r\n  getChatStats,\r\n  getAvailableUsers,\r\n} from '../controllers/chatController';\r\n\r\nconst router = express.Router();\r\n\r\n// Aplicar middleware de autenticaci\xF3n a todas las rutas\r\nrouter.use(authMiddleware);\r\n\r\n// Obtener todas las conversaciones del usuario\r\nrouter.get('/conversations', getConversations);\r\n\r\n// Buscar conversaciones con filtros\r\nrouter.get('/conversations/search', searchConversations);\r\n\r\n// Obtener estad\xEDsticas de chat\r\nrouter.get('/stats', getChatStats);\r\n\r\n// Obtener usuarios disponibles para chat\r\nrouter.get('/users/available', getAvailableUsers);\r\n\r\n// Crear una nueva conversaci\xF3n\r\nrouter.post('/conversations', createConversation);\r\n\r\n// Obtener conversaci\xF3n por ID\r\nrouter.get('/conversations/:conversationId', getConversationById);\r\n\r\n// Obtener mensajes de una conversaci\xF3n\r\nrouter.get('/conversations/:conversationId/messages', getMessages);\r\n\r\n// Enviar mensaje a una conversaci\xF3n\r\nrouter.post('/conversations/:conversationId/messages', sendMessage);\r\n\r\n// Marcar mensaje como le\xEDdo\r\nrouter.patch('/messages/:messageId/read', markAsRead);\r\n\r\n// Archivar conversaci\xF3n\r\nrouter.patch('/conversations/:conversationId/archive', archiveConversation);\r\n\r\n// Eliminar conversaci\xF3n\r\nrouter.delete('/conversations/:conversationId', deleteConversation);\r\n\r\nexport default router;\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "de7da102e71efcded81f10cdaf8062566faf71af"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_e0o7et3kb = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_e0o7et3kb();
+var __importDefault =
+/* istanbul ignore next */
+(cov_e0o7et3kb().s[0]++,
+/* istanbul ignore next */
+(cov_e0o7et3kb().b[0][0]++, this) &&
+/* istanbul ignore next */
+(cov_e0o7et3kb().b[0][1]++, this.__importDefault) ||
+/* istanbul ignore next */
+(cov_e0o7et3kb().b[0][2]++, function (mod) {
+  /* istanbul ignore next */
+  cov_e0o7et3kb().f[0]++;
+  cov_e0o7et3kb().s[1]++;
+  return /* istanbul ignore next */(cov_e0o7et3kb().b[2][0]++, mod) &&
+  /* istanbul ignore next */
+  (cov_e0o7et3kb().b[2][1]++, mod.__esModule) ?
+  /* istanbul ignore next */
+  (cov_e0o7et3kb().b[1][0]++, mod) :
+  /* istanbul ignore next */
+  (cov_e0o7et3kb().b[1][1]++, {
+    "default": mod
+  });
+}));
+/* istanbul ignore next */
+cov_e0o7et3kb().s[2]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const express_1 =
+/* istanbul ignore next */
+(cov_e0o7et3kb().s[3]++, __importDefault(require("express")));
+const authMiddleware_1 =
+/* istanbul ignore next */
+(cov_e0o7et3kb().s[4]++, require("../middleware/authMiddleware"));
+const chatController_1 =
+/* istanbul ignore next */
+(cov_e0o7et3kb().s[5]++, require("../controllers/chatController"));
+const router =
+/* istanbul ignore next */
+(cov_e0o7et3kb().s[6]++, express_1.default.Router());
+// Aplicar middleware de autenticación a todas las rutas
+/* istanbul ignore next */
+cov_e0o7et3kb().s[7]++;
+router.use(authMiddleware_1.authMiddleware);
+// Obtener todas las conversaciones del usuario
+/* istanbul ignore next */
+cov_e0o7et3kb().s[8]++;
+router.get('/conversations', chatController_1.getConversations);
+// Buscar conversaciones con filtros
+/* istanbul ignore next */
+cov_e0o7et3kb().s[9]++;
+router.get('/conversations/search', chatController_1.searchConversations);
+// Obtener estadísticas de chat
+/* istanbul ignore next */
+cov_e0o7et3kb().s[10]++;
+router.get('/stats', chatController_1.getChatStats);
+// Obtener usuarios disponibles para chat
+/* istanbul ignore next */
+cov_e0o7et3kb().s[11]++;
+router.get('/users/available', chatController_1.getAvailableUsers);
+// Crear una nueva conversación
+/* istanbul ignore next */
+cov_e0o7et3kb().s[12]++;
+router.post('/conversations', chatController_1.createConversation);
+// Obtener conversación por ID
+/* istanbul ignore next */
+cov_e0o7et3kb().s[13]++;
+router.get('/conversations/:conversationId', chatController_1.getConversationById);
+// Obtener mensajes de una conversación
+/* istanbul ignore next */
+cov_e0o7et3kb().s[14]++;
+router.get('/conversations/:conversationId/messages', chatController_1.getMessages);
+// Enviar mensaje a una conversación
+/* istanbul ignore next */
+cov_e0o7et3kb().s[15]++;
+router.post('/conversations/:conversationId/messages', chatController_1.sendMessage);
+// Marcar mensaje como leído
+/* istanbul ignore next */
+cov_e0o7et3kb().s[16]++;
+router.patch('/messages/:messageId/read', chatController_1.markAsRead);
+// Archivar conversación
+/* istanbul ignore next */
+cov_e0o7et3kb().s[17]++;
+router.patch('/conversations/:conversationId/archive', chatController_1.archiveConversation);
+// Eliminar conversación
+/* istanbul ignore next */
+cov_e0o7et3kb().s[18]++;
+router.delete('/conversations/:conversationId', chatController_1.deleteConversation);
+/* istanbul ignore next */
+cov_e0o7et3kb().s[19]++;
+exports.default = router;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfZTBvN2V0M2tiIiwiYWN0dWFsQ292ZXJhZ2UiLCJleHByZXNzXzEiLCJzIiwiX19pbXBvcnREZWZhdWx0IiwicmVxdWlyZSIsImF1dGhNaWRkbGV3YXJlXzEiLCJjaGF0Q29udHJvbGxlcl8xIiwicm91dGVyIiwiZGVmYXVsdCIsIlJvdXRlciIsInVzZSIsImF1dGhNaWRkbGV3YXJlIiwiZ2V0IiwiZ2V0Q29udmVyc2F0aW9ucyIsInNlYXJjaENvbnZlcnNhdGlvbnMiLCJnZXRDaGF0U3RhdHMiLCJnZXRBdmFpbGFibGVVc2VycyIsInBvc3QiLCJjcmVhdGVDb252ZXJzYXRpb24iLCJnZXRDb252ZXJzYXRpb25CeUlkIiwiZ2V0TWVzc2FnZXMiLCJzZW5kTWVzc2FnZSIsInBhdGNoIiwibWFya0FzUmVhZCIsImFyY2hpdmVDb252ZXJzYXRpb24iLCJkZWxldGUiLCJkZWxldGVDb252ZXJzYXRpb24iLCJleHBvcnRzIl0sInNvdXJjZXMiOlsiQzpcXHNyY1xcQVBQX011c3Npa09uXFxBUFBfTXVzc2lrT25fRXhwcmVzc1xcc3JjXFxyb3V0ZXNcXGNoYXRSb3V0ZXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IGV4cHJlc3MgZnJvbSAnZXhwcmVzcyc7XHJcbmltcG9ydCB7IGF1dGhNaWRkbGV3YXJlIH0gZnJvbSAnLi4vbWlkZGxld2FyZS9hdXRoTWlkZGxld2FyZSc7XHJcbmltcG9ydCB7XHJcbiAgZ2V0Q29udmVyc2F0aW9ucyxcclxuICBnZXRNZXNzYWdlcyxcclxuICBzZW5kTWVzc2FnZSxcclxuICBtYXJrQXNSZWFkLFxyXG4gIGNyZWF0ZUNvbnZlcnNhdGlvbixcclxuICBzZWFyY2hDb252ZXJzYXRpb25zLFxyXG4gIGRlbGV0ZUNvbnZlcnNhdGlvbixcclxuICBhcmNoaXZlQ29udmVyc2F0aW9uLFxyXG4gIGdldENvbnZlcnNhdGlvbkJ5SWQsXHJcbiAgZ2V0Q2hhdFN0YXRzLFxyXG4gIGdldEF2YWlsYWJsZVVzZXJzLFxyXG59IGZyb20gJy4uL2NvbnRyb2xsZXJzL2NoYXRDb250cm9sbGVyJztcclxuXHJcbmNvbnN0IHJvdXRlciA9IGV4cHJlc3MuUm91dGVyKCk7XHJcblxyXG4vLyBBcGxpY2FyIG1pZGRsZXdhcmUgZGUgYXV0ZW50aWNhY2nDs24gYSB0b2RhcyBsYXMgcnV0YXNcclxucm91dGVyLnVzZShhdXRoTWlkZGxld2FyZSk7XHJcblxyXG4vLyBPYnRlbmVyIHRvZGFzIGxhcyBjb252ZXJzYWNpb25lcyBkZWwgdXN1YXJpb1xyXG5yb3V0ZXIuZ2V0KCcvY29udmVyc2F0aW9ucycsIGdldENvbnZlcnNhdGlvbnMpO1xyXG5cclxuLy8gQnVzY2FyIGNvbnZlcnNhY2lvbmVzIGNvbiBmaWx0cm9zXHJcbnJvdXRlci5nZXQoJy9jb252ZXJzYXRpb25zL3NlYXJjaCcsIHNlYXJjaENvbnZlcnNhdGlvbnMpO1xyXG5cclxuLy8gT2J0ZW5lciBlc3RhZMOtc3RpY2FzIGRlIGNoYXRcclxucm91dGVyLmdldCgnL3N0YXRzJywgZ2V0Q2hhdFN0YXRzKTtcclxuXHJcbi8vIE9idGVuZXIgdXN1YXJpb3MgZGlzcG9uaWJsZXMgcGFyYSBjaGF0XHJcbnJvdXRlci5nZXQoJy91c2Vycy9hdmFpbGFibGUnLCBnZXRBdmFpbGFibGVVc2Vycyk7XHJcblxyXG4vLyBDcmVhciB1bmEgbnVldmEgY29udmVyc2FjacOzblxyXG5yb3V0ZXIucG9zdCgnL2NvbnZlcnNhdGlvbnMnLCBjcmVhdGVDb252ZXJzYXRpb24pO1xyXG5cclxuLy8gT2J0ZW5lciBjb252ZXJzYWNpw7NuIHBvciBJRFxyXG5yb3V0ZXIuZ2V0KCcvY29udmVyc2F0aW9ucy86Y29udmVyc2F0aW9uSWQnLCBnZXRDb252ZXJzYXRpb25CeUlkKTtcclxuXHJcbi8vIE9idGVuZXIgbWVuc2FqZXMgZGUgdW5hIGNvbnZlcnNhY2nDs25cclxucm91dGVyLmdldCgnL2NvbnZlcnNhdGlvbnMvOmNvbnZlcnNhdGlvbklkL21lc3NhZ2VzJywgZ2V0TWVzc2FnZXMpO1xyXG5cclxuLy8gRW52aWFyIG1lbnNhamUgYSB1bmEgY29udmVyc2FjacOzblxyXG5yb3V0ZXIucG9zdCgnL2NvbnZlcnNhdGlvbnMvOmNvbnZlcnNhdGlvbklkL21lc3NhZ2VzJywgc2VuZE1lc3NhZ2UpO1xyXG5cclxuLy8gTWFyY2FyIG1lbnNhamUgY29tbyBsZcOtZG9cclxucm91dGVyLnBhdGNoKCcvbWVzc2FnZXMvOm1lc3NhZ2VJZC9yZWFkJywgbWFya0FzUmVhZCk7XHJcblxyXG4vLyBBcmNoaXZhciBjb252ZXJzYWNpw7NuXHJcbnJvdXRlci5wYXRjaCgnL2NvbnZlcnNhdGlvbnMvOmNvbnZlcnNhdGlvbklkL2FyY2hpdmUnLCBhcmNoaXZlQ29udmVyc2F0aW9uKTtcclxuXHJcbi8vIEVsaW1pbmFyIGNvbnZlcnNhY2nDs25cclxucm91dGVyLmRlbGV0ZSgnL2NvbnZlcnNhdGlvbnMvOmNvbnZlcnNhdGlvbklkJywgZGVsZXRlQ29udmVyc2F0aW9uKTtcclxuXHJcbmV4cG9ydCBkZWZhdWx0IHJvdXRlcjtcclxuIl0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztJQTJCQTtJQUFBQSxhQUFBLFlBQUFBLENBQUE7TUFBQSxPQUFBQyxj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

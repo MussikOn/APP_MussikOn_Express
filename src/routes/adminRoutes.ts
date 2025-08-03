@@ -32,6 +32,11 @@ import {
   adminEventAnalytics,
   adminRequestAnalytics,
   adminExportReport,
+  // Nuevos controladores para verificación de pagos móviles
+  adminGetMobilePayments,
+  adminVerifyMobilePayment,
+  adminRejectMobilePayment,
+  adminGetMobilePaymentStats,
 } from '../controllers/adminController';
 
 const adminRoutes = Router();
@@ -644,5 +649,87 @@ adminRoutes.get('/analytics/requests', adminOnly, adminRequestAnalytics);
  *         description: Acceso solo para administradores
  */
 adminRoutes.get('/analytics/export', adminOnly, adminExportReport);
+
+// ===== NUEVAS RUTAS PARA VERIFICACIÓN DE PAGOS MÓVILES =====
+
+/**
+ * @swagger
+ * /admin/mobile-payments:
+ *   get:
+ *     summary: Obtener todas las solicitudes de pago móvil
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de solicitudes de pago móvil
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/mobile-payments', adminOnly, adminGetMobilePayments);
+
+/**
+ * @swagger
+ * /admin/mobile-payments/{id}/verify:
+ *   post:
+ *     summary: Verificar pago móvil
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Pago móvil verificado
+ *       403:
+ *         description: Acceso solo para administradores
+ *       404:
+ *         description: Solicitud de pago no encontrada
+ */
+adminRoutes.post('/mobile-payments/:id/verify', adminOnly, adminVerifyMobilePayment);
+
+/**
+ * @swagger
+ * /admin/mobile-payments/{id}/reject:
+ *   post:
+ *     summary: Rechazar pago móvil
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Pago móvil rechazado
+ *       403:
+ *         description: Acceso solo para administradores
+ *       404:
+ *         description: Solicitud de pago no encontrada
+ */
+adminRoutes.post('/mobile-payments/:id/reject', adminOnly, adminRejectMobilePayment);
+
+/**
+ * @swagger
+ * /admin/mobile-payments/stats:
+ *   get:
+ *     summary: Obtener estadísticas de pagos móviles
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas de pagos móviles
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/mobile-payments/stats', adminOnly, adminGetMobilePaymentStats);
 
 export default adminRoutes;

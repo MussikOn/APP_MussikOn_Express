@@ -8,13 +8,13 @@ const paymentService = new PaymentService();
 // Crear método de pago
 export const createPaymentMethodController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { type, cardNumber, expiryMonth, expiryYear, cvc, billingAddress } =
       req.body;
 
-    logger.info('Creating payment method', { userId, metadata: { type } });
+    logger.info('Creating payment method', { userId: userEmail, metadata: { type } });
 
-    const paymentMethod = await paymentService.createPaymentMethod(userId, {
+    const paymentMethod = await paymentService.createPaymentMethod(userEmail, {
       type,
       cardNumber,
       expiryMonth,
@@ -34,11 +34,11 @@ export const createPaymentMethodController = asyncHandler(
 // Obtener métodos de pago del usuario
 export const getPaymentMethodsController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
 
-    logger.info('Getting payment methods', { userId });
+    logger.info('Getting payment methods', { userId: userEmail });
 
-    const paymentMethods = await paymentService.getPaymentMethods(userId);
+    const paymentMethods = await paymentService.getPaymentMethods(userEmail);
 
     res.status(200).json({
       success: true,
@@ -51,15 +51,15 @@ export const getPaymentMethodsController = asyncHandler(
 // Establecer método de pago por defecto
 export const setDefaultPaymentMethodController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { paymentMethodId } = req.params;
 
     logger.info('Setting default payment method', {
-      userId,
+      userId: userEmail,
       metadata: { paymentMethodId },
     });
 
-    await paymentService.setDefaultPaymentMethod(userId, paymentMethodId);
+    await paymentService.setDefaultPaymentMethod(userEmail, paymentMethodId);
 
     res.status(200).json({
       success: true,
@@ -71,16 +71,16 @@ export const setDefaultPaymentMethodController = asyncHandler(
 // Crear intent de pago
 export const createPaymentIntentController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { amount, currency, description, metadata } = req.body;
 
     logger.info('Creating payment intent', {
-      userId,
+      userId: userEmail,
       metadata: { amount, currency },
     });
 
     const paymentIntent = await paymentService.createPaymentIntent(
-      userId,
+      userEmail,
       amount,
       currency,
       description,
@@ -98,11 +98,11 @@ export const createPaymentIntentController = asyncHandler(
 // Procesar pago
 export const processPaymentController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { paymentIntentId, paymentMethodId } = req.body;
 
     logger.info('Processing payment', {
-      userId,
+      userId: userEmail,
       metadata: { paymentIntentId, paymentMethodId },
     });
 
@@ -125,16 +125,16 @@ export const processPaymentController = asyncHandler(
 // Crear factura
 export const createInvoiceController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { items, dueDate, eventId } = req.body;
 
     logger.info('Creating invoice', {
-      userId,
+      userId: userEmail,
       metadata: { itemsCount: items.length },
     });
 
     const invoice = await paymentService.createInvoice(
-      userId,
+      userEmail,
       items,
       new Date(dueDate),
       eventId
@@ -151,15 +151,15 @@ export const createInvoiceController = asyncHandler(
 // Obtener facturas del usuario
 export const getInvoicesController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { status } = req.query;
 
     logger.info('Getting invoices', {
-      userId,
+      userId: userEmail,
       metadata: { status: status as string },
     });
 
-    const invoices = await paymentService.getInvoices(userId, status as string);
+    const invoices = await paymentService.getInvoices(userEmail, status as string);
 
     res.status(200).json({
       success: true,
@@ -172,12 +172,12 @@ export const getInvoicesController = asyncHandler(
 // Marcar factura como pagada
 export const markInvoiceAsPaidController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { invoiceId } = req.params;
     const { paymentMethodId } = req.body;
 
     logger.info('Marking invoice as paid', {
-      userId,
+      userId: userEmail,
       metadata: { invoiceId, paymentMethodId },
     });
 
@@ -197,11 +197,11 @@ export const markInvoiceAsPaidController = asyncHandler(
 // Procesar reembolso
 export const processRefundController = asyncHandler(
   async (req: Request, res: Response) => {
-    const { userId } = req.user!;
+    const { userEmail } = req.user!;
     const { paymentIntentId, amount, reason } = req.body;
 
     logger.info('Processing refund', {
-      userId,
+      userId: userEmail,
       metadata: { paymentIntentId, amount, reason },
     });
 
@@ -275,6 +275,27 @@ export const getPaymentGatewaysController = asyncHandler(
       success: true,
       data: gateways,
       message: 'Gateways de pago obtenidos exitosamente',
+    });
+  }
+);
+
+// Obtener payment intents del usuario
+export const getPaymentIntentsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userEmail } = req.user!;
+    const { status } = req.query;
+
+    logger.info('Getting payment intents', {
+      userId: userEmail,
+      metadata: { status: status as string },
+    });
+
+    const paymentIntents = await paymentService.getPaymentIntents(userEmail, status as string);
+
+    res.status(200).json({
+      success: true,
+      data: paymentIntents,
+      message: 'Payment intents obtenidos exitosamente',
     });
   }
 );

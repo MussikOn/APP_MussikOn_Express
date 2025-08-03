@@ -15,6 +15,7 @@ import {
   getPaymentStatsController,
   validatePaymentMethodController,
   getPaymentGatewaysController,
+  getPaymentIntentsController,
 } from '../controllers/paymentController';
 import {
   createPaymentMethodDTO,
@@ -271,6 +272,35 @@ router.post(
   validate(createPaymentIntentDTO),
   createPaymentIntentController
 );
+
+/**
+ * @swagger
+ * /api/payments/intents:
+ *   get:
+ *     summary: Obtener intents de pago del usuario
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Intents de pago obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PaymentIntent'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/intents', authMiddleware, getPaymentIntentsController);
 
 /**
  * @swagger
@@ -569,7 +599,7 @@ router.post(
 router.get(
   '/stats',
   authMiddleware,
-  requireRole(['admin', 'super_admin']),
+  requireRole(['admin', 'superadmin']),
   getPaymentStatsController
 );
 

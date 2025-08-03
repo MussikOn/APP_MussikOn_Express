@@ -1,0 +1,426 @@
+c654d88b82447fe50435eed222bff52e
+"use strict";
+
+/* istanbul ignore next */
+function cov_lnrhupb96() {
+  var path = "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\utils\\functions.ts";
+  var hash = "9058ee22e76848174a1397d36d4c7fbd166680bb";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\utils\\functions.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 30
+        }
+      },
+      "2": {
+        start: {
+          line: 4,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 34
+        }
+      },
+      "3": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 5,
+          column: 38
+        }
+      },
+      "4": {
+        start: {
+          line: 6,
+          column: 17
+        },
+        end: {
+          line: 6,
+          column: 34
+        }
+      },
+      "5": {
+        start: {
+          line: 7,
+          column: 21
+        },
+        end: {
+          line: 10,
+          column: 1
+        }
+      },
+      "6": {
+        start: {
+          line: 8,
+          column: 19
+        },
+        end: {
+          line: 8,
+          column: 59
+        }
+      },
+      "7": {
+        start: {
+          line: 9,
+          column: 4
+        },
+        end: {
+          line: 9,
+          column: 18
+        }
+      },
+      "8": {
+        start: {
+          line: 11,
+          column: 0
+        },
+        end: {
+          line: 11,
+          column: 36
+        }
+      },
+      "9": {
+        start: {
+          line: 23,
+          column: 4
+        },
+        end: {
+          line: 23,
+          column: 25
+        }
+      },
+      "10": {
+        start: {
+          line: 24,
+          column: 4
+        },
+        end: {
+          line: 24,
+          column: 60
+        }
+      },
+      "11": {
+        start: {
+          line: 27,
+          column: 4
+        },
+        end: {
+          line: 27,
+          column: 59
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 21
+          },
+          end: {
+            line: 7,
+            column: 22
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 27
+          },
+          end: {
+            line: 10,
+            column: 1
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "handleError",
+        decl: {
+          start: {
+            line: 22,
+            column: 9
+          },
+          end: {
+            line: 22,
+            column: 20
+          }
+        },
+        loc: {
+          start: {
+            line: 22,
+            column: 87
+          },
+          end: {
+            line: 25,
+            column: 1
+          }
+        },
+        line: 22
+      },
+      "2": {
+        name: "handleSuccess",
+        decl: {
+          start: {
+            line: 26,
+            column: 9
+          },
+          end: {
+            line: 26,
+            column: 22
+          }
+        },
+        loc: {
+          start: {
+            line: 26,
+            column: 79
+          },
+          end: {
+            line: 28,
+            column: 1
+          }
+        },
+        line: 26
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 22,
+            column: 33
+          },
+          end: {
+            line: 22,
+            column: 71
+          }
+        },
+        type: "default-arg",
+        locations: [{
+          start: {
+            line: 22,
+            column: 43
+          },
+          end: {
+            line: 22,
+            column: 71
+          }
+        }],
+        line: 22
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 22,
+            column: 73
+          },
+          end: {
+            line: 22,
+            column: 85
+          }
+        },
+        type: "default-arg",
+        locations: [{
+          start: {
+            line: 22,
+            column: 82
+          },
+          end: {
+            line: 22,
+            column: 85
+          }
+        }],
+        line: 22
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 26,
+            column: 34
+          },
+          end: {
+            line: 26,
+            column: 63
+          }
+        },
+        type: "default-arg",
+        locations: [{
+          start: {
+            line: 26,
+            column: 44
+          },
+          end: {
+            line: 26,
+            column: 63
+          }
+        }],
+        line: 26
+      },
+      "3": {
+        loc: {
+          start: {
+            line: 26,
+            column: 65
+          },
+          end: {
+            line: 26,
+            column: 77
+          }
+        },
+        type: "default-arg",
+        locations: [{
+          start: {
+            line: 26,
+            column: 74
+          },
+          end: {
+            line: 26,
+            column: 77
+          }
+        }],
+        line: 26
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0,
+      "2": 0
+    },
+    b: {
+      "0": [0],
+      "1": [0],
+      "2": [0],
+      "3": [0]
+    },
+    inputSourceMap: {
+      file: "C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\utils\\functions.ts",
+      mappings: ";;;AAkBA,kCAQC;AAED,sCAOC;AAnCD,mCAAmC;AAG5B,MAAM,YAAY,GAAG,GAAG,EAAE;IAC/B,MAAM,MAAM,GAAG,IAAA,kBAAS,EAAC,MAAM,EAAE,OAAO,CAAC,CAAC;IAC1C,OAAO,MAAM,CAAC;AAChB,CAAC,CAAC;AAHW,QAAA,YAAY,gBAGvB;AAEF;;;;;;;;GAQG;AACH,+CAA+C;AAC/C,SAAgB,WAAW,CACzB,GAAa,EACb,KAAU,EACV,UAAkB,4BAA4B,EAC9C,SAAiB,GAAG;IAEpB,OAAO,CAAC,KAAK,CAAC,KAAK,CAAC,CAAC;IACrB,OAAO,GAAG,CAAC,MAAM,CAAC,MAAM,CAAC,CAAC,IAAI,CAAC,EAAE,GAAG,EAAE,OAAO,EAAE,KAAK,EAAE,CAAC,CAAC;AAC1D,CAAC;AAED,SAAgB,aAAa,CAC3B,GAAa,EACb,IAAS,EACT,UAAkB,mBAAmB,EACrC,SAAiB,GAAG;IAEpB,OAAO,GAAG,CAAC,MAAM,CAAC,MAAM,CAAC,CAAC,IAAI,CAAC,EAAE,GAAG,EAAE,OAAO,EAAE,IAAI,EAAE,CAAC,CAAC;AACzD,CAAC",
+      names: [],
+      sources: ["C:\\src\\APP_MussikOn\\APP_MussikOn_Express\\src\\utils\\functions.ts"],
+      sourcesContent: ["import { randomInt } from 'crypto';\r\nimport { Response } from 'express';\r\n\r\nexport const numberRandon = () => {\r\n  const number = randomInt(100000, 1000000);\r\n  return number;\r\n};\r\n\r\n/**\r\n * @swagger\r\n * components:\r\n *   securitySchemes:\r\n *     bearerAuth:\r\n *       type: http\r\n *       scheme: bearer\r\n *       bearerFormat: JWT\r\n */\r\n// Centraliza el manejo de errores y respuestas\r\nexport function handleError(\r\n  res: Response,\r\n  error: any,\r\n  message: string = 'Error interno del servidor',\r\n  status: number = 500\r\n) {\r\n  console.error(error);\r\n  return res.status(status).json({ msg: message, error });\r\n}\r\n\r\nexport function handleSuccess(\r\n  res: Response,\r\n  data: any,\r\n  message: string = 'Operaci\xF3n exitosa',\r\n  status: number = 200\r\n) {\r\n  return res.status(status).json({ msg: message, data });\r\n}\r\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "9058ee22e76848174a1397d36d4c7fbd166680bb"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_lnrhupb96 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_lnrhupb96();
+cov_lnrhupb96().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_lnrhupb96().s[1]++;
+exports.numberRandon = void 0;
+/* istanbul ignore next */
+cov_lnrhupb96().s[2]++;
+exports.handleError = handleError;
+/* istanbul ignore next */
+cov_lnrhupb96().s[3]++;
+exports.handleSuccess = handleSuccess;
+const crypto_1 =
+/* istanbul ignore next */
+(cov_lnrhupb96().s[4]++, require("crypto"));
+/* istanbul ignore next */
+cov_lnrhupb96().s[5]++;
+const numberRandon = () => {
+  /* istanbul ignore next */
+  cov_lnrhupb96().f[0]++;
+  const number =
+  /* istanbul ignore next */
+  (cov_lnrhupb96().s[6]++, (0, crypto_1.randomInt)(100000, 1000000));
+  /* istanbul ignore next */
+  cov_lnrhupb96().s[7]++;
+  return number;
+};
+/* istanbul ignore next */
+cov_lnrhupb96().s[8]++;
+exports.numberRandon = numberRandon;
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+// Centraliza el manejo de errores y respuestas
+function handleError(res, error, message =
+/* istanbul ignore next */
+(cov_lnrhupb96().b[0][0]++, 'Error interno del servidor'), status =
+/* istanbul ignore next */
+(cov_lnrhupb96().b[1][0]++, 500)) {
+  /* istanbul ignore next */
+  cov_lnrhupb96().f[1]++;
+  cov_lnrhupb96().s[9]++;
+  console.error(error);
+  /* istanbul ignore next */
+  cov_lnrhupb96().s[10]++;
+  return res.status(status).json({
+    msg: message,
+    error
+  });
+}
+function handleSuccess(res, data, message =
+/* istanbul ignore next */
+(cov_lnrhupb96().b[2][0]++, 'Operación exitosa'), status =
+/* istanbul ignore next */
+(cov_lnrhupb96().b[3][0]++, 200)) {
+  /* istanbul ignore next */
+  cov_lnrhupb96().f[2]++;
+  cov_lnrhupb96().s[11]++;
+  return res.status(status).json({
+    msg: message,
+    data
+  });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJleHBvcnRzIiwiaGFuZGxlRXJyb3IiLCJjb3ZfbG5yaHVwYjk2IiwicyIsImhhbmRsZVN1Y2Nlc3MiLCJjcnlwdG9fMSIsInJlcXVpcmUiLCJudW1iZXJSYW5kb24iLCJmIiwibnVtYmVyIiwicmFuZG9tSW50IiwicmVzIiwiZXJyb3IiLCJtZXNzYWdlIiwiYiIsInN0YXR1cyIsImNvbnNvbGUiLCJqc29uIiwibXNnIiwiZGF0YSJdLCJzb3VyY2VzIjpbIkM6XFxzcmNcXEFQUF9NdXNzaWtPblxcQVBQX011c3Npa09uX0V4cHJlc3NcXHNyY1xcdXRpbHNcXGZ1bmN0aW9ucy50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyByYW5kb21JbnQgfSBmcm9tICdjcnlwdG8nO1xyXG5pbXBvcnQgeyBSZXNwb25zZSB9IGZyb20gJ2V4cHJlc3MnO1xyXG5cclxuZXhwb3J0IGNvbnN0IG51bWJlclJhbmRvbiA9ICgpID0+IHtcclxuICBjb25zdCBudW1iZXIgPSByYW5kb21JbnQoMTAwMDAwLCAxMDAwMDAwKTtcclxuICByZXR1cm4gbnVtYmVyO1xyXG59O1xyXG5cclxuLyoqXHJcbiAqIEBzd2FnZ2VyXHJcbiAqIGNvbXBvbmVudHM6XHJcbiAqICAgc2VjdXJpdHlTY2hlbWVzOlxyXG4gKiAgICAgYmVhcmVyQXV0aDpcclxuICogICAgICAgdHlwZTogaHR0cFxyXG4gKiAgICAgICBzY2hlbWU6IGJlYXJlclxyXG4gKiAgICAgICBiZWFyZXJGb3JtYXQ6IEpXVFxyXG4gKi9cclxuLy8gQ2VudHJhbGl6YSBlbCBtYW5lam8gZGUgZXJyb3JlcyB5IHJlc3B1ZXN0YXNcclxuZXhwb3J0IGZ1bmN0aW9uIGhhbmRsZUVycm9yKFxyXG4gIHJlczogUmVzcG9uc2UsXHJcbiAgZXJyb3I6IGFueSxcclxuICBtZXNzYWdlOiBzdHJpbmcgPSAnRXJyb3IgaW50ZXJubyBkZWwgc2Vydmlkb3InLFxyXG4gIHN0YXR1czogbnVtYmVyID0gNTAwXHJcbikge1xyXG4gIGNvbnNvbGUuZXJyb3IoZXJyb3IpO1xyXG4gIHJldHVybiByZXMuc3RhdHVzKHN0YXR1cykuanNvbih7IG1zZzogbWVzc2FnZSwgZXJyb3IgfSk7XHJcbn1cclxuXHJcbmV4cG9ydCBmdW5jdGlvbiBoYW5kbGVTdWNjZXNzKFxyXG4gIHJlczogUmVzcG9uc2UsXHJcbiAgZGF0YTogYW55LFxyXG4gIG1lc3NhZ2U6IHN0cmluZyA9ICdPcGVyYWNpw7NuIGV4aXRvc2EnLFxyXG4gIHN0YXR1czogbnVtYmVyID0gMjAwXHJcbikge1xyXG4gIHJldHVybiByZXMuc3RhdHVzKHN0YXR1cykuanNvbih7IG1zZzogbWVzc2FnZSwgZGF0YSB9KTtcclxufVxyXG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQWtCQUEsT0FBQSxDQUFBQyxXQUFBLEdBQUFBLFdBQUE7QUFRQztBQUFBQyxhQUFBLEdBQUFDLENBQUE7QUFFREgsT0FBQSxDQUFBSSxhQUFBLEdBQUFBLGFBQUE7QUE1QkEsTUFBQUMsUUFBQTtBQUFBO0FBQUEsQ0FBQUgsYUFBQSxHQUFBQyxDQUFBLE9BQUFHLE9BQUE7QUFBbUM7QUFBQUosYUFBQSxHQUFBQyxDQUFBO0FBRzVCLE1BQU1JLFlBQVksR0FBR0EsQ0FBQSxLQUFLO0VBQUE7RUFBQUwsYUFBQSxHQUFBTSxDQUFBO0VBQy9CLE1BQU1DLE1BQU07RUFBQTtFQUFBLENBQUFQLGFBQUEsR0FBQUMsQ0FBQSxPQUFHLElBQUFFLFFBQUEsQ0FBQUssU0FBUyxFQUFDLE1BQU0sRUFBRSxPQUFPLENBQUM7RUFBQztFQUFBUixhQUFBLEdBQUFDLENBQUE7RUFDMUMsT0FBT00sTUFBTTtBQUNmLENBQUM7QUFBQztBQUFBUCxhQUFBLEdBQUFDLENBQUE7QUFIV0gsT0FBQSxDQUFBTyxZQUFZLEdBQUFBLFlBQUE7QUFLekI7Ozs7Ozs7OztBQVNBO0FBQ0EsU0FBZ0JOLFdBQVdBLENBQ3pCVSxHQUFhLEVBQ2JDLEtBQVUsRUFDVkMsT0FBQTtBQUFBO0FBQUEsQ0FBQVgsYUFBQSxHQUFBWSxDQUFBLFVBQWtCLDRCQUE0QixHQUM5Q0MsTUFBQTtBQUFBO0FBQUEsQ0FBQWIsYUFBQSxHQUFBWSxDQUFBLFVBQWlCLEdBQUc7RUFBQTtFQUFBWixhQUFBLEdBQUFNLENBQUE7RUFBQU4sYUFBQSxHQUFBQyxDQUFBO0VBRXBCYSxPQUFPLENBQUNKLEtBQUssQ0FBQ0EsS0FBSyxDQUFDO0VBQUM7RUFBQVYsYUFBQSxHQUFBQyxDQUFBO0VBQ3JCLE9BQU9RLEdBQUcsQ0FBQ0ksTUFBTSxDQUFDQSxNQUFNLENBQUMsQ0FBQ0UsSUFBSSxDQUFDO0lBQUVDLEdBQUcsRUFBRUwsT0FBTztJQUFFRDtFQUFLLENBQUUsQ0FBQztBQUN6RDtBQUVBLFNBQWdCUixhQUFhQSxDQUMzQk8sR0FBYSxFQUNiUSxJQUFTLEVBQ1ROLE9BQUE7QUFBQTtBQUFBLENBQUFYLGFBQUEsR0FBQVksQ0FBQSxVQUFrQixtQkFBbUIsR0FDckNDLE1BQUE7QUFBQTtBQUFBLENBQUFiLGFBQUEsR0FBQVksQ0FBQSxVQUFpQixHQUFHO0VBQUE7RUFBQVosYUFBQSxHQUFBTSxDQUFBO0VBQUFOLGFBQUEsR0FBQUMsQ0FBQTtFQUVwQixPQUFPUSxHQUFHLENBQUNJLE1BQU0sQ0FBQ0EsTUFBTSxDQUFDLENBQUNFLElBQUksQ0FBQztJQUFFQyxHQUFHLEVBQUVMLE9BQU87SUFBRU07RUFBSSxDQUFFLENBQUM7QUFDeEQiLCJpZ25vcmVMaXN0IjpbXX0=

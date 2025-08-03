@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,6 +47,7 @@ const paymentSystemController_1 = require("../controllers/paymentSystemControlle
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const requireRole_1 = require("../middleware/requireRole");
 const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
+const loggerService_1 = require("../services/loggerService");
 const router = (0, express_1.Router)();
 const paymentSystemController = new paymentSystemController_1.PaymentSystemController();
 /**
@@ -688,5 +722,52 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.
  */
 router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPaymentStatistics(req, res);
+}));
+/**
+ * @swagger
+ * /admin/firestore/indexes/status:
+ *   get:
+ *     summary: Verificar estado de índices de Firestore (admin)
+ *     tags: [Administración - Sistema]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estado de índices obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/firestore/indexes/status', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { FirestoreIndexManager } = yield Promise.resolve().then(() => __importStar(require('../utils/firestoreIndexes')));
+        const indexStatus = yield FirestoreIndexManager.checkIndexStatus();
+        res.json({
+            success: true,
+            data: indexStatus,
+            message: 'Estado de índices obtenido exitosamente'
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error verificando estado de índices', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error verificando estado de índices'
+        });
+    }
 }));
 exports.default = router;

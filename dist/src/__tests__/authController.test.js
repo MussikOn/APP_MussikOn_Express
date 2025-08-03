@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,11 +41,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcrypt = __importStar(require("bcrypt"));
 const authController_1 = require("../controllers/authController");
 const authModel_1 = require("../models/authModel");
 const jwt_1 = require("../utils/jwt");
@@ -57,7 +87,7 @@ describe('AuthController', () => {
             validatios_1.validarPassword.mockReturnValue(true);
             validatios_1.validarEmail.mockReturnValue(true);
             // Mock de bcrypt
-            bcrypt_1.default.hash.mockResolvedValue('hashedPassword');
+            bcrypt.hash.mockResolvedValue('hashedPassword');
             // Mock del modelo - registerModel retorna false cuando es exitoso
             authModel_1.registerModel.mockResolvedValue(false);
             // Mock del usuario creado
@@ -117,7 +147,7 @@ describe('AuthController', () => {
         it('should return error when user already exists', () => __awaiter(void 0, void 0, void 0, function* () {
             validatios_1.validarPassword.mockReturnValue(true);
             validatios_1.validarEmail.mockReturnValue(true);
-            bcrypt_1.default.hash.mockResolvedValue('hashedPassword');
+            bcrypt.hash.mockResolvedValue('hashedPassword');
             // Mock que el usuario ya existe
             authModel_1.registerModel.mockResolvedValue('El usuario ya Existe.');
             yield (0, authController_1.registerController)(mockRequest, mockResponse);
@@ -130,7 +160,7 @@ describe('AuthController', () => {
         it('should return error when registration fails', () => __awaiter(void 0, void 0, void 0, function* () {
             validatios_1.validarPassword.mockReturnValue(true);
             validatios_1.validarEmail.mockReturnValue(true);
-            bcrypt_1.default.hash.mockResolvedValue('hashedPassword');
+            bcrypt.hash.mockResolvedValue('hashedPassword');
             authModel_1.registerModel.mockRejectedValue(new Error('Database error'));
             yield (0, authController_1.registerController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(400);
@@ -160,7 +190,7 @@ describe('AuthController', () => {
             };
             validatios_1.validarEmail.mockReturnValue(true);
             authModel_1.getUserByEmailModel.mockResolvedValue(mockUser);
-            bcrypt_1.default.compare.mockResolvedValue(true);
+            bcrypt.compare.mockResolvedValue(true);
             jwt_1.createToken.mockReturnValue('mockToken');
             yield (0, authController_1.loginController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(200);
@@ -211,7 +241,7 @@ describe('AuthController', () => {
             };
             validatios_1.validarEmail.mockReturnValue(true);
             authModel_1.getUserByEmailModel.mockResolvedValue(mockUser);
-            bcrypt_1.default.compare.mockResolvedValue(false);
+            bcrypt.compare.mockResolvedValue(false);
             yield (0, authController_1.loginController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(401);
             expect(mockJson).toHaveBeenCalledWith({
@@ -338,13 +368,15 @@ describe('AuthController', () => {
                     userEmail: 'juan@example.com'
                 }
             });
+            validatios_1.validarEmail.mockReturnValue(true);
         });
         it('should send password reset email successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock que el usuario existe y es superadmin
             authModel_1.getUserByEmailModel.mockResolvedValue({
                 id: 'user123',
                 userEmail: 'juan@example.com',
-                roll: 'superadmin'
+                roll: 'superadmin',
+                name: 'Juan'
             });
             mailer_1.sendEmail.mockResolvedValue(true);
             yield (0, authController_1.forgotPasswordController)(mockRequest, mockResponse);
@@ -376,6 +408,7 @@ describe('AuthController', () => {
                     code: '123456'
                 }
             });
+            validatios_1.validarEmail.mockReturnValue(true);
         });
         it('should return error when user not found', () => __awaiter(void 0, void 0, void 0, function* () {
             authModel_1.getUserByEmailModel.mockResolvedValue(null);
@@ -421,6 +454,8 @@ describe('AuthController', () => {
                     newPassword: 'NewPassword123!'
                 }
             });
+            validatios_1.validarEmail.mockReturnValue(true);
+            validatios_1.validarPassword.mockReturnValue(true);
         });
         it('should return error when user is not superadmin', () => __awaiter(void 0, void 0, void 0, function* () {
             // Mock que el usuario existe pero no es superadmin
@@ -455,6 +490,7 @@ describe('AuthController', () => {
                 userEmail: 'juan@example.com',
                 roll: 'superadmin'
             });
+            validatios_1.validarEmail.mockReturnValue(true);
             validatios_1.validarPassword.mockReturnValue(false);
             yield (0, authController_1.resetPasswordController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(400);
@@ -474,6 +510,7 @@ describe('AuthController', () => {
                     userEmail: 'juan@example.com'
                 }
             });
+            validatios_1.validarEmail.mockReturnValue(true);
         });
         it('should update user successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             authModel_1.updateUserByEmailModel.mockResolvedValue(false); // false significa éxito

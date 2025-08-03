@@ -113,13 +113,43 @@ export class PaymentSystemService {
     try {
       logger.info('Obteniendo cuentas bancarias de usuario', { metadata: { userId } });
       
-      const accountsSnapshot = await db.collection('bank_accounts')
-        .where('userId', '==', userId)
-        .orderBy('isDefault', 'desc')
-        .orderBy('createdAt', 'desc')
-        .get();
-      
-      return accountsSnapshot.docs.map(doc => doc.data() as BankAccount);
+      try {
+        // Intentar consulta optimizada con índices
+        const accountsSnapshot = await db.collection('bank_accounts')
+          .where('userId', '==', userId)
+          .orderBy('isDefault', 'desc')
+          .orderBy('createdAt', 'desc')
+          .get();
+        
+        return accountsSnapshot.docs.map(doc => doc.data() as BankAccount);
+      } catch (indexError) {
+        // Si falla por falta de índice, usar consulta simple y ordenar en memoria
+        const error = indexError as any;
+        if (error.code === 'FAILED_PRECONDITION' && error.message?.includes('index')) {
+          logger.warn('Índice no disponible, usando ordenamiento en memoria', { 
+            metadata: { userId, error: error.message } 
+          });
+          
+          const accountsSnapshot = await db.collection('bank_accounts')
+            .where('userId', '==', userId)
+            .get();
+          
+          const accounts = accountsSnapshot.docs.map(doc => doc.data() as BankAccount);
+          
+          // Ordenar por default primero, luego por fecha de creación
+          return accounts.sort((a, b) => {
+            // Primero por isDefault (descendente)
+            if (a.isDefault !== b.isDefault) {
+              return b.isDefault ? 1 : -1;
+            }
+            // Luego por createdAt (descendente)
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+        } else {
+          // Si es otro tipo de error, relanzarlo
+          throw indexError;
+        }
+      }
     } catch (error) {
       logger.error('Error obteniendo cuentas bancarias', error as Error, { 
         metadata: { userId } 
@@ -153,6 +183,15 @@ export class PaymentSystemService {
           filename: depositData.voucherFile.originalname || 'voucher.jpg',
           uploadedAt: new Date().toISOString()
         },
+        // Información del depósito bancario
+        accountHolderName: depositData.accountHolderName,
+        accountNumber: depositData.accountNumber,
+        bankName: depositData.bankName,
+        depositDate: depositData.depositDate,
+        depositTime: depositData.depositTime,
+        referenceNumber: depositData.referenceNumber,
+        comments: depositData.comments,
+        // Estado inicial
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -172,7 +211,19 @@ export class PaymentSystemService {
   /**
    * Verificar depósito (admin)
    */
-  async verifyDeposit(depositId: string, adminId: string, approved: boolean, notes?: string): Promise<void> {
+  async verifyDeposit(
+    depositId: string, 
+    adminId: string, 
+    approved: boolean, 
+    notes?: string,
+    verificationData?: {
+      bankDepositDate: string;
+      bankDepositTime: string;
+      referenceNumber: string;
+      accountLastFourDigits: string;
+      verifiedBy: string;
+    }
+  ): Promise<void> {
     try {
       logger.info('Verificando depósito', { metadata: { depositId, adminId, approved } });
       
@@ -196,6 +247,14 @@ export class PaymentSystemService {
         notes,
         updatedAt: new Date().toISOString()
       };
+
+      // Si fue aprobado y se proporcionan datos de verificación, agregarlos
+      if (approved && verificationData) {
+        updateData.verificationData = {
+          ...verificationData,
+          verifiedBy: adminId
+        };
+      }
       
       await depositRef.update(updateData);
       

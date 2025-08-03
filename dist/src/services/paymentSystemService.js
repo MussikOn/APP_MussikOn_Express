@@ -94,14 +94,44 @@ class PaymentSystemService {
      */
     getUserBankAccounts(userId) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 loggerService_1.logger.info('Obteniendo cuentas bancarias de usuario', { metadata: { userId } });
-                const accountsSnapshot = yield firebase_1.db.collection('bank_accounts')
-                    .where('userId', '==', userId)
-                    .orderBy('isDefault', 'desc')
-                    .orderBy('createdAt', 'desc')
-                    .get();
-                return accountsSnapshot.docs.map(doc => doc.data());
+                try {
+                    // Intentar consulta optimizada con índices
+                    const accountsSnapshot = yield firebase_1.db.collection('bank_accounts')
+                        .where('userId', '==', userId)
+                        .orderBy('isDefault', 'desc')
+                        .orderBy('createdAt', 'desc')
+                        .get();
+                    return accountsSnapshot.docs.map(doc => doc.data());
+                }
+                catch (indexError) {
+                    // Si falla por falta de índice, usar consulta simple y ordenar en memoria
+                    const error = indexError;
+                    if (error.code === 'FAILED_PRECONDITION' && ((_a = error.message) === null || _a === void 0 ? void 0 : _a.includes('index'))) {
+                        loggerService_1.logger.warn('Índice no disponible, usando ordenamiento en memoria', {
+                            metadata: { userId, error: error.message }
+                        });
+                        const accountsSnapshot = yield firebase_1.db.collection('bank_accounts')
+                            .where('userId', '==', userId)
+                            .get();
+                        const accounts = accountsSnapshot.docs.map(doc => doc.data());
+                        // Ordenar por default primero, luego por fecha de creación
+                        return accounts.sort((a, b) => {
+                            // Primero por isDefault (descendente)
+                            if (a.isDefault !== b.isDefault) {
+                                return b.isDefault ? 1 : -1;
+                            }
+                            // Luego por createdAt (descendente)
+                            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                        });
+                    }
+                    else {
+                        // Si es otro tipo de error, relanzarlo
+                        throw indexError;
+                    }
+                }
             }
             catch (error) {
                 loggerService_1.logger.error('Error obteniendo cuentas bancarias', error, {
@@ -130,6 +160,15 @@ class PaymentSystemService {
                         filename: depositData.voucherFile.originalname || 'voucher.jpg',
                         uploadedAt: new Date().toISOString()
                     },
+                    // Información del depósito bancario
+                    accountHolderName: depositData.accountHolderName,
+                    accountNumber: depositData.accountNumber,
+                    bankName: depositData.bankName,
+                    depositDate: depositData.depositDate,
+                    depositTime: depositData.depositTime,
+                    referenceNumber: depositData.referenceNumber,
+                    comments: depositData.comments,
+                    // Estado inicial
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
@@ -148,7 +187,7 @@ class PaymentSystemService {
     /**
      * Verificar depósito (admin)
      */
-    verifyDeposit(depositId, adminId, approved, notes) {
+    verifyDeposit(depositId, adminId, approved, notes, verificationData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 loggerService_1.logger.info('Verificando depósito', { metadata: { depositId, adminId, approved } });
@@ -168,6 +207,10 @@ class PaymentSystemService {
                     notes,
                     updatedAt: new Date().toISOString()
                 };
+                // Si fue aprobado y se proporcionan datos de verificación, agregarlos
+                if (approved && verificationData) {
+                    updateData.verificationData = Object.assign(Object.assign({}, verificationData), { verifiedBy: adminId });
+                }
                 yield depositRef.update(updateData);
                 // Si fue aprobado, actualizar balance del usuario
                 if (approved) {
