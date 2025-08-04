@@ -1,273 +1,167 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateIdFormat = exports.validateEmailFormat = exports.createLoggerMock = exports.validateSafeString = exports.delay = exports.createFirebaseMock = exports.validateRequiredProperties = exports.createParameterizedTest = exports.createTestData = exports.validateControllerErrorHandling = exports.setupControllerTest = exports.validateServiceCall = exports.createMockError = exports.resetAllMocks = exports.validateMockCall = exports.createMockFile = exports.createValidPaymentData = exports.createMockRating = exports.createValidRatingData = exports.validateSuccessResponse = exports.validateErrorResponse = exports.validateApiResponse = exports.createMockRequest = exports.createMockResponse = exports.createMockUser = void 0;
-/**
- * Crea un usuario mock válido con opciones de personalización
- */
-const createMockUser = (overrides = {}) => (Object.assign({ id: 'user123', userId: 'user123', userEmail: 'user@example.com', email: 'user@example.com', role: 'user', name: 'Test User' }, overrides));
 exports.createMockUser = createMockUser;
-/**
- * Crea una respuesta mock con métodos encadenables
- */
-const createMockResponse = () => {
-    const mockStatus = jest.fn().mockReturnThis();
-    const mockJson = jest.fn().mockReturnThis();
+exports.createMockRequest = createMockRequest;
+exports.createMockResponse = createMockResponse;
+exports.cleanupMocks = cleanupMocks;
+exports.createFirebaseMock = createFirebaseMock;
+exports.createServiceMock = createServiceMock;
+exports.simulateError = simulateError;
+exports.createTestToken = createTestToken;
+exports.validateResponseStructure = validateResponseStructure;
+exports.validatePagination = validatePagination;
+exports.validateSorting = validateSorting;
+exports.createTestData = createTestData;
+exports.expectSuccessResponse = expectSuccessResponse;
+exports.expectErrorResponse = expectErrorResponse;
+const globals_1 = require("@jest/globals");
+// Función para crear un mock de usuario
+function createMockUser(overrides = {}) {
+    return Object.assign({ userId: 'test-user-id', userEmail: 'test@example.com', email: 'test@example.com', role: 'user', name: 'Test User' }, overrides);
+}
+// Función para crear un mock de request
+function createMockRequest(options = {}) {
+    return {
+        user: options.user,
+        body: options.body || {},
+        params: options.params || {},
+        query: options.query || {},
+        headers: options.headers || {},
+        url: options.url || '/test',
+        method: options.method || 'GET',
+        path: options.url || '/test',
+        get: globals_1.jest.fn(),
+        header: globals_1.jest.fn(),
+        accepts: globals_1.jest.fn(),
+        acceptsCharsets: globals_1.jest.fn(),
+        acceptsEncodings: globals_1.jest.fn(),
+        acceptsLanguages: globals_1.jest.fn(),
+        range: globals_1.jest.fn(),
+        param: globals_1.jest.fn(),
+        is: globals_1.jest.fn(),
+        protocol: 'http',
+        secure: false,
+        ip: '127.0.0.1',
+        ips: [],
+        subdomains: [],
+        originalUrl: options.url || '/test',
+        baseUrl: ''
+    };
+}
+// Función para crear un mock de response
+function createMockResponse() {
+    const mockStatus = globals_1.jest.fn().mockReturnThis();
+    const mockJson = globals_1.jest.fn().mockReturnThis();
+    const mockSend = globals_1.jest.fn().mockReturnThis();
+    const mockEnd = globals_1.jest.fn().mockReturnThis();
+    const mockSet = globals_1.jest.fn().mockReturnThis();
+    const mockHeader = globals_1.jest.fn().mockReturnThis();
     return {
         status: mockStatus,
-        json: mockJson
+        json: mockJson,
+        send: mockSend,
+        end: mockEnd,
+        set: mockSet,
+        header: mockHeader,
+        cookie: globals_1.jest.fn().mockReturnThis(),
+        clearCookie: globals_1.jest.fn().mockReturnThis(),
+        redirect: globals_1.jest.fn().mockReturnThis(),
+        sendStatus: globals_1.jest.fn().mockReturnThis(),
+        type: globals_1.jest.fn().mockReturnThis(),
+        format: globals_1.jest.fn().mockReturnThis(),
+        attachment: globals_1.jest.fn().mockReturnThis(),
+        links: globals_1.jest.fn().mockReturnThis(),
+        location: globals_1.jest.fn().mockReturnThis(),
+        vary: globals_1.jest.fn().mockReturnThis(),
+        render: globals_1.jest.fn().mockReturnThis(),
+        locals: {}
     };
-};
-exports.createMockResponse = createMockResponse;
-/**
- * Crea una request mock con estructura completa
- */
-const createMockRequest = (overrides = {}) => (Object.assign({ user: (0, exports.createMockUser)(), body: {}, params: {}, query: {} }, overrides));
-exports.createMockRequest = createMockRequest;
-/**
- * Valida que una respuesta tenga el formato estándar de la API
- */
-const validateApiResponse = (mockJson, expectedSuccess, expectedMessage, expectedData) => {
-    const calls = mockJson.mock.calls;
-    expect(calls).toHaveLength(1);
-    const response = calls[0][0];
-    expect(response).toHaveProperty('success', expectedSuccess);
-    if (expectedMessage) {
-        expect(response).toHaveProperty('message', expectedMessage);
-    }
-    if (expectedData) {
-        expect(response).toHaveProperty('data', expectedData);
-    }
-    return response;
-};
-exports.validateApiResponse = validateApiResponse;
-/**
- * Valida que una respuesta de error tenga el formato correcto
- */
-const validateErrorResponse = (mockStatus, mockJson, expectedStatus, expectedMessage) => {
-    expect(mockStatus).toHaveBeenCalledWith(expectedStatus);
-    (0, exports.validateApiResponse)(mockJson, false, expectedMessage);
-};
-exports.validateErrorResponse = validateErrorResponse;
-/**
- * Valida que una respuesta de éxito tenga el formato correcto
- */
-const validateSuccessResponse = (mockStatus, mockJson, expectedStatus, expectedMessage, expectedData) => {
-    expect(mockStatus).toHaveBeenCalledWith(expectedStatus);
-    (0, exports.validateApiResponse)(mockJson, true, expectedMessage, expectedData);
-};
-exports.validateSuccessResponse = validateSuccessResponse;
-/**
- * Crea datos de rating válidos con opciones de personalización
- */
-const createValidRatingData = (overrides = {}) => (Object.assign({ eventId: 'event123', musicianId: 'musician123', rating: 5, review: 'Excellent performance!', category: 'musician' }, overrides));
-exports.createValidRatingData = createValidRatingData;
-/**
- * Crea un rating mock completo con opciones de personalización
- */
-const createMockRating = (overrides = {}) => (Object.assign({ id: 'rating123', eventId: 'event123', musicianId: 'musician123', eventCreatorId: 'user123', rating: 5, review: 'Excellent performance!', category: 'musician', isVerified: false, createdAt: new Date(), updatedAt: new Date(), helpfulCount: 0, reportedCount: 0, isActive: true }, overrides));
-exports.createMockRating = createMockRating;
-/**
- * Crea datos de pago válidos con opciones de personalización
- */
-const createValidPaymentData = (overrides = {}) => (Object.assign({ amount: 1000, currency: 'RD$', description: 'Test payment' }, overrides));
-exports.createValidPaymentData = createValidPaymentData;
-/**
- * Crea un archivo mock para uploads
- */
-const createMockFile = (overrides = {}) => (Object.assign({ fieldname: 'file', originalname: 'test.jpg', encoding: '7bit', mimetype: 'image/jpeg', buffer: Buffer.from('test file content'), size: 1024, stream: {}, destination: '', filename: 'test.jpg', path: '' }, overrides));
-exports.createMockFile = createMockFile;
-/**
- * Valida que un mock haya sido llamado con los parámetros correctos
- */
-const validateMockCall = (mock, expectedCallCount = 1, expectedParams) => {
-    expect(mock).toHaveBeenCalledTimes(expectedCallCount);
-    if (expectedParams) {
-        expect(mock).toHaveBeenCalledWith(expectedParams);
-    }
-};
-exports.validateMockCall = validateMockCall;
-/**
- * Limpia todos los mocks y restaura su estado original
- */
-const resetAllMocks = () => {
-    jest.clearAllMocks();
-    jest.resetAllMocks();
-};
-exports.resetAllMocks = resetAllMocks;
-/**
- * Crea un error mock con propiedades personalizables
- */
-const createMockError = (message, name, code) => {
-    const error = new Error(message);
-    if (name)
-        error.name = name;
-    if (code)
-        error.code = code;
-    return error;
-};
-exports.createMockError = createMockError;
-/**
- * Valida que un servicio haya sido llamado correctamente
- */
-const validateServiceCall = (serviceMock, expectedMethod, expectedParams) => {
-    expect(serviceMock).toHaveBeenCalled();
-    if (expectedParams) {
-        expect(serviceMock).toHaveBeenCalledWith(expectedParams);
-    }
-};
-exports.validateServiceCall = validateServiceCall;
-/**
- * Crea un setup común para tests de controladores
- */
-const setupControllerTest = () => {
-    const mockResponse = (0, exports.createMockResponse)();
-    const mockRequest = (0, exports.createMockRequest)();
+}
+// Función para limpiar mocks
+function cleanupMocks() {
+    globals_1.jest.clearAllMocks();
+}
+// Función para crear mock de Firebase
+function createFirebaseMock() {
     return {
-        mockRequest,
-        mockResponse,
-        mockStatus: mockResponse.status,
-        mockJson: mockResponse.json
-    };
-};
-exports.setupControllerTest = setupControllerTest;
-/**
- * Valida que un controlador maneje correctamente los errores
- */
-const validateControllerErrorHandling = (controllerMethod_1, mockRequest_1, mockResponse_1, serviceMock_1, errorToThrow_1, ...args_1) => __awaiter(void 0, [controllerMethod_1, mockRequest_1, mockResponse_1, serviceMock_1, errorToThrow_1, ...args_1], void 0, function* (controllerMethod, mockRequest, mockResponse, serviceMock, errorToThrow, expectedStatus = 500) {
-    serviceMock.mockRejectedValue(errorToThrow);
-    yield controllerMethod(mockRequest, mockResponse);
-    (0, exports.validateErrorResponse)(mockResponse.status, mockResponse.json, expectedStatus, errorToThrow.message);
-});
-exports.validateControllerErrorHandling = validateControllerErrorHandling;
-/**
- * Crea datos de prueba para diferentes escenarios
- */
-exports.createTestData = {
-    // Datos para tests de autenticación
-    auth: {
-        validUser: (0, exports.createMockUser)(),
-        adminUser: (0, exports.createMockUser)({ role: 'admin' }),
-        seniorAdminUser: (0, exports.createMockUser)({ role: 'adminSenior' }),
-        unauthenticatedUser: undefined
-    },
-    // Datos para tests de rating
-    rating: {
-        validData: (0, exports.createValidRatingData)(),
-        invalidRating: (0, exports.createValidRatingData)({ rating: 6 }),
-        invalidCategory: (0, exports.createValidRatingData)({ category: 'invalid' }),
-        emptyFields: (0, exports.createValidRatingData)({ eventId: '', musicianId: '' })
-    },
-    // Datos para tests de pago
-    payment: {
-        validData: (0, exports.createValidPaymentData)(),
-        invalidAmount: (0, exports.createValidPaymentData)({ amount: -100 }),
-        invalidCurrency: (0, exports.createValidPaymentData)({ currency: 'INVALID' })
-    },
-    // Datos para tests de archivos
-    file: {
-        validImage: (0, exports.createMockFile)(),
-        invalidFile: (0, exports.createMockFile)({ mimetype: 'text/plain' }),
-        largeFile: (0, exports.createMockFile)({ size: 10 * 1024 * 1024 }) // 10MB
-    }
-};
-/**
- * Utilidad para crear tests parametrizados
- */
-const createParameterizedTest = (testCases, testFunction) => {
-    testCases.forEach(({ description, input, expected }) => {
-        it(description, () => testFunction(input, expected));
-    });
-};
-exports.createParameterizedTest = createParameterizedTest;
-/**
- * Valida que un objeto tenga todas las propiedades requeridas
- */
-const validateRequiredProperties = (obj, requiredProps) => {
-    requiredProps.forEach(prop => {
-        expect(obj).toHaveProperty(prop);
-    });
-};
-exports.validateRequiredProperties = validateRequiredProperties;
-/**
- * Crea un mock de Firebase más realista
- */
-const createFirebaseMock = () => ({
-    collection: jest.fn().mockReturnValue({
-        doc: jest.fn().mockReturnValue({
-            get: jest.fn().mockResolvedValue({
-                exists: true,
-                data: jest.fn().mockReturnValue({})
+        collection: globals_1.jest.fn().mockReturnValue({
+            doc: globals_1.jest.fn().mockReturnValue({
+                get: globals_1.jest.fn(),
+                set: globals_1.jest.fn(),
+                update: globals_1.jest.fn(),
+                delete: globals_1.jest.fn()
             }),
-            set: jest.fn().mockResolvedValue({}),
-            update: jest.fn().mockResolvedValue({}),
-            delete: jest.fn().mockResolvedValue({})
-        }),
-        where: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        get: jest.fn().mockResolvedValue({
-            docs: [],
-            size: 0
-        }),
-        add: jest.fn().mockResolvedValue({
-            id: 'generated-id'
+            where: globals_1.jest.fn().mockReturnThis(),
+            orderBy: globals_1.jest.fn().mockReturnThis(),
+            limit: globals_1.jest.fn().mockReturnThis(),
+            offset: globals_1.jest.fn().mockReturnThis(),
+            get: globals_1.jest.fn(),
+            add: globals_1.jest.fn(),
+            onSnapshot: globals_1.jest.fn()
         })
-    })
-});
-exports.createFirebaseMock = createFirebaseMock;
-/**
- * Utilidad para simular delays en tests
- */
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-exports.delay = delay;
-/**
- * Valida que un string no contenga caracteres peligrosos
- */
-const validateSafeString = (str) => {
-    const dangerousPatterns = [
-        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // XSS scripts
-        /javascript:/gi, // JavaScript protocol
-        /on\w+\s*=/gi, // Event handlers
-        /data:text\/html/gi, // Data URLs
-        /vbscript:/gi, // VBScript
-        /expression\s*\(/gi, // CSS expressions
-    ];
-    return !dangerousPatterns.some(pattern => pattern.test(str));
-};
-exports.validateSafeString = validateSafeString;
-/**
- * Crea un mock de logger
- */
-const createLoggerMock = () => ({
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn()
-});
-exports.createLoggerMock = createLoggerMock;
-/**
- * Valida que un email tenga formato válido
- */
-const validateEmailFormat = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-};
-exports.validateEmailFormat = validateEmailFormat;
-/**
- * Valida que un ID tenga formato válido
- */
-const validateIdFormat = (id) => {
-    // Asumiendo que los IDs son alfanuméricos y tienen entre 3 y 50 caracteres
-    const idRegex = /^[a-zA-Z0-9_-]{3,50}$/;
-    return idRegex.test(id);
-};
-exports.validateIdFormat = validateIdFormat;
+    };
+}
+// Función para crear mock de servicio
+function createServiceMock() {
+    return {
+        method1: globals_1.jest.fn(),
+        method2: globals_1.jest.fn(),
+        method3: globals_1.jest.fn()
+    };
+}
+// Función para simular error
+function simulateError(error) {
+    throw error;
+}
+// Función para crear token de test
+function createTestToken(payload = {}) {
+    return `test-token-${JSON.stringify(payload)}`;
+}
+// Función para validar estructura de respuesta
+function validateResponseStructure(response, expectedKeys) {
+    expect(response).toHaveProperty('success');
+    expectedKeys.forEach(key => {
+        expect(response).toHaveProperty(key);
+    });
+}
+// Función para validar paginación
+function validatePagination(response) {
+    expect(response.pagination).toHaveProperty('page');
+    expect(response.pagination).toHaveProperty('limit');
+    expect(response.pagination).toHaveProperty('total');
+    expect(response.pagination).toHaveProperty('pages');
+}
+// Función para validar ordenamiento
+function validateSorting(items, sortField, sortOrder = 'asc') {
+    for (let i = 1; i < items.length; i++) {
+        const prev = items[i - 1][sortField];
+        const curr = items[i][sortField];
+        if (sortOrder === 'asc') {
+            expect(prev <= curr).toBe(true);
+        }
+        else {
+            expect(prev >= curr).toBe(true);
+        }
+    }
+}
+// Factory para crear datos de test
+function createTestData(factory, count = 1) {
+    return Array.from({ length: count }, factory);
+}
+// Función para esperar respuesta exitosa
+function expectSuccessResponse(response, statusCode = 200) {
+    expect(response.status).toHaveBeenCalledWith(statusCode);
+    expect(response.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true
+    }));
+}
+// Función para esperar respuesta de error
+function expectErrorResponse(response, statusCode, message) {
+    var _a;
+    expect(response.status).toHaveBeenCalledWith(statusCode);
+    const jsonCall = (_a = response.json.mock.calls[0]) === null || _a === void 0 ? void 0 : _a[0];
+    expect(jsonCall).toHaveProperty('success', false);
+    if (message && jsonCall) {
+        expect(jsonCall.message).toContain(message);
+    }
+}

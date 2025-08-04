@@ -48,6 +48,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const requireRole_1 = require("../middleware/requireRole");
 const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const loggerService_1 = require("../services/loggerService");
+const firebase_1 = require("../utils/firebase");
 const router = (0, express_1.Router)();
 const paymentSystemController = new paymentSystemController_1.PaymentSystemController();
 // Rutas adicionales para compatibilidad con el frontend
@@ -68,7 +69,7 @@ const paymentSystemController = new paymentSystemController_1.PaymentSystemContr
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPaymentStatistics(req, res);
 }));
 /**
@@ -87,7 +88,8 @@ router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, re
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('[paymentSystemRoutes.ts:49] Ruta /admin/payments/pending-deposits accedida');
     yield paymentSystemController.getPendingDeposits(req, res);
 }));
 /**
@@ -106,7 +108,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, 
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPendingWithdrawals(req, res);
 }));
 /**
@@ -611,7 +613,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware_1.authMiddleware, (re
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPendingDeposits(req, res);
 }));
 /**
@@ -651,7 +653,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, 
  *       500:
  *         description: Error del servidor
  */
-router.put('/admin/payments/verify-deposit/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/payments/verify-deposit/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.verifyDeposit(req, res);
 }));
 /**
@@ -683,7 +685,7 @@ router.put('/admin/payments/verify-deposit/:depositId', authMiddleware_1.authMid
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPendingWithdrawals(req, res);
 }));
 /**
@@ -723,7 +725,7 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddlewar
  *       500:
  *         description: Error del servidor
  */
-router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/payments/process-withdrawal/:withdrawalId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.processWithdrawal(req, res);
 }));
 /**
@@ -755,7 +757,7 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.
  *       500:
  *         description: Error del servidor
  */
-router.get('/admin/firestore/indexes/status', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/firestore/indexes/status', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { FirestoreIndexManager } = yield Promise.resolve().then(() => __importStar(require('../utils/firestoreIndexes')));
         const indexStatus = yield FirestoreIndexManager.checkIndexStatus();
@@ -771,6 +773,222 @@ router.get('/admin/firestore/indexes/status', authMiddleware_1.authMiddleware, (
             success: false,
             error: 'Error verificando estado de índices'
         });
+    }
+}));
+/**
+ * @swagger
+ * /admin/payments/voucher-image/{depositId}:
+ *   get:
+ *     summary: Obtener imagen del voucher de un depósito (admin)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito o imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/voucher-image/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { depositId } = req.params;
+        console.log('[src/routes/paymentSystemRoutes.ts] Solicitando voucher para depositId:', depositId);
+        // Obtener el depósito de la base de datos
+        const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+        if (!depositDoc.exists) {
+            console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+            res.status(404).json({ error: 'Depósito no encontrado' });
+            return;
+        }
+        const deposit = depositDoc.data();
+        console.log('[src/routes/paymentSystemRoutes.ts] Depósito encontrado:', {
+            id: depositId,
+            hasVoucherFile: !!deposit.voucherFile,
+            voucherUrl: (_a = deposit.voucherFile) === null || _a === void 0 ? void 0 : _a.url
+        });
+        if (!deposit.voucherFile || !deposit.voucherFile.url) {
+            console.log('[src/routes/paymentSystemRoutes.ts] Voucher no encontrado en depósito:', depositId);
+            res.status(404).json({ error: 'Imagen del voucher no encontrada' });
+            return;
+        }
+        // Opción 1: Redirigir a la URL de S3 (más simple)
+        console.log('[src/routes/paymentSystemRoutes.ts] Redirigiendo a:', deposit.voucherFile.url);
+        res.redirect(deposit.voucherFile.url);
+        // Opción 2: Servir la imagen directamente (más seguro pero requiere más recursos)
+        // try {
+        //   const response = await fetch(deposit.voucherFile.url);
+        //   if (!response.ok) {
+        //     throw new Error(`HTTP error! status: ${response.status}`);
+        //   }
+        //   const buffer = await response.arrayBuffer();
+        //   res.set({
+        //     'Content-Type': 'image/jpeg',
+        //     'Cache-Control': 'public, max-age=3600',
+        //     'Content-Length': buffer.byteLength.toString()
+        //   });
+        //   res.send(Buffer.from(buffer));
+        // } catch (fetchError) {
+        //   console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen de S3:', fetchError);
+        //   res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+        // }
+    }
+    catch (error) {
+        console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen del voucher:', error);
+        res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+    }
+}));
+/**
+ * @swagger
+ * /admin/payments/voucher-image-direct/{depositId}:
+ *   get:
+ *     summary: Obtener imagen del voucher directamente (sin redirección)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito o imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/voucher-image-direct/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { depositId } = req.params;
+        console.log('[src/routes/paymentSystemRoutes.ts] Solicitando voucher directo para depositId:', depositId);
+        // Obtener el depósito de la base de datos
+        const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+        if (!depositDoc.exists) {
+            console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+            res.status(404).json({ error: 'Depósito no encontrado' });
+            return;
+        }
+        const deposit = depositDoc.data();
+        if (!deposit.voucherFile || !deposit.voucherFile.url) {
+            console.log('[src/routes/paymentSystemRoutes.ts] Voucher no encontrado en depósito:', depositId);
+            res.status(404).json({ error: 'Imagen del voucher no encontrada' });
+            return;
+        }
+        // Servir la imagen directamente desde S3
+        try {
+            const response = yield fetch(deposit.voucherFile.url);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const buffer = yield response.arrayBuffer();
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            res.set({
+                'Content-Type': contentType,
+                'Cache-Control': 'public, max-age=3600',
+                'Content-Length': buffer.byteLength.toString(),
+                'Access-Control-Allow-Origin': '*'
+            });
+            console.log('[src/routes/paymentSystemRoutes.ts] Sirviendo imagen directamente:', {
+                depositId,
+                contentType,
+                size: buffer.byteLength
+            });
+            res.send(Buffer.from(buffer));
+        }
+        catch (fetchError) {
+            console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen de S3:', fetchError);
+            res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+        }
+    }
+    catch (error) {
+        console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen del voucher:', error);
+        res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+    }
+}));
+/**
+ * @swagger
+ * /admin/payments/deposit-info/{depositId}:
+ *   get:
+ *     summary: Obtener información de un depósito (para debugging)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Información del depósito obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/deposit-info/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { depositId } = req.params;
+        console.log('[src/routes/paymentSystemRoutes.ts] Solicitando información de depósito:', depositId);
+        // Obtener el depósito de la base de datos
+        const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+        if (!depositDoc.exists) {
+            console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+            res.status(404).json({ error: 'Depósito no encontrado' });
+            return;
+        }
+        const deposit = depositDoc.data();
+        // Retornar información del depósito (sin datos sensibles)
+        const depositInfo = {
+            id: deposit.id,
+            userId: deposit.userId,
+            amount: deposit.amount,
+            currency: deposit.currency,
+            status: deposit.status,
+            accountHolderName: deposit.accountHolderName,
+            bankName: deposit.bankName,
+            createdAt: deposit.createdAt,
+            updatedAt: deposit.updatedAt,
+            voucherFile: deposit.voucherFile ? {
+                url: deposit.voucherFile.url,
+                filename: deposit.voucherFile.filename,
+                uploadedAt: deposit.voucherFile.uploadedAt
+            } : null,
+            hasVoucherFile: !!deposit.voucherFile,
+            voucherUrl: (_a = deposit.voucherFile) === null || _a === void 0 ? void 0 : _a.url
+        };
+        console.log('[src/routes/paymentSystemRoutes.ts] Información del depósito:', depositInfo);
+        res.json({
+            success: true,
+            data: depositInfo,
+            message: 'Información del depósito obtenida exitosamente'
+        });
+    }
+    catch (error) {
+        console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo información del depósito:', error);
+        res.status(500).json({ error: 'Error obteniendo información del depósito' });
     }
 }));
 exports.default = router;

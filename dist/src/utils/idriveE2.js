@@ -31,7 +31,7 @@ const uploadToS3 = (file_1, fileName_1, contentType_1, ...args_1) => __awaiter(v
             Key: key,
             Body: file,
             ContentType: contentType,
-            ACL: 'private',
+            ACL: 'public-read', // Cambiar a público para que las imágenes sean accesibles
         });
         yield exports.s3.send(command);
         // Retorna la URL del archivo

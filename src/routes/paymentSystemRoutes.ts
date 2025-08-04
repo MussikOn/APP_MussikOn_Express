@@ -4,6 +4,7 @@ import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/requireRole';
 import { upload } from '../middleware/uploadMiddleware';
 import { logger } from '../services/loggerService';
+import { db } from '../utils/firebase';
 
 const router = Router();
 const paymentSystemController = new PaymentSystemController();
@@ -749,6 +750,243 @@ router.get('/firestore/indexes/status', authMiddleware, requireRole(['adminJunio
       success: false,
       error: 'Error verificando estado de índices'
     });
+  }
+});
+
+/**
+ * @swagger
+ * /admin/payments/voucher-image/{depositId}:
+ *   get:
+ *     summary: Obtener imagen del voucher de un depósito (admin)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito o imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/voucher-image/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  try {
+    const { depositId } = req.params;
+    
+    console.log('[src/routes/paymentSystemRoutes.ts] Solicitando voucher para depositId:', depositId);
+    
+    // Obtener el depósito de la base de datos
+    const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+    
+    if (!depositDoc.exists) {
+      console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+      res.status(404).json({ error: 'Depósito no encontrado' });
+      return;
+    }
+    
+    const deposit = depositDoc.data() as any;
+    console.log('[src/routes/paymentSystemRoutes.ts] Depósito encontrado:', {
+      id: depositId,
+      hasVoucherFile: !!deposit.voucherFile,
+      voucherUrl: deposit.voucherFile?.url
+    });
+    
+    if (!deposit.voucherFile || !deposit.voucherFile.url) {
+      console.log('[src/routes/paymentSystemRoutes.ts] Voucher no encontrado en depósito:', depositId);
+      res.status(404).json({ error: 'Imagen del voucher no encontrada' });
+      return;
+    }
+    
+    // Opción 1: Redirigir a la URL de S3 (más simple)
+    console.log('[src/routes/paymentSystemRoutes.ts] Redirigiendo a:', deposit.voucherFile.url);
+    res.redirect(deposit.voucherFile.url);
+    
+    // Opción 2: Servir la imagen directamente (más seguro pero requiere más recursos)
+    // try {
+    //   const response = await fetch(deposit.voucherFile.url);
+    //   if (!response.ok) {
+    //     throw new Error(`HTTP error! status: ${response.status}`);
+    //   }
+    //   const buffer = await response.arrayBuffer();
+    //   res.set({
+    //     'Content-Type': 'image/jpeg',
+    //     'Cache-Control': 'public, max-age=3600',
+    //     'Content-Length': buffer.byteLength.toString()
+    //   });
+    //   res.send(Buffer.from(buffer));
+    // } catch (fetchError) {
+    //   console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen de S3:', fetchError);
+    //   res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+    // }
+  } catch (error) {
+    console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen del voucher:', error);
+    res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+  }
+});
+
+/**
+ * @swagger
+ * /admin/payments/voucher-image-direct/{depositId}:
+ *   get:
+ *     summary: Obtener imagen del voucher directamente (sin redirección)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito o imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/voucher-image-direct/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  try {
+    const { depositId } = req.params;
+    
+    console.log('[src/routes/paymentSystemRoutes.ts] Solicitando voucher directo para depositId:', depositId);
+    
+    // Obtener el depósito de la base de datos
+    const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+    
+    if (!depositDoc.exists) {
+      console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+      res.status(404).json({ error: 'Depósito no encontrado' });
+      return;
+    }
+    
+    const deposit = depositDoc.data() as any;
+    
+    if (!deposit.voucherFile || !deposit.voucherFile.url) {
+      console.log('[src/routes/paymentSystemRoutes.ts] Voucher no encontrado en depósito:', depositId);
+      res.status(404).json({ error: 'Imagen del voucher no encontrada' });
+      return;
+    }
+    
+    // Servir la imagen directamente desde S3
+    try {
+      const response = await fetch(deposit.voucherFile.url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const buffer = await response.arrayBuffer();
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      
+      res.set({
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=3600',
+        'Content-Length': buffer.byteLength.toString(),
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      console.log('[src/routes/paymentSystemRoutes.ts] Sirviendo imagen directamente:', {
+        depositId,
+        contentType,
+        size: buffer.byteLength
+      });
+      
+      res.send(Buffer.from(buffer));
+    } catch (fetchError) {
+      console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen de S3:', fetchError);
+      res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+    }
+  } catch (error) {
+    console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo imagen del voucher:', error);
+    res.status(500).json({ error: 'Error obteniendo imagen del voucher' });
+  }
+});
+
+/**
+ * @swagger
+ * /admin/payments/deposit-info/{depositId}:
+ *   get:
+ *     summary: Obtener información de un depósito (para debugging)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Información del depósito obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/deposit-info/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), async (req, res) => {
+  try {
+    const { depositId } = req.params;
+    
+    console.log('[src/routes/paymentSystemRoutes.ts] Solicitando información de depósito:', depositId);
+    
+    // Obtener el depósito de la base de datos
+    const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+    
+    if (!depositDoc.exists) {
+      console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
+      res.status(404).json({ error: 'Depósito no encontrado' });
+      return;
+    }
+    
+    const deposit = depositDoc.data() as any;
+    
+    // Retornar información del depósito (sin datos sensibles)
+    const depositInfo = {
+      id: deposit.id,
+      userId: deposit.userId,
+      amount: deposit.amount,
+      currency: deposit.currency,
+      status: deposit.status,
+      accountHolderName: deposit.accountHolderName,
+      bankName: deposit.bankName,
+      createdAt: deposit.createdAt,
+      updatedAt: deposit.updatedAt,
+      voucherFile: deposit.voucherFile ? {
+        url: deposit.voucherFile.url,
+        filename: deposit.voucherFile.filename,
+        uploadedAt: deposit.voucherFile.uploadedAt
+      } : null,
+      hasVoucherFile: !!deposit.voucherFile,
+      voucherUrl: deposit.voucherFile?.url
+    };
+    
+    console.log('[src/routes/paymentSystemRoutes.ts] Información del depósito:', depositInfo);
+    
+    res.json({
+      success: true,
+      data: depositInfo,
+      message: 'Información del depósito obtenida exitosamente'
+    });
+  } catch (error) {
+    console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo información del depósito:', error);
+    res.status(500).json({ error: 'Error obteniendo información del depósito' });
   }
 });
 

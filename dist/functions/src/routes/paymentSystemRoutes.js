@@ -544,7 +544,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware_1.authMiddleware, (re
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPendingDeposits(req, res);
 }));
 /**
@@ -596,7 +596,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware_1.authMiddleware, 
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/verify-deposit/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/payments/verify-deposit/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.verifyDeposit(req, res);
 }));
 /**
@@ -628,7 +628,7 @@ router.put('/admin/payments/verify-deposit/:depositId', authMiddleware_1.authMid
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/pending-withdrawals', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPendingWithdrawals(req, res);
 }));
 /**
@@ -680,7 +680,7 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware_1.authMiddlewar
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put('/payments/process-withdrawal/:withdrawalId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.processWithdrawal(req, res);
 }));
 /**
@@ -710,7 +710,7 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware_1.
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield paymentSystemController.getPaymentStatistics(req, res);
 }));
 exports.default = router;

@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
+import { jest } from '@jest/globals';
 
-// 🆕 UTILIDADES PARA TESTS - Reduce duplicación y mejora mantenibilidad
-
+// Tipos para los mocks
 export interface MockUser {
-  id: string;
   userId: string;
   userEmail: string;
   email: string;
@@ -11,382 +10,185 @@ export interface MockUser {
   name: string;
 }
 
-export interface MockResponse {
-  status: jest.Mock;
-  json: jest.Mock;
-}
-
-export interface MockRequest {
+export interface MockRequestOptions {
   user?: MockUser;
   body?: any;
   params?: any;
   query?: any;
-  file?: any;
-  files?: any[];
+  headers?: any;
+  url?: string;
+  method?: string;
 }
 
-/**
- * Crea un usuario mock válido con opciones de personalización
- */
-export const createMockUser = (overrides: Partial<MockUser> = {}): MockUser => ({
-  id: 'user123',
-  userId: 'user123',
-  userEmail: 'user@example.com',
-  email: 'user@example.com',
-  role: 'user',
-  name: 'Test User',
-  ...overrides
-});
+// Función para crear un mock de usuario
+export function createMockUser(overrides: Partial<MockUser> = {}): MockUser {
+  return {
+    userId: 'test-user-id',
+    userEmail: 'test@example.com',
+    email: 'test@example.com',
+    role: 'user',
+    name: 'Test User',
+    ...overrides
+  };
+}
 
-/**
- * Crea una respuesta mock con métodos encadenables
- */
-export const createMockResponse = (): MockResponse => {
+// Función para crear un mock de request
+export function createMockRequest(options: MockRequestOptions = {}): Partial<Request> {
+  return {
+    user: options.user,
+    body: options.body || {},
+    params: options.params || {},
+    query: options.query || {},
+    headers: options.headers || {},
+    url: options.url || '/test',
+    method: options.method || 'GET',
+    path: options.url || '/test',
+    get: jest.fn(),
+    header: jest.fn(),
+    accepts: jest.fn(),
+    acceptsCharsets: jest.fn(),
+    acceptsEncodings: jest.fn(),
+    acceptsLanguages: jest.fn(),
+    range: jest.fn(),
+    param: jest.fn(),
+    is: jest.fn(),
+    protocol: 'http',
+    secure: false,
+    ip: '127.0.0.1',
+    ips: [],
+    subdomains: [],
+    originalUrl: options.url || '/test',
+    baseUrl: ''
+  } as Partial<Request>;
+}
+
+// Función para crear un mock de response
+export function createMockResponse(): Partial<Response> {
   const mockStatus = jest.fn().mockReturnThis();
   const mockJson = jest.fn().mockReturnThis();
-  
+  const mockSend = jest.fn().mockReturnThis();
+  const mockEnd = jest.fn().mockReturnThis();
+  const mockSet = jest.fn().mockReturnThis();
+  const mockHeader = jest.fn().mockReturnThis();
+
   return {
     status: mockStatus,
-    json: mockJson
-  };
-};
+    json: mockJson,
+    send: mockSend,
+    end: mockEnd,
+    set: mockSet,
+    header: mockHeader,
+    cookie: jest.fn().mockReturnThis(),
+    clearCookie: jest.fn().mockReturnThis(),
+    redirect: jest.fn().mockReturnThis(),
+    sendStatus: jest.fn().mockReturnThis(),
+    type: jest.fn().mockReturnThis(),
+    format: jest.fn().mockReturnThis(),
+    attachment: jest.fn().mockReturnThis(),
+    links: jest.fn().mockReturnThis(),
+    location: jest.fn().mockReturnThis(),
+    vary: jest.fn().mockReturnThis(),
+    render: jest.fn().mockReturnThis(),
+    locals: {}
+  } as Partial<Response>;
+}
 
-/**
- * Crea una request mock con estructura completa
- */
-export const createMockRequest = (overrides: Partial<MockRequest> = {}): Partial<Request> => ({
-  user: createMockUser(),
-  body: {},
-  params: {},
-  query: {},
-  ...overrides
-});
-
-/**
- * Valida que una respuesta tenga el formato estándar de la API
- */
-export const validateApiResponse = (
-  mockJson: jest.Mock,
-  expectedSuccess: boolean,
-  expectedMessage?: string,
-  expectedData?: any
-) => {
-  const calls = mockJson.mock.calls;
-  expect(calls).toHaveLength(1);
-  
-  const response = calls[0][0];
-  expect(response).toHaveProperty('success', expectedSuccess);
-  
-  if (expectedMessage) {
-    expect(response).toHaveProperty('message', expectedMessage);
-  }
-  
-  if (expectedData) {
-    expect(response).toHaveProperty('data', expectedData);
-  }
-  
-  return response;
-};
-
-/**
- * Valida que una respuesta de error tenga el formato correcto
- */
-export const validateErrorResponse = (
-  mockStatus: jest.Mock,
-  mockJson: jest.Mock,
-  expectedStatus: number,
-  expectedMessage: string
-) => {
-  expect(mockStatus).toHaveBeenCalledWith(expectedStatus);
-  validateApiResponse(mockJson, false, expectedMessage);
-};
-
-/**
- * Valida que una respuesta de éxito tenga el formato correcto
- */
-export const validateSuccessResponse = (
-  mockStatus: jest.Mock,
-  mockJson: jest.Mock,
-  expectedStatus: number,
-  expectedMessage: string,
-  expectedData?: any
-) => {
-  expect(mockStatus).toHaveBeenCalledWith(expectedStatus);
-  validateApiResponse(mockJson, true, expectedMessage, expectedData);
-};
-
-/**
- * Crea datos de rating válidos con opciones de personalización
- */
-export const createValidRatingData = (overrides: any = {}) => ({
-  eventId: 'event123',
-  musicianId: 'musician123',
-  rating: 5,
-  review: 'Excellent performance!',
-  category: 'musician' as const,
-  ...overrides
-});
-
-/**
- * Crea un rating mock completo con opciones de personalización
- */
-export const createMockRating = (overrides: any = {}) => ({
-  id: 'rating123',
-  eventId: 'event123',
-  musicianId: 'musician123',
-  eventCreatorId: 'user123',
-  rating: 5,
-  review: 'Excellent performance!',
-  category: 'musician' as const,
-  isVerified: false,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  helpfulCount: 0,
-  reportedCount: 0,
-  isActive: true,
-  ...overrides
-});
-
-/**
- * Crea datos de pago válidos con opciones de personalización
- */
-export const createValidPaymentData = (overrides: any = {}) => ({
-  amount: 1000,
-  currency: 'RD$',
-  description: 'Test payment',
-  ...overrides
-});
-
-/**
- * Crea un archivo mock para uploads
- */
-export const createMockFile = (overrides: any = {}) => ({
-  fieldname: 'file',
-  originalname: 'test.jpg',
-  encoding: '7bit',
-  mimetype: 'image/jpeg',
-  buffer: Buffer.from('test file content'),
-  size: 1024,
-  stream: {} as any,
-  destination: '',
-  filename: 'test.jpg',
-  path: '',
-  ...overrides
-});
-
-/**
- * Valida que un mock haya sido llamado con los parámetros correctos
- */
-export const validateMockCall = (
-  mock: jest.Mock,
-  expectedCallCount: number = 1,
-  expectedParams?: any
-) => {
-  expect(mock).toHaveBeenCalledTimes(expectedCallCount);
-  
-  if (expectedParams) {
-    expect(mock).toHaveBeenCalledWith(expectedParams);
-  }
-};
-
-/**
- * Limpia todos los mocks y restaura su estado original
- */
-export const resetAllMocks = () => {
+// Función para limpiar mocks
+export function cleanupMocks(): void {
   jest.clearAllMocks();
-  jest.resetAllMocks();
-};
+}
 
-/**
- * Crea un error mock con propiedades personalizables
- */
-export const createMockError = (message: string, name?: string, code?: string) => {
-  const error = new Error(message);
-  if (name) error.name = name;
-  if (code) (error as any).code = code;
-  return error;
-};
-
-/**
- * Valida que un servicio haya sido llamado correctamente
- */
-export const validateServiceCall = (
-  serviceMock: jest.Mock,
-  expectedMethod: string,
-  expectedParams?: any
-) => {
-  expect(serviceMock).toHaveBeenCalled();
-  
-  if (expectedParams) {
-    expect(serviceMock).toHaveBeenCalledWith(expectedParams);
-  }
-};
-
-/**
- * Crea un setup común para tests de controladores
- */
-export const setupControllerTest = () => {
-  const mockResponse = createMockResponse();
-  const mockRequest = createMockRequest();
-  
+// Función para crear mock de Firebase
+export function createFirebaseMock() {
   return {
-    mockRequest,
-    mockResponse,
-    mockStatus: mockResponse.status,
-    mockJson: mockResponse.json
-  };
-};
-
-/**
- * Valida que un controlador maneje correctamente los errores
- */
-export const validateControllerErrorHandling = async (
-  controllerMethod: (req: Request, res: Response) => Promise<void>,
-  mockRequest: Partial<Request>,
-  mockResponse: Partial<Response>,
-  serviceMock: jest.Mock,
-  errorToThrow: Error,
-  expectedStatus: number = 500
-) => {
-  serviceMock.mockRejectedValue(errorToThrow);
-  
-  await controllerMethod(mockRequest as Request, mockResponse as Response);
-  
-  validateErrorResponse(
-    mockResponse.status as jest.Mock,
-    mockResponse.json as jest.Mock,
-    expectedStatus,
-    errorToThrow.message
-  );
-};
-
-/**
- * Crea datos de prueba para diferentes escenarios
- */
-export const createTestData = {
-  // Datos para tests de autenticación
-  auth: {
-    validUser: createMockUser(),
-    adminUser: createMockUser({ role: 'admin' }),
-    seniorAdminUser: createMockUser({ role: 'adminSenior' }),
-    unauthenticatedUser: undefined
-  },
-  
-  // Datos para tests de rating
-  rating: {
-    validData: createValidRatingData(),
-    invalidRating: createValidRatingData({ rating: 6 }),
-    invalidCategory: createValidRatingData({ category: 'invalid' }),
-    emptyFields: createValidRatingData({ eventId: '', musicianId: '' })
-  },
-  
-  // Datos para tests de pago
-  payment: {
-    validData: createValidPaymentData(),
-    invalidAmount: createValidPaymentData({ amount: -100 }),
-    invalidCurrency: createValidPaymentData({ currency: 'INVALID' })
-  },
-  
-  // Datos para tests de archivos
-  file: {
-    validImage: createMockFile(),
-    invalidFile: createMockFile({ mimetype: 'text/plain' }),
-    largeFile: createMockFile({ size: 10 * 1024 * 1024 }) // 10MB
-  }
-};
-
-/**
- * Utilidad para crear tests parametrizados
- */
-export const createParameterizedTest = <T>(
-  testCases: Array<{ description: string; input: T; expected: any }>,
-  testFunction: (input: T, expected: any) => void
-) => {
-  testCases.forEach(({ description, input, expected }) => {
-    it(description, () => testFunction(input, expected));
-  });
-};
-
-/**
- * Valida que un objeto tenga todas las propiedades requeridas
- */
-export const validateRequiredProperties = (obj: any, requiredProps: string[]) => {
-  requiredProps.forEach(prop => {
-    expect(obj).toHaveProperty(prop);
-  });
-};
-
-/**
- * Crea un mock de Firebase más realista
- */
-export const createFirebaseMock = () => ({
-  collection: jest.fn().mockReturnValue({
-    doc: jest.fn().mockReturnValue({
-      get: jest.fn().mockResolvedValue({
-        exists: true,
-        data: jest.fn().mockReturnValue({})
+    collection: jest.fn().mockReturnValue({
+      doc: jest.fn().mockReturnValue({
+        get: jest.fn(),
+        set: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn()
       }),
-      set: jest.fn().mockResolvedValue({}),
-      update: jest.fn().mockResolvedValue({}),
-      delete: jest.fn().mockResolvedValue({})
-    }),
-    where: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    get: jest.fn().mockResolvedValue({
-      docs: [],
-      size: 0
-    }),
-    add: jest.fn().mockResolvedValue({
-      id: 'generated-id'
+      where: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      offset: jest.fn().mockReturnThis(),
+      get: jest.fn(),
+      add: jest.fn(),
+      onSnapshot: jest.fn()
     })
-  })
-});
+  };
+}
 
-/**
- * Utilidad para simular delays en tests
- */
-export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// Función para crear mock de servicio
+export function createServiceMock() {
+  return {
+    method1: jest.fn(),
+    method2: jest.fn(),
+    method3: jest.fn()
+  };
+}
 
-/**
- * Valida que un string no contenga caracteres peligrosos
- */
-export const validateSafeString = (str: string) => {
-  const dangerousPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // XSS scripts
-    /javascript:/gi, // JavaScript protocol
-    /on\w+\s*=/gi, // Event handlers
-    /data:text\/html/gi, // Data URLs
-    /vbscript:/gi, // VBScript
-    /expression\s*\(/gi, // CSS expressions
-  ];
-  
-  return !dangerousPatterns.some(pattern => pattern.test(str));
-};
+// Función para simular error
+export function simulateError(error: Error): never {
+  throw error;
+}
 
-/**
- * Crea un mock de logger
- */
-export const createLoggerMock = () => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn()
-});
+// Función para crear token de test
+export function createTestToken(payload: any = {}): string {
+  return `test-token-${JSON.stringify(payload)}`;
+}
 
-/**
- * Valida que un email tenga formato válido
- */
-export const validateEmailFormat = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
+// Función para validar estructura de respuesta
+export function validateResponseStructure(response: any, expectedKeys: string[]): void {
+  expect(response).toHaveProperty('success');
+  expectedKeys.forEach(key => {
+    expect(response).toHaveProperty(key);
+  });
+}
 
-/**
- * Valida que un ID tenga formato válido
- */
-export const validateIdFormat = (id: string) => {
-  // Asumiendo que los IDs son alfanuméricos y tienen entre 3 y 50 caracteres
-  const idRegex = /^[a-zA-Z0-9_-]{3,50}$/;
-  return idRegex.test(id);
-}; 
+// Función para validar paginación
+export function validatePagination(response: any): void {
+  expect(response.pagination).toHaveProperty('page');
+  expect(response.pagination).toHaveProperty('limit');
+  expect(response.pagination).toHaveProperty('total');
+  expect(response.pagination).toHaveProperty('pages');
+}
+
+// Función para validar ordenamiento
+export function validateSorting(items: any[], sortField: string, sortOrder: 'asc' | 'desc' = 'asc'): void {
+  for (let i = 1; i < items.length; i++) {
+    const prev = items[i - 1][sortField];
+    const curr = items[i][sortField];
+    
+    if (sortOrder === 'asc') {
+      expect(prev <= curr).toBe(true);
+    } else {
+      expect(prev >= curr).toBe(true);
+    }
+  }
+}
+
+// Factory para crear datos de test
+export function createTestData<T>(factory: () => T, count: number = 1): T[] {
+  return Array.from({ length: count }, factory);
+}
+
+// Función para esperar respuesta exitosa
+export function expectSuccessResponse(response: Partial<Response>, statusCode: number = 200): void {
+  expect(response.status).toHaveBeenCalledWith(statusCode);
+  expect(response.json).toHaveBeenCalledWith(
+    expect.objectContaining({
+      success: true
+    })
+  );
+}
+
+// Función para esperar respuesta de error
+export function expectErrorResponse(response: Partial<Response>, statusCode: number, message?: string): void {
+  expect(response.status).toHaveBeenCalledWith(statusCode);
+  const jsonCall = (response.json as jest.Mock).mock.calls[0]?.[0] as any;
+  expect(jsonCall).toHaveProperty('success', false);
+  if (message && jsonCall) {
+    expect(jsonCall.message).toContain(message);
+  }
+} 

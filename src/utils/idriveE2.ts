@@ -27,7 +27,7 @@ export const uploadToS3 = async (
       Key: key,
       Body: file,
       ContentType: contentType,
-      ACL: 'private',
+      ACL: 'public-read', // Cambiar a público para que las imágenes sean accesibles
     });
 
     await s3.send(command);

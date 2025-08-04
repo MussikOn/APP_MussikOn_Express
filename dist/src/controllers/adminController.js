@@ -863,11 +863,15 @@ exports.adminGetMobilePayments = (0, errorHandler_1.asyncHandler)((req, res) => 
     });
     // Obtener información adicional de usuarios
     const userIds = [...new Set(mobilePayments.map(payment => payment.userId))];
-    const usersSnapshot = yield firebase_1.db.collection('users').where('_id', 'in', userIds).get();
-    const users = usersSnapshot.docs.reduce((acc, doc) => {
-        acc[doc.id] = Object.assign({ id: doc.id }, doc.data());
-        return acc;
-    }, {});
+    let users = {};
+    // Solo hacer la consulta si hay userIds
+    if (userIds.length > 0) {
+        const usersSnapshot = yield firebase_1.db.collection('users').where('_id', 'in', userIds).get();
+        users = usersSnapshot.docs.reduce((acc, doc) => {
+            acc[doc.id] = Object.assign({ id: doc.id }, doc.data());
+            return acc;
+        }, {});
+    }
     // Combinar datos
     const paymentsWithUserInfo = mobilePayments.map(payment => (Object.assign(Object.assign({}, payment), { user: users[payment.userId] || null })));
     loggerService_1.logger.info('Pagos móviles obtenidos exitosamente', {
