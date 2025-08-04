@@ -144,7 +144,7 @@ class PaymentSystemController {
         });
     }
     /**
-     * Subir comprobante de depósito
+     * Subir comprobante de depósito (MEJORADO)
      */
     uploadDepositVoucher(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -193,9 +193,56 @@ class PaymentSystemController {
                 loggerService_1.logger.error('Error subiendo comprobante de depósito', error, {
                     metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
                 });
+                // Manejar errores específicos
+                if (error instanceof Error) {
+                    if (error.message.includes('monto mínimo') || error.message.includes('monto máximo')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                    if (error.message.includes('archivo') || error.message.includes('tamaño')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                }
                 res.status(500).json({
                     success: false,
                     error: 'Error subiendo comprobante de depósito'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener depósitos del usuario (MEJORADO)
+     */
+    getUserDeposits(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                if (!userId) {
+                    res.status(401).json({ error: 'Usuario no autenticado' });
+                    return;
+                }
+                const deposits = yield this.paymentService.getUserDeposits(userId);
+                res.status(200).json({
+                    success: true,
+                    data: deposits,
+                    message: 'Depósitos obtenidos exitosamente'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo depósitos del usuario', error, {
+                    metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo depósitos del usuario'
                 });
             }
         });
@@ -264,36 +311,6 @@ class PaymentSystemController {
         });
     }
     /**
-     * Obtener depósitos del usuario
-     */
-    getUserDeposits(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            try {
-                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
-                if (!userId) {
-                    res.status(401).json({ error: 'Usuario no autenticado' });
-                    return;
-                }
-                // TODO: Implementar método en el servicio
-                res.status(200).json({
-                    success: true,
-                    data: [],
-                    message: 'Funcionalidad en desarrollo'
-                });
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error obteniendo depósitos del usuario', error, {
-                    metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
-                });
-                res.status(500).json({
-                    success: false,
-                    error: 'Error obteniendo depósitos del usuario'
-                });
-            }
-        });
-    }
-    /**
      * Pagar músico por evento
      */
     payMusicianForEvent(req, res) {
@@ -335,6 +352,16 @@ class PaymentSystemController {
                 loggerService_1.logger.error('Error procesando pago de evento', error, {
                     metadata: { eventId: req.params.eventId }
                 });
+                // Manejar errores específicos
+                if (error instanceof Error) {
+                    if (error.message.includes('Saldo insuficiente')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                }
                 res.status(500).json({
                     success: false,
                     error: 'Error procesando pago de evento'
@@ -372,7 +399,7 @@ class PaymentSystemController {
         });
     }
     /**
-     * Solicitar retiro de ganancias
+     * Solicitar retiro de ganancias (MEJORADO)
      */
     requestWithdrawal(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -396,13 +423,31 @@ class PaymentSystemController {
                 const withdrawal = yield this.paymentService.requestWithdrawal(userId, withdrawalData);
                 res.status(200).json({
                     success: true,
-                    data: withdrawal
+                    data: withdrawal,
+                    message: 'Solicitud de retiro creada exitosamente'
                 });
             }
             catch (error) {
                 loggerService_1.logger.error('Error solicitando retiro', error, {
                     metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
                 });
+                // Manejar errores específicos
+                if (error instanceof Error) {
+                    if (error.message.includes('monto mínimo') || error.message.includes('Saldo insuficiente')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                    if (error.message.includes('Cuenta bancaria no encontrada')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                }
                 res.status(500).json({
                     success: false,
                     error: 'Error solicitando retiro'
@@ -433,7 +478,7 @@ class PaymentSystemController {
         });
     }
     /**
-     * Verificar depósito (admin)
+     * Verificar depósito (admin) - MEJORADO
      */
     verifyDeposit(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -473,6 +518,16 @@ class PaymentSystemController {
                 loggerService_1.logger.error('Error verificando depósito', error, {
                     metadata: { depositId: req.params.depositId, adminId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
                 });
+                // Manejar errores específicos
+                if (error instanceof Error) {
+                    if (error.message.includes('Depósito no encontrado') || error.message.includes('ya fue procesado')) {
+                        res.status(400).json({
+                            success: false,
+                            error: error.message
+                        });
+                        return;
+                    }
+                }
                 res.status(500).json({
                     success: false,
                     error: 'Error verificando depósito'
@@ -610,6 +665,67 @@ class PaymentSystemController {
                 res.status(500).json({
                     success: false,
                     error: 'Error obteniendo estadísticas de pagos'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener detalles de un depósito específico (admin)
+     */
+    getDepositDetails(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { depositId } = req.params;
+                const deposit = yield this.paymentService.getDepositDetails(depositId);
+                if (!deposit) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Depósito no encontrado'
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    data: deposit
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo detalles del depósito', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo detalles del depósito'
+                });
+            }
+        });
+    }
+    /**
+     * Verificar duplicados de voucher (admin)
+     */
+    checkVoucherDuplicates(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { voucherUrl } = req.body;
+                if (!voucherUrl) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'URL del voucher requerida'
+                    });
+                    return;
+                }
+                const hasDuplicates = yield this.paymentService.checkVoucherDuplicates(voucherUrl);
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        hasDuplicates,
+                        voucherUrl
+                    }
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando duplicados de voucher', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error verificando duplicados de voucher'
                 });
             }
         });

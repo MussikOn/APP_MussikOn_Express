@@ -37,6 +37,11 @@ const allowedOrigins = [
   'http://192.168.54.59:1000',
   'http://172.20.10.2:5173',
   'http://192.168.100.101:5173',
+  'http://192.168.54.90:5173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://192.168.54.90:3000',
+  'http://192.168.54.90:3001',
   'https://mussikon.web.app',
   'https://mussikon.firebaseapp.com'
 ];

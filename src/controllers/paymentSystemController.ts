@@ -115,7 +115,7 @@ export class PaymentSystemController {
   }
 
   /**
-   * Subir comprobante de depósito
+   * Subir comprobante de depósito (MEJORADO)
    */
   async uploadDepositVoucher(req: Request, res: Response): Promise<void> {
     try {
@@ -181,9 +181,59 @@ export class PaymentSystemController {
         metadata: { userId: (req as any).user?.userEmail } 
       });
       
+      // Manejar errores específicos
+      if (error instanceof Error) {
+        if (error.message.includes('monto mínimo') || error.message.includes('monto máximo')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+        
+        if (error.message.includes('archivo') || error.message.includes('tamaño')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+      }
+      
       res.status(500).json({
         success: false,
         error: 'Error subiendo comprobante de depósito'
+      });
+    }
+  }
+
+  /**
+   * Obtener depósitos del usuario (MEJORADO)
+   */
+  async getUserDeposits(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userEmail;
+      
+      if (!userId) {
+        res.status(401).json({ error: 'Usuario no autenticado' });
+        return;
+      }
+
+      const deposits = await this.paymentService.getUserDeposits(userId);
+      
+      res.status(200).json({
+        success: true,
+        data: deposits,
+        message: 'Depósitos obtenidos exitosamente'
+      });
+    } catch (error) {
+      logger.error('Error obteniendo depósitos del usuario', error as Error, { 
+        metadata: { userId: (req as any).user?.userEmail } 
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo depósitos del usuario'
       });
     }
   }
@@ -236,7 +286,7 @@ export class PaymentSystemController {
         const { pushNotificationService } = await import('../services/pushNotificationService');
         
         const pushPromises = adminEmails.map(adminEmail =>
-                    pushNotificationService.sendNotificationToUser(adminEmail, {
+          pushNotificationService.sendNotificationToUser(adminEmail, {
             title: 'Nuevo Depósito Pendiente',
             body: `Usuario ${userId} ha subido un depósito de RD$ ${deposit.amount.toLocaleString()}`,
             data: {
@@ -257,36 +307,6 @@ export class PaymentSystemController {
 
     } catch (error) {
       logger.error('Error notificando a administradores sobre nuevo depósito', error as Error);
-    }
-  }
-
-  /**
-   * Obtener depósitos del usuario
-   */
-  async getUserDeposits(req: Request, res: Response): Promise<void> {
-    try {
-      const userId = (req as any).user?.userEmail;
-      
-      if (!userId) {
-        res.status(401).json({ error: 'Usuario no autenticado' });
-        return;
-      }
-
-      // TODO: Implementar método en el servicio
-      res.status(200).json({
-        success: true,
-        data: [],
-        message: 'Funcionalidad en desarrollo'
-      });
-    } catch (error) {
-      logger.error('Error obteniendo depósitos del usuario', error as Error, { 
-        metadata: { userId: (req as any).user?.userEmail } 
-      });
-      
-      res.status(500).json({
-        success: false,
-        error: 'Error obteniendo depósitos del usuario'
-      });
     }
   }
 
@@ -337,6 +357,17 @@ export class PaymentSystemController {
         metadata: { eventId: req.params.eventId } 
       });
       
+      // Manejar errores específicos
+      if (error instanceof Error) {
+        if (error.message.includes('Saldo insuficiente')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+      }
+      
       res.status(500).json({
         success: false,
         error: 'Error procesando pago de evento'
@@ -375,7 +406,7 @@ export class PaymentSystemController {
   }
 
   /**
-   * Solicitar retiro de ganancias
+   * Solicitar retiro de ganancias (MEJORADO)
    */
   async requestWithdrawal(req: Request, res: Response): Promise<void> {
     try {
@@ -404,12 +435,32 @@ export class PaymentSystemController {
       
       res.status(200).json({
         success: true,
-        data: withdrawal
+        data: withdrawal,
+        message: 'Solicitud de retiro creada exitosamente'
       });
     } catch (error) {
       logger.error('Error solicitando retiro', error as Error, { 
         metadata: { userId: (req as any).user?.userEmail } 
       });
+      
+      // Manejar errores específicos
+      if (error instanceof Error) {
+        if (error.message.includes('monto mínimo') || error.message.includes('Saldo insuficiente')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+        
+        if (error.message.includes('Cuenta bancaria no encontrada')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+      }
       
       res.status(500).json({
         success: false,
@@ -442,7 +493,7 @@ export class PaymentSystemController {
   }
 
   /**
-   * Verificar depósito (admin)
+   * Verificar depósito (admin) - MEJORADO
    */
   async verifyDeposit(req: Request, res: Response): Promise<void> {
     try {
@@ -485,6 +536,17 @@ export class PaymentSystemController {
       logger.error('Error verificando depósito', error as Error, { 
         metadata: { depositId: req.params.depositId, adminId: (req as any).user?.userEmail } 
       });
+      
+      // Manejar errores específicos
+      if (error instanceof Error) {
+        if (error.message.includes('Depósito no encontrado') || error.message.includes('ya fue procesado')) {
+          res.status(400).json({
+            success: false,
+            error: error.message
+          });
+          return;
+        }
+      }
       
       res.status(500).json({
         success: false,
@@ -529,7 +591,7 @@ export class PaymentSystemController {
       try {
         const { pushNotificationService } = await import('../services/pushNotificationService');
         
-                await pushNotificationService.sendNotificationToUser(userId, {
+        await pushNotificationService.sendNotificationToUser(userId, {
           title: approved ? 'Depósito Aprobado' : 'Depósito Rechazado',
           body: approved
             ? `Tu depósito de RD$ ${deposit.amount.toLocaleString()} ha sido aprobado`
@@ -627,6 +689,71 @@ export class PaymentSystemController {
       res.status(500).json({
         success: false,
         error: 'Error obteniendo estadísticas de pagos'
+      });
+    }
+  }
+
+  /**
+   * Obtener detalles de un depósito específico (admin)
+   */
+  async getDepositDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { depositId } = req.params;
+      
+      const deposit = await this.paymentService.getDepositDetails(depositId);
+      
+      if (!deposit) {
+        res.status(404).json({
+          success: false,
+          error: 'Depósito no encontrado'
+        });
+        return;
+      }
+      
+      res.status(200).json({
+        success: true,
+        data: deposit
+      });
+    } catch (error) {
+      logger.error('Error obteniendo detalles del depósito', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo detalles del depósito'
+      });
+    }
+  }
+
+  /**
+   * Verificar duplicados de voucher (admin)
+   */
+  async checkVoucherDuplicates(req: Request, res: Response): Promise<void> {
+    try {
+      const { voucherUrl } = req.body;
+      
+      if (!voucherUrl) {
+        res.status(400).json({
+          success: false,
+          error: 'URL del voucher requerida'
+        });
+        return;
+      }
+      
+      const hasDuplicates = await this.paymentService.checkVoucherDuplicates(voucherUrl);
+      
+      res.status(200).json({
+        success: true,
+        data: {
+          hasDuplicates,
+          voucherUrl
+        }
+      });
+    } catch (error) {
+      logger.error('Error verificando duplicados de voucher', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error verificando duplicados de voucher'
       });
     }
   }

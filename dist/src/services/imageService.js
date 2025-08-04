@@ -9,243 +9,335 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ImageService = void 0;
-const imagesModel_1 = require("../models/imagesModel");
-/**
- * Servicio para manejo de imágenes
- */
+exports.imageService = exports.ImageService = void 0;
+const idriveE2_1 = require("../utils/idriveE2");
+const loggerService_1 = require("./loggerService");
+const firebase_1 = require("../utils/firebase");
 class ImageService {
-    /**
-     * Subir imagen de perfil
-     */
-    static uploadProfileImage(file, userId, description) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.uploadImage)(file, userId, 'profile', {
-                description: description || 'Foto de perfil',
-                tags: ['profile', 'user'],
-                isPublic: true,
-            });
-        });
+    constructor() {
+        this.MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        this.ALLOWED_MIME_TYPES = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf'
+        ];
     }
     /**
-     * Subir imagen de post
+     * Validar archivo de imagen
      */
-    static uploadPostImage(file, userId, description, tags) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.uploadImage)(file, userId, 'post', {
-                description: description || 'Imagen de post',
-                tags: tags || ['post'],
-                isPublic: true,
-            });
-        });
+    validateImageFile(file) {
+        const errors = [];
+        const warnings = [];
+        if (!file) {
+            errors.push('No se proporcionó archivo');
+            return { isValid: false, errors, warnings };
+        }
+        // Validar tamaño
+        if (file.size > this.MAX_FILE_SIZE) {
+            errors.push(`El archivo es demasiado grande. Máximo ${this.MAX_FILE_SIZE / 1024 / 1024}MB`);
+        }
+        // Validar tipo MIME
+        if (!this.ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+            errors.push('Tipo de archivo no permitido. Solo imágenes y PDFs');
+        }
+        // Validar que el buffer no esté vacío
+        if (!file.buffer || file.buffer.length === 0) {
+            errors.push('El archivo está vacío');
+        }
+        // Advertencias
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            warnings.push('El archivo es grande, puede tardar en subirse');
+        }
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings
+        };
     }
     /**
-     * Subir imagen de evento
+     * Generar nombre único para archivo
      */
-    static uploadEventImage(file, userId, eventId, description) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.uploadImage)(file, userId, 'event', {
-                description: description || 'Imagen de evento',
-                tags: ['event', eventId],
-                isPublic: true,
-                customMetadata: { eventId },
-            });
-        });
+    generateUniqueFileName(originalName, userId, folder = 'uploads') {
+        var _a;
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const extension = ((_a = originalName.split('.').pop()) === null || _a === void 0 ? void 0 : _a.toLowerCase()) || 'jpg';
+        const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
+        return `${folder}/${userId}/${timestamp}_${randomSuffix}_${sanitizedName}`;
     }
     /**
-     * Subir imagen de galería
+     * Subir imagen con manejo mejorado de errores
      */
-    static uploadGalleryImage(file, userId, description, tags) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.uploadImage)(file, userId, 'gallery', {
-                description: description || 'Imagen de galería',
-                tags: tags || ['gallery'],
-                isPublic: true,
-            });
-        });
-    }
-    /**
-     * Subir imagen administrativa
-     */
-    static uploadAdminImage(file, userId, description, tags) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.uploadImage)(file, userId, 'admin', {
-                description: description || 'Imagen administrativa',
-                tags: tags || ['admin'],
-                isPublic: false,
-            });
-        });
-    }
-    /**
-     * Obtener imagen por ID con validación de permisos
-     */
-    static getImageByIdWithPermissions(imageId, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const image = yield (0, imagesModel_1.getImageById)(imageId);
-            if (!image) {
-                return null;
+    uploadImage(file_1, userId_1) {
+        return __awaiter(this, arguments, void 0, function* (file, userId, folder = 'uploads', metadata) {
+            try {
+                // Validar archivo
+                const validation = this.validateImageFile(file);
+                if (!validation.isValid) {
+                    throw new Error(`Error de validación: ${validation.errors.join(', ')}`);
+                }
+                // Generar nombre único
+                const uniqueFileName = this.generateUniqueFileName(file.originalname || 'image.jpg', userId, folder);
+                loggerService_1.logger.info('Subiendo imagen', {
+                    metadata: {
+                        userId,
+                        filename: uniqueFileName,
+                        size: file.size,
+                        mimeType: file.mimetype,
+                        warnings: validation.warnings
+                    }
+                });
+                // Subir a S3
+                const fileUrl = yield (0, idriveE2_1.uploadToS3)(file.buffer, uniqueFileName, file.mimetype, folder);
+                // Crear registro en base de datos para tracking
+                const imageRecord = {
+                    url: fileUrl,
+                    filename: uniqueFileName,
+                    originalName: file.originalname,
+                    size: file.size,
+                    mimeType: file.mimetype,
+                    userId,
+                    folder,
+                    metadata,
+                    uploadedAt: new Date().toISOString(),
+                    lastAccessed: new Date().toISOString(),
+                    accessCount: 0
+                };
+                const imageId = `img_${Date.now()}_${userId}`;
+                yield firebase_1.db.collection('image_uploads').doc(imageId).set(imageRecord);
+                loggerService_1.logger.info('Imagen subida exitosamente', {
+                    metadata: {
+                        imageId,
+                        url: fileUrl,
+                        userId
+                    }
+                });
+                return {
+                    url: fileUrl,
+                    filename: uniqueFileName,
+                    size: file.size,
+                    mimeType: file.mimetype,
+                    uploadedAt: imageRecord.uploadedAt,
+                    metadata
+                };
             }
-            // Si la imagen no es pública, solo el propietario puede verla
-            if (!image.isPublic && image.userId !== userId) {
-                return null;
+            catch (error) {
+                loggerService_1.logger.error('Error subiendo imagen', error, {
+                    metadata: { userId, filename: file === null || file === void 0 ? void 0 : file.originalname }
+                });
+                throw new Error('Error subiendo imagen. Intente nuevamente.');
             }
-            return image;
         });
     }
     /**
-     * Listar imágenes con filtros y paginación
+     * Obtener imagen con cache y tracking
      */
-    static listImagesWithPagination() {
-        return __awaiter(this, arguments, void 0, function* (filters = {}, page = 1, limit = 20) {
-            const offset = (page - 1) * limit;
-            const allImages = yield (0, imagesModel_1.listImages)(Object.assign(Object.assign({}, filters), { limit: undefined, offset: undefined }));
-            const total = allImages.length;
-            const images = allImages.slice(offset, offset + limit);
-            const totalPages = Math.ceil(total / limit);
-            return {
-                images,
-                total,
-                page,
-                totalPages,
-                hasNext: page < totalPages,
-                hasPrev: page > 1,
-            };
-        });
-    }
-    /**
-     * Actualizar imagen con validación de permisos
-     */
-    static updateImageWithPermissions(imageId, userId, updateData) {
+    getImage(imageId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const image = yield (0, imagesModel_1.getImageById)(imageId);
-            if (!image) {
-                throw new Error('Imagen no encontrada');
+            try {
+                const imageDoc = yield firebase_1.db.collection('image_uploads').doc(imageId).get();
+                if (!imageDoc.exists) {
+                    loggerService_1.logger.warn('Imagen no encontrada', { metadata: { imageId } });
+                    return null;
+                }
+                const imageData = imageDoc.data();
+                // Actualizar contador de acceso
+                yield firebase_1.db.collection('image_uploads').doc(imageId).update({
+                    lastAccessed: new Date().toISOString(),
+                    accessCount: (imageData.accessCount || 0) + 1
+                });
+                return {
+                    url: imageData.url,
+                    filename: imageData.filename,
+                    size: imageData.size,
+                    mimeType: imageData.mimeType,
+                    uploadedAt: imageData.uploadedAt,
+                    metadata: imageData.metadata
+                };
             }
-            if (image.userId !== userId) {
-                throw new Error('No tienes permisos para actualizar esta imagen');
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo imagen', error, { metadata: { imageId } });
+                throw new Error('Error obteniendo imagen');
             }
-            return yield (0, imagesModel_1.updateImage)(imageId, updateData);
         });
     }
     /**
-     * Eliminar imagen con validación de permisos
+     * Obtener imagen por URL
      */
-    static deleteImageWithPermissions(imageId, userId) {
+    getImageByUrl(url) {
         return __awaiter(this, void 0, void 0, function* () {
-            const image = yield (0, imagesModel_1.getImageById)(imageId);
-            if (!image) {
-                throw new Error('Imagen no encontrada');
+            try {
+                const imageSnapshot = yield firebase_1.db.collection('image_uploads')
+                    .where('url', '==', url)
+                    .limit(1)
+                    .get();
+                if (imageSnapshot.empty) {
+                    loggerService_1.logger.warn('Imagen no encontrada por URL', { metadata: { url } });
+                    return null;
+                }
+                const imageDoc = imageSnapshot.docs[0];
+                const imageData = imageDoc.data();
+                // Actualizar contador de acceso
+                yield firebase_1.db.collection('image_uploads').doc(imageDoc.id).update({
+                    lastAccessed: new Date().toISOString(),
+                    accessCount: (imageData.accessCount || 0) + 1
+                });
+                return {
+                    url: imageData.url,
+                    filename: imageData.filename,
+                    size: imageData.size,
+                    mimeType: imageData.mimeType,
+                    uploadedAt: imageData.uploadedAt,
+                    metadata: imageData.metadata
+                };
             }
-            if (image.userId !== userId) {
-                throw new Error('No tienes permisos para eliminar esta imagen');
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo imagen por URL', error, { metadata: { url } });
+                throw new Error('Error obteniendo imagen por URL');
             }
-            return yield (0, imagesModel_1.deleteImage)(imageId, userId);
         });
     }
     /**
-     * Obtener imágenes de perfil de un usuario
+     * Eliminar imagen
      */
-    static getUserProfileImages(userId) {
+    deleteImage(imageId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.getUserProfileImages)(userId);
-        });
-    }
-    /**
-     * Obtener imágenes de posts
-     */
-    static getPostImages(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.getPostImages)(userId);
-        });
-    }
-    /**
-     * Obtener imágenes de eventos
-     */
-    static getEventImages(eventId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.getEventImages)(eventId);
+            try {
+                const imageDoc = yield firebase_1.db.collection('image_uploads').doc(imageId).get();
+                if (!imageDoc.exists) {
+                    loggerService_1.logger.warn('Imagen no encontrada para eliminar', { metadata: { imageId } });
+                    return false;
+                }
+                const imageData = imageDoc.data();
+                // Eliminar de S3 (implementar si es necesario)
+                // await deleteFromS3(imageData.filename);
+                // Eliminar de base de datos
+                yield firebase_1.db.collection('image_uploads').doc(imageId).delete();
+                loggerService_1.logger.info('Imagen eliminada exitosamente', { metadata: { imageId } });
+                return true;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error eliminando imagen', error, { metadata: { imageId } });
+                throw new Error('Error eliminando imagen');
+            }
         });
     }
     /**
      * Obtener estadísticas de imágenes
      */
-    static getImageStats() {
+    getImageStatistics(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield (0, imagesModel_1.getImageStats)();
-        });
-    }
-    /**
-     * Buscar imágenes por texto
-     */
-    static searchImages(searchTerm_1) {
-        return __awaiter(this, arguments, void 0, function* (searchTerm, filters = {}) {
-            return yield (0, imagesModel_1.listImages)(Object.assign(Object.assign({}, filters), { search: searchTerm }));
-        });
-    }
-    /**
-     * Obtener imágenes por etiquetas
-     */
-    static getImagesByTags(tags_1) {
-        return __awaiter(this, arguments, void 0, function* (tags, filters = {}) {
-            const images = yield (0, imagesModel_1.listImages)(filters);
-            return images.filter(image => image.tags && tags.some(tag => image.tags.includes(tag)));
-        });
-    }
-    /**
-     * Obtener imágenes recientes
-     */
-    static getRecentImages() {
-        return __awaiter(this, arguments, void 0, function* (limit = 10, filters = {}) {
-            return yield (0, imagesModel_1.listImages)(Object.assign(Object.assign({}, filters), { limit }));
-        });
-    }
-    /**
-     * Validar formato de imagen
-     */
-    static validateImageFormat(file) {
-        const allowedMimeTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'image/svg+xml',
-        ];
-        return allowedMimeTypes.includes(file.mimetype);
-    }
-    /**
-     * Validar tamaño de imagen
-     */
-    static validateImageSize(file, maxSize = 10 * 1024 * 1024) {
-        return file.size <= maxSize;
-    }
-    /**
-     * Generar nombre de archivo único
-     */
-    static generateUniqueFileName(originalName, category, userId) {
-        const timestamp = Date.now();
-        const extension = originalName.split('.').pop();
-        const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
-        return `${category}/${userId}/${timestamp}_${sanitizedName}`;
-    }
-    /**
-     * Obtener información de imagen sin descargar
-     */
-    static getImageInfo(imageId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const image = yield (0, imagesModel_1.getImageById)(imageId);
-            if (!image) {
-                return null;
+            try {
+                let query = firebase_1.db.collection('image_uploads');
+                if (userId) {
+                    query = query.where('userId', '==', userId);
+                }
+                const imagesSnapshot = yield query.get();
+                const images = imagesSnapshot.docs.map((doc) => doc.data());
+                const totalImages = images.length;
+                const totalSize = images.reduce((sum, img) => sum + (img.size || 0), 0);
+                const averageSize = totalImages > 0 ? totalSize / totalImages : 0;
+                // Contar tipos MIME más usados
+                const mimeTypeCount = {};
+                images.forEach((img) => {
+                    const mimeType = img.mimeType || 'unknown';
+                    mimeTypeCount[mimeType] = (mimeTypeCount[mimeType] || 0) + 1;
+                });
+                // Contar uploads recientes (últimas 24 horas)
+                const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                const recentUploads = images.filter((img) => new Date(img.uploadedAt) > new Date(oneDayAgo)).length;
+                return {
+                    totalImages,
+                    totalSize,
+                    averageSize,
+                    mostUsedMimeTypes: mimeTypeCount,
+                    recentUploads
+                };
             }
-            return {
-                id: image.id,
-                originalName: image.originalName,
-                size: image.size,
-                mimetype: image.mimetype,
-                category: image.category,
-                createdAt: image.createdAt,
-                isPublic: image.isPublic,
-            };
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo estadísticas de imágenes', error);
+                throw new Error('Error obteniendo estadísticas de imágenes');
+            }
+        });
+    }
+    /**
+     * Limpiar imágenes antiguas no utilizadas
+     */
+    cleanupUnusedImages() {
+        return __awaiter(this, arguments, void 0, function* (daysOld = 30) {
+            try {
+                const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toISOString();
+                const unusedImagesSnapshot = yield firebase_1.db.collection('image_uploads')
+                    .where('lastAccessed', '<', cutoffDate)
+                    .where('accessCount', '==', 0)
+                    .get();
+                const deletedCount = unusedImagesSnapshot.size;
+                // Eliminar en lotes
+                const batch = firebase_1.db.batch();
+                unusedImagesSnapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                yield batch.commit();
+                loggerService_1.logger.info('Limpieza de imágenes completada', {
+                    metadata: { deletedCount, daysOld }
+                });
+                return deletedCount;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error en limpieza de imágenes', error);
+                throw new Error('Error en limpieza de imágenes');
+            }
+        });
+    }
+    /**
+     * Verificar integridad de imagen
+     */
+    verifyImageIntegrity(imageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const imageDoc = yield firebase_1.db.collection('image_uploads').doc(imageId).get();
+                if (!imageDoc.exists) {
+                    return {
+                        exists: false,
+                        accessible: false,
+                        size: 0,
+                        lastAccessed: '',
+                        accessCount: 0
+                    };
+                }
+                const imageData = imageDoc.data();
+                // Verificar si la URL es accesible
+                let accessible = false;
+                try {
+                    const response = yield fetch(imageData.url, { method: 'HEAD' });
+                    accessible = response.ok;
+                }
+                catch (fetchError) {
+                    loggerService_1.logger.warn('Error verificando accesibilidad de imagen', {
+                        error: fetchError,
+                        metadata: {
+                            imageId,
+                            url: imageData.url
+                        }
+                    });
+                }
+                return {
+                    exists: true,
+                    accessible,
+                    size: imageData.size || 0,
+                    lastAccessed: imageData.lastAccessed || '',
+                    accessCount: imageData.accessCount || 0
+                };
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando integridad de imagen', error, { metadata: { imageId } });
+                throw new Error('Error verificando integridad de imagen');
+            }
         });
     }
 }
 exports.ImageService = ImageService;
+// Instancia singleton
+exports.imageService = new ImageService();

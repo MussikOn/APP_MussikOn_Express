@@ -1,158 +1,425 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const authMiddleware_1 = require("../middleware/authMiddleware");
-const adminOnly_1 = require("../middleware/adminOnly");
-const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const imagesController_1 = require("../controllers/imagesController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const requireRole_1 = require("../middleware/requireRole");
+const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
+const uploadMiddleware_2 = require("../middleware/uploadMiddleware");
 const router = (0, express_1.Router)();
 /**
  * @swagger
  * components:
  *   schemas:
- *     Image:
+ *     ImageUploadResult:
  *       type: object
  *       properties:
- *         id:
- *           type: string
- *           description: ID único de la imagen
- *         key:
- *           type: string
- *           description: Clave en S3
  *         url:
  *           type: string
- *           description: URL firmada de la imagen
- *         originalName:
+ *         filename:
  *           type: string
- *           description: Nombre original del archivo
- *         fileName:
- *           type: string
- *           description: Nombre del archivo en el sistema
  *         size:
  *           type: number
- *           description: Tamaño del archivo en bytes
- *         mimetype:
+ *         mimeType:
  *           type: string
- *           description: Tipo MIME del archivo
- *         category:
+ *         uploadedAt:
  *           type: string
- *           enum: [profile, post, event, gallery, admin]
- *           description: Categoría de la imagen
- *         userId:
- *           type: string
- *           description: Email del propietario
- *         description:
- *           type: string
- *           description: Descripción de la imagen
- *         tags:
+ *         metadata:
+ *           type: object
+ *
+ *     ImageValidationResult:
+ *       type: object
+ *       properties:
+ *         isValid:
+ *           type: boolean
+ *         errors:
  *           type: array
  *           items:
  *             type: string
- *           description: Etiquetas de la imagen
- *         metadata:
- *           type: object
- *           description: Metadatos adicionales
- *         isPublic:
- *           type: boolean
- *           description: Si la imagen es pública
- *         isActive:
- *           type: boolean
- *           description: Si la imagen está activa
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de creación
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de última actualización
- *         expiresAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de expiración (para URLs temporales)
- *     ImageStats:
- *       type: object
- *       properties:
- *         totalImages:
- *           type: number
- *           description: Total de imágenes
- *         totalSize:
- *           type: number
- *           description: Tamaño total en bytes
- *         imagesByCategory:
- *           type: object
- *           description: Conteo de imágenes por categoría
- *         imagesByUser:
- *           type: object
- *           description: Conteo de imágenes por usuario
- *         recentUploads:
+ *         warnings:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/Image'
- *           description: Imágenes subidas recientemente
+ *             type: string
  */
-// ==================== RUTAS PRINCIPALES ====================
 /**
- * POST /images/upload
- * Subir una nueva imagen
+ * @swagger
+ * /images/upload:
+ *   post:
+ *     summary: Subir imagen
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo de imagen
+ *               folder:
+ *                 type: string
+ *                 default: uploads
+ *                 description: Carpeta donde guardar
+ *               description:
+ *                 type: string
+ *                 description: Descripción de la imagen
+ *               tags:
+ *                 type: string
+ *                 description: Etiquetas separadas por comas
+ *     responses:
+ *       201:
+ *         description: Imagen subida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/ImageUploadResult'
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.post('/upload', authMiddleware_1.authMiddleware, uploadMiddleware_1.imageUpload.single('image'), uploadMiddleware_1.validateImageFile, imagesController_1.uploadImageController);
+router.post('/upload', authMiddleware_1.authMiddleware, uploadMiddleware_1.upload.single('file'), uploadMiddleware_2.validateImageFile, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.uploadImage(req, res);
+}));
 /**
- * GET /images
- * Listar imágenes con filtros
+ * @swagger
+ * /images/{imageId}:
+ *   get:
+ *     summary: Obtener imagen por ID
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/ImageUploadResult'
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/', imagesController_1.listImagesController);
+router.get('/:imageId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImage(req, res);
+}));
 /**
- * GET /images/:imageId
- * Obtener imagen por ID
+ * @swagger
+ * /images/url:
+ *   get:
+ *     summary: Obtener imagen por URL
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/ImageUploadResult'
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/:imageId', imagesController_1.getImageByIdController);
+router.get('/url', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageByUrl(req, res);
+}));
 /**
- * PUT /images/:imageId
- * Actualizar imagen
+ * @swagger
+ * /images/{imageId}:
+ *   delete:
+ *     summary: Eliminar imagen
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen eliminada exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
  */
-router.put('/:imageId', authMiddleware_1.authMiddleware, imagesController_1.updateImageController);
+router.delete('/:imageId', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.deleteImage(req, res);
+}));
 /**
- * DELETE /images/:imageId
- * Eliminar imagen
+ * @swagger
+ * /images/statistics:
+ *   get:
+ *     summary: Obtener estadísticas de imágenes
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         description: ID del usuario (solo admin)
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos
+ *       500:
+ *         description: Error del servidor
  */
-router.delete('/:imageId', authMiddleware_1.authMiddleware, imagesController_1.deleteImageController);
-// ==================== RUTAS ESPECÍFICAS ====================
+router.get('/statistics', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageStatistics(req, res);
+}));
 /**
- * GET /images/profile/:userId
- * Obtener imágenes de perfil de un usuario
+ * @swagger
+ * /images/{imageId}/integrity:
+ *   get:
+ *     summary: Verificar integridad de imagen
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *     responses:
+ *       200:
+ *         description: Integridad verificada exitosamente
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/profile/:userId', imagesController_1.getUserProfileImagesController);
+router.get('/:imageId/integrity', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.verifyImageIntegrity(req, res);
+}));
 /**
- * GET /images/posts
- * Obtener imágenes de posts
+ * @swagger
+ * /images/cleanup:
+ *   post:
+ *     summary: Limpiar imágenes no utilizadas (solo admin)
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               daysOld:
+ *                 type: number
+ *                 default: 30
+ *                 description: Días de antigüedad para eliminar
+ *     responses:
+ *       200:
+ *         description: Limpieza completada exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/posts', imagesController_1.getPostImagesController);
+router.post('/cleanup', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.cleanupUnusedImages(req, res);
+}));
 /**
- * GET /images/events
- * Obtener imágenes de eventos
+ * @swagger
+ * /images/validate:
+ *   post:
+ *     summary: Validar archivo antes de subir
+ *     tags: [Imágenes]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo a validar
+ *     responses:
+ *       200:
+ *         description: Validación completada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/ImageValidationResult'
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: No se proporcionó archivo
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/events', imagesController_1.getEventImagesController);
-// ==================== RUTAS DE ADMINISTRACIÓN ====================
+router.post('/validate', uploadMiddleware_1.upload.single('file'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.validateImageFile(req, res);
+}));
 /**
- * GET /images/stats
- * Obtener estadísticas de imágenes (Solo administradores)
+ * @swagger
+ * /images/{imageId}/serve:
+ *   get:
+ *     summary: Servir imagen directamente
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen servida exitosamente
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/stats', authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.getImageStatsController);
+router.get('/:imageId/serve', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.serveImage(req, res);
+}));
 /**
- * POST /images/cleanup
- * Limpiar imágenes expiradas (Solo administradores senior)
+ * @swagger
+ * /images/serve-url:
+ *   get:
+ *     summary: Servir imagen directamente desde URL
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen servida exitosamente
+ *       400:
+ *         description: URL requerida
+ *       500:
+ *         description: Error del servidor
  */
-router.post('/cleanup', authMiddleware_1.authMiddleware, adminOnly_1.adminOnly, imagesController_1.cleanupExpiredImagesController);
-// ==================== RUTAS LEGACY (COMPATIBILIDAD) ====================
+router.get('/serve-url', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.serveImageByUrl(req, res);
+}));
+// Rutas de compatibilidad con el sistema anterior
 /**
- * GET /imgs/getAllImg
- * Obtener galería de imágenes (Legacy)
+ * @swagger
+ * /images/saveImage:
+ *   post:
+ *     summary: Subir imagen (compatibilidad)
+ *     tags: [Imágenes - Compatibilidad]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Imagen subida exitosamente
+ *       400:
+ *         description: Error de validación
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/getAllImg', imagesController_1.getAllImagesController);
+router.post('/saveImage', authMiddleware_1.authMiddleware, uploadMiddleware_1.upload.single('file'), uploadMiddleware_2.validateImageFile, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.uploadImage(req, res);
+}));
 /**
- * GET /imgs/url/:key
- * Obtener URL de imagen por clave (Legacy)
+ * @swagger
+ * /images/getImage/{key}:
+ *   get:
+ *     summary: Obtener imagen por clave (compatibilidad)
+ *     tags: [Imágenes - Compatibilidad]
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Clave de la imagen
+ *     responses:
+ *       200:
+ *         description: URL de la imagen obtenida
+ *       400:
+ *         description: Clave requerida
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
  */
-router.get('/url/:key', imagesController_1.getImageUrlController);
+router.get('/getImage/:key', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Convertir clave a imageId para compatibilidad
+    req.params.imageId = req.params.key;
+    yield imagesController_1.imagesController.getImage(req, res);
+}));
 exports.default = router;

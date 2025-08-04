@@ -16,6 +16,8 @@ const idriveE2_1 = require("../utils/idriveE2");
 class PaymentSystemService {
     constructor() {
         this.COMMISSION_RATE = 0.10; // 10% de comisión
+        this.MAX_DEPOSIT_AMOUNT = 1000000; // 1 millón RD$
+        this.MIN_DEPOSIT_AMOUNT = 100; // 100 RD$
     }
     /**
      * Calcular comisión de la plataforma
@@ -29,6 +31,50 @@ class PaymentSystemService {
             musicianAmount: musicianAmount,
             commissionRate: this.COMMISSION_RATE
         };
+    }
+    /**
+     * Validar monto de depósito
+     */
+    validateDepositAmount(amount) {
+        if (amount < this.MIN_DEPOSIT_AMOUNT) {
+            throw new Error(`El monto mínimo de depósito es RD$ ${this.MIN_DEPOSIT_AMOUNT.toLocaleString()}`);
+        }
+        if (amount > this.MAX_DEPOSIT_AMOUNT) {
+            throw new Error(`El monto máximo de depósito es RD$ ${this.MAX_DEPOSIT_AMOUNT.toLocaleString()}`);
+        }
+    }
+    /**
+     * Validar archivo de voucher
+     */
+    validateVoucherFile(file) {
+        if (!file) {
+            throw new Error('No se proporcionó archivo de comprobante');
+        }
+        // Validar tamaño (máximo 10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            throw new Error('El archivo es demasiado grande. Máximo 10MB');
+        }
+        // Validar tipo MIME
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf'
+        ];
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+            throw new Error('Tipo de archivo no permitido. Solo imágenes y PDFs');
+        }
+    }
+    /**
+     * Generar nombre único para archivo
+     */
+    generateUniqueFileName(originalName, userId) {
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const extension = originalName.split('.').pop() || 'jpg';
+        return `deposits/${userId}/${timestamp}_${randomSuffix}.${extension}`;
     }
     /**
      * Obtener balance de usuario
@@ -69,6 +115,18 @@ class PaymentSystemService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 loggerService_1.logger.info('Registrando cuenta bancaria', { metadata: { userId } });
+                // Validar datos de cuenta bancaria
+                if (!accountData.accountHolder || !accountData.accountNumber || !accountData.bankName) {
+                    throw new Error('Datos de cuenta bancaria incompletos');
+                }
+                // Verificar que no exista una cuenta con el mismo número para este usuario
+                const existingAccounts = yield firebase_1.db.collection('bank_accounts')
+                    .where('userId', '==', userId)
+                    .where('accountNumber', '==', accountData.accountNumber)
+                    .get();
+                if (!existingAccounts.empty) {
+                    throw new Error('Ya existe una cuenta bancaria con este número');
+                }
                 const bankAccount = Object.assign(Object.assign({ id: `bank_${Date.now()}_${userId}`, userId }, accountData), { isVerified: false, isDefault: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
                 yield firebase_1.db.collection('bank_accounts').doc(bankAccount.id).set(bankAccount);
                 // Si es la primera cuenta, establecer como default
@@ -142,14 +200,39 @@ class PaymentSystemService {
         });
     }
     /**
-     * Subir comprobante de depósito
+     * Subir comprobante de depósito (MEJORADO)
      */
     uploadDepositVoucher(userId, depositData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 loggerService_1.logger.info('Subiendo comprobante de depósito', { metadata: { userId, amount: depositData.amount } });
-                // Subir archivo a S3
-                const fileUrl = yield (0, idriveE2_1.uploadToS3)(depositData.voucherFile.buffer, depositData.voucherFile.originalname || 'voucher.jpg', depositData.voucherFile.mimetype || 'image/jpeg', 'deposits');
+                // Validaciones
+                this.validateDepositAmount(depositData.amount);
+                this.validateVoucherFile(depositData.voucherFile);
+                if (!depositData.accountHolderName || !depositData.bankName) {
+                    throw new Error('Nombre del titular y banco son obligatorios');
+                }
+                // Generar nombre único para el archivo
+                const uniqueFileName = this.generateUniqueFileName(depositData.voucherFile.originalname || 'voucher.jpg', userId);
+                // Subir archivo a S3 con mejor manejo de errores
+                let fileUrl;
+                try {
+                    fileUrl = yield (0, idriveE2_1.uploadToS3)(depositData.voucherFile.buffer, uniqueFileName, depositData.voucherFile.mimetype || 'image/jpeg', 'deposits');
+                }
+                catch (uploadError) {
+                    loggerService_1.logger.error('Error subiendo archivo a S3', uploadError, { metadata: { userId } });
+                    throw new Error('Error subiendo comprobante. Intente nuevamente.');
+                }
+                // Verificar que no haya depósitos duplicados recientes
+                const recentDeposits = yield firebase_1.db.collection('user_deposits')
+                    .where('userId', '==', userId)
+                    .where('amount', '==', depositData.amount)
+                    .where('status', '==', 'pending')
+                    .where('createdAt', '>', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
+                    .get();
+                if (!recentDeposits.empty) {
+                    loggerService_1.logger.warn('Posible depósito duplicado detectado', { metadata: { userId, amount: depositData.amount } });
+                }
                 const deposit = {
                     id: `deposit_${Date.now()}_${userId}`,
                     userId,
@@ -157,7 +240,7 @@ class PaymentSystemService {
                     currency: 'RD$',
                     voucherFile: {
                         url: fileUrl,
-                        filename: depositData.voucherFile.originalname || 'voucher.jpg',
+                        filename: uniqueFileName,
                         uploadedAt: new Date().toISOString()
                     },
                     // Información del depósito bancario
@@ -174,6 +257,7 @@ class PaymentSystemService {
                     updatedAt: new Date().toISOString()
                 };
                 yield firebase_1.db.collection('user_deposits').doc(deposit.id).set(deposit);
+                loggerService_1.logger.info('Depósito creado exitosamente', { metadata: { depositId: deposit.id, userId } });
                 return deposit;
             }
             catch (error) {
@@ -185,7 +269,28 @@ class PaymentSystemService {
         });
     }
     /**
-     * Verificar depósito (admin)
+     * Obtener depósitos del usuario
+     */
+    getUserDeposits(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('Obteniendo depósitos del usuario', { metadata: { userId } });
+                const depositsSnapshot = yield firebase_1.db.collection('user_deposits')
+                    .where('userId', '==', userId)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                return depositsSnapshot.docs.map(doc => doc.data());
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo depósitos del usuario', error, {
+                    metadata: { userId }
+                });
+                throw new Error('Error obteniendo depósitos del usuario');
+            }
+        });
+    }
+    /**
+     * Verificar depósito (admin) - MEJORADO
      */
     verifyDeposit(depositId, adminId, approved, notes, verificationData) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -199,6 +304,12 @@ class PaymentSystemService {
                 const deposit = depositDoc.data();
                 if (deposit.status !== 'pending') {
                     throw new Error('Depósito ya fue procesado');
+                }
+                // Validar datos de verificación si se aprueba
+                if (approved && verificationData) {
+                    if (!verificationData.bankDepositDate || !verificationData.referenceNumber) {
+                        throw new Error('Para aprobar un depósito, debe proporcionar fecha del depósito y número de referencia');
+                    }
                 }
                 const updateData = {
                     status: approved ? 'approved' : 'rejected',
@@ -215,6 +326,9 @@ class PaymentSystemService {
                 // Si fue aprobado, actualizar balance del usuario
                 if (approved) {
                     yield this.updateUserBalance(deposit.userId, deposit.amount, 'deposit');
+                    loggerService_1.logger.info('Balance actualizado después de aprobar depósito', {
+                        metadata: { userId: deposit.userId, amount: deposit.amount }
+                    });
                 }
             }
             catch (error) {
@@ -239,6 +353,11 @@ class PaymentSystemService {
                         amount: paymentData.amount
                     }
                 });
+                // Verificar que el organizador tenga suficiente balance
+                const organizerBalance = yield this.getUserBalance(paymentData.organizerId);
+                if (organizerBalance.balance < paymentData.amount) {
+                    throw new Error('Saldo insuficiente para realizar el pago');
+                }
                 const commission = this.calculateCommission(paymentData.amount);
                 const eventPayment = {
                     id: `payment_${Date.now()}_${paymentData.eventId}`,
@@ -305,10 +424,20 @@ class PaymentSystemService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 loggerService_1.logger.info('Solicitando retiro de ganancias', { metadata: { musicianId, amount: withdrawalData.amount } });
+                // Validar monto mínimo de retiro
+                const minWithdrawal = 500; // RD$ 500
+                if (withdrawalData.amount < minWithdrawal) {
+                    throw new Error(`El monto mínimo de retiro es RD$ ${minWithdrawal.toLocaleString()}`);
+                }
                 // Verificar que el usuario tenga suficiente balance
                 const balance = yield this.getUserBalance(musicianId);
                 if (balance.balance < withdrawalData.amount) {
                     throw new Error('Saldo insuficiente para el retiro');
+                }
+                // Verificar que la cuenta bancaria existe
+                const bankAccountDoc = yield firebase_1.db.collection('bank_accounts').doc(withdrawalData.bankAccountId).get();
+                if (!bankAccountDoc.exists) {
+                    throw new Error('Cuenta bancaria no encontrada');
                 }
                 const withdrawal = {
                     id: `withdrawal_${Date.now()}_${musicianId}`,
@@ -533,6 +662,43 @@ class PaymentSystemService {
                     metadata: { musicianId }
                 });
                 throw new Error('Error obteniendo ganancias de músico');
+            }
+        });
+    }
+    /**
+     * Obtener información detallada de un depósito
+     */
+    getDepositDetails(depositId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+                if (!depositDoc.exists) {
+                    return null;
+                }
+                return depositDoc.data();
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo detalles del depósito', error, {
+                    metadata: { depositId }
+                });
+                throw new Error('Error obteniendo detalles del depósito');
+            }
+        });
+    }
+    /**
+     * Verificar duplicados de voucher
+     */
+    checkVoucherDuplicates(voucherUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const depositsSnapshot = yield firebase_1.db.collection('user_deposits')
+                    .where('voucherFile.url', '==', voucherUrl)
+                    .get();
+                return !depositsSnapshot.empty;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando duplicados de voucher', error);
+                return false;
             }
         });
     }

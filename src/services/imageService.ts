@@ -1,332 +1,413 @@
-import { Image, ImageFilters } from '../utils/DataTypes';
-import {
-  uploadImage,
-  getImageById,
-  listImages,
-  updateImage,
-  deleteImage,
-  getUserProfileImages,
-  getPostImages,
-  getEventImages,
-  getImageStats,
-} from '../models/imagesModel';
+import { uploadToS3 } from '../utils/idriveE2';
+import { logger } from './loggerService';
+import { db } from '../utils/firebase';
 
-/**
- * Servicio para manejo de imágenes
- */
+export interface ImageUploadResult {
+  url: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: string;
+  metadata?: Record<string, any>;
+}
+
+export interface ImageValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
 export class ImageService {
-  /**
-   * Subir imagen de perfil
-   */
-  static async uploadProfileImage(
-    file: Express.Multer.File,
-    userId: string,
-    description?: string
-  ): Promise<Image> {
-    return await uploadImage(file, userId, 'profile', {
-      description: description || 'Foto de perfil',
-      tags: ['profile', 'user'],
-      isPublic: true,
-    });
-  }
+  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  private readonly ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf'
+  ];
 
   /**
-   * Subir imagen de post
+   * Validar archivo de imagen
    */
-  static async uploadPostImage(
-    file: Express.Multer.File,
-    userId: string,
-    description?: string,
-    tags?: string[]
-  ): Promise<Image> {
-    return await uploadImage(file, userId, 'post', {
-      description: description || 'Imagen de post',
-      tags: tags || ['post'],
-      isPublic: true,
-    });
-  }
+  validateImageFile(file: Express.Multer.File): ImageValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-  /**
-   * Subir imagen de evento
-   */
-  static async uploadEventImage(
-    file: Express.Multer.File,
-    userId: string,
-    eventId: string,
-    description?: string
-  ): Promise<Image> {
-    return await uploadImage(file, userId, 'event', {
-      description: description || 'Imagen de evento',
-      tags: ['event', eventId],
-      isPublic: true,
-      customMetadata: { eventId },
-    });
-  }
-
-  /**
-   * Subir imagen de galería
-   */
-  static async uploadGalleryImage(
-    file: Express.Multer.File,
-    userId: string,
-    description?: string,
-    tags?: string[]
-  ): Promise<Image> {
-    return await uploadImage(file, userId, 'gallery', {
-      description: description || 'Imagen de galería',
-      tags: tags || ['gallery'],
-      isPublic: true,
-    });
-  }
-
-  /**
-   * Subir imagen administrativa
-   */
-  static async uploadAdminImage(
-    file: Express.Multer.File,
-    userId: string,
-    description?: string,
-    tags?: string[]
-  ): Promise<Image> {
-    return await uploadImage(file, userId, 'admin', {
-      description: description || 'Imagen administrativa',
-      tags: tags || ['admin'],
-      isPublic: false,
-    });
-  }
-
-  /**
-   * Obtener imagen por ID con validación de permisos
-   */
-  static async getImageByIdWithPermissions(
-    imageId: string,
-    userId?: string
-  ): Promise<Image | null> {
-    const image = await getImageById(imageId);
-
-    if (!image) {
-      return null;
+    if (!file) {
+      errors.push('No se proporcionó archivo');
+      return { isValid: false, errors, warnings };
     }
 
-    // Si la imagen no es pública, solo el propietario puede verla
-    if (!image.isPublic && image.userId !== userId) {
-      return null;
+    // Validar tamaño
+    if (file.size > this.MAX_FILE_SIZE) {
+      errors.push(`El archivo es demasiado grande. Máximo ${this.MAX_FILE_SIZE / 1024 / 1024}MB`);
     }
 
-    return image;
-  }
+    // Validar tipo MIME
+    if (!this.ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      errors.push('Tipo de archivo no permitido. Solo imágenes y PDFs');
+    }
 
-  /**
-   * Listar imágenes con filtros y paginación
-   */
-  static async listImagesWithPagination(
-    filters: ImageFilters = {},
-    page: number = 1,
-    limit: number = 20
-  ): Promise<{
-    images: Image[];
-    total: number;
-    page: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  }> {
-    const offset = (page - 1) * limit;
+    // Validar que el buffer no esté vacío
+    if (!file.buffer || file.buffer.length === 0) {
+      errors.push('El archivo está vacío');
+    }
 
-    const allImages = await listImages({
-      ...filters,
-      limit: undefined,
-      offset: undefined,
-    });
-
-    const total = allImages.length;
-    const images = allImages.slice(offset, offset + limit);
-    const totalPages = Math.ceil(total / limit);
+    // Advertencias
+    if (file.size > 5 * 1024 * 1024) { // 5MB
+      warnings.push('El archivo es grande, puede tardar en subirse');
+    }
 
     return {
-      images,
-      total,
-      page,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1,
+      isValid: errors.length === 0,
+      errors,
+      warnings
     };
   }
 
   /**
-   * Actualizar imagen con validación de permisos
+   * Generar nombre único para archivo
    */
-  static async updateImageWithPermissions(
-    imageId: string,
+  generateUniqueFileName(
+    originalName: string, 
+    userId: string, 
+    folder: string = 'uploads'
+  ): string {
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const extension = originalName.split('.').pop()?.toLowerCase() || 'jpg';
+    const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    
+    return `${folder}/${userId}/${timestamp}_${randomSuffix}_${sanitizedName}`;
+  }
+
+  /**
+   * Subir imagen con manejo mejorado de errores
+   */
+  async uploadImage(
+    file: Express.Multer.File,
     userId: string,
-    updateData: any
-  ): Promise<Image> {
-    const image = await getImageById(imageId);
+    folder: string = 'uploads',
+    metadata?: Record<string, any>
+  ): Promise<ImageUploadResult> {
+    try {
+      // Validar archivo
+      const validation = this.validateImageFile(file);
+      if (!validation.isValid) {
+        throw new Error(`Error de validación: ${validation.errors.join(', ')}`);
+      }
 
-    if (!image) {
-      throw new Error('Imagen no encontrada');
+      // Generar nombre único
+      const uniqueFileName = this.generateUniqueFileName(
+        file.originalname || 'image.jpg',
+        userId,
+        folder
+      );
+
+      logger.info('Subiendo imagen', { 
+        metadata: { 
+          userId, 
+          filename: uniqueFileName, 
+          size: file.size,
+          mimeType: file.mimetype,
+          warnings: validation.warnings
+        } 
+      });
+
+      // Subir a S3
+      const fileUrl = await uploadToS3(
+        file.buffer,
+        uniqueFileName,
+        file.mimetype,
+        folder
+      );
+
+      // Crear registro en base de datos para tracking
+      const imageRecord = {
+        url: fileUrl,
+        filename: uniqueFileName,
+        originalName: file.originalname,
+        size: file.size,
+        mimeType: file.mimetype,
+        userId,
+        folder,
+        metadata,
+        uploadedAt: new Date().toISOString(),
+        lastAccessed: new Date().toISOString(),
+        accessCount: 0
+      };
+
+      const imageId = `img_${Date.now()}_${userId}`;
+      await db.collection('image_uploads').doc(imageId).set(imageRecord);
+
+      logger.info('Imagen subida exitosamente', { 
+        metadata: { 
+          imageId, 
+          url: fileUrl, 
+          userId 
+        } 
+      });
+
+      return {
+        url: fileUrl,
+        filename: uniqueFileName,
+        size: file.size,
+        mimeType: file.mimetype,
+        uploadedAt: imageRecord.uploadedAt,
+        metadata
+      };
+
+    } catch (error) {
+      logger.error('Error subiendo imagen', error as Error, { 
+        metadata: { userId, filename: file?.originalname } 
+      });
+      throw new Error('Error subiendo imagen. Intente nuevamente.');
     }
-
-    if (image.userId !== userId) {
-      throw new Error('No tienes permisos para actualizar esta imagen');
-    }
-
-    return await updateImage(imageId, updateData);
   }
 
   /**
-   * Eliminar imagen con validación de permisos
+   * Obtener imagen con cache y tracking
    */
-  static async deleteImageWithPermissions(
-    imageId: string,
-    userId: string
-  ): Promise<boolean> {
-    const image = await getImageById(imageId);
+  async getImage(imageId: string): Promise<ImageUploadResult | null> {
+    try {
+      const imageDoc = await db.collection('image_uploads').doc(imageId).get();
+      
+      if (!imageDoc.exists) {
+        logger.warn('Imagen no encontrada', { metadata: { imageId } });
+        return null;
+      }
 
-    if (!image) {
-      throw new Error('Imagen no encontrada');
+      const imageData = imageDoc.data() as any;
+
+      // Actualizar contador de acceso
+      await db.collection('image_uploads').doc(imageId).update({
+        lastAccessed: new Date().toISOString(),
+        accessCount: (imageData.accessCount || 0) + 1
+      });
+
+      return {
+        url: imageData.url,
+        filename: imageData.filename,
+        size: imageData.size,
+        mimeType: imageData.mimeType,
+        uploadedAt: imageData.uploadedAt,
+        metadata: imageData.metadata
+      };
+
+    } catch (error) {
+      logger.error('Error obteniendo imagen', error as Error, { metadata: { imageId } });
+      throw new Error('Error obteniendo imagen');
     }
+  }
 
-    if (image.userId !== userId) {
-      throw new Error('No tienes permisos para eliminar esta imagen');
+  /**
+   * Obtener imagen por URL
+   */
+  async getImageByUrl(url: string): Promise<ImageUploadResult | null> {
+    try {
+      const imageSnapshot = await db.collection('image_uploads')
+        .where('url', '==', url)
+        .limit(1)
+        .get();
+
+      if (imageSnapshot.empty) {
+        logger.warn('Imagen no encontrada por URL', { metadata: { url } });
+        return null;
+      }
+
+      const imageDoc = imageSnapshot.docs[0];
+      const imageData = imageDoc.data() as any;
+
+      // Actualizar contador de acceso
+      await db.collection('image_uploads').doc(imageDoc.id).update({
+        lastAccessed: new Date().toISOString(),
+        accessCount: (imageData.accessCount || 0) + 1
+      });
+
+      return {
+        url: imageData.url,
+        filename: imageData.filename,
+        size: imageData.size,
+        mimeType: imageData.mimeType,
+        uploadedAt: imageData.uploadedAt,
+        metadata: imageData.metadata
+      };
+
+    } catch (error) {
+      logger.error('Error obteniendo imagen por URL', error as Error, { metadata: { url } });
+      throw new Error('Error obteniendo imagen por URL');
     }
-
-    return await deleteImage(imageId, userId);
   }
 
   /**
-   * Obtener imágenes de perfil de un usuario
+   * Eliminar imagen
    */
-  static async getUserProfileImages(userId: string): Promise<Image[]> {
-    return await getUserProfileImages(userId);
-  }
+  async deleteImage(imageId: string): Promise<boolean> {
+    try {
+      const imageDoc = await db.collection('image_uploads').doc(imageId).get();
+      
+      if (!imageDoc.exists) {
+        logger.warn('Imagen no encontrada para eliminar', { metadata: { imageId } });
+        return false;
+      }
 
-  /**
-   * Obtener imágenes de posts
-   */
-  static async getPostImages(userId?: string): Promise<Image[]> {
-    return await getPostImages(userId);
-  }
+      const imageData = imageDoc.data() as any;
 
-  /**
-   * Obtener imágenes de eventos
-   */
-  static async getEventImages(eventId?: string): Promise<Image[]> {
-    return await getEventImages(eventId);
+      // Eliminar de S3 (implementar si es necesario)
+      // await deleteFromS3(imageData.filename);
+
+      // Eliminar de base de datos
+      await db.collection('image_uploads').doc(imageId).delete();
+
+      logger.info('Imagen eliminada exitosamente', { metadata: { imageId } });
+      return true;
+
+    } catch (error) {
+      logger.error('Error eliminando imagen', error as Error, { metadata: { imageId } });
+      throw new Error('Error eliminando imagen');
+    }
   }
 
   /**
    * Obtener estadísticas de imágenes
    */
-  static async getImageStats() {
-    return await getImageStats();
-  }
+  async getImageStatistics(userId?: string): Promise<{
+    totalImages: number;
+    totalSize: number;
+    averageSize: number;
+    mostUsedMimeTypes: Record<string, number>;
+    recentUploads: number;
+  }> {
+    try {
+      let query: any = db.collection('image_uploads');
+      
+      if (userId) {
+        query = query.where('userId', '==', userId);
+      }
 
-  /**
-   * Buscar imágenes por texto
-   */
-  static async searchImages(
-    searchTerm: string,
-    filters: ImageFilters = {}
-  ): Promise<Image[]> {
-    return await listImages({
-      ...filters,
-      search: searchTerm,
-    });
-  }
+      const imagesSnapshot = await query.get();
+      const images = imagesSnapshot.docs.map((doc: any) => doc.data() as any);
 
-  /**
-   * Obtener imágenes por etiquetas
-   */
-  static async getImagesByTags(
-    tags: string[],
-    filters: ImageFilters = {}
-  ): Promise<Image[]> {
-    const images = await listImages(filters);
+      const totalImages = images.length;
+      const totalSize = images.reduce((sum: number, img: any) => sum + (img.size || 0), 0);
+      const averageSize = totalImages > 0 ? totalSize / totalImages : 0;
 
-    return images.filter(
-      image => image.tags && tags.some(tag => image.tags!.includes(tag))
-    );
-  }
+      // Contar tipos MIME más usados
+      const mimeTypeCount: Record<string, number> = {};
+      images.forEach((img: any) => {
+        const mimeType = img.mimeType || 'unknown';
+        mimeTypeCount[mimeType] = (mimeTypeCount[mimeType] || 0) + 1;
+      });
 
-  /**
-   * Obtener imágenes recientes
-   */
-  static async getRecentImages(
-    limit: number = 10,
-    filters: ImageFilters = {}
-  ): Promise<Image[]> {
-    return await listImages({
-      ...filters,
-      limit,
-    });
-  }
+      // Contar uploads recientes (últimas 24 horas)
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const recentUploads = images.filter((img: any) => 
+        new Date(img.uploadedAt) > new Date(oneDayAgo)
+      ).length;
 
-  /**
-   * Validar formato de imagen
-   */
-  static validateImageFormat(file: Express.Multer.File): boolean {
-    const allowedMimeTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml',
-    ];
+      return {
+        totalImages,
+        totalSize,
+        averageSize,
+        mostUsedMimeTypes: mimeTypeCount,
+        recentUploads
+      };
 
-    return allowedMimeTypes.includes(file.mimetype);
-  }
-
-  /**
-   * Validar tamaño de imagen
-   */
-  static validateImageSize(
-    file: Express.Multer.File,
-    maxSize: number = 10 * 1024 * 1024
-  ): boolean {
-    return file.size <= maxSize;
-  }
-
-  /**
-   * Generar nombre de archivo único
-   */
-  static generateUniqueFileName(
-    originalName: string,
-    category: string,
-    userId: string
-  ): string {
-    const timestamp = Date.now();
-    const extension = originalName.split('.').pop();
-    const sanitizedName = originalName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    return `${category}/${userId}/${timestamp}_${sanitizedName}`;
-  }
-
-  /**
-   * Obtener información de imagen sin descargar
-   */
-  static async getImageInfo(imageId: string): Promise<{
-    id: string;
-    originalName: string;
-    size: number;
-    mimetype: string;
-    category: string;
-    createdAt: string;
-    isPublic: boolean;
-  } | null> {
-    const image = await getImageById(imageId);
-
-    if (!image) {
-      return null;
+    } catch (error) {
+      logger.error('Error obteniendo estadísticas de imágenes', error as Error);
+      throw new Error('Error obteniendo estadísticas de imágenes');
     }
+  }
 
-    return {
-      id: image.id,
-      originalName: image.originalName,
-      size: image.size,
-      mimetype: image.mimetype,
-      category: image.category,
-      createdAt: image.createdAt,
-      isPublic: image.isPublic,
-    };
+  /**
+   * Limpiar imágenes antiguas no utilizadas
+   */
+  async cleanupUnusedImages(daysOld: number = 30): Promise<number> {
+    try {
+      const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000).toISOString();
+      
+      const unusedImagesSnapshot = await db.collection('image_uploads')
+        .where('lastAccessed', '<', cutoffDate)
+        .where('accessCount', '==', 0)
+        .get();
+
+      const deletedCount = unusedImagesSnapshot.size;
+
+      // Eliminar en lotes
+      const batch = db.batch();
+      unusedImagesSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+
+      logger.info('Limpieza de imágenes completada', { 
+        metadata: { deletedCount, daysOld } 
+      });
+
+      return deletedCount;
+
+    } catch (error) {
+      logger.error('Error en limpieza de imágenes', error as Error);
+      throw new Error('Error en limpieza de imágenes');
+    }
+  }
+
+  /**
+   * Verificar integridad de imagen
+   */
+  async verifyImageIntegrity(imageId: string): Promise<{
+    exists: boolean;
+    accessible: boolean;
+    size: number;
+    lastAccessed: string;
+    accessCount: number;
+  }> {
+    try {
+      const imageDoc = await db.collection('image_uploads').doc(imageId).get();
+      
+      if (!imageDoc.exists) {
+        return {
+          exists: false,
+          accessible: false,
+          size: 0,
+          lastAccessed: '',
+          accessCount: 0
+        };
+      }
+
+      const imageData = imageDoc.data() as any;
+
+      // Verificar si la URL es accesible
+      let accessible = false;
+      try {
+        const response = await fetch(imageData.url, { method: 'HEAD' });
+        accessible = response.ok;
+      } catch (fetchError) {
+        logger.warn('Error verificando accesibilidad de imagen', { 
+          error: fetchError as Error,
+          metadata: {
+            imageId, 
+            url: imageData.url 
+          }
+        });
+      }
+
+      return {
+        exists: true,
+        accessible,
+        size: imageData.size || 0,
+        lastAccessed: imageData.lastAccessed || '',
+        accessCount: imageData.accessCount || 0
+      };
+
+    } catch (error) {
+      logger.error('Error verificando integridad de imagen', error as Error, { metadata: { imageId } });
+      throw new Error('Error verificando integridad de imagen');
+    }
   }
 }
+
+// Instancia singleton
+export const imageService = new ImageService();

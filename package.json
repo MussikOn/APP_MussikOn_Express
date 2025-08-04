@@ -36,7 +36,10 @@
     "redis:stats": "redis-cli info stats",
     "redis:flush": "redis-cli flushall",
     "production:setup": "npm run redis:install && npm run redis:start",
-    "production:test": "npm run redis:test && npm run monitor:performance:once"
+    "production:test": "npm run redis:test && npm run monitor:performance:once",
+    "test-integration": "node scripts/test-integration.js",
+    "start-integration": "powershell -ExecutionPolicy Bypass -File scripts/start-integration.ps1",
+    "integration:check": "npm run test-integration && npm run start-integration"
   },
   "keywords": [
     "mussikon",
@@ -94,6 +97,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "axios": "^1.11.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.0",

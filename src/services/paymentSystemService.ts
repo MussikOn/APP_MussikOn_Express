@@ -18,6 +18,8 @@ import {
 
 export class PaymentSystemService {
   private readonly COMMISSION_RATE = 0.10; // 10% de comisión
+  private readonly MAX_DEPOSIT_AMOUNT = 1000000; // 1 millón RD$
+  private readonly MIN_DEPOSIT_AMOUNT = 100; // 100 RD$
 
   /**
    * Calcular comisión de la plataforma
@@ -32,6 +34,57 @@ export class PaymentSystemService {
       musicianAmount: musicianAmount,
       commissionRate: this.COMMISSION_RATE
     };
+  }
+
+  /**
+   * Validar monto de depósito
+   */
+  private validateDepositAmount(amount: number): void {
+    if (amount < this.MIN_DEPOSIT_AMOUNT) {
+      throw new Error(`El monto mínimo de depósito es RD$ ${this.MIN_DEPOSIT_AMOUNT.toLocaleString()}`);
+    }
+    
+    if (amount > this.MAX_DEPOSIT_AMOUNT) {
+      throw new Error(`El monto máximo de depósito es RD$ ${this.MAX_DEPOSIT_AMOUNT.toLocaleString()}`);
+    }
+  }
+
+  /**
+   * Validar archivo de voucher
+   */
+  private validateVoucherFile(file: Express.Multer.File): void {
+    if (!file) {
+      throw new Error('No se proporcionó archivo de comprobante');
+    }
+
+    // Validar tamaño (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new Error('El archivo es demasiado grande. Máximo 10MB');
+    }
+
+    // Validar tipo MIME
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf'
+    ];
+
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      throw new Error('Tipo de archivo no permitido. Solo imágenes y PDFs');
+    }
+  }
+
+  /**
+   * Generar nombre único para archivo
+   */
+  private generateUniqueFileName(originalName: string, userId: string): string {
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const extension = originalName.split('.').pop() || 'jpg';
+    return `deposits/${userId}/${timestamp}_${randomSuffix}.${extension}`;
   }
 
   /**
@@ -74,6 +127,21 @@ export class PaymentSystemService {
   async registerBankAccount(userId: string, accountData: BankAccountData): Promise<BankAccount> {
     try {
       logger.info('Registrando cuenta bancaria', { metadata: { userId } });
+      
+      // Validar datos de cuenta bancaria
+      if (!accountData.accountHolder || !accountData.accountNumber || !accountData.bankName) {
+        throw new Error('Datos de cuenta bancaria incompletos');
+      }
+
+      // Verificar que no exista una cuenta con el mismo número para este usuario
+      const existingAccounts = await db.collection('bank_accounts')
+        .where('userId', '==', userId)
+        .where('accountNumber', '==', accountData.accountNumber)
+        .get();
+
+      if (!existingAccounts.empty) {
+        throw new Error('Ya existe una cuenta bancaria con este número');
+      }
       
       const bankAccount: BankAccount = {
         id: `bank_${Date.now()}_${userId}`,
@@ -159,19 +227,51 @@ export class PaymentSystemService {
   }
 
   /**
-   * Subir comprobante de depósito
+   * Subir comprobante de depósito (MEJORADO)
    */
   async uploadDepositVoucher(userId: string, depositData: DepositRequest): Promise<UserDeposit> {
     try {
       logger.info('Subiendo comprobante de depósito', { metadata: { userId, amount: depositData.amount } });
       
-      // Subir archivo a S3
-      const fileUrl = await uploadToS3(
-        depositData.voucherFile.buffer,
+      // Validaciones
+      this.validateDepositAmount(depositData.amount);
+      this.validateVoucherFile(depositData.voucherFile);
+      
+      if (!depositData.accountHolderName || !depositData.bankName) {
+        throw new Error('Nombre del titular y banco son obligatorios');
+      }
+
+      // Generar nombre único para el archivo
+      const uniqueFileName = this.generateUniqueFileName(
         depositData.voucherFile.originalname || 'voucher.jpg',
-        depositData.voucherFile.mimetype || 'image/jpeg',
-        'deposits'
+        userId
       );
+      
+      // Subir archivo a S3 con mejor manejo de errores
+      let fileUrl: string;
+      try {
+        fileUrl = await uploadToS3(
+          depositData.voucherFile.buffer,
+          uniqueFileName,
+          depositData.voucherFile.mimetype || 'image/jpeg',
+          'deposits'
+        );
+      } catch (uploadError) {
+        logger.error('Error subiendo archivo a S3', uploadError as Error, { metadata: { userId } });
+        throw new Error('Error subiendo comprobante. Intente nuevamente.');
+      }
+      
+      // Verificar que no haya depósitos duplicados recientes
+      const recentDeposits = await db.collection('user_deposits')
+        .where('userId', '==', userId)
+        .where('amount', '==', depositData.amount)
+        .where('status', '==', 'pending')
+        .where('createdAt', '>', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
+        .get();
+
+      if (!recentDeposits.empty) {
+        logger.warn('Posible depósito duplicado detectado', { metadata: { userId, amount: depositData.amount } });
+      }
       
       const deposit: UserDeposit = {
         id: `deposit_${Date.now()}_${userId}`,
@@ -180,7 +280,7 @@ export class PaymentSystemService {
         currency: 'RD$',
         voucherFile: {
           url: fileUrl,
-          filename: depositData.voucherFile.originalname || 'voucher.jpg',
+          filename: uniqueFileName,
           uploadedAt: new Date().toISOString()
         },
         // Información del depósito bancario
@@ -199,6 +299,8 @@ export class PaymentSystemService {
       
       await db.collection('user_deposits').doc(deposit.id).set(deposit);
       
+      logger.info('Depósito creado exitosamente', { metadata: { depositId: deposit.id, userId } });
+      
       return deposit;
     } catch (error) {
       logger.error('Error subiendo comprobante de depósito', error as Error, { 
@@ -209,7 +311,28 @@ export class PaymentSystemService {
   }
 
   /**
-   * Verificar depósito (admin)
+   * Obtener depósitos del usuario
+   */
+  async getUserDeposits(userId: string): Promise<UserDeposit[]> {
+    try {
+      logger.info('Obteniendo depósitos del usuario', { metadata: { userId } });
+      
+      const depositsSnapshot = await db.collection('user_deposits')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+      
+      return depositsSnapshot.docs.map(doc => doc.data() as UserDeposit);
+    } catch (error) {
+      logger.error('Error obteniendo depósitos del usuario', error as Error, { 
+        metadata: { userId } 
+      });
+      throw new Error('Error obteniendo depósitos del usuario');
+    }
+  }
+
+  /**
+   * Verificar depósito (admin) - MEJORADO
    */
   async verifyDeposit(
     depositId: string, 
@@ -240,6 +363,13 @@ export class PaymentSystemService {
         throw new Error('Depósito ya fue procesado');
       }
       
+      // Validar datos de verificación si se aprueba
+      if (approved && verificationData) {
+        if (!verificationData.bankDepositDate || !verificationData.referenceNumber) {
+          throw new Error('Para aprobar un depósito, debe proporcionar fecha del depósito y número de referencia');
+        }
+      }
+      
       const updateData: Partial<UserDeposit> = {
         status: approved ? 'approved' : 'rejected',
         verifiedBy: adminId,
@@ -261,6 +391,9 @@ export class PaymentSystemService {
       // Si fue aprobado, actualizar balance del usuario
       if (approved) {
         await this.updateUserBalance(deposit.userId, deposit.amount, 'deposit');
+        logger.info('Balance actualizado después de aprobar depósito', { 
+          metadata: { userId: deposit.userId, amount: deposit.amount } 
+        });
       }
     } catch (error) {
       logger.error('Error verificando depósito', error as Error, { 
@@ -283,6 +416,12 @@ export class PaymentSystemService {
           amount: paymentData.amount
         }
       });
+      
+      // Verificar que el organizador tenga suficiente balance
+      const organizerBalance = await this.getUserBalance(paymentData.organizerId);
+      if (organizerBalance.balance < paymentData.amount) {
+        throw new Error('Saldo insuficiente para realizar el pago');
+      }
       
       const commission = this.calculateCommission(paymentData.amount);
       
@@ -354,10 +493,22 @@ export class PaymentSystemService {
     try {
       logger.info('Solicitando retiro de ganancias', { metadata: { musicianId, amount: withdrawalData.amount } });
       
+      // Validar monto mínimo de retiro
+      const minWithdrawal = 500; // RD$ 500
+      if (withdrawalData.amount < minWithdrawal) {
+        throw new Error(`El monto mínimo de retiro es RD$ ${minWithdrawal.toLocaleString()}`);
+      }
+      
       // Verificar que el usuario tenga suficiente balance
       const balance = await this.getUserBalance(musicianId);
       if (balance.balance < withdrawalData.amount) {
         throw new Error('Saldo insuficiente para el retiro');
+      }
+      
+      // Verificar que la cuenta bancaria existe
+      const bankAccountDoc = await db.collection('bank_accounts').doc(withdrawalData.bankAccountId).get();
+      if (!bankAccountDoc.exists) {
+        throw new Error('Cuenta bancaria no encontrada');
       }
       
       const withdrawal: WithdrawalRequest = {
@@ -597,6 +748,42 @@ export class PaymentSystemService {
         metadata: { musicianId } 
       });
       throw new Error('Error obteniendo ganancias de músico');
+    }
+  }
+
+  /**
+   * Obtener información detallada de un depósito
+   */
+  async getDepositDetails(depositId: string): Promise<UserDeposit | null> {
+    try {
+      const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+      
+      if (!depositDoc.exists) {
+        return null;
+      }
+      
+      return depositDoc.data() as UserDeposit;
+    } catch (error) {
+      logger.error('Error obteniendo detalles del depósito', error as Error, { 
+        metadata: { depositId } 
+      });
+      throw new Error('Error obteniendo detalles del depósito');
+    }
+  }
+
+  /**
+   * Verificar duplicados de voucher
+   */
+  async checkVoucherDuplicates(voucherUrl: string): Promise<boolean> {
+    try {
+      const depositsSnapshot = await db.collection('user_deposits')
+        .where('voucherFile.url', '==', voucherUrl)
+        .get();
+      
+      return !depositsSnapshot.empty;
+    } catch (error) {
+      logger.error('Error verificando duplicados de voucher', error as Error);
+      return false;
     }
   }
 
