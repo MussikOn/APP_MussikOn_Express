@@ -7,6 +7,7 @@ import {
   WithdrawalRequestData, 
   EventPaymentRequest 
 } from '../types/paymentTypes';
+import { generatePresignedUrl } from '../utils/idriveE2';
 
 export class PaymentSystemController {
   private paymentService: PaymentSystemService;
@@ -95,7 +96,7 @@ export class PaymentSystemController {
         return;
       }
 
-      const accounts = await this.paymentService.getUserBankAccounts(userId);
+      const accounts = await this.paymentService.getUserBankAccounts(userId); 
       
       res.json({
         success: true,
@@ -452,4 +453,141 @@ export class PaymentSystemController {
       });
     }
   }
+
+  /**
+   * Obtener detalles de un depósito específico (admin)
+   */
+  async getDepositDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { depositId } = req.params;
+      
+      if (!depositId) {
+        res.status(400).json({ error: 'ID de depósito requerido' });
+        return;
+      }
+
+      logger.info('Obteniendo detalles de depósito', { metadata: { depositId } });
+
+      const deposit = await this.paymentService.getDepositDetails(depositId);
+      
+      res.json({
+        success: true,
+        data: deposit
+      });
+    } catch (error) {
+      logger.error('Error obteniendo detalles de depósito', error as Error, { 
+        metadata: { depositId: req.params.depositId } 
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo detalles de depósito'
+      });
+    }
+  }
+
+  /**
+   * Verificar si un voucher es duplicado (admin)
+   */
+  async checkVoucherDuplicates(req: Request, res: Response): Promise<void> {
+    try {
+      const { depositId } = req.params;
+      
+      if (!depositId) {
+        res.status(400).json({ error: 'ID de depósito requerido' });
+        return;
+      }
+
+      logger.info('Verificando duplicados de voucher', { metadata: { depositId } });
+
+      const duplicates = await this.paymentService.checkVoucherDuplicates(depositId);
+      
+      res.json({
+        success: true,
+        data: duplicates
+      });
+    } catch (error) {
+      logger.error('Error verificando duplicados de voucher', error as Error, { 
+        metadata: { depositId: req.params.depositId } 
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error verificando duplicados de voucher'
+      });
+    }
+  }
 } 
+
+/**
+ * Genera una URL firmada para acceder a un comprobante de pago
+ * Resuelve problemas de CORS y Access Denied en el frontend
+ */
+export const getVoucherPresignedUrl = async (req: Request, res: Response) => {
+  try {
+    const { depositId } = req.params;
+    
+    if (!depositId) {
+      return res.status(400).json({
+        success: false,
+        error: 'ID de depósito requerido'
+      });
+    }
+
+    logger.info('[functions/src/controllers/paymentSystemController.ts] Generando URL firmada para comprobante:', { metadata: { depositId } });
+
+    // Obtener información del depósito
+    const paymentSystemService = new PaymentSystemService();
+    const deposit = await paymentSystemService.getDepositDetails(depositId);
+    
+    if (!deposit) {
+      return res.status(404).json({
+        success: false,
+        error: 'Depósito no encontrado'
+      });
+    }
+
+    // Verificar que el usuario tenga permisos para ver este depósito
+    const userId = (req as any).user?.uid;
+    if (!userId || (deposit.userId !== userId && !(req as any).user?.role?.includes('admin'))) {
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permisos para acceder a este depósito'
+      });
+    }
+
+    // Obtener la clave del archivo del comprobante desde la URL
+    const voucherKey = deposit.voucherFile?.url?.split('/').pop();
+    
+    if (!voucherKey) {
+      return res.status(404).json({
+        success: false,
+        error: 'Comprobante no encontrado'
+      });
+    }
+
+    // Generar URL firmada
+    const presignedUrl = await generatePresignedUrl(voucherKey, 3600); // 1 hora
+
+    logger.info('[functions/src/controllers/paymentSystemController.ts] URL firmada generada exitosamente:', { metadata: { depositId, voucherKey } });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        presignedUrl,
+        expiresIn: 3600,
+        depositId,
+        voucherKey
+      },
+      message: 'URL firmada generada exitosamente'
+    });
+
+  } catch (error) {
+    logger.error('[functions/src/controllers/paymentSystemController.ts] Error generando URL firmada:', error instanceof Error ? error : new Error(String(error)));
+    
+    res.status(500).json({
+      success: false,
+      error: 'Error generando URL firmada del comprobante'
+    });
+  }
+}; 

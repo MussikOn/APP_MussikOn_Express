@@ -212,18 +212,11 @@ export class ImageService {
         .get();
 
       if (imageSnapshot.empty) {
-        logger.warn('Imagen no encontrada por URL', { metadata: { url } });
         return null;
       }
 
       const imageDoc = imageSnapshot.docs[0];
       const imageData = imageDoc.data() as any;
-
-      // Actualizar contador de acceso
-      await db.collection('image_uploads').doc(imageDoc.id).update({
-        lastAccessed: new Date().toISOString(),
-        accessCount: (imageData.accessCount || 0) + 1
-      });
 
       return {
         url: imageData.url,
@@ -237,6 +230,75 @@ export class ImageService {
     } catch (error) {
       logger.error('Error obteniendo imagen por URL', error as Error, { metadata: { url } });
       throw new Error('Error obteniendo imagen por URL');
+    }
+  }
+
+  /**
+   * Obtener todas las imágenes con filtros
+   */
+  async getAllImages(filters?: {
+    category?: string;
+    isPublic?: boolean;
+    isActive?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<any[]> {
+    try {
+      let query: any = db.collection('image_uploads');
+
+      // Aplicar filtros
+      if (filters?.category) {
+        query = query.where('category', '==', filters.category);
+      }
+
+      if (filters?.isPublic !== undefined) {
+        query = query.where('isPublic', '==', filters.isPublic);
+      }
+
+      if (filters?.isActive !== undefined) {
+        query = query.where('isActive', '==', filters.isActive);
+      }
+
+      // Aplicar paginación
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 20;
+      const offset = (page - 1) * limit;
+
+      query = query.limit(limit).offset(offset);
+
+      const imagesSnapshot = await query.get();
+      const images: any[] = [];
+
+      imagesSnapshot.forEach((doc: any) => {
+        const imageData = doc.data();
+        const image = {
+          id: doc.id,
+          ...imageData
+        };
+
+        // Aplicar filtro de búsqueda si existe
+        if (filters?.search) {
+          const searchTerm = filters.search.toLowerCase();
+          const description = imageData.description?.toLowerCase() || '';
+          const filename = imageData.filename?.toLowerCase() || '';
+          const tags = imageData.tags?.join(' ').toLowerCase() || '';
+
+          if (description.includes(searchTerm) || 
+              filename.includes(searchTerm) || 
+              tags.includes(searchTerm)) {
+            images.push(image);
+          }
+        } else {
+          images.push(image);
+        }
+      });
+
+      return images;
+
+    } catch (error) {
+      logger.error('Error obteniendo imágenes', error as Error);
+      throw new Error('Error obteniendo imágenes');
     }
   }
 
@@ -275,9 +337,12 @@ export class ImageService {
   async getImageStatistics(userId?: string): Promise<{
     totalImages: number;
     totalSize: number;
-    averageSize: number;
-    mostUsedMimeTypes: Record<string, number>;
-    recentUploads: number;
+    imagesByCategory: Record<string, number>;
+    imagesByUser: Record<string, number>;
+    publicImages: number;
+    privateImages: number;
+    activeImages: number;
+    inactiveImages: number;
   }> {
     try {
       let query: any = db.collection('image_uploads');
@@ -291,27 +356,38 @@ export class ImageService {
 
       const totalImages = images.length;
       const totalSize = images.reduce((sum: number, img: any) => sum + (img.size || 0), 0);
-      const averageSize = totalImages > 0 ? totalSize / totalImages : 0;
 
-      // Contar tipos MIME más usados
-      const mimeTypeCount: Record<string, number> = {};
+      // Contar por categoría
+      const imagesByCategory: Record<string, number> = {};
       images.forEach((img: any) => {
-        const mimeType = img.mimeType || 'unknown';
-        mimeTypeCount[mimeType] = (mimeTypeCount[mimeType] || 0) + 1;
+        const category = img.category || 'other';
+        imagesByCategory[category] = (imagesByCategory[category] || 0) + 1;
       });
 
-      // Contar uploads recientes (últimas 24 horas)
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const recentUploads = images.filter((img: any) => 
-        new Date(img.uploadedAt) > new Date(oneDayAgo)
-      ).length;
+      // Contar por usuario
+      const imagesByUser: Record<string, number> = {};
+      images.forEach((img: any) => {
+        const user = img.userId || 'unknown';
+        imagesByUser[user] = (imagesByUser[user] || 0) + 1;
+      });
+
+      // Contar públicas vs privadas
+      const publicImages = images.filter((img: any) => img.isPublic === true).length;
+      const privateImages = totalImages - publicImages;
+
+      // Contar activas vs inactivas
+      const activeImages = images.filter((img: any) => img.isActive !== false).length;
+      const inactiveImages = totalImages - activeImages;
 
       return {
         totalImages,
         totalSize,
-        averageSize,
-        mostUsedMimeTypes: mimeTypeCount,
-        recentUploads
+        imagesByCategory,
+        imagesByUser,
+        publicImages,
+        privateImages,
+        activeImages,
+        inactiveImages
       };
 
     } catch (error) {

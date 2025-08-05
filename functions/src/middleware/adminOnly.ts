@@ -25,7 +25,7 @@ export function adminOnly(req: Request, res: Response, next: NextFunction) {
     ) {
       next();
     } else {
-      res.status(403).json({ message: "Acceso solo para administradores" });
+      return res.status(403).json({ message: "Acceso solo para administradores" });
     }
-  });
+      });
 }

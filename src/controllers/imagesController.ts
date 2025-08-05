@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { imageService } from '../services/imageService';
 import { logger } from '../services/loggerService';
+import { db } from '../utils/firebase';
 
 export class ImagesController {
   /**
@@ -203,6 +204,65 @@ export class ImagesController {
   }
 
   /**
+   * Obtener todas las imágenes con filtros
+   */
+  async getAllImages(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userEmail;
+      const { category, isPublic, isActive, search, page = 1, limit = 20 } = req.query;
+      
+      const filters = {
+        category: category as string,
+        isPublic: isPublic === 'true' ? true : isPublic === 'false' ? false : undefined,
+        isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
+        search: search as string,
+        page: Number(page),
+        limit: Number(limit)
+      };
+
+      const images = await imageService.getAllImages(filters);
+      
+      res.status(200).json({
+        success: true,
+        images,
+        total: images.length,
+        page: Number(page),
+        limit: Number(limit)
+      });
+    } catch (error) {
+      logger.error('Error obteniendo imágenes', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo imágenes'
+      });
+    }
+  }
+
+  /**
+   * Obtener estadísticas de imágenes (alias para getImageStatistics)
+   */
+  async getImageStats(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).user?.userEmail;
+      
+      const statistics = await imageService.getImageStatistics(userId);
+      
+      res.status(200).json({
+        success: true,
+        stats: statistics
+      });
+    } catch (error) {
+      logger.error('Error obteniendo estadísticas de imágenes', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo estadísticas de imágenes'
+      });
+    }
+  }
+
+  /**
    * Verificar integridad de imagen
    */
   async verifyImageIntegrity(req: Request, res: Response): Promise<void> {
@@ -354,6 +414,84 @@ export class ImagesController {
       res.status(500).json({
         success: false,
         error: 'Error sirviendo imagen'
+      });
+    }
+  }
+
+  /**
+   * Obtener imagen de voucher de depósito
+   */
+  async getVoucherImage(req: Request, res: Response): Promise<void> {
+    try {
+      const { depositId } = req.params;
+      
+      if (!depositId) {
+        res.status(400).json({
+          success: false,
+          error: 'ID de depósito requerido'
+        });
+        return;
+      }
+
+      logger.info('Obteniendo imagen de voucher', { metadata: { depositId } });
+
+      // Obtener los detalles del depósito directamente desde Firestore
+      const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+      
+      if (!depositDoc.exists) {
+        res.status(404).json({
+          success: false,
+          error: 'Depósito no encontrado'
+        });
+        return;
+      }
+
+      const deposit = depositDoc.data();
+      
+      if (!deposit?.voucherFile?.url) {
+        res.status(404).json({
+          success: false,
+          error: 'Voucher no encontrado para este depósito'
+        });
+        return;
+      }
+
+      // Intentar obtener la imagen del voucher
+      try {
+        const response = await fetch(deposit.voucherFile.url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const buffer = await response.arrayBuffer();
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        
+        res.set({
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=3600',
+          'Content-Length': buffer.byteLength.toString(),
+          'Access-Control-Allow-Origin': '*'
+        });
+        
+        res.send(Buffer.from(buffer));
+      } catch (fetchError) {
+        logger.error('Error obteniendo imagen de voucher desde S3', fetchError as Error, { 
+          metadata: { depositId, voucherUrl: deposit.voucherFile.url } 
+        });
+        
+        res.status(500).json({
+          success: false,
+          error: 'Error obteniendo imagen de voucher'
+        });
+      }
+    } catch (error) {
+      logger.error('Error obteniendo imagen de voucher', error as Error, { 
+        metadata: { depositId: req.params.depositId } 
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo imagen de voucher'
       });
     }
   }

@@ -300,7 +300,7 @@ describe('PaymentSystemService', () => {
       mockDoc.get.mockResolvedValue(mockDoc);
 
       // Act
-      await paymentService.verifyDeposit(depositId, adminId, approved, notes, verificationData);
+      await paymentService.verifyDeposit(depositId, adminId, approved, notes);
 
       // Assert
       expect(mockDoc.update).toHaveBeenCalledWith(expect.objectContaining({

@@ -42,10 +42,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaymentSystemController = void 0;
+exports.getVoucherPresignedUrl = exports.PaymentSystemController = void 0;
 const paymentSystemService_1 = require("../services/paymentSystemService");
 const loggerService_1 = require("../services/loggerService");
 const firebase_1 = require("../utils/firebase");
+const idriveE2_1 = require("../utils/idriveE2");
 class PaymentSystemController {
     constructor() {
         this.paymentService = new paymentSystemService_1.PaymentSystemService();
@@ -499,7 +500,7 @@ class PaymentSystemController {
                     return;
                 }
                 loggerService_1.logger.info('Verificando depósito', { metadata: { depositId, adminId, approved } });
-                yield this.paymentService.verifyDeposit(depositId, adminId, approved, notes, verificationData);
+                yield this.paymentService.verifyDeposit(depositId, adminId, approved, notes);
                 // Notificar al usuario sobre el resultado
                 yield this.notifyUserAboutDepositVerification(depositId, approved, notes);
                 res.status(200).json({
@@ -649,9 +650,9 @@ class PaymentSystemController {
         });
     }
     /**
-     * Obtener estadísticas de pagos (admin)
+     * Obtener estadísticas de pagos (admin) (DPT - DEPÓSITO)
      */
-    getPaymentStatistics(req, res) {
+    dptGetPaymentStatistics(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const statistics = yield this.paymentService.getPaymentStatistics();
@@ -667,6 +668,14 @@ class PaymentSystemController {
                     error: 'Error obteniendo estadísticas de pagos'
                 });
             }
+        });
+    }
+    /**
+     * Obtener estadísticas de pagos (admin) - MÉTODO LEGACY
+     */
+    getPaymentStatistics(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.dptGetPaymentStatistics(req, res);
         });
     }
     /**
@@ -704,25 +713,216 @@ class PaymentSystemController {
     checkVoucherDuplicates(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { voucherUrl } = req.body;
-                if (!voucherUrl) {
+                const { depositId } = req.params;
+                if (!depositId) {
                     res.status(400).json({
                         success: false,
-                        error: 'URL del voucher requerida'
+                        error: 'ID de depósito requerido'
                     });
                     return;
                 }
-                const hasDuplicates = yield this.paymentService.checkVoucherDuplicates(voucherUrl);
+                loggerService_1.logger.info('Verificando duplicados de voucher', { metadata: { depositId } });
+                const duplicates = yield this.paymentService.checkVoucherDuplicates(depositId);
                 res.status(200).json({
                     success: true,
-                    data: {
-                        hasDuplicates,
-                        voucherUrl
-                    }
+                    data: duplicates
                 });
             }
             catch (error) {
-                loggerService_1.logger.error('Error verificando duplicados de voucher', error);
+                loggerService_1.logger.error('Error verificando duplicados de voucher', error, {
+                    metadata: { depositId: req.params.depositId }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error verificando duplicados de voucher'
+                });
+            }
+        });
+    }
+    // ===== MÉTODOS DPT (DEPÓSITOS) =====
+    /**
+     * Subir comprobante de depósito (DPT - DEPÓSITO)
+     */
+    dptUploadDepositVoucher(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                if (!userId) {
+                    res.status(401).json({ error: 'Usuario no autenticado' });
+                    return;
+                }
+                const { amount, description } = req.body;
+                const voucherFile = req.file;
+                // Validaciones básicas
+                if (!amount || !voucherFile) {
+                    res.status(400).json({ error: 'Monto y comprobante son requeridos' });
+                    return;
+                }
+                const depositData = {
+                    amount: parseFloat(amount),
+                    voucherFile,
+                    accountHolderName: 'Usuario', // Valor por defecto
+                    bankName: 'Banco' // Valor por defecto
+                };
+                const deposit = yield this.paymentService.uploadDepositVoucher(userId, depositData);
+                // Notificar a administradores sobre nuevo depósito
+                yield this.notifyAdminsAboutNewDeposit(deposit, userId);
+                res.status(201).json({
+                    success: true,
+                    data: deposit,
+                    message: 'Comprobante de depósito subido exitosamente'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error subiendo comprobante de depósito', error, {
+                    metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error subiendo comprobante de depósito'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener historial de depósitos del usuario (DPT - DEPÓSITO)
+     */
+    dptGetUserDeposits(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                if (!userId) {
+                    res.status(401).json({ error: 'Usuario no autenticado' });
+                    return;
+                }
+                const deposits = yield this.paymentService.getUserDeposits(userId);
+                res.status(200).json({
+                    success: true,
+                    data: deposits
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo depósitos del usuario', error, {
+                    metadata: { userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo depósitos del usuario'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener depósitos pendientes (admin) (DPT - DEPÓSITO)
+     */
+    dptGetPendingDeposits(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const deposits = yield this.paymentService.getPendingDeposits();
+                res.status(200).json({
+                    success: true,
+                    data: deposits
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo depósitos pendientes', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo depósitos pendientes'
+                });
+            }
+        });
+    }
+    /**
+     * Verificar depósito (admin) (DPT - DEPÓSITO)
+     */
+    dptVerifyDeposit(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            try {
+                const adminId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                const { depositId } = req.params;
+                const { approved, notes, verificationData } = req.body;
+                if (typeof approved !== 'boolean') {
+                    res.status(400).json({ error: 'Estado de aprobación inválido' });
+                    return;
+                }
+                loggerService_1.logger.info('Verificando depósito', { metadata: { depositId, adminId, approved } });
+                yield this.paymentService.verifyDeposit(depositId, adminId, approved, notes);
+                // Notificar al usuario sobre la verificación
+                yield this.notifyUserAboutDepositVerification(depositId, approved, notes);
+                res.status(200).json({
+                    success: true,
+                    message: `Depósito ${approved ? 'aprobado' : 'rechazado'} exitosamente`
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando depósito', error, {
+                    metadata: { depositId: req.params.depositId, adminId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error verificando depósito'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener detalles de un depósito específico (admin) (DPT - DEPÓSITO)
+     */
+    dptGetDepositDetails(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { depositId } = req.params;
+                const deposit = yield this.paymentService.getDepositDetails(depositId);
+                if (!deposit) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Depósito no encontrado'
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    data: deposit
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo detalles del depósito', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo detalles del depósito'
+                });
+            }
+        });
+    }
+    /**
+     * Verificar duplicados de voucher (admin) (DPT - DEPÓSITO)
+     */
+    dptCheckVoucherDuplicates(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { depositId } = req.params;
+                if (!depositId) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'ID de depósito requerido'
+                    });
+                    return;
+                }
+                loggerService_1.logger.info('Verificando duplicados de voucher', { metadata: { depositId } });
+                const duplicates = yield this.paymentService.checkVoucherDuplicates(depositId);
+                res.status(200).json({
+                    success: true,
+                    data: duplicates
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando duplicados de voucher', error, {
+                    metadata: { depositId: req.params.depositId }
+                });
                 res.status(500).json({
                     success: false,
                     error: 'Error verificando duplicados de voucher'
@@ -732,3 +932,70 @@ class PaymentSystemController {
     }
 }
 exports.PaymentSystemController = PaymentSystemController;
+/**
+ * Genera una URL firmada para acceder a un comprobante de pago
+ * Resuelve problemas de CORS y Access Denied en el frontend
+ */
+const getVoucherPresignedUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e;
+    try {
+        const { depositId } = req.params;
+        if (!depositId) {
+            res.status(400).json({
+                success: false,
+                error: 'ID de depósito requerido'
+            });
+            return;
+        }
+        loggerService_1.logger.info('[src/controllers/paymentSystemController.ts] Generando URL firmada para comprobante:', { metadata: { depositId } });
+        // Obtener información del depósito
+        const paymentSystemService = new paymentSystemService_1.PaymentSystemService();
+        const deposit = yield paymentSystemService.getDepositDetails(depositId);
+        if (!deposit) {
+            res.status(404).json({
+                success: false,
+                error: 'Depósito no encontrado'
+            });
+            return;
+        }
+        // Verificar que el usuario tenga permisos para ver este depósito
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.uid;
+        if (!userId || (deposit.userId !== userId && !((_c = (_b = req.user) === null || _b === void 0 ? void 0 : _b.role) === null || _c === void 0 ? void 0 : _c.includes('admin')))) {
+            res.status(403).json({
+                success: false,
+                error: 'No tienes permisos para acceder a este depósito'
+            });
+            return;
+        }
+        // Obtener la clave del archivo del comprobante desde la URL
+        const voucherKey = (_e = (_d = deposit.voucherFile) === null || _d === void 0 ? void 0 : _d.url) === null || _e === void 0 ? void 0 : _e.split('/').pop();
+        if (!voucherKey) {
+            res.status(404).json({
+                success: false,
+                error: 'Comprobante no encontrado'
+            });
+            return;
+        }
+        // Generar URL firmada
+        const presignedUrl = yield (0, idriveE2_1.generatePresignedUrl)(voucherKey, 3600); // 1 hora
+        loggerService_1.logger.info('[src/controllers/paymentSystemController.ts] URL firmada generada exitosamente:', { metadata: { depositId, voucherKey } });
+        res.status(200).json({
+            success: true,
+            data: {
+                presignedUrl,
+                expiresIn: 3600,
+                depositId,
+                voucherKey
+            },
+            message: 'URL firmada generada exitosamente'
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('[src/controllers/paymentSystemController.ts] Error generando URL firmada:', error instanceof Error ? error : new Error(String(error)));
+        res.status(500).json({
+            success: false,
+            error: 'Error generando URL firmada del comprobante'
+        });
+    }
+});
+exports.getVoucherPresignedUrl = getVoucherPresignedUrl;

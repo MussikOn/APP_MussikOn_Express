@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas básicas - permitir lectura/escritura para desarrollo
+    // En producción, estas reglas deberían ser más restrictivas
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+} 

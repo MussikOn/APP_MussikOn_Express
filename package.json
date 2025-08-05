@@ -39,7 +39,11 @@
     "production:test": "npm run redis:test && npm run monitor:performance:once",
     "test-integration": "node scripts/test-integration.js",
     "start-integration": "powershell -ExecutionPolicy Bypass -File scripts/start-integration.ps1",
-    "integration:check": "npm run test-integration && npm run start-integration"
+    "integration:check": "npm run test-integration && npm run start-integration",
+    "idrive:setup": "node scripts/setup-idrive.js",
+    "idrive:setup:create": "node scripts/setup-idrive.js --create-bucket",
+    "idrive:health": "curl -X GET http://localhost:10000/api/idrive/health",
+    "idrive:report": "curl -X GET http://localhost:10000/api/idrive/health/report"
   },
   "keywords": [
     "mussikon",

@@ -6,8 +6,7 @@ export function authMiddleware(req:Request, res:Response, next:NextFunction) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ message: 'Token no proporcionado' });
-    return;
+    return res.status(401).json({ message: 'Token no proporcionado' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -18,7 +17,7 @@ export function authMiddleware(req:Request, res:Response, next:NextFunction) {
     (req as any).user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Token inválido o expirado' });
+    return res.status(401).json({ message: 'Token inválido o expirado' });
   }
 }
 

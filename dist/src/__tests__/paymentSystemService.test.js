@@ -261,7 +261,7 @@ describe('PaymentSystemService', () => {
             mockDoc.data.mockReturnValue(mockDeposit);
             mockDoc.get.mockResolvedValue(mockDoc);
             // Act
-            yield paymentService.verifyDeposit(depositId, adminId, approved, notes, verificationData);
+            yield paymentService.verifyDeposit(depositId, adminId, approved, notes);
             // Assert
             expect(mockDoc.update).toHaveBeenCalledWith(expect.objectContaining({
                 status: 'approved',

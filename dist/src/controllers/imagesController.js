@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.imagesController = exports.ImagesController = void 0;
 const imageService_1 = require("../services/imageService");
 const loggerService_1 = require("../services/loggerService");
+const firebase_1 = require("../utils/firebase");
 class ImagesController {
     /**
      * Subir imagen
@@ -200,6 +201,64 @@ class ImagesController {
         });
     }
     /**
+     * Obtener todas las imágenes con filtros
+     */
+    getAllImages(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                const { category, isPublic, isActive, search, page = 1, limit = 20 } = req.query;
+                const filters = {
+                    category: category,
+                    isPublic: isPublic === 'true' ? true : isPublic === 'false' ? false : undefined,
+                    isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
+                    search: search,
+                    page: Number(page),
+                    limit: Number(limit)
+                };
+                const images = yield imageService_1.imageService.getAllImages(filters);
+                res.status(200).json({
+                    success: true,
+                    images,
+                    total: images.length,
+                    page: Number(page),
+                    limit: Number(limit)
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo imágenes', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo imágenes'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener estadísticas de imágenes (alias para getImageStatistics)
+     */
+    getImageStats(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                const statistics = yield imageService_1.imageService.getImageStatistics(userId);
+                res.status(200).json({
+                    success: true,
+                    stats: statistics
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo estadísticas de imágenes', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo estadísticas de imágenes'
+                });
+            }
+        });
+    }
+    /**
      * Verificar integridad de imagen
      */
     verifyImageIntegrity(req, res) {
@@ -343,6 +402,76 @@ class ImagesController {
                 res.status(500).json({
                     success: false,
                     error: 'Error sirviendo imagen'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener imagen de voucher de depósito
+     */
+    getVoucherImage(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const { depositId } = req.params;
+                if (!depositId) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'ID de depósito requerido'
+                    });
+                    return;
+                }
+                loggerService_1.logger.info('Obteniendo imagen de voucher', { metadata: { depositId } });
+                // Obtener los detalles del depósito directamente desde Firestore
+                const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+                if (!depositDoc.exists) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Depósito no encontrado'
+                    });
+                    return;
+                }
+                const deposit = depositDoc.data();
+                if (!((_a = deposit === null || deposit === void 0 ? void 0 : deposit.voucherFile) === null || _a === void 0 ? void 0 : _a.url)) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Voucher no encontrado para este depósito'
+                    });
+                    return;
+                }
+                // Intentar obtener la imagen del voucher
+                try {
+                    const response = yield fetch(deposit.voucherFile.url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const buffer = yield response.arrayBuffer();
+                    const contentType = response.headers.get('content-type') || 'image/jpeg';
+                    res.set({
+                        'Content-Type': contentType,
+                        'Cache-Control': 'public, max-age=3600',
+                        'Content-Length': buffer.byteLength.toString(),
+                        'Access-Control-Allow-Origin': '*'
+                    });
+                    res.send(Buffer.from(buffer));
+                }
+                catch (fetchError) {
+                    loggerService_1.logger.error('Error obteniendo imagen de voucher desde S3', fetchError, {
+                        metadata: { depositId, voucherUrl: deposit.voucherFile.url }
+                    });
+                    res.status(500).json({
+                        success: false,
+                        error: 'Error obteniendo imagen de voucher'
+                    });
+                }
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo imagen de voucher', error, {
+                    metadata: { depositId: req.params.depositId }
+                });
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo imagen de voucher'
                 });
             }
         });

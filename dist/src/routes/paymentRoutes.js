@@ -5,6 +5,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const requireRole_1 = require("../middleware/requireRole");
 const validationMiddleware_1 = require("../middleware/validationMiddleware");
 const paymentController_1 = require("../controllers/paymentController");
+const paymentSystemController_1 = require("../controllers/paymentSystemController");
 const dtos_1 = require("../utils/dtos");
 const router = (0, express_1.Router)();
 /**
@@ -608,4 +609,57 @@ router.post('/validate', (0, validationMiddleware_1.validate)(dtos_1.validatePay
  *                   type: string
  */
 router.get('/gateways', paymentController_1.getPaymentGatewaysController);
+/**
+ * @swagger
+ * /payments/voucher/{depositId}/presigned-url:
+ *   get:
+ *     summary: Obtener URL firmada para acceder a un comprobante de pago
+ *     description: Genera una URL firmada temporal para acceder a un comprobante sin problemas de CORS
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                       description: URL firmada temporal
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Tiempo de expiración en segundos
+ *                     depositId:
+ *                       type: string
+ *                     voucherKey:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: ID de depósito requerido
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: No tienes permisos para acceder a este depósito
+ *       404:
+ *         description: Depósito o comprobante no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId/presigned-url', authMiddleware_1.authMiddleware, paymentSystemController_1.getVoucherPresignedUrl);
 exports.default = router;

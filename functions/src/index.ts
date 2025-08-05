@@ -17,6 +17,7 @@ import chatRoutes from './routes/chatRoutes';
 import advancedSearchRoutes from './routes/advancedSearchRoutes';
 import optimizationRoutes from './routes/optimizationRoutes';
 import paymentSystemRoutes from './routes/paymentSystemRoutes';
+import idriveHealthRoutes from './routes/idriveHealthRoutes';
 
 // Importar configuración
 import { URL_API } from './config/ENV';
@@ -72,10 +73,8 @@ app.use('/chat', chatRoutes);
 app.use('/advanced-search', advancedSearchRoutes);
 app.use('/optimization', optimizationRoutes);
 app.use('/payments', paymentSystemRoutes);
-app.use('/bank-accounts', paymentSystemRoutes);
-app.use('/musicians', paymentSystemRoutes);
-app.use('/events', paymentSystemRoutes);
 app.use('/admin', paymentSystemRoutes);
+app.use('/idrive', idriveHealthRoutes);
 
 // Endpoint de prueba
 app.get('/test', (req, res) => {

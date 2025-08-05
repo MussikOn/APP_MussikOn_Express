@@ -105,6 +105,120 @@ router.post('/upload', authMiddleware_1.authMiddleware, uploadMiddleware_1.uploa
 }));
 /**
  * @swagger
+ * /images:
+ *   get:
+ *     summary: Obtener todas las imágenes
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría
+ *       - in: query
+ *         name: isPublic
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por visibilidad pública
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por estado activo
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar en descripción y tags
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Lista de imágenes obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 images:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Image'
+ *                 total:
+ *                   type: number
+ *                 page:
+ *                   type: number
+ *                 limit:
+ *                   type: number
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getAllImages(req, res);
+}));
+/**
+ * @swagger
+ * /images/stats:
+ *   get:
+ *     summary: Obtener estadísticas de imágenes
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     totalImages:
+ *                       type: number
+ *                     totalSize:
+ *                       type: number
+ *                     imagesByCategory:
+ *                       type: object
+ *                     imagesByUser:
+ *                       type: object
+ *                     publicImages:
+ *                       type: number
+ *                     privateImages:
+ *                       type: number
+ *                     activeImages:
+ *                       type: number
+ *                     inactiveImages:
+ *                       type: number
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/stats', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageStats(req, res);
+}));
+/**
+ * @swagger
  * /images/{imageId}:
  *   get:
  *     summary: Obtener imagen por ID
@@ -168,6 +282,30 @@ router.get('/:imageId', (req, res) => __awaiter(void 0, void 0, void 0, function
  */
 router.get('/url', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield imagesController_1.imagesController.getImageByUrl(req, res);
+}));
+/**
+ * @swagger
+ * /images/voucher/{depositId}:
+ *   get:
+ *     summary: Obtener imagen de voucher de depósito
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher obtenida exitosamente
+ *       404:
+ *         description: Voucher no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getVoucherImage(req, res);
 }));
 /**
  * @swagger

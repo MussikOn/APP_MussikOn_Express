@@ -23,6 +23,7 @@ export interface UserDeposit {
     filename: string;
     uploadedAt: string;
   };
+  hasVoucherFile?: boolean; // Propiedad calculada para compatibilidad con frontend
   // Información del depósito bancario
   accountHolderName: string;
   accountNumber?: string;

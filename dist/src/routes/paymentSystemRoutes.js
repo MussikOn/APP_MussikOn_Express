@@ -70,7 +70,26 @@ const paymentSystemController = new paymentSystemController_1.PaymentSystemContr
  *         description: Error del servidor
  */
 router.get('/payments/statistics', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.getPaymentStatistics(req, res);
+    yield paymentSystemController.dptGetPaymentStatistics(req, res);
+}));
+/**
+ * @swagger
+ * /admin/payments/deposit-stats:
+ *   get:
+ *     summary: Obtener estadísticas de depósitos (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas de depósitos obtenidas exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/deposit-stats', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield paymentSystemController.dptGetPaymentStatistics(req, res);
 }));
 /**
  * @swagger
@@ -422,7 +441,7 @@ router.get('/bank-accounts/my-accounts', authMiddleware_1.authMiddleware, (req, 
  *         description: Error del servidor
  */
 router.post('/deposit', authMiddleware_1.authMiddleware, uploadMiddleware_1.upload.single('voucherFile'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.uploadDepositVoucher(req, res);
+    yield paymentSystemController.dptUploadDepositVoucher(req, res);
 }));
 /**
  * @swagger
@@ -454,7 +473,7 @@ router.post('/deposit', authMiddleware_1.authMiddleware, uploadMiddleware_1.uplo
  *         description: Error del servidor
  */
 router.get('/my-deposits', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.getUserDeposits(req, res);
+    yield paymentSystemController.dptGetUserDeposits(req, res);
 }));
 /**
  * @swagger
@@ -614,7 +633,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware_1.authMiddleware, (re
  *         description: Error del servidor
  */
 router.get('/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.getPendingDeposits(req, res);
+    yield paymentSystemController.dptGetPendingDeposits(req, res);
 }));
 /**
  * @swagger
@@ -654,7 +673,7 @@ router.get('/payments/pending-deposits', authMiddleware_1.authMiddleware, (0, re
  *         description: Error del servidor
  */
 router.put('/payments/verify-deposit/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield paymentSystemController.verifyDeposit(req, res);
+    yield paymentSystemController.dptVerifyDeposit(req, res);
 }));
 /**
  * @swagger
@@ -924,6 +943,35 @@ router.get('/payments/voucher-image-direct/:depositId', authMiddleware_1.authMid
 }));
 /**
  * @swagger
+ * /admin/payments/check-duplicate/{depositId}:
+ *   get:
+ *     summary: Verificar si un voucher es duplicado (admin)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Verificación completada exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/payments/check-duplicate/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('[src/routes/paymentSystemRoutes.ts] Ruta /admin/payments/check-duplicate accedida');
+    yield paymentSystemController.dptCheckVoucherDuplicates(req, res);
+}));
+/**
+ * @swagger
  * /admin/payments/deposit-info/{depositId}:
  *   get:
  *     summary: Obtener información de un depósito (para debugging)
@@ -948,47 +996,59 @@ router.get('/payments/voucher-image-direct/:depositId', authMiddleware_1.authMid
  *         description: Error del servidor
  */
 router.get('/payments/deposit-info/:depositId', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['adminJunior', 'adminMidLevel', 'adminSenior', 'superadmin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    try {
-        const { depositId } = req.params;
-        console.log('[src/routes/paymentSystemRoutes.ts] Solicitando información de depósito:', depositId);
-        // Obtener el depósito de la base de datos
-        const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
-        if (!depositDoc.exists) {
-            console.log('[src/routes/paymentSystemRoutes.ts] Depósito no encontrado:', depositId);
-            res.status(404).json({ error: 'Depósito no encontrado' });
-            return;
-        }
-        const deposit = depositDoc.data();
-        // Retornar información del depósito (sin datos sensibles)
-        const depositInfo = {
-            id: deposit.id,
-            userId: deposit.userId,
-            amount: deposit.amount,
-            currency: deposit.currency,
-            status: deposit.status,
-            accountHolderName: deposit.accountHolderName,
-            bankName: deposit.bankName,
-            createdAt: deposit.createdAt,
-            updatedAt: deposit.updatedAt,
-            voucherFile: deposit.voucherFile ? {
-                url: deposit.voucherFile.url,
-                filename: deposit.voucherFile.filename,
-                uploadedAt: deposit.voucherFile.uploadedAt
-            } : null,
-            hasVoucherFile: !!deposit.voucherFile,
-            voucherUrl: (_a = deposit.voucherFile) === null || _a === void 0 ? void 0 : _a.url
-        };
-        console.log('[src/routes/paymentSystemRoutes.ts] Información del depósito:', depositInfo);
-        res.json({
-            success: true,
-            data: depositInfo,
-            message: 'Información del depósito obtenida exitosamente'
-        });
-    }
-    catch (error) {
-        console.error('[src/routes/paymentSystemRoutes.ts] Error obteniendo información del depósito:', error);
-        res.status(500).json({ error: 'Error obteniendo información del depósito' });
-    }
+    yield paymentSystemController.dptGetDepositDetails(req, res);
 }));
+/**
+ * @swagger
+ * /api/payments/voucher/{depositId}/presigned-url:
+ *   get:
+ *     summary: Obtener URL firmada para acceder a un comprobante de pago
+ *     description: Genera una URL firmada temporal para acceder a un comprobante sin problemas de CORS
+ *     tags: [Sistema de Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                       description: URL firmada temporal
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Tiempo de expiración en segundos
+ *                     depositId:
+ *                       type: string
+ *                     voucherKey:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: ID de depósito requerido
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: No tienes permisos para acceder a este depósito
+ *       404:
+ *         description: Depósito o comprobante no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId/presigned-url', authMiddleware_1.authMiddleware, paymentSystemController_1.getVoucherPresignedUrl);
 exports.default = router;
