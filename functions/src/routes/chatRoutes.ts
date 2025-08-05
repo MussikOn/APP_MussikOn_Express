@@ -1,5 +1,6 @@
-import express from "express";
-import { authMiddleware } from "../middleware/authMiddleware";
+import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { upload } from '../middleware/uploadMiddleware';
 import {
   getConversations,
   getMessages,
@@ -10,8 +11,9 @@ import {
   deleteConversation,
   archiveConversation,
   getConversationById,
-  getChatStats
-} from "../controllers/chatController";
+  getChatStats,
+  getAvailableUsers,
+} from '../controllers/chatController';
 
 const router = express.Router();
 
@@ -19,33 +21,69 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Obtener todas las conversaciones del usuario
-router.get("/conversations", getConversations);
+router.get('/conversations', getConversations);
 
 // Buscar conversaciones con filtros
-router.get("/conversations/search", searchConversations);
+router.get('/conversations/search', searchConversations);
 
 // Obtener estadísticas de chat
-router.get("/stats", getChatStats);
+router.get('/stats', getChatStats);
+
+// Obtener usuarios disponibles para chat
+router.get('/users/available', getAvailableUsers);
 
 // Crear una nueva conversación
-router.post("/conversations", createConversation);
+router.post('/conversations', createConversation);
 
 // Obtener conversación por ID
-router.get("/conversations/:conversationId", getConversationById);
+router.get('/conversations/:conversationId', getConversationById);
 
 // Obtener mensajes de una conversación
-router.get("/conversations/:conversationId/messages", getMessages);
+router.get('/conversations/:conversationId/messages', getMessages);
 
 // Enviar mensaje a una conversación
-router.post("/conversations/:conversationId/messages", sendMessage);
+router.post('/conversations/:conversationId/messages', sendMessage);
 
 // Marcar mensaje como leído
-router.patch("/messages/:messageId/read", markAsRead);
+router.patch('/messages/:messageId/read', markAsRead);
 
 // Archivar conversación
-router.patch("/conversations/:conversationId/archive", archiveConversation);
+router.patch('/conversations/:conversationId/archive', archiveConversation);
 
 // Eliminar conversación
-router.delete("/conversations/:conversationId", deleteConversation);
+router.delete('/conversations/:conversationId', deleteConversation);
+
+// Subir archivo para chat
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        error: 'No se proporcionó ningún archivo'
+      });
+      return;
+    }
+
+    const { conversationId } = req.body;
+    
+    // Aquí puedes procesar el archivo y guardarlo en IDrive E2
+    // Por ahora, devolvemos una respuesta básica
+    res.status(200).json({
+      success: true,
+      data: {
+        fileUrl: `https://example.com/uploads/${req.file.filename}`,
+        fileName: req.file.originalname,
+        fileSize: req.file.size
+      },
+      message: 'Archivo subido exitosamente'
+    });
+  } catch (error) {
+    console.error('Error uploading chat file:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al subir el archivo'
+    });
+  }
+});
 
 export default router; 

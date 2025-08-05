@@ -504,7 +504,9 @@ export class PaymentSystemService {
         .where('status', '==', 'pending')
         .orderBy('createdAt', 'desc')
         .get();
-      
+      console.info('./src/services/paymentSystemService.ts line 507');
+        console.info(`\n\n\n Depósitos pendientes: ${depositsSnapshot.docs.length}\n\n\n`);
+        console.info(depositsSnapshot.docs.map(doc => doc.data()));
       return depositsSnapshot.docs.map(doc => doc.data() as UserDeposit);
     } catch (error) {
       logger.error('Error obteniendo depósitos pendientes', error as Error);

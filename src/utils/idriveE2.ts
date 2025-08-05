@@ -315,7 +315,7 @@ export const generatePresignedUrl = async (
         url: presignedUrl.substring(0, 100) + '...' // Solo mostrar parte de la URL por seguridad
       }
     });
-    
+    console.log('🌐 Presigned URL:', presignedUrl);
     return presignedUrl;
   } catch (error) {
     logger.error('[src/utils/idriveE2.ts] Error al generar URL firmada:', error instanceof Error ? error : new Error(String(error)));

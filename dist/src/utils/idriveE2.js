@@ -294,6 +294,7 @@ const generatePresignedUrl = (key_1, ...args_1) => __awaiter(void 0, [key_1, ...
                 url: presignedUrl.substring(0, 100) + '...' // Solo mostrar parte de la URL por seguridad
             }
         });
+        console.log('🌐 Presigned URL:', presignedUrl);
         return presignedUrl;
     }
     catch (error) {
