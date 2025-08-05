@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,14 +41,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetPasswordController = exports.verifyCodeController = exports.forgotPasswordController = exports.deleteUserByEmailController = exports.verifyAndCompleteRegistrationController = exports.requestEmailVerificationController = exports.addEventToUserController = exports.validNumberGetByEmail = exports.emailRegisterController = exports.updateUserByEmailController = void 0;
 exports.registerController = registerController;
 exports.loginController = loginController;
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcrypt = __importStar(require("bcrypt"));
 const authModel_1 = require("../models/authModel");
 const validatios_1 = require("../utils/validatios");
 const jwt_1 = require("../utils/jwt");
@@ -102,7 +132,7 @@ function registerController(req, res) {
                 res.status(400).json({ msg: 'Correo Electrónico inválido.' });
                 return;
             }
-            const pass = yield bcrypt_1.default.hash(userPassword, 10);
+            const pass = yield bcrypt.hash(userPassword, 10);
             // status por defecto true si no se envía
             const userStatus = typeof status === 'boolean' ? status : true;
             const saved = yield (0, authModel_1.registerModel)(name, lastName, roll, userEmail, pass, userStatus);
@@ -160,7 +190,7 @@ function loginController(req, res) {
             const lastName = data.lastName;
             const roll = data.roll;
             const pass = data.userPassword;
-            const isMatch = yield bcrypt_1.default.compare(userPassword, pass);
+            const isMatch = yield bcrypt.compare(userPassword, pass);
             if (!isMatch) {
                 res.status(401).json({ msg: 'Contraseña incorrecta.' });
                 return;
@@ -209,7 +239,7 @@ const updateUserByEmailController = (req, res) => __awaiter(void 0, void 0, void
 exports.updateUserByEmailController = updateUserByEmailController;
 const emailRegisterController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const numRandon = (0, functions_1.numberRandon)().toString();
-    const numParam = yield bcrypt_1.default.hash(numRandon, 10);
+    const numParam = yield bcrypt.hash(numRandon, 10);
     const html = `<!DOCTYPE html>
   <html lang="es">
   <head>
@@ -308,7 +338,7 @@ const validNumberGetByEmail = (req, res) => __awaiter(void 0, void 0, void 0, fu
             res.status(402).json({ msg: 'Faltan datos requeridos.' });
             return;
         }
-        const isMatch = yield bcrypt_1.default.compare(numParam, numBack);
+        const isMatch = yield bcrypt.compare(numParam, numBack);
         if (!isMatch) {
             console.info(`Son Iguales: ${numBack},${numParam}.`);
             res.status(402).json({ msg: 'Codigo Incorrecto.' });
@@ -393,7 +423,7 @@ const requestEmailVerificationController = (req, res) => __awaiter(void 0, void 
         }
         // Generar código de verificación
         const verificationCode = (0, functions_1.numberRandon)().toString();
-        const hashedCode = yield bcrypt_1.default.hash(verificationCode, 10);
+        const hashedCode = yield bcrypt.hash(verificationCode, 10);
         // Guardar datos temporalmente (se guardarán en la base de datos después de la verificación)
         const tempUserData = {
             name,
@@ -539,7 +569,7 @@ const verifyAndCompleteRegistrationController = (req, res) => __awaiter(void 0, 
             });
         }
         // Verificar código
-        const isCodeValid = yield bcrypt_1.default.compare(code, storedData.userData.verificationCode);
+        const isCodeValid = yield bcrypt.compare(code, storedData.userData.verificationCode);
         if (!isCodeValid) {
             return res.status(400).json({
                 success: false,
@@ -706,8 +736,10 @@ function cleanupExpiredCodes() {
         }
     }
 }
-// Ejecutar limpieza cada 5 minutos
-setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
+// Ejecutar limpieza cada 5 minutos solo en producción
+if (process.env.NODE_ENV === 'production') {
+    setInterval(cleanupExpiredCodes, 5 * 60 * 1000);
+}
 // Solicitar recuperación de contraseña (solo superadmin)
 const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -939,7 +971,7 @@ const resetPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, 
             return;
         }
         // Hashear nueva contraseña
-        const hashedPassword = yield bcrypt_1.default.hash(newPassword, 10);
+        const hashedPassword = yield bcrypt.hash(newPassword, 10);
         // Actualizar contraseña en la base de datos
         const updateData = {
             userPassword: hashedPassword,

@@ -558,4 +558,64 @@ export class PaymentSystemService {
     const eventsSnapshot = await db.collection('events').get();
     return eventsSnapshot.size;
   }
+
+  /**
+   * Obtener detalles de un depósito específico
+   */
+  async getDepositDetails(depositId: string): Promise<UserDeposit> {
+    try {
+      const depositDoc = await db.collection('user_deposits').doc(depositId).get();
+      
+      if (!depositDoc.exists) {
+        throw new Error('Depósito no encontrado');
+      }
+      
+      const deposit = depositDoc.data() as UserDeposit;
+      
+      // Agregar propiedad calculada hasVoucherFile
+      const depositWithHasVoucherFile = {
+        ...deposit,
+        hasVoucherFile: Boolean(deposit.voucherFile && deposit.voucherFile.url)
+      };
+      
+      return depositWithHasVoucherFile;
+    } catch (error) {
+      logger.error('Error obteniendo detalles de depósito', error as Error, { 
+        metadata: { depositId } 
+      });
+      throw new Error('Error obteniendo detalles de depósito');
+    }
+  }
+
+  /**
+   * Verificar si un voucher es duplicado
+   */
+  async checkVoucherDuplicates(depositId: string): Promise<{ isDuplicate: boolean; duplicates: UserDeposit[] }> {
+    try {
+      // Obtener el depósito actual
+      const currentDeposit = await this.getDepositDetails(depositId);
+      
+      if (!currentDeposit.voucherFile?.url) {
+        return { isDuplicate: false, duplicates: [] };
+      }
+
+      // Buscar otros depósitos con la misma URL de voucher
+      const duplicatesSnapshot = await db.collection('user_deposits')
+        .where('voucherFile.url', '==', currentDeposit.voucherFile.url)
+        .where('id', '!=', depositId)
+        .get();
+      
+      const duplicates = duplicatesSnapshot.docs.map(doc => doc.data() as UserDeposit);
+      
+      return {
+        isDuplicate: duplicates.length > 0,
+        duplicates
+      };
+    } catch (error) {
+      logger.error('Error verificando duplicados de voucher', error as Error, { 
+        metadata: { depositId } 
+      });
+      throw new Error('Error verificando duplicados de voucher');
+    }
+  }
 } 

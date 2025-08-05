@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authMiddleware = authMiddleware;
-exports.requireRole = requireRole;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const ENV_1 = require("../../ENV");
 function authMiddleware(req, res, next) {
@@ -14,6 +13,11 @@ function authMiddleware(req, res, next) {
         return;
     }
     const token = authHeader.split(' ')[1];
+    // Validar que el token no esté vacío
+    if (!token || token.trim() === '') {
+        res.status(401).json({ message: 'Token inválido o expirado' });
+        return;
+    }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, ENV_1.TOKEN_SECRET);
         // Agregar el usuario decodificado en req.user
@@ -23,17 +27,4 @@ function authMiddleware(req, res, next) {
     catch (err) {
         res.status(401).json({ message: 'Token inválido o expirado' });
     }
-}
-/**
- * Middleware para validar el rol del usuario.
- * @param roles Roles permitidos para acceder al endpoint
- */
-function requireRole(...roles) {
-    return (req, res, next) => {
-        const user = req.user;
-        if (!user || !roles.includes(user.roll)) {
-            return res.status(403).json({ msg: 'No autorizado. Rol insuficiente.' });
-        }
-        next();
-    };
 }

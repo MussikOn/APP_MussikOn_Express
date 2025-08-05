@@ -204,11 +204,13 @@ npm run dev
 ### **📖 Guías Principales**
 - **[Resumen Ejecutivo](docs/executive-summary.md)** - Estado actual del proyecto
 - **[Vista General del Sistema](docs/SYSTEM_OVERVIEW.md)** - Arquitectura y componentes
+- **[Sistema de Pagos - Resumen](docs/payment-system-overview.md)** - Flujo completo de pagos por transferencia
 - **[Guía de Instalación](docs/guides/installation.md)** - Configuración paso a paso
 - **[Guía de Despliegue](docs/deployment/deployment-guide.md)** - Despliegue a producción
 
 ### **🔧 Guías de Desarrollo**
 - **[Guía de APIs](docs/api/)** - Documentación completa de endpoints
+- **[Sistema de Pagos API](docs/api/payment-system.md)** - Endpoints de pagos por transferencia
 - **[Guía de Testing](docs/guides/testing-guide.md)** - Cómo escribir y ejecutar tests
 - **[Guía de Contribución](docs/guides/contribution-guide.md)** - Cómo contribuir al proyecto
 

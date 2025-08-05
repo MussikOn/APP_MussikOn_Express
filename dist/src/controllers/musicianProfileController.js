@@ -16,7 +16,6 @@ exports.getFileUrl = exports.uploadFile = void 0;
 const loggerService_1 = require("../services/loggerService");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const idriveE2_1 = require("../utils/idriveE2");
-const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -34,12 +33,14 @@ const uploadFile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             ContentType: req.file.mimetype,
         });
         console.info('Direccion');
-        const direccion = yield idriveE2_1.s3.send(command);
+        const s3Client = yield (0, idriveE2_1.getS3Client)();
+        const direccion = yield s3Client.send(command);
         console.info(direccion);
-        const url = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${fileKey}`;
+        // Generar URL firmada en lugar de URL directa
+        const presignedUrl = yield (0, idriveE2_1.generatePresignedUrl)(fileKey, 3600); // 1 hora
         res.status(200).json({
             message: 'File uploaded successfully',
-            url,
+            url: presignedUrl,
             key: fileKey,
         });
     }
@@ -56,12 +57,9 @@ const getFileUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400).json({ error: 'Missing file key' });
             return;
         }
-        const command = new client_s3_1.GetObjectCommand({
-            Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
-            Key: key,
-        });
-        const url = yield (0, s3_request_presigner_1.getSignedUrl)(idriveE2_1.s3, command, { expiresIn: 60 * 5 });
-        res.status(200).json({ url });
+        // Generar URL firmada en lugar de URL directa
+        const presignedUrl = yield (0, idriveE2_1.generatePresignedUrl)(key, 3600); // 1 hora
+        res.status(200).json({ url: presignedUrl });
     }
     catch (error) {
         loggerService_1.logger.error('URL error:', error);

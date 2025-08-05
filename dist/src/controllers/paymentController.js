@@ -9,17 +9,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPaymentGatewaysController = exports.validatePaymentMethodController = exports.getPaymentStatsController = exports.processRefundController = exports.markInvoiceAsPaidController = exports.getInvoicesController = exports.createInvoiceController = exports.processPaymentController = exports.createPaymentIntentController = exports.setDefaultPaymentMethodController = exports.getPaymentMethodsController = exports.createPaymentMethodController = void 0;
+exports.getPaymentIntentsController = exports.getPaymentGatewaysController = exports.validatePaymentMethodController = exports.getPaymentStatsController = exports.processRefundController = exports.markInvoiceAsPaidController = exports.getInvoicesController = exports.createInvoiceController = exports.processPaymentController = exports.createPaymentIntentController = exports.setDefaultPaymentMethodController = exports.getPaymentMethodsController = exports.createPaymentMethodController = void 0;
 const errorHandler_1 = require("../middleware/errorHandler");
 const paymentService_1 = require("../services/paymentService");
 const loggerService_1 = require("../services/loggerService");
 const paymentService = new paymentService_1.PaymentService();
 // Crear método de pago
 exports.createPaymentMethodController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { type, cardNumber, expiryMonth, expiryYear, cvc, billingAddress } = req.body;
-    loggerService_1.logger.info('Creating payment method', { userId, metadata: { type } });
-    const paymentMethod = yield paymentService.createPaymentMethod(userId, {
+    loggerService_1.logger.info('Creating payment method', { userId: userEmail, metadata: { type } });
+    const paymentMethod = yield paymentService.createPaymentMethod(userEmail, {
         type,
         cardNumber,
         expiryMonth,
@@ -35,9 +35,9 @@ exports.createPaymentMethodController = (0, errorHandler_1.asyncHandler)((req, r
 }));
 // Obtener métodos de pago del usuario
 exports.getPaymentMethodsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
-    loggerService_1.logger.info('Getting payment methods', { userId });
-    const paymentMethods = yield paymentService.getPaymentMethods(userId);
+    const { userEmail } = req.user;
+    loggerService_1.logger.info('Getting payment methods', { userId: userEmail });
+    const paymentMethods = yield paymentService.getPaymentMethods(userEmail);
     res.status(200).json({
         success: true,
         data: paymentMethods,
@@ -46,13 +46,13 @@ exports.getPaymentMethodsController = (0, errorHandler_1.asyncHandler)((req, res
 }));
 // Establecer método de pago por defecto
 exports.setDefaultPaymentMethodController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { paymentMethodId } = req.params;
     loggerService_1.logger.info('Setting default payment method', {
-        userId,
+        userId: userEmail,
         metadata: { paymentMethodId },
     });
-    yield paymentService.setDefaultPaymentMethod(userId, paymentMethodId);
+    yield paymentService.setDefaultPaymentMethod(userEmail, paymentMethodId);
     res.status(200).json({
         success: true,
         message: 'Método de pago por defecto actualizado exitosamente',
@@ -60,13 +60,13 @@ exports.setDefaultPaymentMethodController = (0, errorHandler_1.asyncHandler)((re
 }));
 // Crear intent de pago
 exports.createPaymentIntentController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { amount, currency, description, metadata } = req.body;
     loggerService_1.logger.info('Creating payment intent', {
-        userId,
+        userId: userEmail,
         metadata: { amount, currency },
     });
-    const paymentIntent = yield paymentService.createPaymentIntent(userId, amount, currency, description, metadata);
+    const paymentIntent = yield paymentService.createPaymentIntent(userEmail, amount, currency, description, metadata);
     res.status(201).json({
         success: true,
         data: paymentIntent,
@@ -75,10 +75,10 @@ exports.createPaymentIntentController = (0, errorHandler_1.asyncHandler)((req, r
 }));
 // Procesar pago
 exports.processPaymentController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { paymentIntentId, paymentMethodId } = req.body;
     loggerService_1.logger.info('Processing payment', {
-        userId,
+        userId: userEmail,
         metadata: { paymentIntentId, paymentMethodId },
     });
     const result = yield paymentService.processPayment(paymentIntentId, paymentMethodId);
@@ -92,13 +92,13 @@ exports.processPaymentController = (0, errorHandler_1.asyncHandler)((req, res) =
 }));
 // Crear factura
 exports.createInvoiceController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { items, dueDate, eventId } = req.body;
     loggerService_1.logger.info('Creating invoice', {
-        userId,
+        userId: userEmail,
         metadata: { itemsCount: items.length },
     });
-    const invoice = yield paymentService.createInvoice(userId, items, new Date(dueDate), eventId);
+    const invoice = yield paymentService.createInvoice(userEmail, items, new Date(dueDate), eventId);
     res.status(201).json({
         success: true,
         data: invoice,
@@ -107,13 +107,13 @@ exports.createInvoiceController = (0, errorHandler_1.asyncHandler)((req, res) =>
 }));
 // Obtener facturas del usuario
 exports.getInvoicesController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { status } = req.query;
     loggerService_1.logger.info('Getting invoices', {
-        userId,
+        userId: userEmail,
         metadata: { status: status },
     });
-    const invoices = yield paymentService.getInvoices(userId, status);
+    const invoices = yield paymentService.getInvoices(userEmail, status);
     res.status(200).json({
         success: true,
         data: invoices,
@@ -122,11 +122,11 @@ exports.getInvoicesController = (0, errorHandler_1.asyncHandler)((req, res) => _
 }));
 // Marcar factura como pagada
 exports.markInvoiceAsPaidController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { invoiceId } = req.params;
     const { paymentMethodId } = req.body;
     loggerService_1.logger.info('Marking invoice as paid', {
-        userId,
+        userId: userEmail,
         metadata: { invoiceId, paymentMethodId },
     });
     const result = yield paymentService.markInvoiceAsPaid(invoiceId, paymentMethodId);
@@ -138,10 +138,10 @@ exports.markInvoiceAsPaidController = (0, errorHandler_1.asyncHandler)((req, res
 }));
 // Procesar reembolso
 exports.processRefundController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.user;
+    const { userEmail } = req.user;
     const { paymentIntentId, amount, reason } = req.body;
     loggerService_1.logger.info('Processing refund', {
-        userId,
+        userId: userEmail,
         metadata: { paymentIntentId, amount, reason },
     });
     const refund = yield paymentService.processRefund(paymentIntentId, amount, reason);
@@ -189,5 +189,20 @@ exports.getPaymentGatewaysController = (0, errorHandler_1.asyncHandler)((req, re
         success: true,
         data: gateways,
         message: 'Gateways de pago obtenidos exitosamente',
+    });
+}));
+// Obtener payment intents del usuario
+exports.getPaymentIntentsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userEmail } = req.user;
+    const { status } = req.query;
+    loggerService_1.logger.info('Getting payment intents', {
+        userId: userEmail,
+        metadata: { status: status },
+    });
+    const paymentIntents = yield paymentService.getPaymentIntents(userEmail, status);
+    res.status(200).json({
+        success: true,
+        data: paymentIntents,
+        message: 'Payment intents obtenidos exitosamente',
     });
 }));

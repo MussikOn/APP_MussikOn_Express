@@ -1091,3 +1091,354 @@ export const adminExportReport = asyncHandler(
     res.status(200).send(reportContent);
   }
 );
+
+// ===== NUEVOS CONTROLADORES PARA VERIFICACIÓN DE PAGOS MÓVILES =====
+
+/**
+ * Obtener todas las solicitudes de pago móvil
+ */
+export const adminGetMobilePayments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.user!;
+    const { status, limit = 50, offset = 0 } = req.query;
+
+    logger.info('Obteniendo pagos móviles', { userId, metadata: { status } });
+
+    // Obtener pagos móviles desde la colección mobilePayments
+    let query = db.collection('mobilePayments').orderBy('createdAt', 'desc');
+
+    // Aplicar filtros
+    if (status) {
+      query = query.where('status', '==', status);
+    }
+
+    const snapshot = await query.limit(Number(limit)).offset(Number(offset)).get();
+    const mobilePayments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    }));
+
+    // Obtener información adicional de usuarios
+    const userIds = [...new Set(mobilePayments.map(payment => (payment as any).userId))];
+    let users: Record<string, any> = {};
+    
+    // Solo hacer la consulta si hay userIds
+    if (userIds.length > 0) {
+      const usersSnapshot = await db.collection('users').where('_id', 'in', userIds).get();
+      users = usersSnapshot.docs.reduce((acc, doc) => {
+        acc[doc.id] = { id: doc.id, ...doc.data() };
+        return acc;
+      }, {} as Record<string, any>);
+    }
+
+    // Combinar datos
+    const paymentsWithUserInfo = mobilePayments.map(payment => ({
+      ...payment,
+      user: users[(payment as any).userId] || null,
+    }));
+
+    logger.info('Pagos móviles obtenidos exitosamente', {
+      userId,
+      metadata: { count: paymentsWithUserInfo.length },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: paymentsWithUserInfo,
+      message: 'Pagos móviles obtenidos exitosamente',
+    });
+  }
+);
+
+/**
+ * Verificar pago móvil
+ */
+export const adminVerifyMobilePayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.user!;
+    const { id } = req.params;
+    const { notes, verificationMethod } = req.body;
+
+    logger.info('Verificando pago móvil', { userId, metadata: { paymentId: id } });
+
+    // Obtener el pago móvil
+    const paymentRef = db.collection('mobilePayments').doc(id);
+    const paymentDoc = await paymentRef.get();
+
+    if (!paymentDoc.exists) {
+      throw new OperationalError('Pago móvil no encontrado', 404);
+    }
+
+    const paymentData = paymentDoc.data()!;
+
+    if (paymentData.status !== 'pending') {
+      throw new OperationalError('El pago ya no está pendiente de verificación', 400);
+    }
+
+    // Actualizar el pago como verificado
+    await paymentRef.update({
+      status: 'verified',
+      verifiedBy: userId,
+      verifiedAt: new Date(),
+      verificationNotes: notes || '',
+      verificationMethod: verificationMethod || 'manual',
+      updatedAt: new Date(),
+    });
+
+    // Crear una transacción de pago exitosa
+    const paymentIntent = {
+      id: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      amount: paymentData.amount,
+      currency: paymentData.currency || 'EUR',
+      status: 'succeeded',
+      paymentMethodId: 'mobile_verification',
+      userId: paymentData.userId,
+      eventId: paymentData.eventId,
+      description: `Pago móvil verificado: ${paymentData.description}`,
+      metadata: {
+        mobilePaymentId: id,
+        verificationMethod,
+        notes,
+        verifiedBy: userId,
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    // Guardar la transacción
+    await db.collection('paymentIntents').add(paymentIntent);
+
+    // Notificar al usuario (aquí se podría integrar con el sistema de notificaciones)
+    await db.collection('notifications').add({
+      userId: paymentData.userId,
+      type: 'payment_verified',
+      title: 'Pago Verificado',
+      message: `Tu pago de ${paymentData.amount}€ ha sido verificado exitosamente.`,
+      data: {
+        paymentId: id,
+        amount: paymentData.amount,
+        eventId: paymentData.eventId,
+      },
+      read: false,
+      createdAt: new Date(),
+    });
+
+    logger.info('Pago móvil verificado exitosamente', {
+      userId,
+      metadata: { paymentId: id, amount: paymentData.amount },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        paymentId: id,
+        status: 'verified',
+        transactionId: paymentIntent.id,
+      },
+      message: 'Pago móvil verificado exitosamente',
+    });
+  }
+);
+
+/**
+ * Rechazar pago móvil
+ */
+export const adminRejectMobilePayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.user!;
+    const { id } = req.params;
+    const { reason, notes } = req.body;
+
+    logger.info('Rechazando pago móvil', { userId, metadata: { paymentId: id, reason } });
+
+    // Obtener el pago móvil
+    const paymentRef = db.collection('mobilePayments').doc(id);
+    const paymentDoc = await paymentRef.get();
+
+    if (!paymentDoc.exists) {
+      throw new OperationalError('Pago móvil no encontrado', 404);
+    }
+
+    const paymentData = paymentDoc.data()!;
+
+    if (paymentData.status !== 'pending') {
+      throw new OperationalError('El pago ya no está pendiente de verificación', 400);
+    }
+
+    // Actualizar el pago como rechazado
+    await paymentRef.update({
+      status: 'rejected',
+      rejectedBy: userId,
+      rejectedAt: new Date(),
+      rejectionReason: reason || 'Sin especificar',
+      rejectionNotes: notes || '',
+      updatedAt: new Date(),
+    });
+
+    // Notificar al usuario
+    await db.collection('notifications').add({
+      userId: paymentData.userId,
+      type: 'payment_rejected',
+      title: 'Pago Rechazado',
+      message: `Tu pago de ${paymentData.amount}€ ha sido rechazado. Razón: ${reason || 'Sin especificar'}`,
+      data: {
+        paymentId: id,
+        amount: paymentData.amount,
+        reason,
+        eventId: paymentData.eventId,
+      },
+      read: false,
+      createdAt: new Date(),
+    });
+
+    logger.info('Pago móvil rechazado exitosamente', {
+      userId,
+      metadata: { paymentId: id, reason },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        paymentId: id,
+        status: 'rejected',
+        reason,
+      },
+      message: 'Pago móvil rechazado exitosamente',
+    });
+  }
+);
+
+/**
+ * Obtener estadísticas de pagos móviles
+ */
+export const adminGetMobilePaymentStats = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.user!;
+    const { period = '30d' } = req.query;
+
+    logger.info('Obteniendo estadísticas de pagos móviles', { userId, metadata: { period } });
+
+    // Calcular fecha de inicio basada en el período
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case '7d':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30d':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '90d':
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    // Obtener todos los pagos móviles del período
+    const snapshot = await db.collection('mobilePayments')
+      .where('createdAt', '>=', startDate)
+      .get();
+
+    const payments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+    }));
+
+    // Calcular estadísticas
+    const stats = {
+      total: payments.length,
+      pending: payments.filter(p => (p as any).status === 'pending').length,
+      verified: payments.filter(p => (p as any).status === 'verified').length,
+      rejected: payments.filter(p => (p as any).status === 'rejected').length,
+      totalAmount: payments.reduce((sum, p) => sum + ((p as any).amount || 0), 0),
+      verifiedAmount: payments
+        .filter(p => (p as any).status === 'verified')
+        .reduce((sum, p) => sum + ((p as any).amount || 0), 0),
+      averageAmount: payments.length > 0 
+        ? payments.reduce((sum, p) => sum + ((p as any).amount || 0), 0) / payments.length 
+        : 0,
+      verificationRate: payments.length > 0 
+        ? ((payments.filter(p => (p as any).status === 'verified').length / payments.length) * 100).toFixed(1)
+        : '0',
+      rejectionRate: payments.length > 0 
+        ? ((payments.filter(p => (p as any).status === 'rejected').length / payments.length) * 100).toFixed(1)
+        : '0',
+      // Estadísticas por día
+      dailyStats: getDailyStats(payments, startDate, now),
+      // Top métodos de pago
+      topPaymentMethods: getTopPaymentMethods(payments),
+      // Top eventos
+      topEvents: getTopEvents(payments),
+    };
+
+    logger.info('Estadísticas de pagos móviles obtenidas exitosamente', {
+      userId,
+      metadata: { stats },
+    });
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+      message: 'Estadísticas de pagos móviles obtenidas exitosamente',
+    });
+  }
+);
+
+// Funciones auxiliares para estadísticas
+function getDailyStats(payments: any[], startDate: Date, endDate: Date) {
+  const dailyStats: Record<string, { count: number; amount: number }> = {};
+  
+  // Inicializar todos los días del período
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const dateKey = d.toISOString().split('T')[0];
+    dailyStats[dateKey] = { count: 0, amount: 0 };
+  }
+
+  // Contar pagos por día
+  payments.forEach(payment => {
+    const dateKey = (payment as any).createdAt.toISOString().split('T')[0];
+    if (dailyStats[dateKey]) {
+      dailyStats[dateKey].count++;
+      dailyStats[dateKey].amount += (payment as any).amount || 0;
+    }
+  });
+
+  return Object.entries(dailyStats).map(([date, stats]) => ({
+    date,
+    ...stats,
+  }));
+}
+
+function getTopPaymentMethods(payments: any[]) {
+  const methodCounts: Record<string, number> = {};
+  
+  payments.forEach(payment => {
+    const method = (payment as any).paymentMethod || 'unknown';
+    methodCounts[method] = (methodCounts[method] || 0) + 1;
+  });
+
+  return Object.entries(methodCounts)
+    .map(([method, count]) => ({ method, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+}
+
+function getTopEvents(payments: any[]) {
+  const eventCounts: Record<string, number> = {};
+  
+  payments.forEach(payment => {
+    if ((payment as any).eventId) {
+      eventCounts[(payment as any).eventId] = (eventCounts[(payment as any).eventId] || 0) + 1;
+    }
+  });
+
+  return Object.entries(eventCounts)
+    .map(([eventId, count]) => ({ eventId, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+}

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mockErrorHandler = exports.mockAuthMiddleware = exports.createMockResponse = exports.createMockRequest = void 0;
+exports.validateIdFormat = exports.validateEmailFormat = exports.validateSafeString = exports.delay = exports.createTestData = exports.validateApiResponse = exports.createFirebaseMock = exports.cleanupMocks = exports.mockErrorHandler = exports.mockAuthMiddleware = exports.createMockResponse = exports.createMockRequest = void 0;
 // Jest setup file for MussikOn API tests
 const dotenv_1 = __importDefault(require("dotenv"));
 const loggerService_1 = require("../services/loggerService");
@@ -88,22 +88,14 @@ jest.mock('firebase-admin', () => ({
         }))
     }))
 }));
-// Global test setup
-beforeAll(() => {
-    // Setup any global test configuration
-    loggerService_1.logger.info('Setting up test environment...', { context: 'TestSetup' });
-    // Mock console methods to reduce noise in tests
-    jest.spyOn(console, 'log').mockImplementation(() => { });
-    jest.spyOn(console, 'info').mockImplementation(() => { });
-    jest.spyOn(console, 'warn').mockImplementation(() => { });
-    jest.spyOn(console, 'error').mockImplementation(() => { });
-});
-afterAll(() => {
-    // Cleanup after all tests
-    loggerService_1.logger.info('Cleaning up test environment...', { context: 'TestSetup' });
-    // Restore console methods
-    jest.restoreAllMocks();
-});
+// 🆕 CONFIGURACIÓN MEJORADA DEL SETUP
+// Setup any global test configuration
+loggerService_1.logger.info('Setting up test environment...', { context: 'TestSetup' });
+// Mock console methods to reduce noise in tests
+jest.spyOn(console, 'log').mockImplementation(() => { });
+jest.spyOn(console, 'info').mockImplementation(() => { });
+jest.spyOn(console, 'warn').mockImplementation(() => { });
+jest.spyOn(console, 'error').mockImplementation(() => { });
 // Global test utilities
 const createMockRequest = (overrides = {}) => (Object.assign({ body: {}, params: {}, query: {}, headers: {}, user: null }, overrides));
 exports.createMockRequest = createMockRequest;
@@ -134,3 +126,92 @@ const mockErrorHandler = (err, req, res, next) => {
     });
 };
 exports.mockErrorHandler = mockErrorHandler;
+// 🆕 UTILIDADES ADICIONALES PARA TESTS MEJORADOS
+// Función para limpiar mocks después de cada test
+const cleanupMocks = () => {
+    jest.clearAllMocks();
+    jest.resetAllMocks();
+};
+exports.cleanupMocks = cleanupMocks;
+// Función para crear un mock de Firebase más realista
+const createFirebaseMock = () => ({
+    collection: jest.fn().mockReturnValue({
+        doc: jest.fn().mockReturnValue({
+            get: jest.fn().mockResolvedValue({
+                exists: true,
+                data: jest.fn().mockReturnValue({})
+            }),
+            set: jest.fn().mockResolvedValue({}),
+            update: jest.fn().mockResolvedValue({}),
+            delete: jest.fn().mockResolvedValue({})
+        }),
+        where: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        get: jest.fn().mockResolvedValue({
+            docs: [],
+            size: 0
+        }),
+        add: jest.fn().mockResolvedValue({
+            id: 'generated-id'
+        })
+    })
+});
+exports.createFirebaseMock = createFirebaseMock;
+// Función para validar respuestas de API
+const validateApiResponse = (response, expectedSuccess, expectedMessage) => {
+    expect(response).toHaveProperty('success', expectedSuccess);
+    if (expectedMessage) {
+        expect(response).toHaveProperty('message', expectedMessage);
+    }
+};
+exports.validateApiResponse = validateApiResponse;
+// Función para crear datos de prueba válidos
+exports.createTestData = {
+    user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        role: 'usuario',
+        name: 'Test User'
+    },
+    rating: {
+        eventId: 'event123',
+        musicianId: 'musician123',
+        rating: 5,
+        review: 'Excellent performance!',
+        category: 'musician'
+    },
+    payment: {
+        amount: 1000,
+        currency: 'RD$',
+        description: 'Test payment'
+    }
+};
+// Función para simular delays en tests
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+exports.delay = delay;
+// Función para validar que un string no contenga caracteres peligrosos
+const validateSafeString = (str) => {
+    const dangerousPatterns = [
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, // XSS scripts
+        /javascript:/gi, // JavaScript protocol
+        /on\w+\s*=/gi, // Event handlers
+        /data:text\/html/gi, // Data URLs
+        /vbscript:/gi, // VBScript
+        /expression\s*\(/gi, // CSS expressions
+    ];
+    return !dangerousPatterns.some(pattern => pattern.test(str));
+};
+exports.validateSafeString = validateSafeString;
+// Función para validar formato de email
+const validateEmailFormat = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+exports.validateEmailFormat = validateEmailFormat;
+// Función para validar formato de ID
+const validateIdFormat = (id) => {
+    const idRegex = /^[a-zA-Z0-9_-]{3,50}$/;
+    return idRegex.test(id);
+};
+exports.validateIdFormat = validateIdFormat;

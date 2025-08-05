@@ -158,10 +158,10 @@ export class AdvancedSearchController {
         }
       });
 
-      res.status(200).json(response);
+      return res.status(200).json(response);
     } catch (error) {
       logger.error('Error en búsqueda avanzada de músicos', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message
@@ -247,10 +247,10 @@ export class AdvancedSearchController {
         }
       };
 
-      res.status(200).json(response);
+      return res.status(200).json(response);
     } catch (error) {
       logger.error('Error verificando disponibilidad del músico', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message
@@ -284,13 +284,13 @@ export class AdvancedSearchController {
 
       const updatedStatus = await this.musicianStatusService.updateStatus(musicianId, updateData);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: updatedStatus
       });
     } catch (error) {
       logger.error('Error actualizando estado del músico', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message
@@ -318,13 +318,13 @@ export class AdvancedSearchController {
 
       await this.musicianStatusService.heartbeat(musicianId, location);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Heartbeat registrado correctamente'
       });
     } catch (error) {
       logger.error('Error en heartbeat del músico', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message
@@ -353,13 +353,13 @@ export class AdvancedSearchController {
       const targetDate = date ? new Date(date as string) : new Date();
       const availability = await this.calendarConflictService.getDailyAvailability(musicianId, targetDate);
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: availability
       });
     } catch (error) {
       logger.error('Error obteniendo disponibilidad diaria', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message
@@ -402,13 +402,13 @@ export class AdvancedSearchController {
         isUrgent
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         data: rateResult
       });
     } catch (error) {
       logger.error('Error calculando tarifa del músico', error as Error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
         error: (error as Error).message

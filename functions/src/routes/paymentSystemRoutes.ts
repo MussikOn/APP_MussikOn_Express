@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PaymentSystemController } from '../controllers/paymentSystemController';
+import { PaymentSystemController, getVoucherPresignedUrl } from '../controllers/paymentSystemController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { requireRole } from '../middleware/requireRole';
 import { upload } from '../middleware/uploadMiddleware';
@@ -546,7 +546,7 @@ router.post('/musicians/withdraw-earnings', authMiddleware, async (req, res) => 
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-deposits', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPendingDeposits(req, res);
 });
 
@@ -599,7 +599,7 @@ router.get('/admin/payments/pending-deposits', authMiddleware, requireRole(['adm
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/verify-deposit/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.verifyDeposit(req, res);
 });
 
@@ -632,7 +632,7 @@ router.put('/admin/payments/verify-deposit/:depositId', authMiddleware, requireR
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/pending-withdrawals', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPendingWithdrawals(req, res);
 });
 
@@ -685,7 +685,7 @@ router.get('/admin/payments/pending-withdrawals', authMiddleware, requireRole(['
  *       500:
  *         description: Error interno del servidor
  */
-router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.put('/payments/process-withdrawal/:withdrawalId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.processWithdrawal(req, res);
 });
 
@@ -716,8 +716,143 @@ router.put('/admin/payments/process-withdrawal/:withdrawalId', authMiddleware, r
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/admin/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+router.get('/payments/statistics', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
   await paymentSystemController.getPaymentStatistics(req, res);
 });
+
+/**
+ * @swagger
+ * /admin/payments/deposit-stats:
+ *   get:
+ *     summary: Obtener estadísticas de depósitos (admin) - Ruta de compatibilidad
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/deposit-stats', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+  console.log('[paymentSystemRoutes.ts:730] Ruta /admin/payments/deposit-stats accedida');
+  await paymentSystemController.getPaymentStatistics(req, res);
+});
+
+/**
+ * @swagger
+ * /admin/payments/deposit-info/{depositId}:
+ *   get:
+ *     summary: Obtener información detallada de un depósito (admin)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Información del depósito obtenida exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/deposit-info/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+  console.log('[paymentSystemRoutes.ts:750] Ruta /admin/payments/deposit-info accedida');
+  await paymentSystemController.getDepositDetails(req, res);
+});
+
+/**
+ * @swagger
+ * /admin/payments/check-duplicate/{depositId}:
+ *   get:
+ *     summary: Verificar si un voucher es duplicado (admin)
+ *     tags: [Administración - Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: Verificación completada exitosamente
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Depósito no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/admin/payments/check-duplicate/:depositId', authMiddleware, requireRole(['adminJunior', 'adminMidLevel', 'adminSenior', 'superAdmin']), async (req, res) => {
+  console.log('[paymentSystemRoutes.ts:770] Ruta /admin/payments/check-duplicate accedida');
+  await paymentSystemController.checkVoucherDuplicates(req, res);
+});
+
+/**
+ * @swagger
+ * /api/payments/voucher/{depositId}/presigned-url:
+ *   get:
+ *     summary: Obtener URL firmada para acceder a un comprobante de pago
+ *     description: Genera una URL firmada temporal para acceder a un comprobante sin problemas de CORS
+ *     tags: [Sistema de Pagos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                       description: URL firmada temporal
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Tiempo de expiración en segundos
+ *                     depositId:
+ *                       type: string
+ *                     voucherKey:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: ID de depósito requerido
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: No tienes permisos para acceder a este depósito
+ *       404:
+ *         description: Depósito o comprobante no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId/presigned-url', authMiddleware, getVoucherPresignedUrl);
 
 export default router; 

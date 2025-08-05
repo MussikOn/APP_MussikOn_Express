@@ -391,3 +391,61 @@ export const priceRangeDTO = Joi.object({
   min: Joi.number().min(0).required(),
   max: Joi.number().min(Joi.ref('min')).required(),
 });
+
+// DTOs para el sistema de depósitos DPT
+export const reportDepositDTO = Joi.object({
+  amount: Joi.number().positive().required().messages({
+    'number.base': 'El monto debe ser un número',
+    'number.positive': 'El monto debe ser positivo',
+    'any.required': 'El monto es requerido'
+  }),
+  currency: Joi.string().valid('EUR', 'USD', 'GBP').default('EUR').messages({
+    'string.base': 'La moneda debe ser una cadena de texto',
+    'any.only': 'La moneda debe ser EUR, USD o GBP'
+  }),
+  depositDate: Joi.date().max('now').required().messages({
+    'date.base': 'La fecha debe ser válida',
+    'date.max': 'La fecha no puede ser futura',
+    'any.required': 'La fecha del depósito es requerida'
+  }),
+  bankName: Joi.string().min(2).max(100).required().messages({
+    'string.base': 'El nombre del banco debe ser una cadena de texto',
+    'string.min': 'El nombre del banco debe tener al menos 2 caracteres',
+    'string.max': 'El nombre del banco no puede exceder 100 caracteres',
+    'any.required': 'El nombre del banco es requerido'
+  }),
+  accountNumber: Joi.string().min(5).max(50).required().messages({
+    'string.base': 'El número de cuenta debe ser una cadena de texto',
+    'string.min': 'El número de cuenta debe tener al menos 5 caracteres',
+    'string.max': 'El número de cuenta no puede exceder 50 caracteres',
+    'any.required': 'El número de cuenta es requerido'
+  }),
+  reference: Joi.string().min(3).max(100).required().messages({
+    'string.base': 'La referencia debe ser una cadena de texto',
+    'string.min': 'La referencia debe tener al menos 3 caracteres',
+    'string.max': 'La referencia no puede exceder 100 caracteres',
+    'any.required': 'La referencia es requerida'
+  }),
+  purpose: Joi.string().min(5).max(200).required().messages({
+    'string.base': 'El propósito debe ser una cadena de texto',
+    'string.min': 'El propósito debe tener al menos 5 caracteres',
+    'string.max': 'El propósito no puede exceder 200 caracteres',
+    'any.required': 'El propósito es requerido'
+  })
+});
+
+export const rejectDepositDTO = Joi.object({
+  reason: Joi.string().min(10).max(500).required().messages({
+    'string.base': 'La razón debe ser una cadena de texto',
+    'string.min': 'La razón debe tener al menos 10 caracteres',
+    'string.max': 'La razón no puede exceder 500 caracteres',
+    'any.required': 'La razón del rechazo es requerida'
+  })
+});
+
+export const depositStatusDTO = Joi.object({
+  status: Joi.string().valid('pending', 'approved', 'rejected').messages({
+    'string.base': 'El estado debe ser una cadena de texto',
+    'any.only': 'El estado debe ser pending, approved o rejected'
+  })
+});

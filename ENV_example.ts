@@ -25,6 +25,7 @@ export const IDRIVE_E2_ENDPOINT = ""; // ejemplo: https://musikon-media.c8q1.va0
 export const IDRIVE_E2_ACCESS_KEY = "";
 export const IDRIVE_E2_SECRET_KEY = "";
 export const IDRIVE_E2_REGION = "";
+export const IDRIVE_E2_BUCKET_NAME = ""; // ejemplo: musikon-media
 
 // Email
 export const EMAIL_USER = "";

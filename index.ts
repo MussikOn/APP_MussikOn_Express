@@ -32,10 +32,15 @@ import notificationRoutes from './src/routes/notificationRoutes';
 import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
 import musicianSearchRoutes from './src/routes/musicianSearchRoutes';
 import hiringRoutes from './src/routes/hiringRoutes';
+import ratingRoutes from './src/routes/ratingRoutes';
+import depositRoutes from './src/routes/depositRoutes';
 
-// Importar sockets (comentado temporalmente hasta que se implementen)
-// import { setupChatSocket } from './src/sockets/chatSocket';
-// import { setupEventSocket } from './src/sockets/eventSocket';
+// Importar gestor de índices
+import { FirestoreIndexManager } from './src/utils/firestoreIndexes';
+
+// Importar sockets
+import { chatSocketHandler } from './src/sockets/chatSocket';
+import { socketHandler } from './src/sockets/eventSocket';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -49,14 +54,19 @@ const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:5173',
+      'http://localhost:3001',
       'http://localhost:5173/analytics',
-      'http://192.168.54.59:5173',
-      'http://192.168.54.26:5173',
-      'http://192.168.54.86:5173',
-      'http://192.168.54.59:1000',
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
+      'http://192.168.54.17:3001',
+      'http://192.168.54.17:5173',
+      'http://192.168.54.26:5173',
+      'http://192.168.54.59:5173',
+      'http://192.168.54.59:1000',
+      'http://192.168.54.86:5173',
       'http://192.168.54.131:5173',
+      'http://192.168.54.68:5173',
+      'http://192.168.54.90:5173',
       'http://192.168.100.101:5173',
       'https://mussikon.web.app',
       'https://mussikon.firebaseapp.com'
@@ -68,13 +78,18 @@ const io = new Server(server, {
 // Configurar CORS
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3001',
   'http://localhost:5173/analytics',
-  'http://192.168.54.59:5173',
+  'http://172.20.10.2:5173',
   'http://172.20.10.2:3001/api-docs',
-  'http://192.168.54.86:5173',
+  'http://192.168.54.17:3001',
+  'http://192.168.54.17:5173',
   'http://192.168.54.26:5173',
   'http://192.168.54.59:1000',
-  'http://172.20.10.2:5173',
+  'http://192.168.54.59:5173',
+  'http://192.168.54.68:5173',
+  'http://192.168.54.86:5173',
+  'http://192.168.54.90:5173',
   'http://192.168.54.131:5173',
   'http://192.168.100.101:5173',
   'https://mussikon.web.app',
@@ -91,6 +106,7 @@ app.use(cors({
   },
   credentials: true
 }));
+// app.use(cors());
 
 // Middleware para parsing de JSON y URL encoded
 app.use(express.json({ limit: '10mb' }));
@@ -359,6 +375,7 @@ const swaggerUiOptions = {
 
 // Configurar rutas
 app.use("/auth", authRoutes);
+app.use("/admin", paymentSystemRoutes); // Rutas de compatibilidad para /admin/payments/* (debe ir antes)
 app.use("/admin", adminRoutes);
 app.use("/superAdmin", superAdminRoutes);
 app.use("/imgs", imagesRoutes);
@@ -375,6 +392,8 @@ app.use('/notifications', notificationRoutes);
 app.use('/push-notifications', pushNotificationRoutes);
 app.use('/musician-search', musicianSearchRoutes);
 app.use('/hiring', hiringRoutes);
+app.use('/ratings', ratingRoutes);
+app.use('/deposits', depositRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -428,8 +447,10 @@ app.get('/', (req, res) => {
 });
 
 // Configurar sockets
-// setupChatSocket(io);
-// setupEventSocket(io);
+io.on('connection', (socket) => {
+  // Configurar handler de eventos
+  socketHandler(io, socket, {});
+});
 
 // Middleware para rutas no encontradas (debe ir antes del error handler)
 app.use(notFoundHandler);
@@ -454,12 +475,29 @@ export { app, server, io };
 const URL = URL_API;
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
-    metadata: {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      url: URL_API
-    }
-  });
-});
+
+// Función para inicializar el servidor
+async function initializeServer() {
+  try {
+    // Inicializar índices de Firestore
+    logger.info('🔧 Inicializando índices de Firestore...');
+    await FirestoreIndexManager.initializeIndexes();
+    
+    // Iniciar servidor
+    server.listen(PORT, () => {
+      logger.info(`🎵 Servidor MussikOn API iniciado en puerto ${URL}${PORT}`, {
+        metadata: {
+          port: PORT,
+          environment: process.env.NODE_ENV || 'development',
+          url: URL_API
+        }
+      });
+    });
+  } catch (error) {
+    logger.error('❌ Error inicializando servidor:', error as Error);
+    process.exit(1);
+  }
+}
+
+// Inicializar servidor
+initializeServer();

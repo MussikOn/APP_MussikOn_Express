@@ -5,6 +5,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const requireRole_1 = require("../middleware/requireRole");
 const validationMiddleware_1 = require("../middleware/validationMiddleware");
 const paymentController_1 = require("../controllers/paymentController");
+const paymentSystemController_1 = require("../controllers/paymentSystemController");
 const dtos_1 = require("../utils/dtos");
 const router = (0, express_1.Router)();
 /**
@@ -233,6 +234,34 @@ router.put('/methods/:paymentMethodId/default', authMiddleware_1.authMiddleware,
  *         description: No autorizado
  */
 router.post('/intents', authMiddleware_1.authMiddleware, (0, validationMiddleware_1.validate)(dtos_1.createPaymentIntentDTO), paymentController_1.createPaymentIntentController);
+/**
+ * @swagger
+ * /api/payments/intents:
+ *   get:
+ *     summary: Obtener intents de pago del usuario
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Intents de pago obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PaymentIntent'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/intents', authMiddleware_1.authMiddleware, paymentController_1.getPaymentIntentsController);
 /**
  * @swagger
  * /api/payments/process:
@@ -503,7 +532,7 @@ router.post('/refunds', authMiddleware_1.authMiddleware, (0, validationMiddlewar
  *       403:
  *         description: Acceso denegado
  */
-router.get('/stats', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'super_admin']), paymentController_1.getPaymentStatsController);
+router.get('/stats', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'superadmin']), paymentController_1.getPaymentStatsController);
 /**
  * @swagger
  * /api/payments/validate:
@@ -580,4 +609,57 @@ router.post('/validate', (0, validationMiddleware_1.validate)(dtos_1.validatePay
  *                   type: string
  */
 router.get('/gateways', paymentController_1.getPaymentGatewaysController);
+/**
+ * @swagger
+ * /payments/voucher/{depositId}/presigned-url:
+ *   get:
+ *     summary: Obtener URL firmada para acceder a un comprobante de pago
+ *     description: Genera una URL firmada temporal para acceder a un comprobante sin problemas de CORS
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                       description: URL firmada temporal
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Tiempo de expiración en segundos
+ *                     depositId:
+ *                       type: string
+ *                     voucherKey:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: ID de depósito requerido
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: No tienes permisos para acceder a este depósito
+ *       404:
+ *         description: Depósito o comprobante no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId/presigned-url', authMiddleware_1.authMiddleware, paymentSystemController_1.getVoucherPresignedUrl);
 exports.default = router;

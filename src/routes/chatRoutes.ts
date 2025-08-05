@@ -1,5 +1,6 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
+import { upload } from '../middleware/uploadMiddleware';
 import {
   getConversations,
   getMessages,
@@ -51,5 +52,38 @@ router.patch('/conversations/:conversationId/archive', archiveConversation);
 
 // Eliminar conversación
 router.delete('/conversations/:conversationId', deleteConversation);
+
+// Subir archivo para chat
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        error: 'No se proporcionó ningún archivo'
+      });
+      return;
+    }
+
+    const { conversationId } = req.body;
+    
+    // Aquí puedes procesar el archivo y guardarlo en IDrive E2
+    // Por ahora, devolvemos una respuesta básica
+    res.status(200).json({
+      success: true,
+      data: {
+        fileUrl: `https://example.com/uploads/${req.file.filename}`,
+        fileName: req.file.originalname,
+        fileSize: req.file.size
+      },
+      message: 'Archivo subido exitosamente'
+    });
+  } catch (error) {
+    console.error('Error uploading chat file:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al subir el archivo'
+    });
+  }
+});
 
 export default router;

@@ -21,6 +21,8 @@
     "deploy:firebase": "firebase deploy",
     "deploy:functions": "firebase deploy --only functions",
     "deploy:hosting": "firebase deploy --only hosting",
+    "create:indexes": "node scripts/create-indexes.js",
+    "check:indexes": "node scripts/check-indexes.js",
     "deploy:indexes": "node scripts/deploy-indexes.js",
     "monitor:indexes": "node scripts/monitor-indexes.js",
     "indexes:dry-run": "node scripts/deploy-indexes.js --dry-run",
@@ -34,7 +36,14 @@
     "redis:stats": "redis-cli info stats",
     "redis:flush": "redis-cli flushall",
     "production:setup": "npm run redis:install && npm run redis:start",
-    "production:test": "npm run redis:test && npm run monitor:performance:once"
+    "production:test": "npm run redis:test && npm run monitor:performance:once",
+    "test-integration": "node scripts/test-integration.js",
+    "start-integration": "powershell -ExecutionPolicy Bypass -File scripts/start-integration.ps1",
+    "integration:check": "npm run test-integration && npm run start-integration",
+    "idrive:setup": "node scripts/setup-idrive.js",
+    "idrive:setup:create": "node scripts/setup-idrive.js --create-bucket",
+    "idrive:health": "curl -X GET http://localhost:10000/api/idrive/health",
+    "idrive:report": "curl -X GET http://localhost:10000/api/idrive/health/report"
   },
   "keywords": [
     "mussikon",
@@ -92,6 +101,7 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "axios": "^1.11.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.0",

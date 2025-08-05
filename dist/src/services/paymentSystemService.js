@@ -130,6 +130,13 @@ class PaymentSystemService {
                         filename: depositData.voucherFile.originalname || 'voucher.jpg',
                         uploadedAt: new Date().toISOString()
                     },
+                    accountHolderName: depositData.accountHolderName,
+                    bankName: depositData.bankName,
+                    accountNumber: depositData.accountNumber,
+                    depositDate: depositData.depositDate,
+                    depositTime: depositData.depositTime,
+                    referenceNumber: depositData.referenceNumber,
+                    comments: depositData.comments,
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
@@ -447,6 +454,9 @@ class PaymentSystemService {
                     .where('status', '==', 'pending')
                     .orderBy('createdAt', 'desc')
                     .get();
+                console.info('./src/services/paymentSystemService.ts line 507');
+                console.info(`\n\n\n Depósitos pendientes: ${depositsSnapshot.docs.length}\n\n\n`);
+                console.info(depositsSnapshot.docs.map(doc => doc.data()));
                 return depositsSnapshot.docs.map(doc => doc.data());
             }
             catch (error) {
@@ -493,6 +503,27 @@ class PaymentSystemService {
             }
         });
     }
+    /**
+     * Obtener depósitos de usuario
+     */
+    getUserDeposits(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('Obteniendo depósitos de usuario', { metadata: { userId } });
+                const depositsSnapshot = yield firebase_1.db.collection('user_deposits')
+                    .where('userId', '==', userId)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                return depositsSnapshot.docs.map(doc => doc.data());
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo depósitos de usuario', error, {
+                    metadata: { userId }
+                });
+                throw new Error('Error obteniendo depósitos de usuario');
+            }
+        });
+    }
     // Métodos auxiliares para estadísticas
     getTotalUsers() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -512,6 +543,60 @@ class PaymentSystemService {
         return __awaiter(this, void 0, void 0, function* () {
             const eventsSnapshot = yield firebase_1.db.collection('events').get();
             return eventsSnapshot.size;
+        });
+    }
+    /**
+     * Obtener detalles de un depósito específico
+     */
+    getDepositDetails(depositId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
+                if (!depositDoc.exists) {
+                    throw new Error('Depósito no encontrado');
+                }
+                const deposit = depositDoc.data();
+                // Agregar propiedad calculada hasVoucherFile
+                const depositWithHasVoucherFile = Object.assign(Object.assign({}, deposit), { hasVoucherFile: Boolean(deposit.voucherFile && deposit.voucherFile.url) });
+                return depositWithHasVoucherFile;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error obteniendo detalles de depósito', error, {
+                    metadata: { depositId }
+                });
+                throw new Error('Error obteniendo detalles de depósito');
+            }
+        });
+    }
+    /**
+     * Verificar si un voucher es duplicado
+     */
+    checkVoucherDuplicates(depositId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                // Obtener el depósito actual
+                const currentDeposit = yield this.getDepositDetails(depositId);
+                if (!((_a = currentDeposit.voucherFile) === null || _a === void 0 ? void 0 : _a.url)) {
+                    return { isDuplicate: false, duplicates: [] };
+                }
+                // Buscar otros depósitos con la misma URL de voucher
+                const duplicatesSnapshot = yield firebase_1.db.collection('user_deposits')
+                    .where('voucherFile.url', '==', currentDeposit.voucherFile.url)
+                    .where('id', '!=', depositId)
+                    .get();
+                const duplicates = duplicatesSnapshot.docs.map(doc => doc.data());
+                return {
+                    isDuplicate: duplicates.length > 0,
+                    duplicates
+                };
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error verificando duplicados de voucher', error, {
+                    metadata: { depositId }
+                });
+                throw new Error('Error verificando duplicados de voucher');
+            }
         });
     }
 }

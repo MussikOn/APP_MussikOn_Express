@@ -15,7 +15,9 @@ import {
   getPaymentStatsController,
   validatePaymentMethodController,
   getPaymentGatewaysController,
+  getPaymentIntentsController,
 } from '../controllers/paymentController';
+import { getVoucherPresignedUrl } from '../controllers/paymentSystemController';
 import {
   createPaymentMethodDTO,
   createPaymentIntentDTO,
@@ -271,6 +273,35 @@ router.post(
   validate(createPaymentIntentDTO),
   createPaymentIntentController
 );
+
+/**
+ * @swagger
+ * /api/payments/intents:
+ *   get:
+ *     summary: Obtener intents de pago del usuario
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Intents de pago obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PaymentIntent'
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/intents', authMiddleware, getPaymentIntentsController);
 
 /**
  * @swagger
@@ -569,7 +600,7 @@ router.post(
 router.get(
   '/stats',
   authMiddleware,
-  requireRole(['admin', 'super_admin']),
+  requireRole(['admin', 'superadmin']),
   getPaymentStatsController
 );
 
@@ -654,5 +685,59 @@ router.post(
  *                   type: string
  */
 router.get('/gateways', getPaymentGatewaysController);
+
+/**
+ * @swagger
+ * /payments/voucher/{depositId}/presigned-url:
+ *   get:
+ *     summary: Obtener URL firmada para acceder a un comprobante de pago
+ *     description: Genera una URL firmada temporal para acceder a un comprobante sin problemas de CORS
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: depositId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del depósito
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                       description: URL firmada temporal
+ *                     expiresIn:
+ *                       type: number
+ *                       description: Tiempo de expiración en segundos
+ *                     depositId:
+ *                       type: string
+ *                     voucherKey:
+ *                       type: string
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: ID de depósito requerido
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: No tienes permisos para acceder a este depósito
+ *       404:
+ *         description: Depósito o comprobante no encontrado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/voucher/:depositId/presigned-url', authMiddleware, getVoucherPresignedUrl);
 
 export default router;

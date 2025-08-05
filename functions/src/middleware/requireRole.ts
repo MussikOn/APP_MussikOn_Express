@@ -5,7 +5,7 @@ import { OperationalError } from './errorHandler';
 export const requireRole = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = req.user;
+      const user = (req as any).user;
 
       if (!user) {
         throw new OperationalError('Usuario no autenticado', 401);

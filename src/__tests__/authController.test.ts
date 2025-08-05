@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import {
   registerController,
   loginController,
@@ -412,6 +412,7 @@ describe('AuthController', () => {
           userEmail: 'juan@example.com'
         }
       });
+      (validarEmail as jest.Mock).mockReturnValue(true);
     });
 
     it('should send password reset email successfully', async () => {
@@ -419,7 +420,8 @@ describe('AuthController', () => {
       (getUserByEmailModel as jest.Mock).mockResolvedValue({
         id: 'user123',
         userEmail: 'juan@example.com',
-        roll: 'superadmin'
+        roll: 'superadmin',
+        name: 'Juan'
       });
       (sendEmail as jest.Mock).mockResolvedValue(true);
 
@@ -457,6 +459,7 @@ describe('AuthController', () => {
           code: '123456'
         }
       });
+      (validarEmail as jest.Mock).mockReturnValue(true);
     });
 
     it('should return error when user not found', async () => {
@@ -512,6 +515,8 @@ describe('AuthController', () => {
           newPassword: 'NewPassword123!'
         }
       });
+      (validarEmail as jest.Mock).mockReturnValue(true);
+      (validarPassword as jest.Mock).mockReturnValue(true);
     });
 
     it('should return error when user is not superadmin', async () => {
@@ -553,6 +558,7 @@ describe('AuthController', () => {
         userEmail: 'juan@example.com',
         roll: 'superadmin'
       });
+      (validarEmail as jest.Mock).mockReturnValue(true);
       (validarPassword as jest.Mock).mockReturnValue(false);
 
       await resetPasswordController(mockRequest as Request, mockResponse as Response);
@@ -575,6 +581,7 @@ describe('AuthController', () => {
           userEmail: 'juan@example.com'
         }
       });
+      (validarEmail as jest.Mock).mockReturnValue(true);
     });
 
     it('should update user successfully', async () => {

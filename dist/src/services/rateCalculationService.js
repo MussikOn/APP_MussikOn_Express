@@ -59,6 +59,14 @@ class RateCalculationService {
         };
     }
     /**
+     * Obtener datos del mercado (método público)
+     */
+    getPublicMarketData(instrument, location, eventType) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.getMarketData(instrument, location, eventType);
+        });
+    }
+    /**
      * Calcular tarifa automática para un músico
      */
     calculateRate(request) {

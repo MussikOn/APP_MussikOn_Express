@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { logger } from '../services/loggerService';
 import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { s3 } from '../utils/idriveE2';
+import { getS3Client, generatePresignedUrl } from '../utils/idriveE2';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -24,14 +24,16 @@ export const uploadFile = async (req: Request, res: Response) => {
     });
 
     console.info('Direccion');
-    const direccion = await s3.send(command);
+    const s3Client = await getS3Client();
+    const direccion = await s3Client.send(command);
     console.info(direccion);
 
-    const url = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${fileKey}`;
+    // Generar URL firmada en lugar de URL directa
+    const presignedUrl = await generatePresignedUrl(fileKey, 3600); // 1 hora
 
     res.status(200).json({
       message: 'File uploaded successfully',
-      url,
+      url: presignedUrl,
       key: fileKey,
     });
   } catch (error) {
@@ -49,14 +51,10 @@ export const getFileUrl = async (req: Request, res: Response) => {
       return;
     }
 
-    const command = new GetObjectCommand({
-      Bucket: process.env.IDRIVE_E2_BUCKET_NAME!,
-      Key: key,
-    });
+    // Generar URL firmada en lugar de URL directa
+    const presignedUrl = await generatePresignedUrl(key, 3600); // 1 hora
 
-    const url = await getSignedUrl(s3, command, { expiresIn: 60 * 5 });
-
-    res.status(200).json({ url });
+    res.status(200).json({ url: presignedUrl });
   } catch (error) {
     logger.error('URL error:', error as Error);
     res.status(500).json({ error: 'Failed to generate file URL' });
