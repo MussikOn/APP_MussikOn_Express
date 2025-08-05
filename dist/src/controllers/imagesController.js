@@ -13,6 +13,7 @@ exports.imagesController = exports.ImagesController = void 0;
 const imageService_1 = require("../services/imageService");
 const loggerService_1 = require("../services/loggerService");
 const firebase_1 = require("../utils/firebase");
+const idriveE2_1 = require("../utils/idriveE2");
 class ImagesController {
     /**
      * Subir imagen
@@ -407,7 +408,7 @@ class ImagesController {
         });
     }
     /**
-     * Obtener imagen de voucher de depósito
+     * Obtener imagen de voucher de depósito - MEJORADO
      */
     getVoucherImage(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -421,7 +422,7 @@ class ImagesController {
                     });
                     return;
                 }
-                loggerService_1.logger.info('Obteniendo imagen de voucher', { metadata: { depositId } });
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Obteniendo imagen de voucher', { metadata: { depositId } });
                 // Obtener los detalles del depósito directamente desde Firestore
                 const depositDoc = yield firebase_1.db.collection('user_deposits').doc(depositId).get();
                 if (!depositDoc.exists) {
@@ -439,39 +440,137 @@ class ImagesController {
                     });
                     return;
                 }
-                // Intentar obtener la imagen del voucher
-                try {
-                    const response = yield fetch(deposit.voucherFile.url);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const buffer = yield response.arrayBuffer();
-                    const contentType = response.headers.get('content-type') || 'image/jpeg';
-                    res.set({
-                        'Content-Type': contentType,
-                        'Cache-Control': 'public, max-age=3600',
-                        'Content-Length': buffer.byteLength.toString(),
-                        'Access-Control-Allow-Origin': '*'
-                    });
-                    res.send(Buffer.from(buffer));
-                }
-                catch (fetchError) {
-                    loggerService_1.logger.error('Error obteniendo imagen de voucher desde S3', fetchError, {
+                // Extraer la clave del archivo desde la URL
+                const key = (0, idriveE2_1.extractKeyFromUrl)(deposit.voucherFile.url);
+                if (!key) {
+                    loggerService_1.logger.error('[src/controllers/imagesController.ts] No se pudo extraer la clave de la URL', new Error('No se pudo extraer la clave'), {
                         metadata: { depositId, voucherUrl: deposit.voucherFile.url }
                     });
-                    res.status(500).json({
-                        success: false,
-                        error: 'Error obteniendo imagen de voucher'
+                    // Fallback: intentar obtener la imagen usando fetch
+                    try {
+                        const response = yield fetch(deposit.voucherFile.url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const buffer = yield response.arrayBuffer();
+                        const contentType = response.headers.get('content-type') || 'image/jpeg';
+                        res.set({
+                            'Content-Type': contentType,
+                            'Cache-Control': 'public, max-age=3600',
+                            'Content-Length': buffer.byteLength.toString(),
+                            'Access-Control-Allow-Origin': '*'
+                        });
+                        res.send(Buffer.from(buffer));
+                        return;
+                    }
+                    catch (fetchError) {
+                        loggerService_1.logger.error('[src/controllers/imagesController.ts] Error en fallback fetch', fetchError, {
+                            metadata: { depositId, voucherUrl: deposit.voucherFile.url }
+                        });
+                        res.status(500).json({
+                            success: false,
+                            error: 'Error obteniendo imagen de voucher'
+                        });
+                        return;
+                    }
+                }
+                // Obtener la imagen directamente desde S3 usando la nueva función
+                try {
+                    const imageData = yield (0, idriveE2_1.getImageFromS3)(key);
+                    res.set({
+                        'Content-Type': imageData.contentType,
+                        'Cache-Control': 'public, max-age=3600',
+                        'Content-Length': imageData.size.toString(),
+                        'Access-Control-Allow-Origin': '*'
                     });
+                    res.send(imageData.buffer);
+                    loggerService_1.logger.info('[src/controllers/imagesController.ts] Imagen de voucher servida exitosamente', {
+                        metadata: { depositId, key, contentType: imageData.contentType, size: imageData.size }
+                    });
+                }
+                catch (s3Error) {
+                    loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen desde S3', s3Error, {
+                        metadata: { depositId, key, voucherUrl: deposit.voucherFile.url }
+                    });
+                    // Fallback: intentar obtener la imagen usando fetch
+                    try {
+                        const response = yield fetch(deposit.voucherFile.url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const buffer = yield response.arrayBuffer();
+                        const contentType = response.headers.get('content-type') || 'image/jpeg';
+                        res.set({
+                            'Content-Type': contentType,
+                            'Cache-Control': 'public, max-age=3600',
+                            'Content-Length': buffer.byteLength.toString(),
+                            'Access-Control-Allow-Origin': '*'
+                        });
+                        res.send(Buffer.from(buffer));
+                    }
+                    catch (fetchError) {
+                        loggerService_1.logger.error('[src/controllers/imagesController.ts] Error en fallback fetch final', fetchError, {
+                            metadata: { depositId, voucherUrl: deposit.voucherFile.url }
+                        });
+                        res.status(500).json({
+                            success: false,
+                            error: 'Error obteniendo imagen de voucher'
+                        });
+                    }
                 }
             }
             catch (error) {
-                loggerService_1.logger.error('Error obteniendo imagen de voucher', error, {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen de voucher', error, {
                     metadata: { depositId: req.params.depositId }
                 });
                 res.status(500).json({
                     success: false,
                     error: 'Error obteniendo imagen de voucher'
+                });
+            }
+        });
+    }
+    /**
+     * Generar URL firmada para una imagen
+     */
+    generatePresignedUrl(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { imageId } = req.params;
+                const { expiresIn = 3600 } = req.query;
+                const image = yield imageService_1.imageService.getImage(imageId);
+                if (!image) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Imagen no encontrada'
+                    });
+                    return;
+                }
+                // Extraer la clave del archivo desde la URL
+                const key = (0, idriveE2_1.extractKeyFromUrl)(image.url);
+                if (!key) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'No se pudo extraer la clave de la imagen'
+                    });
+                    return;
+                }
+                // Generar URL firmada
+                const presignedUrl = yield (0, idriveE2_1.generatePresignedUrl)(key, Number(expiresIn));
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        presignedUrl,
+                        expiresIn: Number(expiresIn),
+                        originalUrl: image.url
+                    }
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error generando URL firmada', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error generando URL firmada'
                 });
             }
         });

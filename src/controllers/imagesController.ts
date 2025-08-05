@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { imageService } from '../services/imageService';
 import { logger } from '../services/loggerService';
 import { db } from '../utils/firebase';
+import { getImageFromS3, extractKeyFromUrl, generatePresignedUrl } from '../utils/idriveE2';
 
 export class ImagesController {
   /**
@@ -419,7 +420,7 @@ export class ImagesController {
   }
 
   /**
-   * Obtener imagen de voucher de depósito
+   * Obtener imagen de voucher de depósito - MEJORADO
    */
   async getVoucherImage(req: Request, res: Response): Promise<void> {
     try {
@@ -433,7 +434,7 @@ export class ImagesController {
         return;
       }
 
-      logger.info('Obteniendo imagen de voucher', { metadata: { depositId } });
+      logger.info('[src/controllers/imagesController.ts] Obteniendo imagen de voucher', { metadata: { depositId } });
 
       // Obtener los detalles del depósito directamente desde Firestore
       const depositDoc = await db.collection('user_deposits').doc(depositId).get();
@@ -456,42 +457,154 @@ export class ImagesController {
         return;
       }
 
-      // Intentar obtener la imagen del voucher
-      try {
-        const response = await fetch(deposit.voucherFile.url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const buffer = await response.arrayBuffer();
-        const contentType = response.headers.get('content-type') || 'image/jpeg';
-        
-        res.set({
-          'Content-Type': contentType,
-          'Cache-Control': 'public, max-age=3600',
-          'Content-Length': buffer.byteLength.toString(),
-          'Access-Control-Allow-Origin': '*'
-        });
-        
-        res.send(Buffer.from(buffer));
-      } catch (fetchError) {
-        logger.error('Error obteniendo imagen de voucher desde S3', fetchError as Error, { 
+      // Extraer la clave del archivo desde la URL
+      const key = extractKeyFromUrl(deposit.voucherFile.url);
+      
+      if (!key) {
+        logger.error('[src/controllers/imagesController.ts] No se pudo extraer la clave de la URL', new Error('No se pudo extraer la clave'), { 
           metadata: { depositId, voucherUrl: deposit.voucherFile.url } 
         });
         
-        res.status(500).json({
-          success: false,
-          error: 'Error obteniendo imagen de voucher'
+        // Fallback: intentar obtener la imagen usando fetch
+        try {
+          const response = await fetch(deposit.voucherFile.url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const buffer = await response.arrayBuffer();
+          const contentType = response.headers.get('content-type') || 'image/jpeg';
+          
+          res.set({
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=3600',
+            'Content-Length': buffer.byteLength.toString(),
+            'Access-Control-Allow-Origin': '*'
+          });
+          
+          res.send(Buffer.from(buffer));
+          return;
+        } catch (fetchError) {
+          logger.error('[src/controllers/imagesController.ts] Error en fallback fetch', fetchError as Error, { 
+            metadata: { depositId, voucherUrl: deposit.voucherFile.url } 
+          });
+          
+          res.status(500).json({
+            success: false,
+            error: 'Error obteniendo imagen de voucher'
+          });
+          return;
+        }
+      }
+
+      // Obtener la imagen directamente desde S3 usando la nueva función
+      try {
+        const imageData = await getImageFromS3(key);
+        
+        res.set({
+          'Content-Type': imageData.contentType,
+          'Cache-Control': 'public, max-age=3600',
+          'Content-Length': imageData.size.toString(),
+          'Access-Control-Allow-Origin': '*'
         });
+        
+        res.send(imageData.buffer);
+        
+        logger.info('[src/controllers/imagesController.ts] Imagen de voucher servida exitosamente', { 
+          metadata: { depositId, key, contentType: imageData.contentType, size: imageData.size } 
+        });
+      } catch (s3Error) {
+        logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen desde S3', s3Error as Error, { 
+          metadata: { depositId, key, voucherUrl: deposit.voucherFile.url } 
+        });
+        
+        // Fallback: intentar obtener la imagen usando fetch
+        try {
+          const response = await fetch(deposit.voucherFile.url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const buffer = await response.arrayBuffer();
+          const contentType = response.headers.get('content-type') || 'image/jpeg';
+          
+          res.set({
+            'Content-Type': contentType,
+            'Cache-Control': 'public, max-age=3600',
+            'Content-Length': buffer.byteLength.toString(),
+            'Access-Control-Allow-Origin': '*'
+          });
+          
+          res.send(Buffer.from(buffer));
+        } catch (fetchError) {
+          logger.error('[src/controllers/imagesController.ts] Error en fallback fetch final', fetchError as Error, { 
+            metadata: { depositId, voucherUrl: deposit.voucherFile.url } 
+          });
+          
+          res.status(500).json({
+            success: false,
+            error: 'Error obteniendo imagen de voucher'
+          });
+        }
       }
     } catch (error) {
-      logger.error('Error obteniendo imagen de voucher', error as Error, { 
+      logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen de voucher', error as Error, { 
         metadata: { depositId: req.params.depositId } 
       });
       
       res.status(500).json({
         success: false,
         error: 'Error obteniendo imagen de voucher'
+      });
+    }
+  }
+
+  /**
+   * Generar URL firmada para una imagen
+   */
+  async generatePresignedUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const { imageId } = req.params;
+      const { expiresIn = 3600 } = req.query;
+      
+      const image = await imageService.getImage(imageId);
+      
+      if (!image) {
+        res.status(404).json({
+          success: false,
+          error: 'Imagen no encontrada'
+        });
+        return;
+      }
+
+      // Extraer la clave del archivo desde la URL
+      const key = extractKeyFromUrl(image.url);
+      
+      if (!key) {
+        res.status(400).json({
+          success: false,
+          error: 'No se pudo extraer la clave de la imagen'
+        });
+        return;
+      }
+
+      // Generar URL firmada
+      const presignedUrl = await generatePresignedUrl(key, Number(expiresIn));
+
+      res.status(200).json({
+        success: true,
+        data: {
+          presignedUrl,
+          expiresIn: Number(expiresIn),
+          originalUrl: image.url
+        }
+      });
+    } catch (error) {
+      logger.error('Error generando URL firmada', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error generando URL firmada'
       });
     }
   }

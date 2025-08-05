@@ -121,7 +121,30 @@ export async function getS3Client(): Promise<S3Client> {
 }
 
 /**
- * Sube un archivo a iDrive E2 (S3) con manejo automático de tokens
+ * Genera una URL correcta para IDrive E2
+ */
+function generateCorrectUrl(bucketName: string, key: string): string {
+  const endpoint = process.env.IDRIVE_E2_ENDPOINT;
+  
+  if (!endpoint) {
+    throw new Error('IDRIVE_E2_ENDPOINT no configurado');
+  }
+
+  // Para IDrive E2, usar el formato específico del endpoint
+  if (endpoint.includes('idrivee2')) {
+    // Formato específico de IDrive E2
+    return `${endpoint}/${bucketName}/${key}`;
+  } else if (endpoint.includes('amazonaws.com')) {
+    // Formato estándar de AWS S3
+    return `https://${bucketName}.s3.${process.env.IDRIVE_E2_REGION}.amazonaws.com/${key}`;
+  } else {
+    // Formato genérico para otros proveedores S3
+    return `${endpoint}/${bucketName}/${key}`;
+  }
+}
+
+/**
+ * Sube un archivo a iDrive E2 (S3) con manejo automático de tokens y configuración mejorada
  */
 export const uploadToS3 = async (
   file: Buffer,
@@ -145,27 +168,22 @@ export const uploadToS3 = async (
       Key: key,
       Body: file,
       ContentType: contentType,
-      ACL: 'public-read', // Cambiar a público para que las imágenes sean accesibles
+      ACL: 'public-read', // Configurar como público para acceso directo
+      CacheControl: 'public, max-age=3600', // Cache por 1 hora
     });
 
     await s3Client.send(command);
     
-    // Generar URL más confiable
-    let fileUrl: string;
-    
-    // Si el endpoint termina en .com, usar formato de URL estándar
-    if (process.env.IDRIVE_E2_ENDPOINT.includes('.com')) {
-      fileUrl = `https://${process.env.IDRIVE_E2_BUCKET_NAME}.${process.env.IDRIVE_E2_ENDPOINT.replace('https://', '')}/${key}`;
-    } else {
-      // Usar formato de endpoint personalizado
-      fileUrl = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${key}`;
-    }
+    // Generar URL correcta para IDrive E2
+    const fileUrl = generateCorrectUrl(process.env.IDRIVE_E2_BUCKET_NAME, key);
     
     logger.info('[src/utils/idriveE2.ts] Archivo subido exitosamente:', {
       metadata: { 
         bucket: process.env.IDRIVE_E2_BUCKET_NAME,
         key,
-        url: fileUrl
+        url: fileUrl,
+        contentType,
+        size: file.length
       }
     });
     
@@ -315,7 +333,7 @@ export const generatePresignedUrl = async (
         url: presignedUrl.substring(0, 100) + '...' // Solo mostrar parte de la URL por seguridad
       }
     });
-    console.log('🌐 Presigned URL:', presignedUrl);
+    
     return presignedUrl;
   } catch (error) {
     logger.error('[src/utils/idriveE2.ts] Error al generar URL firmada:', error instanceof Error ? error : new Error(String(error)));
@@ -357,6 +375,79 @@ export const generatePresignedUploadUrl = async (
   } catch (error) {
     logger.error('[src/utils/idriveE2.ts] Error al generar URL firmada de subida:', error instanceof Error ? error : new Error(String(error)));
     throw new Error('Error al generar URL firmada de subida');
+  }
+};
+
+/**
+ * Obtiene una imagen desde S3 y la devuelve como buffer
+ * Función mejorada para servir imágenes directamente
+ */
+export const getImageFromS3 = async (key: string): Promise<{
+  buffer: Buffer;
+  contentType: string;
+  size: number;
+}> => {
+  try {
+    const s3Client = await getS3Client();
+    
+    const command = new GetObjectCommand({
+      Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
+      throw new Error('Archivo no encontrado');
+    }
+
+    // Convertir stream a buffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+    
+    const buffer = Buffer.concat(chunks);
+    const contentType = response.ContentType || 'image/jpeg';
+    const size = response.ContentLength || buffer.length;
+
+    logger.info('[src/utils/idriveE2.ts] Imagen obtenida exitosamente desde S3:', {
+      metadata: { 
+        key,
+        contentType,
+        size,
+        bucket: process.env.IDRIVE_E2_BUCKET_NAME
+      }
+    });
+
+    return {
+      buffer,
+      contentType,
+      size
+    };
+  } catch (error) {
+    logger.error('[src/utils/idriveE2.ts] Error obteniendo imagen desde S3:', error instanceof Error ? error : new Error(String(error)));
+    throw new Error('Error obteniendo imagen desde S3');
+  }
+};
+
+/**
+ * Extrae la clave del archivo desde una URL de S3
+ */
+export const extractKeyFromUrl = (url: string): string | null => {
+  try {
+    const bucketName = process.env.IDRIVE_E2_BUCKET_NAME;
+    if (!bucketName) return null;
+
+    // Buscar la clave después del nombre del bucket
+    const bucketIndex = url.indexOf(bucketName);
+    if (bucketIndex === -1) return null;
+
+    const keyStart = bucketIndex + bucketName.length + 1; // +1 para el slash
+    return url.substring(keyStart);
+  } catch (error) {
+    logger.error('[src/utils/idriveE2.ts] Error extrayendo clave de URL:', error instanceof Error ? error : new Error(String(error)));
+    return null;
   }
 };
 

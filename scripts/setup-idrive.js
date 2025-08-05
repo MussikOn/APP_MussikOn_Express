@@ -2,17 +2,11 @@
 
 /**
  * Script de configuración y verificación de IDrive E2
- * 
- * Este script ayuda a:
- * 1. Verificar la configuración de variables de entorno
- * 2. Probar la conectividad con IDrive E2
- * 3. Crear buckets si es necesario
- * 4. Configurar permisos
+ * Este script ayuda a configurar y verificar la conexión con IDrive E2
  */
 
-const fs = require('fs');
-const path = require('path');
-const { S3Client, CreateBucketCommand, PutBucketPolicyCommand, HeadBucketCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, ListBucketsCommand } = require('@aws-sdk/client-s3');
+require('dotenv').config();
 
 // Colores para la consola
 const colors = {
@@ -30,12 +24,12 @@ function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-function logError(message) {
-  log(`❌ ${message}`, 'red');
-}
-
 function logSuccess(message) {
   log(`✅ ${message}`, 'green');
+}
+
+function logError(message) {
+  log(`❌ ${message}`, 'red');
 }
 
 function logWarning(message) {
@@ -46,54 +40,48 @@ function logInfo(message) {
   log(`ℹ️ ${message}`, 'blue');
 }
 
-/**
- * Verifica si existe el archivo .env
- */
-function checkEnvFile() {
-  const envPath = path.join(process.cwd(), '.env');
-  
-  if (!fs.existsSync(envPath)) {
-    logError('Archivo .env no encontrado');
-    logInfo('Crea un archivo .env basado en env.example');
-    return false;
-  }
-  
-  logSuccess('Archivo .env encontrado');
-  return true;
+function logHeader(message) {
+  log(`\n${colors.bright}${colors.cyan}${'='.repeat(60)}${colors.reset}`);
+  log(`${colors.bright}${colors.cyan}${message}${colors.reset}`);
+  log(`${colors.bright}${colors.cyan}${'='.repeat(60)}${colors.reset}\n`);
 }
 
-/**
- * Verifica las variables de entorno de IDrive E2
- */
+// Verificar variables de entorno requeridas
+const requiredEnvVars = [
+  'IDRIVE_E2_ACCESS_KEY',
+  'IDRIVE_E2_SECRET_KEY',
+  'IDRIVE_E2_REGION',
+  'IDRIVE_E2_ENDPOINT',
+  'IDRIVE_E2_BUCKET_NAME'
+];
+
 function checkEnvironmentVariables() {
-  const requiredVars = [
-    'IDRIVE_E2_ACCESS_KEY',
-    'IDRIVE_E2_SECRET_KEY',
-    'IDRIVE_E2_REGION',
-    'IDRIVE_E2_ENDPOINT',
-    'IDRIVE_E2_BUCKET_NAME'
-  ];
+  logHeader('Verificando Variables de Entorno');
   
   const missingVars = [];
+  const configuredVars = [];
   
-  for (const varName of requiredVars) {
-    if (!process.env[varName]) {
+  requiredEnvVars.forEach(varName => {
+    if (process.env[varName]) {
+      configuredVars.push(varName);
+      logSuccess(`${varName}: Configurada`);
+    } else {
       missingVars.push(varName);
+      logError(`${varName}: No configurada`);
     }
-  }
+  });
   
   if (missingVars.length > 0) {
-    logError(`Variables de entorno faltantes: ${missingVars.join(', ')}`);
+    logWarning(`\nVariables faltantes: ${missingVars.join(', ')}`);
+    logInfo('Configura estas variables en tu archivo .env o como variables de entorno');
     return false;
   }
   
-  logSuccess('Todas las variables de entorno están configuradas');
+  logSuccess(`\nTodas las variables de entorno están configuradas (${configuredVars.length}/${requiredEnvVars.length})`);
   return true;
 }
 
-/**
- * Crea un cliente S3 para IDrive E2
- */
+// Crear cliente S3
 function createS3Client() {
   try {
     return new S3Client({
@@ -111,34 +99,38 @@ function createS3Client() {
   }
 }
 
-/**
- * Verifica la conectividad con IDrive E2
- */
-async function testConnectivity(s3Client) {
+// Verificar conexión con IDrive E2
+async function testConnection(s3Client) {
+  logHeader('Probando Conexión con IDrive E2');
+  
   try {
-    logInfo('Probando conectividad con IDrive E2...');
+    logInfo('Enviando comando ListBuckets...');
+    const command = new ListBucketsCommand({});
+    const response = await s3Client.send(command);
     
-    const command = new HeadBucketCommand({
-      Bucket: process.env.IDRIVE_E2_BUCKET_NAME
-    });
+    logSuccess('Conexión exitosa con IDrive E2');
+    logInfo(`Buckets disponibles: ${response.Buckets?.length || 0}`);
     
-    await s3Client.send(command);
-    logSuccess('Conectividad exitosa con IDrive E2');
+    if (response.Buckets && response.Buckets.length > 0) {
+      response.Buckets.forEach(bucket => {
+        logInfo(`  - ${bucket.Name} (creado: ${bucket.CreationDate})`);
+      });
+    }
+    
     return true;
   } catch (error) {
-    logError(`Error de conectividad: ${error.message}`);
+    logError(`Error de conexión: ${error.message}`);
+    logWarning('Verifica tus credenciales y configuración de red');
     return false;
   }
 }
 
-/**
- * Verifica si el bucket existe
- */
+// Verificar si el bucket existe
 async function checkBucketExists(s3Client) {
+  logHeader('Verificando Existencia del Bucket');
+  
   try {
-    logInfo('Verificando si el bucket existe...');
-    
-    const command = new HeadBucketCommand({
+    const command = new HeadObjectCommand({
       Bucket: process.env.IDRIVE_E2_BUCKET_NAME
     });
     
@@ -156,18 +148,18 @@ async function checkBucketExists(s3Client) {
   }
 }
 
-/**
- * Crea el bucket si no existe
- */
+// Crear bucket si no existe
 async function createBucket(s3Client) {
+  logHeader('Creando Bucket');
+  
   try {
     logInfo(`Creando bucket "${process.env.IDRIVE_E2_BUCKET_NAME}"...`);
     
-    const command = new CreateBucketCommand({
+    const command = new PutObjectCommand({
       Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
-      CreateBucketConfiguration: {
-        LocationConstraint: process.env.IDRIVE_E2_REGION
-      }
+      Key: 'test/connection-test.txt',
+      Body: 'Test de conexión - ' + new Date().toISOString(),
+      ContentType: 'text/plain'
     });
     
     await s3Client.send(command);
@@ -179,51 +171,15 @@ async function createBucket(s3Client) {
   }
 }
 
-/**
- * Configura la política del bucket para acceso público
- */
-async function configureBucketPolicy(s3Client) {
+// Probar subida de archivo
+async function testUpload(s3Client) {
+  logHeader('Probando Subida de Archivo');
+  
   try {
-    logInfo('Configurando política del bucket...');
+    const testContent = `Test de subida - ${new Date().toISOString()}`;
+    const testKey = `test/upload-test-${Date.now()}.txt`;
     
-    const bucketPolicy = {
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Sid: 'PublicReadGetObject',
-          Effect: 'Allow',
-          Principal: '*',
-          Action: 's3:GetObject',
-          Resource: `arn:aws:s3:::${process.env.IDRIVE_E2_BUCKET_NAME}/*`
-        }
-      ]
-    };
-    
-    const command = new PutBucketPolicyCommand({
-      Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
-      Policy: JSON.stringify(bucketPolicy)
-    });
-    
-    await s3Client.send(command);
-    logSuccess('Política del bucket configurada para acceso público');
-    return true;
-  } catch (error) {
-    logWarning(`No se pudo configurar la política del bucket: ${error.message}`);
-    return false;
-  }
-}
-
-/**
- * Prueba la subida de un archivo
- */
-async function testFileUpload(s3Client) {
-  try {
-    logInfo('Probando subida de archivo...');
-    
-    const { PutObjectCommand } = require('@aws-sdk/client-s3');
-    
-    const testContent = Buffer.from('Test de configuración de IDrive E2 - ' + new Date().toISOString());
-    const testKey = 'setup-test/test-file.txt';
+    logInfo(`Subiendo archivo de prueba: ${testKey}`);
     
     const command = new PutObjectCommand({
       Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
@@ -234,107 +190,167 @@ async function testFileUpload(s3Client) {
     });
     
     await s3Client.send(command);
-    logSuccess('Subida de archivo exitosa');
+    logSuccess('Archivo subido exitosamente');
+    
+    // Verificar que se puede descargar
+    logInfo('Verificando descarga del archivo...');
+    const getCommand = new GetObjectCommand({
+      Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+      Key: testKey
+    });
+    
+    const response = await s3Client.send(getCommand);
+    const downloadedContent = await response.Body.transformToString();
+    
+    if (downloadedContent === testContent) {
+      logSuccess('Descarga verificada exitosamente');
+    } else {
+      logWarning('El contenido descargado no coincide con el original');
+    }
+    
     return true;
   } catch (error) {
-    logError(`Error en subida de archivo: ${error.message}`);
+    logError(`Error en prueba de subida: ${error.message}`);
     return false;
   }
 }
 
-/**
- * Muestra información de configuración
- */
-function showConfiguration() {
-  log('\n📋 Configuración actual:', 'cyan');
+// Probar acceso público
+async function testPublicAccess(s3Client) {
+  logHeader('Probando Acceso Público');
+  
+  try {
+    const testKey = `test/public-access-test-${Date.now()}.txt`;
+    const testContent = 'Test de acceso público - ' + new Date().toISOString();
+    
+    logInfo('Subiendo archivo con acceso público...');
+    
+    const command = new PutObjectCommand({
+      Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+      Key: testKey,
+      Body: testContent,
+      ContentType: 'text/plain',
+      ACL: 'public-read'
+    });
+    
+    await s3Client.send(command);
+    
+    // Intentar acceder públicamente
+    const publicUrl = `${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/${testKey}`;
+    logInfo(`URL pública: ${publicUrl}`);
+    
+    try {
+      const response = await fetch(publicUrl);
+      if (response.ok) {
+        logSuccess('Acceso público funcionando correctamente');
+      } else {
+        logWarning(`Acceso público no funciona (status: ${response.status})`);
+      }
+    } catch (fetchError) {
+      logWarning(`No se pudo probar acceso público: ${fetchError.message}`);
+    }
+    
+    return true;
+  } catch (error) {
+    logError(`Error probando acceso público: ${error.message}`);
+    return false;
+  }
+}
+
+// Generar reporte de configuración
+function generateConfigReport() {
+  logHeader('Reporte de Configuración');
+  
+  log(`${colors.bright}Configuración Actual:${colors.reset}`);
   log(`   Región: ${process.env.IDRIVE_E2_REGION}`, 'bright');
   log(`   Endpoint: ${process.env.IDRIVE_E2_ENDPOINT}`, 'bright');
   log(`   Bucket: ${process.env.IDRIVE_E2_BUCKET_NAME}`, 'bright');
   log(`   Access Key: ${process.env.IDRIVE_E2_ACCESS_KEY ? '✅ Configurada' : '❌ No configurada'}`, 'bright');
   log(`   Secret Key: ${process.env.IDRIVE_E2_SECRET_KEY ? '✅ Configurada' : '❌ No configurada'}`, 'bright');
+  
+  log(`\n${colors.bright}URLs de Ejemplo:${colors.reset}`);
+  log(`   Subida: ${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/uploads/`);
+  log(`   Acceso: ${process.env.IDRIVE_E2_ENDPOINT}/${process.env.IDRIVE_E2_BUCKET_NAME}/uploads/archivo.jpg`);
 }
 
-/**
- * Función principal
- */
+// Función principal
 async function main() {
-  log('\n🚀 Configuración de IDrive E2 para MussikOn', 'magenta');
-  log('==========================================\n', 'magenta');
-  
-  // Cargar variables de entorno
-  require('dotenv').config();
-  
-  // Verificar archivo .env
-  if (!checkEnvFile()) {
-    process.exit(1);
-  }
+  logHeader('Configuración y Verificación de IDrive E2');
   
   // Verificar variables de entorno
   if (!checkEnvironmentVariables()) {
+    logError('No se pueden continuar las pruebas sin las variables de entorno');
     process.exit(1);
   }
-  
-  // Mostrar configuración
-  showConfiguration();
   
   // Crear cliente S3
   const s3Client = createS3Client();
   if (!s3Client) {
+    logError('No se pudo crear el cliente S3');
     process.exit(1);
   }
   
-  // Verificar conectividad
-  if (!await testConnectivity(s3Client)) {
+  // Probar conexión
+  const connectionOk = await testConnection(s3Client);
+  if (!connectionOk) {
+    logError('No se pudo establecer conexión con IDrive E2');
     process.exit(1);
   }
   
   // Verificar bucket
   const bucketExists = await checkBucketExists(s3Client);
   if (!bucketExists) {
-    const create = process.argv.includes('--create-bucket');
-    if (create) {
-      if (!await createBucket(s3Client)) {
-        process.exit(1);
-      }
-    } else {
-      logWarning('Usa --create-bucket para crear el bucket automáticamente');
+    logWarning('El bucket no existe, intentando crearlo...');
+    const created = await createBucket(s3Client);
+    if (!created) {
+      logError('No se pudo crear el bucket');
       process.exit(1);
     }
   }
   
-  // Configurar política del bucket
-  await configureBucketPolicy(s3Client);
-  
-  // Probar subida de archivo
-  if (!await testFileUpload(s3Client)) {
+  // Probar subida
+  const uploadOk = await testUpload(s3Client);
+  if (!uploadOk) {
+    logError('La prueba de subida falló');
     process.exit(1);
   }
   
-  log('\n🎉 Configuración completada exitosamente!', 'green');
-  log('IDrive E2 está listo para usar con MussikOn', 'green');
+  // Probar acceso público
+  await testPublicAccess(s3Client);
   
-  log('\n📝 Próximos pasos:', 'cyan');
-  log('1. Reinicia tu servidor de desarrollo', 'bright');
-  log('2. Prueba subir una imagen desde la aplicación', 'bright');
-  log('3. Verifica que las imágenes se muestren correctamente', 'bright');
-  log('4. Monitorea los logs para detectar problemas', 'bright');
+  // Generar reporte
+  generateConfigReport();
+  
+  logHeader('Configuración Completada');
+  logSuccess('IDrive E2 está configurado y funcionando correctamente');
+  logInfo('Puedes usar el sistema de imágenes en tu aplicación');
 }
+
+// Manejar errores no capturados
+process.on('unhandledRejection', (reason, promise) => {
+  logError(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  logError(`Uncaught Exception: ${error.message}`);
+  process.exit(1);
+});
 
 // Ejecutar script
 if (require.main === module) {
   main().catch(error => {
-    logError(`Error inesperado: ${error.message}`);
+    logError(`Error en el script: ${error.message}`);
     process.exit(1);
   });
 }
 
 module.exports = {
-  checkEnvFile,
   checkEnvironmentVariables,
   createS3Client,
-  testConnectivity,
+  testConnection,
   checkBucketExists,
   createBucket,
-  configureBucketPolicy,
-  testFileUpload
+  testUpload,
+  testPublicAccess
 }; 

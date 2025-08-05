@@ -52,9 +52,11 @@ const io = new Server(server, {
   cors: {
     origin: [
       'http://localhost:5173',
+      'http://localhost:3001',
       'http://localhost:5173/analytics',
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
+      'http://192.168.54.17:3001',
       'http://192.168.54.17:5173',
       'http://192.168.54.26:5173',
       'http://192.168.54.59:5173',
@@ -74,9 +76,11 @@ const io = new Server(server, {
 // Configurar CORS
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:3001',
   'http://localhost:5173/analytics',
   'http://172.20.10.2:5173',
   'http://172.20.10.2:3001/api-docs',
+  'http://192.168.54.17:3001',
   'http://192.168.54.17:5173',
   'http://192.168.54.26:5173',
   'http://192.168.54.59:1000',

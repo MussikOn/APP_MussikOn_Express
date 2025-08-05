@@ -505,6 +505,53 @@ router.get('/serve-url', async (req, res) => {
   await imagesController.serveImageByUrl(req, res);
 });
 
+/**
+ * @swagger
+ * /images/{imageId}/presigned:
+ *   get:
+ *     summary: Generar URL firmada para una imagen
+ *     tags: [Imágenes]
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *       - in: query
+ *         name: expiresIn
+ *         schema:
+ *           type: integer
+ *           default: 3600
+ *         description: Tiempo de expiración en segundos
+ *     responses:
+ *       200:
+ *         description: URL firmada generada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     presignedUrl:
+ *                       type: string
+ *                     expiresIn:
+ *                       type: number
+ *                     originalUrl:
+ *                       type: string
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/:imageId/presigned', async (req, res) => {
+  await imagesController.generatePresignedUrl(req, res);
+});
+
 // Rutas de compatibilidad con el sistema anterior
 /**
  * @swagger
