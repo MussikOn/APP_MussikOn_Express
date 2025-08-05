@@ -168,7 +168,34 @@ export interface Message {
   content: string;
   timestamp: string;
   status: 'sent' | 'delivered' | 'read';
-  type: 'text' | 'image' | 'audio' | 'file';
+  type: 'text' | 'image' | 'audio' | 'file' | 'location' | 'contact';
+  metadata?: {
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+    duration?: number; // Para audio
+    location?: {
+      lat: number;
+      lng: number;
+      address?: string;
+    };
+    contact?: {
+      name: string;
+      phone: string;
+      email?: string;
+    };
+  };
+  editedAt?: string;
+  isEdited: boolean;
+  reactions?: Record<string, string[]>; // userId -> emoji
+  replyTo?: {
+    messageId: string;
+    senderName: string;
+    content: string;
+  };
+  deletedAt?: string;
+  isDeleted: boolean;
 }
 
 export interface Conversation {
@@ -179,6 +206,16 @@ export interface Conversation {
   updatedAt: string;
   isActive: boolean;
   createdAt: string;
+  type: 'direct' | 'group' | 'event';
+  name?: string; // Para conversaciones grupales
+  avatar?: string;
+  settings?: {
+    notifications: boolean;
+    muted: boolean;
+    pinned: boolean;
+  };
+  typingUsers?: string[]; // Usuarios escribiendo actualmente
+  eventId?: string; // Para conversaciones relacionadas con eventos
 }
 
 export interface ChatFilters {
@@ -186,6 +223,38 @@ export interface ChatFilters {
   unreadOnly?: boolean;
   dateFrom?: string;
   dateTo?: string;
+  type?: 'direct' | 'group' | 'event';
+  participants?: string[];
+}
+
+export interface ChatStats {
+  totalConversations: number;
+  unreadMessages: number;
+  activeConversations: number;
+  totalMessages: number;
+  messagesThisWeek: number;
+  messagesThisMonth: number;
+  mostActiveConversation?: {
+    id: string;
+    name: string;
+    messageCount: number;
+  };
+}
+
+export interface TypingIndicator {
+  conversationId: string;
+  userEmail: string;
+  userName: string;
+  isTyping: boolean;
+}
+
+export interface ChatNotification {
+  type: 'new_message' | 'typing' | 'read_receipt' | 'user_online' | 'user_offline';
+  conversationId: string;
+  senderId?: string;
+  senderName?: string;
+  message?: string;
+  timestamp: string;
 }
 
 // Interfaces para búsqueda de músicos

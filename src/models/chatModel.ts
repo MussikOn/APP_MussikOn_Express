@@ -1,11 +1,14 @@
 import { db } from '../utils/firebase';
-import { Message, Conversation, ChatFilters } from '../utils/DataTypes';
+import { Message, Conversation, ChatFilters, ChatStats, TypingIndicator } from '../utils/DataTypes';
 import * as admin from 'firebase-admin';
 import { logger } from '../services/loggerService';
 
 // Crear una nueva conversación
 export const createConversationModel = async (
-  participants: string[]
+  participants: string[],
+  type: 'direct' | 'group' | 'event' = 'direct',
+  name?: string,
+  eventId?: string
 ): Promise<Conversation> => {
   const now = new Date().toISOString();
   const conversationRef = db.collection('conversations').doc();
@@ -17,11 +20,19 @@ export const createConversationModel = async (
     updatedAt: now,
     isActive: true,
     createdAt: now,
+    type,
+    name,
+    eventId,
+    settings: {
+      notifications: true,
+      muted: false,
+      pinned: false
+    },
+    typingUsers: []
   };
 
   await conversationRef.set(conversation);
-  logger.info('[src/models/chatModel.ts:19] Conversación creada:', { metadata: { id: conversation
-,    } });
+  logger.info('Conversación creada:', { metadata: { id: conversation.id, type, participants } });
   return conversation;
 };
 
@@ -82,15 +93,20 @@ export const getConversationByIdModel = async (
 
 // Obtener mensajes de una conversación
 export const getMessagesByConversationModel = async (
-  conversationId: string
+  conversationId: string,
+  limit: number = 50,
+  offset: number = 0
 ): Promise<Message[]> => {
   const snapshot = await db
     .collection('messages')
     .where('conversationId', '==', conversationId)
-    .orderBy('timestamp', 'asc')
+    .where('isDeleted', '==', false)
+    .orderBy('timestamp', 'desc')
+    .limit(limit)
+    .offset(offset)
     .get();
 
-  return snapshot.docs.map(doc => doc.data() as Message);
+  return snapshot.docs.map(doc => doc.data() as Message).reverse();
 };
 
 // Crear un nuevo mensaje
@@ -104,28 +120,31 @@ export const createMessageModel = async (
     ...messageData,
     id: messageRef.id,
     timestamp: now,
+    isEdited: false,
+    isDeleted: false,
+    reactions: {}
   };
 
   await messageRef.set(message);
-  logger.info('[src/models/chatModel.ts:68] Mensaje creado:', { metadata: { id: message  } });
 
   // Actualizar la conversación con el último mensaje
   await updateConversationLastMessage(message.conversationId, message);
 
+  logger.info('Mensaje creado:', { metadata: { id: message.id, conversationId: message.conversationId } });
   return message;
 };
 
-// Actualizar el último mensaje de una conversación
+// Actualizar último mensaje de la conversación
 export const updateConversationLastMessage = async (
   conversationId: string,
   message: Message
 ): Promise<void> => {
   const conversationRef = db.collection('conversations').doc(conversationId);
-
+  
   await conversationRef.update({
     lastMessage: message,
     updatedAt: message.timestamp,
-    unreadCount: admin.firestore.FieldValue.increment(1),
+    unreadCount: admin.firestore.FieldValue.increment(1)
   });
 };
 
@@ -135,7 +154,7 @@ export const markMessageAsReadModel = async (
 ): Promise<void> => {
   const messageRef = db.collection('messages').doc(messageId);
   await messageRef.update({
-    status: 'read',
+    status: 'read'
   });
 };
 
@@ -145,24 +164,137 @@ export const markConversationAsReadModel = async (
   userEmail: string
 ): Promise<void> => {
   const conversationRef = db.collection('conversations').doc(conversationId);
-
-  // Obtener la conversación para verificar que el usuario es participante
-  const conversationSnap = await conversationRef.get();
-  if (!conversationSnap.exists) {
-    throw new Error('Conversación no encontrada');
-  }
-
-  const conversation = conversationSnap.data() as Conversation;
-  if (!conversation.participants.includes(userEmail)) {
-    throw new Error('Usuario no es participante de esta conversación');
-  }
-
+  
   await conversationRef.update({
-    unreadCount: 0,
+    unreadCount: 0
+  });
+
+  // Marcar todos los mensajes no leídos como leídos
+  const messagesSnapshot = await db
+    .collection('messages')
+    .where('conversationId', '==', conversationId)
+    .where('senderId', '!=', userEmail)
+    .where('status', '!=', 'read')
+    .get();
+
+  const batch = db.batch();
+  messagesSnapshot.docs.forEach(doc => {
+    batch.update(doc.ref, { status: 'read' });
+  });
+
+  await batch.commit();
+};
+
+// Editar mensaje
+export const editMessageModel = async (
+  messageId: string,
+  newContent: string,
+  userEmail: string
+): Promise<Message | null> => {
+  const messageRef = db.collection('messages').doc(messageId);
+  const messageSnap = await messageRef.get();
+
+  if (!messageSnap.exists) {
+    return null;
+  }
+
+  const message = messageSnap.data() as Message;
+
+  // Verificar que el usuario es el propietario del mensaje
+  if (message.senderId !== userEmail) {
+    throw new Error('No tienes permisos para editar este mensaje');
+  }
+
+  const now = new Date().toISOString();
+  const updatedMessage: Message = {
+    ...message,
+    content: newContent,
+    editedAt: now,
+    isEdited: true
+  };
+
+  await messageRef.update({
+    content: newContent,
+    editedAt: now,
+    isEdited: true
+  });
+
+  return updatedMessage;
+};
+
+// Agregar reacción a mensaje
+export const addReactionToMessageModel = async (
+  messageId: string,
+  userEmail: string,
+  emoji: string
+): Promise<void> => {
+  const messageRef = db.collection('messages').doc(messageId);
+  
+  await messageRef.update({
+    [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayUnion(emoji)
   });
 };
 
-// Buscar conversaciones con filtros
+// Remover reacción de mensaje
+export const removeReactionFromMessageModel = async (
+  messageId: string,
+  userEmail: string,
+  emoji: string
+): Promise<void> => {
+  const messageRef = db.collection('messages').doc(messageId);
+  
+  await messageRef.update({
+    [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayRemove(emoji)
+  });
+};
+
+// Eliminar mensaje (soft delete)
+export const deleteMessageModel = async (
+  messageId: string,
+  userEmail: string
+): Promise<void> => {
+  const messageRef = db.collection('messages').doc(messageId);
+  const messageSnap = await messageRef.get();
+
+  if (!messageSnap.exists) {
+    throw new Error('Mensaje no encontrado');
+  }
+
+  const message = messageSnap.data() as Message;
+
+  // Verificar que el usuario es el propietario del mensaje
+  if (message.senderId !== userEmail) {
+    throw new Error('No tienes permisos para eliminar este mensaje');
+  }
+
+  const now = new Date().toISOString();
+  await messageRef.update({
+    isDeleted: true,
+    deletedAt: now,
+    content: 'Mensaje eliminado'
+  });
+};
+
+// Actualizar indicador de escritura
+export const updateTypingIndicatorModel = async (
+  conversationId: string,
+  userEmail: string,
+  isTyping: boolean
+): Promise<void> => {
+  const conversationRef = db.collection('conversations').doc(conversationId);
+  
+  if (isTyping) {
+    await conversationRef.update({
+      typingUsers: admin.firestore.FieldValue.arrayUnion(userEmail)
+    });
+  } else {
+    await conversationRef.update({
+      typingUsers: admin.firestore.FieldValue.arrayRemove(userEmail)
+    });
+  }
+};
+
+// Buscar conversaciones
 export const searchConversationsModel = async (
   userEmail: string,
   filters: ChatFilters
@@ -172,66 +304,69 @@ export const searchConversationsModel = async (
     .where('participants', 'array-contains', userEmail)
     .where('isActive', '==', true);
 
+  if (filters.type) {
+    query = query.where('type', '==', filters.type);
+  }
+
   if (filters.unreadOnly) {
     query = query.where('unreadCount', '>', 0);
   }
 
-  if (filters.dateFrom) {
-    query = query.where('updatedAt', '>=', filters.dateFrom);
-  }
-
-  if (filters.dateTo) {
-    query = query.where('updatedAt', '<=', filters.dateTo);
-  }
-
-  const snapshot = await query.orderBy('updatedAt', 'desc').get();
+  const snapshot = await query.get();
   let conversations = snapshot.docs.map(doc => doc.data() as Conversation);
 
-  // Filtrar por búsqueda de texto si se proporciona
-  if (filters.search) {
-    conversations = conversations.filter(conversation => {
-      // Buscar en el último mensaje
-      if (
-        conversation.lastMessage?.content
-          .toLowerCase()
-          .includes(filters.search!.toLowerCase())
-      ) {
-        return true;
-      }
+  // Filtrar por fecha si se especifica
+  if (filters.dateFrom || filters.dateTo) {
+    conversations = conversations.filter(conv => {
+      const convDate = new Date(conv.updatedAt);
+      const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
+      const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
 
-      // Buscar en participantes (excluyendo al usuario actual)
-      const otherParticipants = conversation.participants.filter(
-        p => p !== userEmail
-      );
-      return otherParticipants.some(p =>
-        p.toLowerCase().includes(filters.search!.toLowerCase())
+      if (fromDate && convDate < fromDate) return false;
+      if (toDate && convDate > toDate) return false;
+      return true;
+    });
+  }
+
+  // Buscar por texto si se especifica
+  if (filters.search) {
+    const searchTerm = filters.search.toLowerCase();
+    conversations = conversations.filter(conv => {
+      return (
+        conv.name?.toLowerCase().includes(searchTerm) ||
+        conv.lastMessage?.content.toLowerCase().includes(searchTerm) ||
+        conv.participants.some(p => p.toLowerCase().includes(searchTerm))
       );
     });
   }
 
-  return conversations;
+  return conversations.sort((a, b) => {
+    const dateA = new Date(a.updatedAt);
+    const dateB = new Date(b.updatedAt);
+    return dateB.getTime() - dateA.getTime();
+  });
 };
 
-// Eliminar conversación (marcar como inactiva)
+// Eliminar conversación
 export const deleteConversationModel = async (
   conversationId: string,
   userEmail: string
 ): Promise<void> => {
   const conversationRef = db.collection('conversations').doc(conversationId);
-
-  // Verificar que el usuario es participante
   const conversationSnap = await conversationRef.get();
+
   if (!conversationSnap.exists) {
     throw new Error('Conversación no encontrada');
   }
 
   const conversation = conversationSnap.data() as Conversation;
+
   if (!conversation.participants.includes(userEmail)) {
-    throw new Error('Usuario no es participante de esta conversación');
+    throw new Error('No tienes permisos para eliminar esta conversación');
   }
 
   await conversationRef.update({
-    isActive: false,
+    isActive: false
   });
 };
 
@@ -241,24 +376,24 @@ export const archiveConversationModel = async (
   userEmail: string
 ): Promise<void> => {
   const conversationRef = db.collection('conversations').doc(conversationId);
-
-  // Verificar que el usuario es participante
   const conversationSnap = await conversationRef.get();
+
   if (!conversationSnap.exists) {
     throw new Error('Conversación no encontrada');
   }
 
   const conversation = conversationSnap.data() as Conversation;
+
   if (!conversation.participants.includes(userEmail)) {
-    throw new Error('Usuario no es participante de esta conversación');
+    throw new Error('No tienes permisos para archivar esta conversación');
   }
 
   await conversationRef.update({
-    isActive: false,
+    'settings.pinned': false
   });
 };
 
-// Obtener conversación entre dos usuarios específicos
+// Obtener conversación entre dos usuarios
 export const getConversationBetweenUsersModel = async (
   user1: string,
   user2: string
@@ -266,42 +401,74 @@ export const getConversationBetweenUsersModel = async (
   const snapshot = await db
     .collection('conversations')
     .where('participants', 'array-contains', user1)
+    .where('type', '==', 'direct')
     .where('isActive', '==', true)
     .get();
 
-  const conversations = snapshot.docs.map(doc => doc.data() as Conversation);
-
-  // Buscar conversación que contenga ambos usuarios
-  const conversation = conversations.find(
-    conv =>
-      conv.participants.includes(user1) && conv.participants.includes(user2)
-  );
+  const conversation = snapshot.docs
+    .map(doc => doc.data() as Conversation)
+    .find(conv => conv.participants.includes(user2));
 
   return conversation || null;
 };
 
-// Obtener estadísticas de chat para un usuario
+// Obtener estadísticas del chat
 export const getChatStatsModel = async (
   userEmail: string
-): Promise<{
-  totalConversations: number;
-  unreadMessages: number;
-  activeConversations: number;
-}> => {
+): Promise<ChatStats> => {
   const conversations = await getConversationsByUserModel(userEmail);
+  
+  // Obtener mensajes de las últimas semanas
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const totalConversations = conversations.length;
-  const unreadMessages = conversations.reduce(
-    (sum, conv) => sum + conv.unreadCount,
-    0
-  );
-  const activeConversations = conversations.filter(
-    conv => conv.isActive
-  ).length;
+  const messagesSnapshot = await db
+    .collection('messages')
+    .where('senderId', '==', userEmail)
+    .where('timestamp', '>=', weekAgo.toISOString())
+    .get();
 
-  return {
-    totalConversations,
-    unreadMessages,
-    activeConversations,
+  const messagesThisWeek = messagesSnapshot.docs.length;
+
+  const monthMessagesSnapshot = await db
+    .collection('messages')
+    .where('senderId', '==', userEmail)
+    .where('timestamp', '>=', monthAgo.toISOString())
+    .get();
+
+  const messagesThisMonth = monthMessagesSnapshot.docs.length;
+
+  // Encontrar conversación más activa
+  let mostActiveConversation = null;
+  let maxMessages = 0;
+
+  for (const conv of conversations) {
+    const convMessagesSnapshot = await db
+      .collection('messages')
+      .where('conversationId', '==', conv.id)
+      .get();
+
+    const messageCount = convMessagesSnapshot.docs.length;
+    if (messageCount > maxMessages) {
+      maxMessages = messageCount;
+      mostActiveConversation = {
+        id: conv.id,
+        name: conv.name || conv.participants.join(', '),
+        messageCount
+      };
+    }
+  }
+
+  const stats: ChatStats = {
+    totalConversations: conversations.length,
+    unreadMessages: conversations.reduce((sum, conv) => sum + conv.unreadCount, 0),
+    activeConversations: conversations.filter(conv => conv.unreadCount > 0).length,
+    totalMessages: 0, // Se calcularía con una consulta adicional
+    messagesThisWeek,
+    messagesThisMonth,
+    mostActiveConversation: mostActiveConversation || undefined
   };
+
+  return stats;
 };

@@ -2,14 +2,21 @@ import { Server, Socket } from 'socket.io';
 import {
   createMessageModel,
   getConversationByIdModel,
+  updateTypingIndicatorModel,
+  editMessageModel,
+  addReactionToMessageModel,
+  removeReactionFromMessageModel,
+  deleteMessageModel,
+  markMessageAsReadModel
 } from '../models/chatModel';
-import { Message } from '../utils/DataTypes';
+import { Message, ChatNotification } from '../utils/DataTypes';
 import { logger } from '../services/loggerService';
 
 interface ChatUser {
   socketId: string;
   userEmail: string;
   userName: string;
+  currentConversation?: string;
 }
 
 interface ConnectedUsers {
@@ -40,23 +47,106 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
         '[src/sockets/chatSocket.ts:33] 👥 Usuarios conectados al chat:',
         Object.keys(connectedUsers)
       );
+
+      // Notificar a otros usuarios que este usuario está online
+      socket.broadcast.emit('user-online', {
+        userEmail: userEmail.toLowerCase(),
+        userName
+      });
     }
   );
 
   // Unirse a una conversación
-  socket.on('join-conversation', (conversationId: string) => {
-    socket.join(conversationId);
-    console.log(
-      `[src/sockets/chatSocket.ts:40] 💬 Usuario ${socket.id} se unió a la conversación: ${conversationId}`
-    );
+  socket.on('join-conversation', async (conversationId: string) => {
+    try {
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        socket.emit('error', { message: 'Usuario no registrado' });
+        return;
+      }
+
+      // Verificar que el usuario es participante de la conversación
+      const conversation = await getConversationByIdModel(conversationId);
+      if (!conversation) {
+        socket.emit('error', { message: 'Conversación no encontrada' });
+        return;
+      }
+
+      if (!conversation.participants.includes(userEmail)) {
+        socket.emit('error', { message: 'No tienes permisos para acceder a esta conversación' });
+        return;
+      }
+
+      socket.join(conversationId);
+      connectedUsers[userEmail].currentConversation = conversationId;
+
+      console.log(
+        `[src/sockets/chatSocket.ts:60] 💬 Usuario ${userEmail} se unió a la conversación: ${conversationId}`
+      );
+
+      // Notificar a otros participantes
+      socket.to(conversationId).emit('user-joined-conversation', {
+        userEmail,
+        userName: connectedUsers[userEmail].userName,
+        conversationId
+      });
+    } catch (error) {
+      logger.error('Error al unirse a conversación:', error as Error);
+      socket.emit('error', { message: 'Error al unirse a la conversación' });
+    }
   });
 
   // Salir de una conversación
   socket.on('leave-conversation', (conversationId: string) => {
-    socket.leave(conversationId);
-    console.log(
-      `[src/sockets/chatSocket.ts:46] 💬 Usuario ${socket.id} salió de la conversación: ${conversationId}`
+    const userEmail = Object.keys(connectedUsers).find(
+      email => connectedUsers[email].socketId === socket.id
     );
+
+    if (userEmail) {
+      socket.leave(conversationId);
+      delete connectedUsers[userEmail].currentConversation;
+
+      console.log(
+        `[src/sockets/chatSocket.ts:85] 💬 Usuario ${userEmail} salió de la conversación: ${conversationId}`
+      );
+
+      // Notificar a otros participantes
+      socket.to(conversationId).emit('user-left-conversation', {
+        userEmail,
+        userName: connectedUsers[userEmail].userName,
+        conversationId
+      });
+    }
+  });
+
+  // Indicador de escritura
+  socket.on('typing', async (data: { conversationId: string; isTyping: boolean }) => {
+    try {
+      const { conversationId, isTyping } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        return;
+      }
+
+      // Actualizar en la base de datos
+      await updateTypingIndicatorModel(conversationId, userEmail, isTyping);
+
+      // Notificar a otros participantes
+      socket.to(conversationId).emit('user-typing', {
+        userEmail,
+        userName: connectedUsers[userEmail].userName,
+        isTyping,
+        conversationId
+      });
+    } catch (error) {
+      logger.error('Error al actualizar indicador de escritura:', error as Error);
+    }
   });
 
   // Enviar mensaje en tiempo real
@@ -67,7 +157,9 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
       senderId: string;
       senderName: string;
       content: string;
-      type?: 'text' | 'image' | 'audio' | 'file';
+      type?: 'text' | 'image' | 'audio' | 'file' | 'location' | 'contact';
+      metadata?: any;
+      replyTo?: any;
     }) => {
       try {
         const {
@@ -76,6 +168,8 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
           senderName,
           content,
           type = 'text',
+          metadata,
+          replyTo
         } = messageData;
 
         // Verificar que la conversación existe
@@ -88,8 +182,7 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
         // Verificar que el remitente es participante
         if (!conversation.participants.includes(senderId)) {
           socket.emit('message-error', {
-            error:
-              'No tienes permisos para enviar mensajes a esta conversación',
+            error: 'No tienes permisos para enviar mensajes a esta conversación'
           });
           return;
         }
@@ -100,136 +193,249 @@ export const chatSocketHandler = (io: Server, socket: Socket) => {
           senderId,
           senderName,
           content,
-          status: 'sent',
           type,
+          metadata,
+          replyTo,
+          status: 'sent',
+          isEdited: false,
+          isDeleted: false,
+          reactions: {}
         };
 
-        const savedMessage = await createMessageModel(message);
+        const createdMessage = await createMessageModel(message);
 
-        // Emitir el mensaje a todos los participantes de la conversación
-        io.to(conversationId).emit('new-message', savedMessage);
+        // Enviar el mensaje a todos los participantes de la conversación
+        io.to(conversationId).emit('new-message', createdMessage);
 
-        // Emitir notificación a participantes que no están en la conversación
-        conversation.participants.forEach(participantEmail => {
-          if (participantEmail !== senderId) {
-            const participantSocket =
-              connectedUsers[participantEmail.toLowerCase()];
-            if (participantSocket) {
-              io.to(participantSocket.socketId).emit('message-notification', {
-                conversationId,
-                message: savedMessage,
-                unreadCount: conversation.unreadCount + 1,
-              });
-            }
+        // Enviar notificación push a usuarios no conectados
+        const notification: ChatNotification = {
+          type: 'new_message',
+          conversationId,
+          senderId,
+          senderName,
+          message: content,
+          timestamp: createdMessage.timestamp
+        };
+
+        conversation.participants.forEach(participant => {
+          if (participant !== senderId && !connectedUsers[participant]) {
+            // Enviar notificación push aquí si está implementado
+            console.log(`Enviando notificación push a: ${participant}`);
           }
         });
 
-        console.log(
-          `[src/sockets/chatSocket.ts:89] 💬 Mensaje enviado en conversación ${conversationId}:`,
-          savedMessage.content
-        );
-      } catch (error: any) {
-        logger.info('[src/sockets/chatSocket.ts:91] Error en send-message');
-        logger.error('[src/sockets/chatSocket.ts:92] Error al enviar mensaje:', error as Error);
-        socket.emit('message-error', {
-          error: error.message || 'Error al enviar mensaje',
-        });
+        logger.info('Mensaje enviado:', { metadata: { messageId: createdMessage.id, conversationId } });
+      } catch (error) {
+        logger.error('Error al enviar mensaje:', error as Error);
+        socket.emit('message-error', { error: 'Error al enviar mensaje' });
       }
     }
   );
+
+  // Editar mensaje
+  socket.on('edit-message', async (data: { messageId: string; newContent: string }) => {
+    try {
+      const { messageId, newContent } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        socket.emit('error', { message: 'Usuario no registrado' });
+        return;
+      }
+
+      const updatedMessage = await editMessageModel(messageId, newContent, userEmail);
+      if (!updatedMessage) {
+        socket.emit('error', { message: 'Mensaje no encontrado' });
+        return;
+      }
+
+      // Notificar a todos los participantes de la conversación
+      io.to(updatedMessage.conversationId).emit('message-edited', updatedMessage);
+    } catch (error) {
+      logger.error('Error al editar mensaje:', error as Error);
+      socket.emit('error', { message: 'Error al editar mensaje' });
+    }
+  });
+
+  // Agregar reacción
+  socket.on('add-reaction', async (data: { messageId: string; emoji: string }) => {
+    try {
+      const { messageId, emoji } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        socket.emit('error', { message: 'Usuario no registrado' });
+        return;
+      }
+
+      await addReactionToMessageModel(messageId, userEmail, emoji);
+
+      // Obtener el mensaje actualizado y notificar
+      // Aquí podrías obtener el mensaje actualizado de la base de datos
+      socket.broadcast.emit('reaction-added', {
+        messageId,
+        userEmail,
+        emoji
+      });
+    } catch (error) {
+      logger.error('Error al agregar reacción:', error as Error);
+      socket.emit('error', { message: 'Error al agregar reacción' });
+    }
+  });
+
+  // Remover reacción
+  socket.on('remove-reaction', async (data: { messageId: string; emoji: string }) => {
+    try {
+      const { messageId, emoji } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        socket.emit('error', { message: 'Usuario no registrado' });
+        return;
+      }
+
+      await removeReactionFromMessageModel(messageId, userEmail, emoji);
+
+      socket.broadcast.emit('reaction-removed', {
+        messageId,
+        userEmail,
+        emoji
+      });
+    } catch (error) {
+      logger.error('Error al remover reacción:', error as Error);
+      socket.emit('error', { message: 'Error al remover reacción' });
+    }
+  });
+
+  // Eliminar mensaje
+  socket.on('delete-message', async (data: { messageId: string }) => {
+    try {
+      const { messageId } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
+
+      if (!userEmail) {
+        socket.emit('error', { message: 'Usuario no registrado' });
+        return;
+      }
+
+      await deleteMessageModel(messageId, userEmail);
+
+      socket.broadcast.emit('message-deleted', {
+        messageId,
+        userEmail
+      });
+    } catch (error) {
+      logger.error('Error al eliminar mensaje:', error as Error);
+      socket.emit('error', { message: 'Error al eliminar mensaje' });
+    }
+  });
 
   // Marcar mensaje como leído
-  socket.on(
-    'mark-message-read',
-    async (data: { messageId: string; conversationId: string }) => {
-      try {
-        const { messageId, conversationId } = data;
+  socket.on('mark-as-read', async (data: { messageId: string }) => {
+    try {
+      const { messageId } = data;
+      const userEmail = Object.keys(connectedUsers).find(
+        email => connectedUsers[email].socketId === socket.id
+      );
 
-        // Aquí podrías actualizar el estado del mensaje en la base de datos
-        // Por ahora solo emitimos el evento
-
-        io.to(conversationId).emit('message-read', { messageId });
-        console.log(
-          `[src/sockets/chatSocket.ts:105] ✅ Mensaje marcado como leído: ${messageId}`
-        );
-      } catch (error: any) {
-        console.log(
-          '[src/sockets/chatSocket.ts:107] Error en mark-message-read'
-        );
-        logger.error('[src/sockets/chatSocket.ts:108] Error al marcar mensaje como leído:', error as Error);
-        socket.emit('message-error', {
-          error: error.message || 'Error al marcar mensaje como leído',
-        });
+      if (!userEmail) {
+        return;
       }
-    }
-  );
 
-  // Escribiendo...
-  socket.on(
-    'typing',
-    (data: {
-      conversationId: string;
-      userEmail: string;
-      isTyping: boolean;
-    }) => {
-      const { conversationId, userEmail, isTyping } = data;
+      await markMessageAsReadModel(messageId);
 
-      // Emitir a todos en la conversación excepto al remitente
-      socket.to(conversationId).emit('user-typing', {
-        conversationId,
-        userEmail,
-        isTyping,
+      // Notificar al remitente que el mensaje fue leído
+      socket.broadcast.emit('message-read', {
+        messageId,
+        readBy: userEmail
       });
+    } catch (error) {
+      logger.error('Error al marcar mensaje como leído:', error as Error);
     }
-  );
+  });
 
-  // Estado de conexión
-  socket.on(
-    'online-status',
-    (data: { userEmail: string; isOnline: boolean }) => {
-      const { userEmail, isOnline } = data;
-
-      // Emitir a todos los usuarios conectados
-      io.emit('user-status-changed', {
-        userEmail,
-        isOnline,
-      });
-    }
-  );
-
-  // Desconexión
+  // Manejar desconexión
   socket.on('disconnect', () => {
-    // Encontrar y eliminar al usuario desconectado
-    const disconnectedUser = Object.keys(connectedUsers).find(
+    const userEmail = Object.keys(connectedUsers).find(
       email => connectedUsers[email].socketId === socket.id
     );
 
-    if (disconnectedUser) {
-      delete connectedUsers[disconnectedUser];
+    if (userEmail) {
+      const user = connectedUsers[userEmail];
+      
+      // Notificar a otros usuarios que este usuario está offline
+      socket.broadcast.emit('user-offline', {
+        userEmail,
+        userName: user.userName
+      });
+
+      // Limpiar indicadores de escritura
+      if (user.currentConversation) {
+        updateTypingIndicatorModel(user.currentConversation, userEmail, false)
+          .then(() => {
+            socket.to(user.currentConversation!).emit('user-typing', {
+              userEmail,
+              userName: user.userName,
+              isTyping: false,
+              conversationId: user.currentConversation
+            });
+          })
+          .catch(error => {
+            logger.error('Error al limpiar indicador de escritura:', error as Error);
+          });
+      }
+
+      // Remover usuario de la lista de conectados
+      delete connectedUsers[userEmail];
+
       console.log(
-        `[src/sockets/chatSocket.ts:135] ❌ Usuario desconectado del chat: ${disconnectedUser}`
-      );
-      console.log(
-        '[src/sockets/chatSocket.ts:136] 👥 Usuarios conectados al chat:',
+        `[src/sockets/chatSocket.ts:280] 👋 Usuario ${userEmail} desconectado. Usuarios restantes:`,
         Object.keys(connectedUsers)
       );
     }
-
-    logger.info('💬 Usuario desconectado del chat:', { context: 'ChatSocket', metadata: { socketId: socket.id } });
   });
 };
 
-// Función para obtener usuarios conectados (para uso en otros módulos)
+// Función para obtener usuarios conectados
 export const getConnectedUsers = () => connectedUsers;
 
-// Función para enviar notificación a un usuario específico
+// Función para enviar notificación a usuario específico
 export const sendNotificationToUser = (
   io: Server,
   userEmail: string,
-  notification: any
+  notification: ChatNotification
 ) => {
   const user = connectedUsers[userEmail.toLowerCase()];
   if (user) {
-    io.to(user.socketId).emit('notification', notification);
+    io.to(user.socketId).emit('chat-notification', notification);
   }
+};
+
+// Función para enviar mensaje a usuario específico
+export const sendMessageToUser = (
+  io: Server,
+  userEmail: string,
+  message: Message
+) => {
+  const user = connectedUsers[userEmail.toLowerCase()];
+  if (user) {
+    io.to(user.socketId).emit('new-message', message);
+  }
+};
+
+// Función para enviar mensaje a conversación
+export const sendMessageToConversation = (
+  io: Server,
+  conversationId: string,
+  message: Message
+) => {
+  io.to(conversationId).emit('new-message', message);
 };

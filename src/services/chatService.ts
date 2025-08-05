@@ -1,573 +1,577 @@
 import { db } from '../utils/firebase';
-import { User } from '../utils/DataTypes';
-import { FieldValue } from 'firebase-admin/firestore';
-import { logger } from '../services/loggerService';
-
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  senderName: string;
-  content: string;
-  type: 'text' | 'image' | 'audio' | 'file';
-  timestamp: Date;
-  readBy: string[];
-  metadata?: {
-    fileUrl?: string;
-    fileName?: string;
-    fileSize?: number;
-    duration?: number;
-    thumbnail?: string;
-  };
-}
-
-export interface Conversation {
-  id: string;
-  participants: string[];
-  participantNames: Record<string, string>;
-  lastMessage?: Message;
-  lastActivity: Date;
-  isGroup: boolean;
-  groupName?: string;
-  groupAdmin?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ChatFilters {
-  userId: string;
-  limit?: number;
-  offset?: number;
-  unreadOnly?: boolean;
-}
+import { Message, Conversation, ChatStats, ChatNotification } from '../utils/DataTypes';
+import { logger } from './loggerService';
+import { pushNotificationService } from './pushNotificationService';
+import * as admin from 'firebase-admin';
 
 export class ChatService {
+  private static instance: ChatService;
+
+  public static getInstance(): ChatService {
+    if (!ChatService.instance) {
+      ChatService.instance = new ChatService();
+    }
+    return ChatService.instance;
+  }
+
   /**
-   * Crear una nueva conversación
+   * Crear conversación con validaciones avanzadas
    */
   async createConversation(
     participants: string[],
-    isGroup: boolean = false,
-    groupName?: string,
-    groupAdmin?: string
+    type: 'direct' | 'group' | 'event' = 'direct',
+    name?: string,
+    eventId?: string,
+    creatorEmail?: string
   ): Promise<Conversation> {
     try {
-      // Obtener nombres de participantes
-      const participantNames: Record<string, string> = {};
-      for (const participantId of participants) {
-        const userDoc = await db.collection('users').doc(participantId).get();
-        if (userDoc.exists) {
-          const userData = userDoc.data() as User;
-          participantNames[participantId] =
-            `${userData.name} ${userData.lastName}`;
+      // Validar participantes
+      if (!participants || participants.length === 0) {
+        throw new Error('Se requiere al menos un participante');
+      }
+
+      // Verificar que todos los participantes existen
+      const usersSnapshot = await db.collection('users').get();
+      const existingUsers = usersSnapshot.docs.map(doc => doc.data().userEmail);
+      
+      const invalidParticipants = participants.filter(p => !existingUsers.includes(p));
+      if (invalidParticipants.length > 0) {
+        throw new Error(`Usuarios no encontrados: ${invalidParticipants.join(', ')}`);
+      }
+
+      // Para conversaciones directas, verificar si ya existe
+      if (type === 'direct' && participants.length === 2) {
+        const existingConversation = await this.getConversationBetweenUsers(
+          participants[0],
+          participants[1]
+        );
+        if (existingConversation) {
+          return existingConversation;
         }
       }
 
+      // Crear la conversación
+      const now = new Date().toISOString();
+      const conversationRef = db.collection('conversations').doc();
+
       const conversation: Conversation = {
-        id: db.collection('conversations').doc().id,
+        id: conversationRef.id,
         participants,
-        participantNames,
-        lastActivity: new Date(),
-        isGroup,
-        groupName,
-        groupAdmin,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        unreadCount: 0,
+        updatedAt: now,
+        isActive: true,
+        createdAt: now,
+        type,
+        name,
+        eventId,
+        settings: {
+          notifications: true,
+          muted: false,
+          pinned: false
+        },
+        typingUsers: []
       };
 
-      await db
-        .collection('conversations')
-        .doc(conversation.id)
-        .set(conversation);
+      await conversationRef.set(conversation);
 
+      // Notificar a los participantes sobre la nueva conversación
+      participants.forEach(participant => {
+        if (participant !== creatorEmail) {
+          this.sendConversationNotification(participant, {
+            type: 'new_message',
+            conversationId: conversation.id,
+            senderId: creatorEmail || participants[0],
+            senderName: 'Sistema',
+            message: `Nueva conversación creada: ${name || 'Chat'}`,
+            timestamp: now
+          });
+        }
+      });
+
+      logger.info('Conversación creada:', { metadata: { id: conversation.id, type, participants } });
       return conversation;
     } catch (error) {
       logger.error('Error al crear conversación:', error as Error);
-      throw new Error('Error al crear conversación');
+      throw error;
     }
   }
 
   /**
-   * Obtener conversaciones de un usuario
-   */
-  async getUserConversations(filters: ChatFilters): Promise<Conversation[]> {
-    try {
-      const { userId, limit = 20, offset = 0, unreadOnly = false } = filters;
-
-      const query = db
-        .collection('conversations')
-        .where('participants', 'array-contains', userId)
-        .orderBy('lastActivity', 'desc')
-        .limit(limit)
-        .offset(offset);
-
-      const snapshot = await query.get();
-      const conversations = snapshot.docs.map(
-        doc => doc.data() as Conversation
-      );
-
-      // Filtrar por mensajes no leídos si se especifica
-      if (unreadOnly) {
-        const conversationsWithUnread = await Promise.all(
-          conversations.map(async conversation => {
-            const unreadCount = await this.getUnreadMessageCount(
-              conversation.id,
-              userId
-            );
-            return { ...conversation, unreadCount };
-          })
-        );
-        return conversationsWithUnread.filter(conv => conv.unreadCount > 0);
-      }
-
-      return conversations;
-    } catch (error) {
-      logger.error('Error al obtener conversaciones:', error as Error);
-      throw new Error('Error al obtener conversaciones');
-    }
-  }
-
-  /**
-   * Obtener mensajes de una conversación
-   */
-  async getConversationMessages(
-    conversationId: string,
-    limit: number = 50,
-    offset: number = 0
-  ): Promise<Message[]> {
-    try {
-      const query = db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .orderBy('timestamp', 'desc')
-        .limit(limit)
-        .offset(offset);
-
-      const snapshot = await query.get();
-      return snapshot.docs.map(doc => doc.data() as Message);
-    } catch (error) {
-      logger.error('Error al obtener mensajes:', error as Error);
-      throw new Error('Error al obtener mensajes');
-    }
-  }
-
-  /**
-   * Enviar un mensaje
+   * Enviar mensaje con validaciones y notificaciones
    */
   async sendMessage(
     conversationId: string,
     senderId: string,
+    senderName: string,
     content: string,
-    type: 'text' | 'image' | 'audio' | 'file' = 'text',
-    metadata?: any
+    type: 'text' | 'image' | 'audio' | 'file' | 'location' | 'contact' = 'text',
+    metadata?: any,
+    replyTo?: any
   ): Promise<Message> {
     try {
-      // Verificar que la conversación existe
-      const conversationDoc = await db
-        .collection('conversations')
-        .doc(conversationId)
-        .get();
-      if (!conversationDoc.exists) {
+      // Verificar que la conversación existe y el usuario es participante
+      const conversation = await this.getConversationById(conversationId);
+      if (!conversation) {
         throw new Error('Conversación no encontrada');
       }
 
-      // Obtener información del remitente
-      const senderDoc = await db.collection('users').doc(senderId).get();
-      if (!senderDoc.exists) {
-        throw new Error('Usuario remitente no encontrado');
+      if (!conversation.participants.includes(senderId)) {
+        throw new Error('No tienes permisos para enviar mensajes a esta conversación');
       }
 
-      const senderData = senderDoc.data() as User;
-      const senderName = `${senderData.name} ${senderData.lastName}`;
+      // Validar contenido según el tipo
+      if (type === 'text' && (!content || content.trim() === '')) {
+        throw new Error('El contenido del mensaje es requerido');
+      }
+
+      // Crear el mensaje
+      const now = new Date().toISOString();
+      const messageRef = db.collection('messages').doc();
 
       const message: Message = {
-        id: db
-          .collection('conversations')
-          .doc(conversationId)
-          .collection('messages')
-          .doc().id,
+        id: messageRef.id,
         conversationId,
         senderId,
         senderName,
-        content,
+        content: content.trim(),
+        timestamp: now,
+        status: 'sent',
         type,
-        timestamp: new Date(),
-        readBy: [senderId], // El remitente ya leyó el mensaje
         metadata,
+        replyTo,
+        isEdited: false,
+        isDeleted: false,
+        reactions: {}
       };
 
-      // Guardar el mensaje
-      await db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .doc(message.id)
-        .set(message);
+      await messageRef.set(message);
 
-      // Actualizar la conversación con el último mensaje
-      await db.collection('conversations').doc(conversationId).update({
-        lastMessage: message,
-        lastActivity: new Date(),
-        updatedAt: new Date(),
-      });
+      // Actualizar la conversación
+      await this.updateConversationLastMessage(conversationId, message);
 
+      // Enviar notificaciones push a participantes no conectados
+      await this.sendMessageNotifications(conversation, message);
+
+      logger.info('Mensaje enviado:', { metadata: { id: message.id, conversationId } });
       return message;
     } catch (error) {
       logger.error('Error al enviar mensaje:', error as Error);
-      throw new Error('Error al enviar mensaje');
+      throw error;
     }
   }
 
   /**
-   * Marcar mensajes como leídos
+   * Editar mensaje con validaciones
    */
-  async markMessagesAsRead(
-    conversationId: string,
-    userId: string,
-    messageIds?: string[]
-  ): Promise<void> {
-    try {
-      if (messageIds && messageIds.length > 0) {
-        // Marcar mensajes específicos como leídos
-        const batch = db.batch();
-
-        for (const messageId of messageIds) {
-          const messageRef = db
-            .collection('conversations')
-            .doc(conversationId)
-            .collection('messages')
-            .doc(messageId);
-
-          batch.update(messageRef, {
-            readBy: FieldValue.arrayUnion(userId),
-          });
-        }
-
-        await batch.commit();
-      } else {
-        // Marcar todos los mensajes no leídos como leídos
-        const messagesQuery = db
-          .collection('conversations')
-          .doc(conversationId)
-          .collection('messages')
-          .where('readBy', 'not-in', [[userId]]);
-
-        const snapshot = await messagesQuery.get();
-        const batch = db.batch();
-
-        snapshot.docs.forEach(doc => {
-          batch.update(doc.ref, {
-            readBy: FieldValue.arrayUnion(userId),
-          });
-        });
-
-        await batch.commit();
-      }
-    } catch (error) {
-      logger.error('Error al marcar mensajes como leídos:', error as Error);
-      throw new Error('Error al marcar mensajes como leídos');
-    }
-  }
-
-  /**
-   * Obtener número de mensajes no leídos
-   */
-  async getUnreadMessageCount(
-    conversationId: string,
-    userId: string
-  ): Promise<number> {
-    try {
-      const query = db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .where('readBy', 'not-in', [[userId]]);
-
-      const snapshot = await query.get();
-      return snapshot.size;
-    } catch (error) {
-      logger.error('Error al obtener conteo de mensajes no leídos:', error as Error);
-      return 0;
-    }
-  }
-
-  /**
-   * Obtener conversación por ID
-   */
-  async getConversationById(
-    conversationId: string
-  ): Promise<Conversation | null> {
-    try {
-      const doc = await db
-        .collection('conversations')
-        .doc(conversationId)
-        .get();
-      if (doc.exists) {
-        return doc.data() as Conversation;
-      }
-      return null;
-    } catch (error) {
-      logger.error('Error al obtener conversación:', error as Error);
-      throw new Error('Error al obtener conversación');
-    }
-  }
-
-  /**
-   * Buscar conversaciones
-   */
-  async searchConversations(
-    userId: string,
-    searchTerm: string
-  ): Promise<Conversation[]> {
-    try {
-      // Obtener todas las conversaciones del usuario
-      const conversations = await this.getUserConversations({
-        userId,
-        limit: 100,
-      });
-
-      // Filtrar por término de búsqueda
-      return conversations.filter(conversation => {
-        // Buscar en nombres de participantes
-        const participantNames = Object.values(conversation.participantNames);
-        const nameMatch = participantNames.some(name =>
-          name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-        // Buscar en nombre del grupo
-        const groupMatch = conversation.groupName
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-        // Buscar en último mensaje
-        const messageMatch = conversation.lastMessage?.content
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-        return nameMatch || groupMatch || messageMatch;
-      });
-    } catch (error) {
-      logger.error('Error al buscar conversaciones:', error as Error);
-      throw new Error('Error al buscar conversaciones');
-    }
-  }
-
-  /**
-   * Buscar mensajes
-   */
-  async searchMessages(
-    conversationId: string,
-    searchTerm: string,
-    limit: number = 20
-  ): Promise<Message[]> {
-    try {
-      const query = db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .orderBy('timestamp', 'desc')
-        .limit(limit);
-
-      const snapshot = await query.get();
-      const messages = snapshot.docs.map(doc => doc.data() as Message);
-
-      // Filtrar por término de búsqueda
-      return messages.filter(message =>
-        message.content.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    } catch (error) {
-      logger.error('Error al buscar mensajes:', error as Error);
-      throw new Error('Error al buscar mensajes');
-    }
-  }
-
-  /**
-   * Eliminar mensaje
-   */
-  async deleteMessage(
-    conversationId: string,
+  async editMessage(
     messageId: string,
-    userId: string
+    newContent: string,
+    userEmail: string
+  ): Promise<Message | null> {
+    try {
+      const messageRef = db.collection('messages').doc(messageId);
+      const messageSnap = await messageRef.get();
+
+      if (!messageSnap.exists) {
+        return null;
+      }
+
+      const message = messageSnap.data() as Message;
+
+      // Verificar permisos
+      if (message.senderId !== userEmail) {
+        throw new Error('No tienes permisos para editar este mensaje');
+      }
+
+      // Verificar que no han pasado más de 15 minutos
+      const messageTime = new Date(message.timestamp);
+      const now = new Date();
+      const timeDiff = now.getTime() - messageTime.getTime();
+      const minutesDiff = timeDiff / (1000 * 60);
+
+      if (minutesDiff > 15) {
+        throw new Error('No se puede editar un mensaje después de 15 minutos');
+      }
+
+      const updatedAt = new Date().toISOString();
+      const updatedMessage: Message = {
+        ...message,
+        content: newContent.trim(),
+        editedAt: updatedAt,
+        isEdited: true
+      };
+
+      await messageRef.update({
+        content: newContent.trim(),
+        editedAt: updatedAt,
+        isEdited: true
+      });
+
+      logger.info('Mensaje editado:', { metadata: { id: messageId, userEmail } });
+      return updatedMessage;
+    } catch (error) {
+      logger.error('Error al editar mensaje:', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Agregar reacción a mensaje
+   */
+  async addReaction(
+    messageId: string,
+    userEmail: string,
+    emoji: string
   ): Promise<void> {
     try {
-      const messageDoc = await db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .doc(messageId)
-        .get();
+      const messageRef = db.collection('messages').doc(messageId);
+      const messageSnap = await messageRef.get();
 
-      if (!messageDoc.exists) {
+      if (!messageSnap.exists) {
         throw new Error('Mensaje no encontrado');
       }
 
-      const message = messageDoc.data() as Message;
+      const message = messageSnap.data() as Message;
 
-      // Solo el remitente puede eliminar el mensaje
-      if (message.senderId !== userId) {
-        throw new Error('No autorizado para eliminar este mensaje');
+      // Verificar que el usuario es participante de la conversación
+      const conversation = await this.getConversationById(message.conversationId);
+      if (!conversation || !conversation.participants.includes(userEmail)) {
+        throw new Error('No tienes permisos para reaccionar a este mensaje');
       }
 
-      await db
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .doc(messageId)
-        .delete();
-    } catch (error) {
-      logger.error('Error al eliminar mensaje:', error as Error);
-      throw new Error('Error al eliminar mensaje');
-    }
-  }
-
-  /**
-   * Agregar participante a conversación grupal
-   */
-  async addParticipantToGroup(
-    conversationId: string,
-    participantId: string,
-    adminId: string
-  ): Promise<void> {
-    try {
-      const conversation = await this.getConversationById(conversationId);
-      if (!conversation) {
-        throw new Error('Conversación no encontrada');
-      }
-
-      if (!conversation.isGroup) {
-        throw new Error(
-          'Solo se pueden agregar participantes a conversaciones grupales'
-        );
-      }
-
-      if (conversation.groupAdmin !== adminId) {
-        throw new Error(
-          'Solo el administrador del grupo puede agregar participantes'
-        );
-      }
-
-      if (conversation.participants.includes(participantId)) {
-        throw new Error('El participante ya está en la conversación');
-      }
-
-      // Obtener nombre del nuevo participante
-      const userDoc = await db.collection('users').doc(participantId).get();
-      if (!userDoc.exists) {
-        throw new Error('Usuario no encontrado');
-      }
-
-      const userData = userDoc.data() as User;
-      const participantName = `${userData.name} ${userData.lastName}`;
-
-      // Actualizar conversación
-      await db
-        .collection('conversations')
-        .doc(conversationId)
-        .update({
-          participants: FieldValue.arrayUnion(participantId),
-          [`participantNames.${participantId}`]: participantName,
-          updatedAt: new Date(),
-        });
-    } catch (error) {
-      logger.error('Error al agregar participante:', error as Error);
-      throw new Error('Error al agregar participante');
-    }
-  }
-
-  /**
-   * Remover participante de conversación grupal
-   */
-  async removeParticipantFromGroup(
-    conversationId: string,
-    participantId: string,
-    adminId: string
-  ): Promise<void> {
-    try {
-      const conversation = await this.getConversationById(conversationId);
-      if (!conversation) {
-        throw new Error('Conversación no encontrada');
-      }
-
-      if (!conversation.isGroup) {
-        throw new Error(
-          'Solo se pueden remover participantes de conversaciones grupales'
-        );
-      }
-
-      if (conversation.groupAdmin !== adminId) {
-        throw new Error(
-          'Solo el administrador del grupo puede remover participantes'
-        );
-      }
-
-      if (!conversation.participants.includes(participantId)) {
-        throw new Error('El participante no está en la conversación');
-      }
-
-      // Actualizar conversación
-      await db
-        .collection('conversations')
-        .doc(conversationId)
-        .update({
-          participants: FieldValue.arrayRemove(participantId),
-          [`participantNames.${participantId}`]: FieldValue.delete(),
-          updatedAt: new Date(),
-        });
-    } catch (error) {
-      logger.error('Error al remover participante:', error as Error);
-      throw new Error('Error al remover participante');
-    }
-  }
-
-  /**
-   * Obtener estadísticas de chat
-   */
-  async getChatStats(userId: string): Promise<{
-    totalConversations: number;
-    totalMessages: number;
-    unreadMessages: number;
-    activeConversations: number;
-  }> {
-    try {
-      const conversations = await this.getUserConversations({
-        userId,
-        limit: 100,
+      await messageRef.update({
+        [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayUnion(emoji)
       });
 
-      let totalMessages = 0;
-      let unreadMessages = 0;
-      let activeConversations = 0;
+      logger.info('Reacción agregada:', { metadata: { messageId, userEmail, emoji } });
+    } catch (error) {
+      logger.error('Error al agregar reacción:', error as Error);
+      throw error;
+    }
+  }
 
-      for (const conversation of conversations) {
-        const messageCount = await this.getConversationMessages(
-          conversation.id,
-          1000
-        );
-        totalMessages += messageCount.length;
+  /**
+   * Remover reacción de mensaje
+   */
+  async removeReaction(
+    messageId: string,
+    userEmail: string,
+    emoji: string
+  ): Promise<void> {
+    try {
+      const messageRef = db.collection('messages').doc(messageId);
+      
+      await messageRef.update({
+        [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayRemove(emoji)
+      });
 
-        const unreadCount = await this.getUnreadMessageCount(
-          conversation.id,
-          userId
-        );
-        unreadMessages += unreadCount;
+      logger.info('Reacción removida:', { metadata: { messageId, userEmail, emoji } });
+    } catch (error) {
+      logger.error('Error al remover reacción:', error as Error);
+      throw error;
+    }
+  }
 
-        if (unreadCount > 0) {
-          activeConversations++;
+  /**
+   * Eliminar mensaje (soft delete)
+   */
+  async deleteMessage(
+    messageId: string,
+    userEmail: string
+  ): Promise<void> {
+    try {
+      const messageRef = db.collection('messages').doc(messageId);
+      const messageSnap = await messageRef.get();
+
+      if (!messageSnap.exists) {
+        throw new Error('Mensaje no encontrado');
+      }
+
+      const message = messageSnap.data() as Message;
+
+      // Verificar permisos
+      if (message.senderId !== userEmail) {
+        throw new Error('No tienes permisos para eliminar este mensaje');
+      }
+
+      const now = new Date().toISOString();
+      await messageRef.update({
+        isDeleted: true,
+        deletedAt: now,
+        content: 'Mensaje eliminado'
+      });
+
+      logger.info('Mensaje eliminado:', { metadata: { messageId, userEmail } });
+    } catch (error) {
+      logger.error('Error al eliminar mensaje:', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Marcar conversación como leída
+   */
+  async markConversationAsRead(
+    conversationId: string,
+    userEmail: string
+  ): Promise<void> {
+    try {
+      const conversationRef = db.collection('conversations').doc(conversationId);
+      
+      await conversationRef.update({
+        unreadCount: 0
+      });
+
+      // Marcar todos los mensajes no leídos como leídos
+      const messagesSnapshot = await db
+        .collection('messages')
+        .where('conversationId', '==', conversationId)
+        .where('senderId', '!=', userEmail)
+        .where('status', '!=', 'read')
+        .get();
+
+      const batch = db.batch();
+      messagesSnapshot.docs.forEach(doc => {
+        batch.update(doc.ref, { status: 'read' });
+      });
+
+      await batch.commit();
+
+      logger.info('Conversación marcada como leída:', { metadata: { conversationId, userEmail } });
+    } catch (error) {
+      logger.error('Error al marcar conversación como leída:', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtener estadísticas avanzadas del chat
+   */
+  async getChatStats(userEmail: string): Promise<ChatStats> {
+    try {
+      const conversations = await this.getConversationsByUser(userEmail);
+      
+      // Obtener mensajes de las últimas semanas
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const messagesSnapshot = await db
+        .collection('messages')
+        .where('senderId', '==', userEmail)
+        .where('timestamp', '>=', weekAgo.toISOString())
+        .get();
+
+      const messagesThisWeek = messagesSnapshot.docs.length;
+
+      const monthMessagesSnapshot = await db
+        .collection('messages')
+        .where('senderId', '==', userEmail)
+        .where('timestamp', '>=', monthAgo.toISOString())
+        .get();
+
+      const messagesThisMonth = monthMessagesSnapshot.docs.length;
+
+      // Encontrar conversación más activa
+      let mostActiveConversation = null;
+      let maxMessages = 0;
+
+      for (const conv of conversations) {
+        const convMessagesSnapshot = await db
+          .collection('messages')
+          .where('conversationId', '==', conv.id)
+          .get();
+
+        const messageCount = convMessagesSnapshot.docs.length;
+        if (messageCount > maxMessages) {
+          maxMessages = messageCount;
+          mostActiveConversation = {
+            id: conv.id,
+            name: conv.name || conv.participants.join(', '),
+            messageCount
+          };
         }
       }
 
-      return {
+      const stats: ChatStats = {
         totalConversations: conversations.length,
-        totalMessages,
-        unreadMessages,
-        activeConversations,
+        unreadMessages: conversations.reduce((sum, conv) => sum + conv.unreadCount, 0),
+        activeConversations: conversations.filter(conv => conv.unreadCount > 0).length,
+        totalMessages: 0, // Se calcularía con una consulta adicional
+        messagesThisWeek,
+        messagesThisMonth,
+        mostActiveConversation: mostActiveConversation || undefined
       };
+
+      return stats;
     } catch (error) {
-      logger.error('Error al obtener estadísticas de chat:', error as Error);
-      throw new Error('Error al obtener estadísticas de chat');
+      logger.error('Error al obtener estadísticas del chat:', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Buscar conversaciones con filtros avanzados
+   */
+  async searchConversations(
+    userEmail: string,
+    filters: {
+      search?: string;
+      unreadOnly?: boolean;
+      dateFrom?: string;
+      dateTo?: string;
+      type?: 'direct' | 'group' | 'event';
+      participants?: string[];
+    }
+  ): Promise<Conversation[]> {
+    try {
+      let query = db
+        .collection('conversations')
+        .where('participants', 'array-contains', userEmail)
+        .where('isActive', '==', true);
+
+      if (filters.type) {
+        query = query.where('type', '==', filters.type);
+      }
+
+      if (filters.unreadOnly) {
+        query = query.where('unreadCount', '>', 0);
+      }
+
+      const snapshot = await query.get();
+      let conversations = snapshot.docs.map(doc => doc.data() as Conversation);
+
+      // Filtrar por fecha
+      if (filters.dateFrom || filters.dateTo) {
+        conversations = conversations.filter(conv => {
+          const convDate = new Date(conv.updatedAt);
+          const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
+          const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
+
+          if (fromDate && convDate < fromDate) return false;
+          if (toDate && convDate > toDate) return false;
+          return true;
+        });
+      }
+
+      // Buscar por texto
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        conversations = conversations.filter(conv => {
+          return (
+            conv.name?.toLowerCase().includes(searchTerm) ||
+            conv.lastMessage?.content.toLowerCase().includes(searchTerm) ||
+            conv.participants.some(p => p.toLowerCase().includes(searchTerm))
+          );
+        });
+      }
+
+      // Filtrar por participantes
+      if (filters.participants && filters.participants.length > 0) {
+        conversations = conversations.filter(conv =>
+          filters.participants!.some(p => conv.participants.includes(p))
+        );
+      }
+
+      return conversations.sort((a, b) => {
+        const dateA = new Date(a.updatedAt);
+        const dateB = new Date(b.updatedAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+    } catch (error) {
+      logger.error('Error al buscar conversaciones:', error as Error);
+      throw error;
+    }
+  }
+
+  // Métodos privados auxiliares
+
+  private async getConversationById(conversationId: string): Promise<Conversation | null> {
+    const conversationRef = db.collection('conversations').doc(conversationId);
+    const conversationSnap = await conversationRef.get();
+
+    if (!conversationSnap.exists) {
+      return null;
+    }
+
+    return conversationSnap.data() as Conversation;
+  }
+
+  private async getConversationsByUser(userEmail: string): Promise<Conversation[]> {
+    const snapshot = await db
+      .collection('conversations')
+      .where('participants', 'array-contains', userEmail)
+      .where('isActive', '==', true)
+      .orderBy('updatedAt', 'desc')
+      .get();
+
+    return snapshot.docs.map(doc => doc.data() as Conversation);
+  }
+
+  private async getConversationBetweenUsers(user1: string, user2: string): Promise<Conversation | null> {
+    const snapshot = await db
+      .collection('conversations')
+      .where('participants', 'array-contains', user1)
+      .where('type', '==', 'direct')
+      .where('isActive', '==', true)
+      .get();
+
+    const conversation = snapshot.docs
+      .map(doc => doc.data() as Conversation)
+      .find(conv => conv.participants.includes(user2));
+
+    return conversation || null;
+  }
+
+  private async updateConversationLastMessage(conversationId: string, message: Message): Promise<void> {
+    const conversationRef = db.collection('conversations').doc(conversationId);
+    
+    await conversationRef.update({
+      lastMessage: message,
+      updatedAt: message.timestamp,
+      unreadCount: admin.firestore.FieldValue.increment(1)
+    });
+  }
+
+  private async sendMessageNotifications(conversation: Conversation, message: Message): Promise<void> {
+    try {
+      conversation.participants.forEach(async (participant) => {
+        if (participant !== message.senderId) {
+          // Enviar notificación push
+          await pushNotificationService.sendNotificationToUser(participant, {
+            title: message.senderName,
+            body: message.content,
+            type: 'chat',
+            data: {
+              conversationId: conversation.id,
+              messageId: message.id,
+              senderId: message.senderId
+            },
+            category: 'chat'
+          });
+        }
+      });
+    } catch (error) {
+      logger.error('Error al enviar notificaciones de mensaje:', error as Error);
+    }
+  }
+
+  private async sendConversationNotification(userEmail: string, notification: ChatNotification): Promise<void> {
+    try {
+      await pushNotificationService.sendNotificationToUser(userEmail, {
+        title: notification.senderName || 'Nueva conversación',
+        body: notification.message || 'Tienes una nueva conversación',
+        type: 'chat',
+        data: {
+          conversationId: notification.conversationId,
+          notificationType: notification.type
+        },
+        category: 'chat'
+      });
+    } catch (error) {
+      logger.error('Error al enviar notificación de conversación:', error as Error);
     }
   }
 }
 
-export const chatService = new ChatService();
+export const chatService = ChatService.getInstance();

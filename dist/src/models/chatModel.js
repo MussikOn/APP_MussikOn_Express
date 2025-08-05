@@ -42,12 +42,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChatStatsModel = exports.getConversationBetweenUsersModel = exports.archiveConversationModel = exports.deleteConversationModel = exports.searchConversationsModel = exports.markConversationAsReadModel = exports.markMessageAsReadModel = exports.updateConversationLastMessage = exports.createMessageModel = exports.getMessagesByConversationModel = exports.getConversationByIdModel = exports.getConversationsByUserModel = exports.createConversationModel = void 0;
+exports.getChatStatsModel = exports.getConversationBetweenUsersModel = exports.archiveConversationModel = exports.deleteConversationModel = exports.searchConversationsModel = exports.updateTypingIndicatorModel = exports.deleteMessageModel = exports.removeReactionFromMessageModel = exports.addReactionToMessageModel = exports.editMessageModel = exports.markConversationAsReadModel = exports.markMessageAsReadModel = exports.updateConversationLastMessage = exports.createMessageModel = exports.getMessagesByConversationModel = exports.getConversationByIdModel = exports.getConversationsByUserModel = exports.createConversationModel = void 0;
 const firebase_1 = require("../utils/firebase");
 const admin = __importStar(require("firebase-admin"));
 const loggerService_1 = require("../services/loggerService");
 // Crear una nueva conversación
-const createConversationModel = (participants) => __awaiter(void 0, void 0, void 0, function* () {
+const createConversationModel = (participants_1, ...args_1) => __awaiter(void 0, [participants_1, ...args_1], void 0, function* (participants, type = 'direct', name, eventId) {
     const now = new Date().toISOString();
     const conversationRef = firebase_1.db.collection('conversations').doc();
     const conversation = {
@@ -57,10 +57,18 @@ const createConversationModel = (participants) => __awaiter(void 0, void 0, void
         updatedAt: now,
         isActive: true,
         createdAt: now,
+        type,
+        name,
+        eventId,
+        settings: {
+            notifications: true,
+            muted: false,
+            pinned: false
+        },
+        typingUsers: []
     };
     yield conversationRef.set(conversation);
-    loggerService_1.logger.info('[src/models/chatModel.ts:19] Conversación creada:', { metadata: { id: conversation,
-        } });
+    loggerService_1.logger.info('Conversación creada:', { metadata: { id: conversation.id, type, participants } });
     return conversation;
 });
 exports.createConversationModel = createConversationModel;
@@ -110,34 +118,37 @@ const getConversationByIdModel = (conversationId) => __awaiter(void 0, void 0, v
 });
 exports.getConversationByIdModel = getConversationByIdModel;
 // Obtener mensajes de una conversación
-const getMessagesByConversationModel = (conversationId) => __awaiter(void 0, void 0, void 0, function* () {
+const getMessagesByConversationModel = (conversationId_1, ...args_1) => __awaiter(void 0, [conversationId_1, ...args_1], void 0, function* (conversationId, limit = 50, offset = 0) {
     const snapshot = yield firebase_1.db
         .collection('messages')
         .where('conversationId', '==', conversationId)
-        .orderBy('timestamp', 'asc')
+        .where('isDeleted', '==', false)
+        .orderBy('timestamp', 'desc')
+        .limit(limit)
+        .offset(offset)
         .get();
-    return snapshot.docs.map(doc => doc.data());
+    return snapshot.docs.map(doc => doc.data()).reverse();
 });
 exports.getMessagesByConversationModel = getMessagesByConversationModel;
 // Crear un nuevo mensaje
 const createMessageModel = (messageData) => __awaiter(void 0, void 0, void 0, function* () {
     const now = new Date().toISOString();
     const messageRef = firebase_1.db.collection('messages').doc();
-    const message = Object.assign(Object.assign({}, messageData), { id: messageRef.id, timestamp: now });
+    const message = Object.assign(Object.assign({}, messageData), { id: messageRef.id, timestamp: now, isEdited: false, isDeleted: false, reactions: {} });
     yield messageRef.set(message);
-    loggerService_1.logger.info('[src/models/chatModel.ts:68] Mensaje creado:', { metadata: { id: message } });
     // Actualizar la conversación con el último mensaje
     yield (0, exports.updateConversationLastMessage)(message.conversationId, message);
+    loggerService_1.logger.info('Mensaje creado:', { metadata: { id: message.id, conversationId: message.conversationId } });
     return message;
 });
 exports.createMessageModel = createMessageModel;
-// Actualizar el último mensaje de una conversación
+// Actualizar último mensaje de la conversación
 const updateConversationLastMessage = (conversationId, message) => __awaiter(void 0, void 0, void 0, function* () {
     const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
     yield conversationRef.update({
         lastMessage: message,
         updatedAt: message.timestamp,
-        unreadCount: admin.firestore.FieldValue.increment(1),
+        unreadCount: admin.firestore.FieldValue.increment(1)
     });
 });
 exports.updateConversationLastMessage = updateConversationLastMessage;
@@ -145,117 +156,239 @@ exports.updateConversationLastMessage = updateConversationLastMessage;
 const markMessageAsReadModel = (messageId) => __awaiter(void 0, void 0, void 0, function* () {
     const messageRef = firebase_1.db.collection('messages').doc(messageId);
     yield messageRef.update({
-        status: 'read',
+        status: 'read'
     });
 });
 exports.markMessageAsReadModel = markMessageAsReadModel;
 // Marcar conversación como leída
 const markConversationAsReadModel = (conversationId, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
-    // Obtener la conversación para verificar que el usuario es participante
-    const conversationSnap = yield conversationRef.get();
-    if (!conversationSnap.exists) {
-        throw new Error('Conversación no encontrada');
-    }
-    const conversation = conversationSnap.data();
-    if (!conversation.participants.includes(userEmail)) {
-        throw new Error('Usuario no es participante de esta conversación');
-    }
     yield conversationRef.update({
-        unreadCount: 0,
+        unreadCount: 0
     });
+    // Marcar todos los mensajes no leídos como leídos
+    const messagesSnapshot = yield firebase_1.db
+        .collection('messages')
+        .where('conversationId', '==', conversationId)
+        .where('senderId', '!=', userEmail)
+        .where('status', '!=', 'read')
+        .get();
+    const batch = firebase_1.db.batch();
+    messagesSnapshot.docs.forEach(doc => {
+        batch.update(doc.ref, { status: 'read' });
+    });
+    yield batch.commit();
 });
 exports.markConversationAsReadModel = markConversationAsReadModel;
-// Buscar conversaciones con filtros
+// Editar mensaje
+const editMessageModel = (messageId, newContent, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const messageRef = firebase_1.db.collection('messages').doc(messageId);
+    const messageSnap = yield messageRef.get();
+    if (!messageSnap.exists) {
+        return null;
+    }
+    const message = messageSnap.data();
+    // Verificar que el usuario es el propietario del mensaje
+    if (message.senderId !== userEmail) {
+        throw new Error('No tienes permisos para editar este mensaje');
+    }
+    const now = new Date().toISOString();
+    const updatedMessage = Object.assign(Object.assign({}, message), { content: newContent, editedAt: now, isEdited: true });
+    yield messageRef.update({
+        content: newContent,
+        editedAt: now,
+        isEdited: true
+    });
+    return updatedMessage;
+});
+exports.editMessageModel = editMessageModel;
+// Agregar reacción a mensaje
+const addReactionToMessageModel = (messageId, userEmail, emoji) => __awaiter(void 0, void 0, void 0, function* () {
+    const messageRef = firebase_1.db.collection('messages').doc(messageId);
+    yield messageRef.update({
+        [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayUnion(emoji)
+    });
+});
+exports.addReactionToMessageModel = addReactionToMessageModel;
+// Remover reacción de mensaje
+const removeReactionFromMessageModel = (messageId, userEmail, emoji) => __awaiter(void 0, void 0, void 0, function* () {
+    const messageRef = firebase_1.db.collection('messages').doc(messageId);
+    yield messageRef.update({
+        [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayRemove(emoji)
+    });
+});
+exports.removeReactionFromMessageModel = removeReactionFromMessageModel;
+// Eliminar mensaje (soft delete)
+const deleteMessageModel = (messageId, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const messageRef = firebase_1.db.collection('messages').doc(messageId);
+    const messageSnap = yield messageRef.get();
+    if (!messageSnap.exists) {
+        throw new Error('Mensaje no encontrado');
+    }
+    const message = messageSnap.data();
+    // Verificar que el usuario es el propietario del mensaje
+    if (message.senderId !== userEmail) {
+        throw new Error('No tienes permisos para eliminar este mensaje');
+    }
+    const now = new Date().toISOString();
+    yield messageRef.update({
+        isDeleted: true,
+        deletedAt: now,
+        content: 'Mensaje eliminado'
+    });
+});
+exports.deleteMessageModel = deleteMessageModel;
+// Actualizar indicador de escritura
+const updateTypingIndicatorModel = (conversationId, userEmail, isTyping) => __awaiter(void 0, void 0, void 0, function* () {
+    const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
+    if (isTyping) {
+        yield conversationRef.update({
+            typingUsers: admin.firestore.FieldValue.arrayUnion(userEmail)
+        });
+    }
+    else {
+        yield conversationRef.update({
+            typingUsers: admin.firestore.FieldValue.arrayRemove(userEmail)
+        });
+    }
+});
+exports.updateTypingIndicatorModel = updateTypingIndicatorModel;
+// Buscar conversaciones
 const searchConversationsModel = (userEmail, filters) => __awaiter(void 0, void 0, void 0, function* () {
     let query = firebase_1.db
         .collection('conversations')
         .where('participants', 'array-contains', userEmail)
         .where('isActive', '==', true);
+    if (filters.type) {
+        query = query.where('type', '==', filters.type);
+    }
     if (filters.unreadOnly) {
         query = query.where('unreadCount', '>', 0);
     }
-    if (filters.dateFrom) {
-        query = query.where('updatedAt', '>=', filters.dateFrom);
-    }
-    if (filters.dateTo) {
-        query = query.where('updatedAt', '<=', filters.dateTo);
-    }
-    const snapshot = yield query.orderBy('updatedAt', 'desc').get();
+    const snapshot = yield query.get();
     let conversations = snapshot.docs.map(doc => doc.data());
-    // Filtrar por búsqueda de texto si se proporciona
-    if (filters.search) {
-        conversations = conversations.filter(conversation => {
-            var _a;
-            // Buscar en el último mensaje
-            if ((_a = conversation.lastMessage) === null || _a === void 0 ? void 0 : _a.content.toLowerCase().includes(filters.search.toLowerCase())) {
-                return true;
-            }
-            // Buscar en participantes (excluyendo al usuario actual)
-            const otherParticipants = conversation.participants.filter(p => p !== userEmail);
-            return otherParticipants.some(p => p.toLowerCase().includes(filters.search.toLowerCase()));
+    // Filtrar por fecha si se especifica
+    if (filters.dateFrom || filters.dateTo) {
+        conversations = conversations.filter(conv => {
+            const convDate = new Date(conv.updatedAt);
+            const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
+            const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
+            if (fromDate && convDate < fromDate)
+                return false;
+            if (toDate && convDate > toDate)
+                return false;
+            return true;
         });
     }
-    return conversations;
+    // Buscar por texto si se especifica
+    if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        conversations = conversations.filter(conv => {
+            var _a, _b;
+            return (((_a = conv.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm)) ||
+                ((_b = conv.lastMessage) === null || _b === void 0 ? void 0 : _b.content.toLowerCase().includes(searchTerm)) ||
+                conv.participants.some(p => p.toLowerCase().includes(searchTerm)));
+        });
+    }
+    return conversations.sort((a, b) => {
+        const dateA = new Date(a.updatedAt);
+        const dateB = new Date(b.updatedAt);
+        return dateB.getTime() - dateA.getTime();
+    });
 });
 exports.searchConversationsModel = searchConversationsModel;
-// Eliminar conversación (marcar como inactiva)
+// Eliminar conversación
 const deleteConversationModel = (conversationId, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
-    // Verificar que el usuario es participante
     const conversationSnap = yield conversationRef.get();
     if (!conversationSnap.exists) {
         throw new Error('Conversación no encontrada');
     }
     const conversation = conversationSnap.data();
     if (!conversation.participants.includes(userEmail)) {
-        throw new Error('Usuario no es participante de esta conversación');
+        throw new Error('No tienes permisos para eliminar esta conversación');
     }
     yield conversationRef.update({
-        isActive: false,
+        isActive: false
     });
 });
 exports.deleteConversationModel = deleteConversationModel;
 // Archivar conversación
 const archiveConversationModel = (conversationId, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
-    // Verificar que el usuario es participante
     const conversationSnap = yield conversationRef.get();
     if (!conversationSnap.exists) {
         throw new Error('Conversación no encontrada');
     }
     const conversation = conversationSnap.data();
     if (!conversation.participants.includes(userEmail)) {
-        throw new Error('Usuario no es participante de esta conversación');
+        throw new Error('No tienes permisos para archivar esta conversación');
     }
     yield conversationRef.update({
-        isActive: false,
+        'settings.pinned': false
     });
 });
 exports.archiveConversationModel = archiveConversationModel;
-// Obtener conversación entre dos usuarios específicos
+// Obtener conversación entre dos usuarios
 const getConversationBetweenUsersModel = (user1, user2) => __awaiter(void 0, void 0, void 0, function* () {
     const snapshot = yield firebase_1.db
         .collection('conversations')
         .where('participants', 'array-contains', user1)
+        .where('type', '==', 'direct')
         .where('isActive', '==', true)
         .get();
-    const conversations = snapshot.docs.map(doc => doc.data());
-    // Buscar conversación que contenga ambos usuarios
-    const conversation = conversations.find(conv => conv.participants.includes(user1) && conv.participants.includes(user2));
+    const conversation = snapshot.docs
+        .map(doc => doc.data())
+        .find(conv => conv.participants.includes(user2));
     return conversation || null;
 });
 exports.getConversationBetweenUsersModel = getConversationBetweenUsersModel;
-// Obtener estadísticas de chat para un usuario
+// Obtener estadísticas del chat
 const getChatStatsModel = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const conversations = yield (0, exports.getConversationsByUserModel)(userEmail);
-    const totalConversations = conversations.length;
-    const unreadMessages = conversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
-    const activeConversations = conversations.filter(conv => conv.isActive).length;
-    return {
-        totalConversations,
-        unreadMessages,
-        activeConversations,
+    // Obtener mensajes de las últimas semanas
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const messagesSnapshot = yield firebase_1.db
+        .collection('messages')
+        .where('senderId', '==', userEmail)
+        .where('timestamp', '>=', weekAgo.toISOString())
+        .get();
+    const messagesThisWeek = messagesSnapshot.docs.length;
+    const monthMessagesSnapshot = yield firebase_1.db
+        .collection('messages')
+        .where('senderId', '==', userEmail)
+        .where('timestamp', '>=', monthAgo.toISOString())
+        .get();
+    const messagesThisMonth = monthMessagesSnapshot.docs.length;
+    // Encontrar conversación más activa
+    let mostActiveConversation = null;
+    let maxMessages = 0;
+    for (const conv of conversations) {
+        const convMessagesSnapshot = yield firebase_1.db
+            .collection('messages')
+            .where('conversationId', '==', conv.id)
+            .get();
+        const messageCount = convMessagesSnapshot.docs.length;
+        if (messageCount > maxMessages) {
+            maxMessages = messageCount;
+            mostActiveConversation = {
+                id: conv.id,
+                name: conv.name || conv.participants.join(', '),
+                messageCount
+            };
+        }
+    }
+    const stats = {
+        totalConversations: conversations.length,
+        unreadMessages: conversations.reduce((sum, conv) => sum + conv.unreadCount, 0),
+        activeConversations: conversations.filter(conv => conv.unreadCount > 0).length,
+        totalMessages: 0, // Se calcularía con una consulta adicional
+        messagesThisWeek,
+        messagesThisMonth,
+        mostActiveConversation: mostActiveConversation || undefined
     };
+    return stats;
 });
 exports.getChatStatsModel = getChatStatsModel;

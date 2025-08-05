@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAvailableUsers = exports.getChatStats = exports.getConversationById = exports.archiveConversation = exports.deleteConversation = exports.searchConversations = exports.createConversation = exports.markAsRead = exports.sendMessage = exports.getMessages = exports.getConversations = void 0;
+exports.updateTypingIndicator = exports.deleteMessage = exports.removeReaction = exports.addReaction = exports.editMessage = exports.getAvailableUsers = exports.getChatStats = exports.getConversationById = exports.archiveConversation = exports.deleteConversation = exports.searchConversations = exports.createConversation = exports.markAsRead = exports.sendMessage = exports.getMessages = exports.getConversations = void 0;
 const loggerService_1 = require("../services/loggerService");
 const chatModel_1 = require("../models/chatModel");
 // Obtener todas las conversaciones del usuario
@@ -44,6 +44,7 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     var _a;
     try {
         const { conversationId } = req.params;
+        const { limit = 50, offset = 0 } = req.query;
         const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
         if (!userEmail) {
             res.status(401).json({
@@ -68,7 +69,7 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
             return;
         }
-        const messages = yield (0, chatModel_1.getMessagesByConversationModel)(conversationId);
+        const messages = yield (0, chatModel_1.getMessagesByConversationModel)(conversationId, parseInt(limit), parseInt(offset));
         // Marcar conversación como leída
         yield (0, chatModel_1.markConversationAsReadModel)(conversationId, userEmail);
         res.json({
@@ -87,12 +88,11 @@ const getMessages = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getMessages = getMessages;
 // Enviar un mensaje
 const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c;
     try {
-        const { conversationId } = req.params;
-        const { content, type = 'text' } = req.body;
+        const { conversationId, content, type = 'text', metadata, replyTo } = req.body;
         const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
-        const userName = (_b = req.user) === null || _b === void 0 ? void 0 : _b.name;
+        const userName = ((_b = req.user) === null || _b === void 0 ? void 0 : _b.name) + ' ' + ((_c = req.user) === null || _c === void 0 ? void 0 : _c.lastName);
         if (!userEmail) {
             res.status(401).json({
                 success: false,
@@ -100,7 +100,7 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
             return;
         }
-        if (!content || content.trim().length === 0) {
+        if (!content || content.trim() === '') {
             res.status(400).json({
                 success: false,
                 error: 'El contenido del mensaje es requerido',
@@ -126,13 +126,17 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const messageData = {
             conversationId,
             senderId: userEmail,
-            senderName: userName || userEmail,
+            senderName: userName,
             content: content.trim(),
+            type,
+            metadata,
+            replyTo,
             status: 'sent',
-            type: type,
+            isEdited: false,
+            isDeleted: false
         };
         const message = yield (0, chatModel_1.createMessageModel)(messageData);
-        res.json({
+        res.status(201).json({
             success: true,
             data: message,
         });
@@ -162,7 +166,7 @@ const markAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         yield (0, chatModel_1.markMessageAsReadModel)(messageId);
         res.json({
             success: true,
-            data: null,
+            message: 'Mensaje marcado como leído',
         });
     }
     catch (error) {
@@ -178,7 +182,7 @@ exports.markAsRead = markAsRead;
 const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const { participants } = req.body;
+        const { participants, type = 'direct', name, eventId } = req.body;
         const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
         if (!userEmail) {
             res.status(401).json({
@@ -187,9 +191,7 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
             });
             return;
         }
-        if (!participants ||
-            !Array.isArray(participants) ||
-            participants.length === 0) {
+        if (!participants || !Array.isArray(participants) || participants.length === 0) {
             res.status(400).json({
                 success: false,
                 error: 'Se requiere al menos un participante',
@@ -197,18 +199,23 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return;
         }
         // Asegurar que el usuario actual esté en los participantes
-        const allParticipants = [...new Set([userEmail, ...participants])];
-        // Verificar si ya existe una conversación entre estos usuarios
-        const existingConversation = yield (0, chatModel_1.getConversationBetweenUsersModel)(userEmail, participants[0]);
-        if (existingConversation) {
-            res.json({
-                success: true,
-                data: existingConversation,
-            });
-            return;
+        const allParticipants = participants.includes(userEmail)
+            ? participants
+            : [...participants, userEmail];
+        // Para conversaciones directas, verificar si ya existe
+        if (type === 'direct' && allParticipants.length === 2) {
+            const existingConversation = yield (0, chatModel_1.getConversationBetweenUsersModel)(allParticipants[0], allParticipants[1]);
+            if (existingConversation) {
+                res.json({
+                    success: true,
+                    data: existingConversation,
+                    message: 'Conversación existente encontrada',
+                });
+                return;
+            }
         }
-        const conversation = yield (0, chatModel_1.createConversationModel)(allParticipants);
-        res.json({
+        const conversation = yield (0, chatModel_1.createConversationModel)(allParticipants, type, name, eventId);
+        res.status(201).json({
             success: true,
             data: conversation,
         });
@@ -222,12 +229,12 @@ const createConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.createConversation = createConversation;
-// Buscar conversaciones con filtros
+// Buscar conversaciones
 const searchConversations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
-        const { search, unreadOnly, dateFrom, dateTo } = req.query;
+        const filters = req.query;
         if (!userEmail) {
             res.status(401).json({
                 success: false,
@@ -235,12 +242,6 @@ const searchConversations = (req, res) => __awaiter(void 0, void 0, void 0, func
             });
             return;
         }
-        const filters = {
-            search: search,
-            unreadOnly: unreadOnly === 'true',
-            dateFrom: dateFrom,
-            dateTo: dateTo,
-        };
         const conversations = yield (0, chatModel_1.searchConversationsModel)(userEmail, filters);
         res.json({
             success: true,
@@ -272,7 +273,7 @@ const deleteConversation = (req, res) => __awaiter(void 0, void 0, void 0, funct
         yield (0, chatModel_1.deleteConversationModel)(conversationId, userEmail);
         res.json({
             success: true,
-            data: null,
+            message: 'Conversación eliminada exitosamente',
         });
     }
     catch (error) {
@@ -300,7 +301,7 @@ const archiveConversation = (req, res) => __awaiter(void 0, void 0, void 0, func
         yield (0, chatModel_1.archiveConversationModel)(conversationId, userEmail);
         res.json({
             success: true,
-            data: null,
+            message: 'Conversación archivada exitosamente',
         });
     }
     catch (error) {
@@ -354,7 +355,7 @@ const getConversationById = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getConversationById = getConversationById;
-// Obtener estadísticas de chat
+// Obtener estadísticas del chat
 const getChatStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -373,7 +374,7 @@ const getChatStats = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
     catch (error) {
-        loggerService_1.logger.error('Error al obtener estadísticas de chat:', error);
+        loggerService_1.logger.error('Error al obtener estadísticas del chat:', error);
         res.status(500).json({
             success: false,
             error: error.message || 'Error interno del servidor',
@@ -386,7 +387,6 @@ const getAvailableUsers = (req, res) => __awaiter(void 0, void 0, void 0, functi
     var _a;
     try {
         const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
-        const { search } = req.query;
         if (!userEmail) {
             res.status(401).json({
                 success: false,
@@ -396,29 +396,17 @@ const getAvailableUsers = (req, res) => __awaiter(void 0, void 0, void 0, functi
         }
         // Importar db aquí para evitar dependencias circulares
         const { db } = require('../utils/firebase');
-        // Obtener todos los usuarios
+        // Obtener todos los usuarios excepto el actual
         const usersSnapshot = yield db.collection('users').get();
-        let users = [];
-        usersSnapshot.forEach((doc) => {
-            const userData = doc.data();
-            // Excluir al usuario actual
-            if (userData.userEmail !== userEmail) {
-                users.push({
-                    email: userData.userEmail,
-                    name: userData.name || 'Usuario',
-                    lastName: userData.lastName || '',
-                    online: userData.online || false,
-                    lastSeen: userData.lastSeen || null
-                });
-            }
-        });
-        // Aplicar filtro de búsqueda si se proporciona
-        if (search) {
-            const searchTerm = search.toString().toLowerCase();
-            users = users.filter(user => user.name.toLowerCase().includes(searchTerm) ||
-                user.lastName.toLowerCase().includes(searchTerm) ||
-                user.email.toLowerCase().includes(searchTerm));
-        }
+        const users = usersSnapshot.docs
+            .map((doc) => doc.data())
+            .filter((user) => user.userEmail !== userEmail)
+            .map((user) => ({
+            userEmail: user.userEmail,
+            name: user.name,
+            lastName: user.lastName,
+            roll: user.roll
+        }));
         res.json({
             success: true,
             data: users,
@@ -433,3 +421,175 @@ const getAvailableUsers = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getAvailableUsers = getAvailableUsers;
+// Editar mensaje
+const editMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { messageId } = req.params;
+        const { content } = req.body;
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        if (!content || content.trim() === '') {
+            res.status(400).json({
+                success: false,
+                error: 'El contenido del mensaje es requerido',
+            });
+            return;
+        }
+        const updatedMessage = yield (0, chatModel_1.editMessageModel)(messageId, content.trim(), userEmail);
+        if (!updatedMessage) {
+            res.status(404).json({
+                success: false,
+                error: 'Mensaje no encontrado',
+            });
+            return;
+        }
+        res.json({
+            success: true,
+            data: updatedMessage,
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error al editar mensaje:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.editMessage = editMessage;
+// Agregar reacción a mensaje
+const addReaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { messageId } = req.params;
+        const { emoji } = req.body;
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        if (!emoji) {
+            res.status(400).json({
+                success: false,
+                error: 'El emoji es requerido',
+            });
+            return;
+        }
+        yield (0, chatModel_1.addReactionToMessageModel)(messageId, userEmail, emoji);
+        res.json({
+            success: true,
+            message: 'Reacción agregada exitosamente',
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error al agregar reacción:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.addReaction = addReaction;
+// Remover reacción de mensaje
+const removeReaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { messageId } = req.params;
+        const { emoji } = req.body;
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        if (!emoji) {
+            res.status(400).json({
+                success: false,
+                error: 'El emoji es requerido',
+            });
+            return;
+        }
+        yield (0, chatModel_1.removeReactionFromMessageModel)(messageId, userEmail, emoji);
+        res.json({
+            success: true,
+            message: 'Reacción removida exitosamente',
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error al remover reacción:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.removeReaction = removeReaction;
+// Eliminar mensaje
+const deleteMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { messageId } = req.params;
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        yield (0, chatModel_1.deleteMessageModel)(messageId, userEmail);
+        res.json({
+            success: true,
+            message: 'Mensaje eliminado exitosamente',
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error al eliminar mensaje:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.deleteMessage = deleteMessage;
+// Actualizar indicador de escritura
+const updateTypingIndicator = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { conversationId } = req.params;
+        const { isTyping } = req.body;
+        const userEmail = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+        if (!userEmail) {
+            res.status(401).json({
+                success: false,
+                error: 'Usuario no autenticado',
+            });
+            return;
+        }
+        yield (0, chatModel_1.updateTypingIndicatorModel)(conversationId, userEmail, isTyping);
+        res.json({
+            success: true,
+            message: 'Indicador de escritura actualizado',
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('Error al actualizar indicador de escritura:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Error interno del servidor',
+        });
+    }
+});
+exports.updateTypingIndicator = updateTypingIndicator;

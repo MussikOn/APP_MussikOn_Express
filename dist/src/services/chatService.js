@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -11,441 +44,484 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.chatService = exports.ChatService = void 0;
 const firebase_1 = require("../utils/firebase");
-const firestore_1 = require("firebase-admin/firestore");
-const loggerService_1 = require("../services/loggerService");
+const loggerService_1 = require("./loggerService");
+const pushNotificationService_1 = require("./pushNotificationService");
+const admin = __importStar(require("firebase-admin"));
 class ChatService {
+    static getInstance() {
+        if (!ChatService.instance) {
+            ChatService.instance = new ChatService();
+        }
+        return ChatService.instance;
+    }
     /**
-     * Crear una nueva conversación
+     * Crear conversación con validaciones avanzadas
      */
     createConversation(participants_1) {
-        return __awaiter(this, arguments, void 0, function* (participants, isGroup = false, groupName, groupAdmin) {
+        return __awaiter(this, arguments, void 0, function* (participants, type = 'direct', name, eventId, creatorEmail) {
             try {
-                // Obtener nombres de participantes
-                const participantNames = {};
-                for (const participantId of participants) {
-                    const userDoc = yield firebase_1.db.collection('users').doc(participantId).get();
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        participantNames[participantId] =
-                            `${userData.name} ${userData.lastName}`;
+                // Validar participantes
+                if (!participants || participants.length === 0) {
+                    throw new Error('Se requiere al menos un participante');
+                }
+                // Verificar que todos los participantes existen
+                const usersSnapshot = yield firebase_1.db.collection('users').get();
+                const existingUsers = usersSnapshot.docs.map(doc => doc.data().userEmail);
+                const invalidParticipants = participants.filter(p => !existingUsers.includes(p));
+                if (invalidParticipants.length > 0) {
+                    throw new Error(`Usuarios no encontrados: ${invalidParticipants.join(', ')}`);
+                }
+                // Para conversaciones directas, verificar si ya existe
+                if (type === 'direct' && participants.length === 2) {
+                    const existingConversation = yield this.getConversationBetweenUsers(participants[0], participants[1]);
+                    if (existingConversation) {
+                        return existingConversation;
                     }
                 }
+                // Crear la conversación
+                const now = new Date().toISOString();
+                const conversationRef = firebase_1.db.collection('conversations').doc();
                 const conversation = {
-                    id: firebase_1.db.collection('conversations').doc().id,
+                    id: conversationRef.id,
                     participants,
-                    participantNames,
-                    lastActivity: new Date(),
-                    isGroup,
-                    groupName,
-                    groupAdmin,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    unreadCount: 0,
+                    updatedAt: now,
+                    isActive: true,
+                    createdAt: now,
+                    type,
+                    name,
+                    eventId,
+                    settings: {
+                        notifications: true,
+                        muted: false,
+                        pinned: false
+                    },
+                    typingUsers: []
                 };
-                yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversation.id)
-                    .set(conversation);
+                yield conversationRef.set(conversation);
+                // Notificar a los participantes sobre la nueva conversación
+                participants.forEach(participant => {
+                    if (participant !== creatorEmail) {
+                        this.sendConversationNotification(participant, {
+                            type: 'new_message',
+                            conversationId: conversation.id,
+                            senderId: creatorEmail || participants[0],
+                            senderName: 'Sistema',
+                            message: `Nueva conversación creada: ${name || 'Chat'}`,
+                            timestamp: now
+                        });
+                    }
+                });
+                loggerService_1.logger.info('Conversación creada:', { metadata: { id: conversation.id, type, participants } });
                 return conversation;
             }
             catch (error) {
                 loggerService_1.logger.error('Error al crear conversación:', error);
-                throw new Error('Error al crear conversación');
+                throw error;
             }
         });
     }
     /**
-     * Obtener conversaciones de un usuario
+     * Enviar mensaje con validaciones y notificaciones
      */
-    getUserConversations(filters) {
-        return __awaiter(this, void 0, void 0, function* () {
+    sendMessage(conversationId_1, senderId_1, senderName_1, content_1) {
+        return __awaiter(this, arguments, void 0, function* (conversationId, senderId, senderName, content, type = 'text', metadata, replyTo) {
             try {
-                const { userId, limit = 20, offset = 0, unreadOnly = false } = filters;
-                const query = firebase_1.db
-                    .collection('conversations')
-                    .where('participants', 'array-contains', userId)
-                    .orderBy('lastActivity', 'desc')
-                    .limit(limit)
-                    .offset(offset);
-                const snapshot = yield query.get();
-                const conversations = snapshot.docs.map(doc => doc.data());
-                // Filtrar por mensajes no leídos si se especifica
-                if (unreadOnly) {
-                    const conversationsWithUnread = yield Promise.all(conversations.map((conversation) => __awaiter(this, void 0, void 0, function* () {
-                        const unreadCount = yield this.getUnreadMessageCount(conversation.id, userId);
-                        return Object.assign(Object.assign({}, conversation), { unreadCount });
-                    })));
-                    return conversationsWithUnread.filter(conv => conv.unreadCount > 0);
-                }
-                return conversations;
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener conversaciones:', error);
-                throw new Error('Error al obtener conversaciones');
-            }
-        });
-    }
-    /**
-     * Obtener mensajes de una conversación
-     */
-    getConversationMessages(conversationId_1) {
-        return __awaiter(this, arguments, void 0, function* (conversationId, limit = 50, offset = 0) {
-            try {
-                const query = firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .orderBy('timestamp', 'desc')
-                    .limit(limit)
-                    .offset(offset);
-                const snapshot = yield query.get();
-                return snapshot.docs.map(doc => doc.data());
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener mensajes:', error);
-                throw new Error('Error al obtener mensajes');
-            }
-        });
-    }
-    /**
-     * Enviar un mensaje
-     */
-    sendMessage(conversationId_1, senderId_1, content_1) {
-        return __awaiter(this, arguments, void 0, function* (conversationId, senderId, content, type = 'text', metadata) {
-            try {
-                // Verificar que la conversación existe
-                const conversationDoc = yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .get();
-                if (!conversationDoc.exists) {
+                // Verificar que la conversación existe y el usuario es participante
+                const conversation = yield this.getConversationById(conversationId);
+                if (!conversation) {
                     throw new Error('Conversación no encontrada');
                 }
-                // Obtener información del remitente
-                const senderDoc = yield firebase_1.db.collection('users').doc(senderId).get();
-                if (!senderDoc.exists) {
-                    throw new Error('Usuario remitente no encontrado');
+                if (!conversation.participants.includes(senderId)) {
+                    throw new Error('No tienes permisos para enviar mensajes a esta conversación');
                 }
-                const senderData = senderDoc.data();
-                const senderName = `${senderData.name} ${senderData.lastName}`;
+                // Validar contenido según el tipo
+                if (type === 'text' && (!content || content.trim() === '')) {
+                    throw new Error('El contenido del mensaje es requerido');
+                }
+                // Crear el mensaje
+                const now = new Date().toISOString();
+                const messageRef = firebase_1.db.collection('messages').doc();
                 const message = {
-                    id: firebase_1.db
-                        .collection('conversations')
-                        .doc(conversationId)
-                        .collection('messages')
-                        .doc().id,
+                    id: messageRef.id,
                     conversationId,
                     senderId,
                     senderName,
-                    content,
+                    content: content.trim(),
+                    timestamp: now,
+                    status: 'sent',
                     type,
-                    timestamp: new Date(),
-                    readBy: [senderId], // El remitente ya leyó el mensaje
                     metadata,
+                    replyTo,
+                    isEdited: false,
+                    isDeleted: false,
+                    reactions: {}
                 };
-                // Guardar el mensaje
-                yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .doc(message.id)
-                    .set(message);
-                // Actualizar la conversación con el último mensaje
-                yield firebase_1.db.collection('conversations').doc(conversationId).update({
-                    lastMessage: message,
-                    lastActivity: new Date(),
-                    updatedAt: new Date(),
-                });
+                yield messageRef.set(message);
+                // Actualizar la conversación
+                yield this.updateConversationLastMessage(conversationId, message);
+                // Enviar notificaciones push a participantes no conectados
+                yield this.sendMessageNotifications(conversation, message);
+                loggerService_1.logger.info('Mensaje enviado:', { metadata: { id: message.id, conversationId } });
                 return message;
             }
             catch (error) {
                 loggerService_1.logger.error('Error al enviar mensaje:', error);
-                throw new Error('Error al enviar mensaje');
+                throw error;
             }
         });
     }
     /**
-     * Marcar mensajes como leídos
+     * Editar mensaje con validaciones
      */
-    markMessagesAsRead(conversationId, userId, messageIds) {
+    editMessage(messageId, newContent, userEmail) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (messageIds && messageIds.length > 0) {
-                    // Marcar mensajes específicos como leídos
-                    const batch = firebase_1.db.batch();
-                    for (const messageId of messageIds) {
-                        const messageRef = firebase_1.db
-                            .collection('conversations')
-                            .doc(conversationId)
-                            .collection('messages')
-                            .doc(messageId);
-                        batch.update(messageRef, {
-                            readBy: firestore_1.FieldValue.arrayUnion(userId),
-                        });
-                    }
-                    yield batch.commit();
+                const messageRef = firebase_1.db.collection('messages').doc(messageId);
+                const messageSnap = yield messageRef.get();
+                if (!messageSnap.exists) {
+                    return null;
                 }
-                else {
-                    // Marcar todos los mensajes no leídos como leídos
-                    const messagesQuery = firebase_1.db
-                        .collection('conversations')
-                        .doc(conversationId)
-                        .collection('messages')
-                        .where('readBy', 'not-in', [[userId]]);
-                    const snapshot = yield messagesQuery.get();
-                    const batch = firebase_1.db.batch();
-                    snapshot.docs.forEach(doc => {
-                        batch.update(doc.ref, {
-                            readBy: firestore_1.FieldValue.arrayUnion(userId),
-                        });
-                    });
-                    yield batch.commit();
+                const message = messageSnap.data();
+                // Verificar permisos
+                if (message.senderId !== userEmail) {
+                    throw new Error('No tienes permisos para editar este mensaje');
                 }
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al marcar mensajes como leídos:', error);
-                throw new Error('Error al marcar mensajes como leídos');
-            }
-        });
-    }
-    /**
-     * Obtener número de mensajes no leídos
-     */
-    getUnreadMessageCount(conversationId, userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const query = firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .where('readBy', 'not-in', [[userId]]);
-                const snapshot = yield query.get();
-                return snapshot.size;
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener conteo de mensajes no leídos:', error);
-                return 0;
-            }
-        });
-    }
-    /**
-     * Obtener conversación por ID
-     */
-    getConversationById(conversationId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const doc = yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .get();
-                if (doc.exists) {
-                    return doc.data();
+                // Verificar que no han pasado más de 15 minutos
+                const messageTime = new Date(message.timestamp);
+                const now = new Date();
+                const timeDiff = now.getTime() - messageTime.getTime();
+                const minutesDiff = timeDiff / (1000 * 60);
+                if (minutesDiff > 15) {
+                    throw new Error('No se puede editar un mensaje después de 15 minutos');
                 }
-                return null;
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al obtener conversación:', error);
-                throw new Error('Error al obtener conversación');
-            }
-        });
-    }
-    /**
-     * Buscar conversaciones
-     */
-    searchConversations(userId, searchTerm) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // Obtener todas las conversaciones del usuario
-                const conversations = yield this.getUserConversations({
-                    userId,
-                    limit: 100,
+                const updatedAt = new Date().toISOString();
+                const updatedMessage = Object.assign(Object.assign({}, message), { content: newContent.trim(), editedAt: updatedAt, isEdited: true });
+                yield messageRef.update({
+                    content: newContent.trim(),
+                    editedAt: updatedAt,
+                    isEdited: true
                 });
-                // Filtrar por término de búsqueda
-                return conversations.filter(conversation => {
-                    var _a, _b;
-                    // Buscar en nombres de participantes
-                    const participantNames = Object.values(conversation.participantNames);
-                    const nameMatch = participantNames.some(name => name.toLowerCase().includes(searchTerm.toLowerCase()));
-                    // Buscar en nombre del grupo
-                    const groupMatch = (_a = conversation.groupName) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm.toLowerCase());
-                    // Buscar en último mensaje
-                    const messageMatch = (_b = conversation.lastMessage) === null || _b === void 0 ? void 0 : _b.content.toLowerCase().includes(searchTerm.toLowerCase());
-                    return nameMatch || groupMatch || messageMatch;
+                loggerService_1.logger.info('Mensaje editado:', { metadata: { id: messageId, userEmail } });
+                return updatedMessage;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al editar mensaje:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Agregar reacción a mensaje
+     */
+    addReaction(messageId, userEmail, emoji) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const messageRef = firebase_1.db.collection('messages').doc(messageId);
+                const messageSnap = yield messageRef.get();
+                if (!messageSnap.exists) {
+                    throw new Error('Mensaje no encontrado');
+                }
+                const message = messageSnap.data();
+                // Verificar que el usuario es participante de la conversación
+                const conversation = yield this.getConversationById(message.conversationId);
+                if (!conversation || !conversation.participants.includes(userEmail)) {
+                    throw new Error('No tienes permisos para reaccionar a este mensaje');
+                }
+                yield messageRef.update({
+                    [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayUnion(emoji)
+                });
+                loggerService_1.logger.info('Reacción agregada:', { metadata: { messageId, userEmail, emoji } });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al agregar reacción:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Remover reacción de mensaje
+     */
+    removeReaction(messageId, userEmail, emoji) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const messageRef = firebase_1.db.collection('messages').doc(messageId);
+                yield messageRef.update({
+                    [`reactions.${userEmail}`]: admin.firestore.FieldValue.arrayRemove(emoji)
+                });
+                loggerService_1.logger.info('Reacción removida:', { metadata: { messageId, userEmail, emoji } });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al remover reacción:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Eliminar mensaje (soft delete)
+     */
+    deleteMessage(messageId, userEmail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const messageRef = firebase_1.db.collection('messages').doc(messageId);
+                const messageSnap = yield messageRef.get();
+                if (!messageSnap.exists) {
+                    throw new Error('Mensaje no encontrado');
+                }
+                const message = messageSnap.data();
+                // Verificar permisos
+                if (message.senderId !== userEmail) {
+                    throw new Error('No tienes permisos para eliminar este mensaje');
+                }
+                const now = new Date().toISOString();
+                yield messageRef.update({
+                    isDeleted: true,
+                    deletedAt: now,
+                    content: 'Mensaje eliminado'
+                });
+                loggerService_1.logger.info('Mensaje eliminado:', { metadata: { messageId, userEmail } });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al eliminar mensaje:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Marcar conversación como leída
+     */
+    markConversationAsRead(conversationId, userEmail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
+                yield conversationRef.update({
+                    unreadCount: 0
+                });
+                // Marcar todos los mensajes no leídos como leídos
+                const messagesSnapshot = yield firebase_1.db
+                    .collection('messages')
+                    .where('conversationId', '==', conversationId)
+                    .where('senderId', '!=', userEmail)
+                    .where('status', '!=', 'read')
+                    .get();
+                const batch = firebase_1.db.batch();
+                messagesSnapshot.docs.forEach(doc => {
+                    batch.update(doc.ref, { status: 'read' });
+                });
+                yield batch.commit();
+                loggerService_1.logger.info('Conversación marcada como leída:', { metadata: { conversationId, userEmail } });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al marcar conversación como leída:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Obtener estadísticas avanzadas del chat
+     */
+    getChatStats(userEmail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const conversations = yield this.getConversationsByUser(userEmail);
+                // Obtener mensajes de las últimas semanas
+                const now = new Date();
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                const messagesSnapshot = yield firebase_1.db
+                    .collection('messages')
+                    .where('senderId', '==', userEmail)
+                    .where('timestamp', '>=', weekAgo.toISOString())
+                    .get();
+                const messagesThisWeek = messagesSnapshot.docs.length;
+                const monthMessagesSnapshot = yield firebase_1.db
+                    .collection('messages')
+                    .where('senderId', '==', userEmail)
+                    .where('timestamp', '>=', monthAgo.toISOString())
+                    .get();
+                const messagesThisMonth = monthMessagesSnapshot.docs.length;
+                // Encontrar conversación más activa
+                let mostActiveConversation = null;
+                let maxMessages = 0;
+                for (const conv of conversations) {
+                    const convMessagesSnapshot = yield firebase_1.db
+                        .collection('messages')
+                        .where('conversationId', '==', conv.id)
+                        .get();
+                    const messageCount = convMessagesSnapshot.docs.length;
+                    if (messageCount > maxMessages) {
+                        maxMessages = messageCount;
+                        mostActiveConversation = {
+                            id: conv.id,
+                            name: conv.name || conv.participants.join(', '),
+                            messageCount
+                        };
+                    }
+                }
+                const stats = {
+                    totalConversations: conversations.length,
+                    unreadMessages: conversations.reduce((sum, conv) => sum + conv.unreadCount, 0),
+                    activeConversations: conversations.filter(conv => conv.unreadCount > 0).length,
+                    totalMessages: 0, // Se calcularía con una consulta adicional
+                    messagesThisWeek,
+                    messagesThisMonth,
+                    mostActiveConversation: mostActiveConversation || undefined
+                };
+                return stats;
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al obtener estadísticas del chat:', error);
+                throw error;
+            }
+        });
+    }
+    /**
+     * Buscar conversaciones con filtros avanzados
+     */
+    searchConversations(userEmail, filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let query = firebase_1.db
+                    .collection('conversations')
+                    .where('participants', 'array-contains', userEmail)
+                    .where('isActive', '==', true);
+                if (filters.type) {
+                    query = query.where('type', '==', filters.type);
+                }
+                if (filters.unreadOnly) {
+                    query = query.where('unreadCount', '>', 0);
+                }
+                const snapshot = yield query.get();
+                let conversations = snapshot.docs.map(doc => doc.data());
+                // Filtrar por fecha
+                if (filters.dateFrom || filters.dateTo) {
+                    conversations = conversations.filter(conv => {
+                        const convDate = new Date(conv.updatedAt);
+                        const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
+                        const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
+                        if (fromDate && convDate < fromDate)
+                            return false;
+                        if (toDate && convDate > toDate)
+                            return false;
+                        return true;
+                    });
+                }
+                // Buscar por texto
+                if (filters.search) {
+                    const searchTerm = filters.search.toLowerCase();
+                    conversations = conversations.filter(conv => {
+                        var _a, _b;
+                        return (((_a = conv.name) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm)) ||
+                            ((_b = conv.lastMessage) === null || _b === void 0 ? void 0 : _b.content.toLowerCase().includes(searchTerm)) ||
+                            conv.participants.some(p => p.toLowerCase().includes(searchTerm)));
+                    });
+                }
+                // Filtrar por participantes
+                if (filters.participants && filters.participants.length > 0) {
+                    conversations = conversations.filter(conv => filters.participants.some(p => conv.participants.includes(p)));
+                }
+                return conversations.sort((a, b) => {
+                    const dateA = new Date(a.updatedAt);
+                    const dateB = new Date(b.updatedAt);
+                    return dateB.getTime() - dateA.getTime();
                 });
             }
             catch (error) {
                 loggerService_1.logger.error('Error al buscar conversaciones:', error);
-                throw new Error('Error al buscar conversaciones');
+                throw error;
             }
         });
     }
-    /**
-     * Buscar mensajes
-     */
-    searchMessages(conversationId_1, searchTerm_1) {
-        return __awaiter(this, arguments, void 0, function* (conversationId, searchTerm, limit = 20) {
-            try {
-                const query = firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .orderBy('timestamp', 'desc')
-                    .limit(limit);
-                const snapshot = yield query.get();
-                const messages = snapshot.docs.map(doc => doc.data());
-                // Filtrar por término de búsqueda
-                return messages.filter(message => message.content.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Métodos privados auxiliares
+    getConversationById(conversationId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
+            const conversationSnap = yield conversationRef.get();
+            if (!conversationSnap.exists) {
+                return null;
             }
-            catch (error) {
-                loggerService_1.logger.error('Error al buscar mensajes:', error);
-                throw new Error('Error al buscar mensajes');
-            }
+            return conversationSnap.data();
         });
     }
-    /**
-     * Eliminar mensaje
-     */
-    deleteMessage(conversationId, messageId, userId) {
+    getConversationsByUser(userEmail) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const snapshot = yield firebase_1.db
+                .collection('conversations')
+                .where('participants', 'array-contains', userEmail)
+                .where('isActive', '==', true)
+                .orderBy('updatedAt', 'desc')
+                .get();
+            return snapshot.docs.map(doc => doc.data());
+        });
+    }
+    getConversationBetweenUsers(user1, user2) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const snapshot = yield firebase_1.db
+                .collection('conversations')
+                .where('participants', 'array-contains', user1)
+                .where('type', '==', 'direct')
+                .where('isActive', '==', true)
+                .get();
+            const conversation = snapshot.docs
+                .map(doc => doc.data())
+                .find(conv => conv.participants.includes(user2));
+            return conversation || null;
+        });
+    }
+    updateConversationLastMessage(conversationId, message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const conversationRef = firebase_1.db.collection('conversations').doc(conversationId);
+            yield conversationRef.update({
+                lastMessage: message,
+                updatedAt: message.timestamp,
+                unreadCount: admin.firestore.FieldValue.increment(1)
+            });
+        });
+    }
+    sendMessageNotifications(conversation, message) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const messageDoc = yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .doc(messageId)
-                    .get();
-                if (!messageDoc.exists) {
-                    throw new Error('Mensaje no encontrado');
-                }
-                const message = messageDoc.data();
-                // Solo el remitente puede eliminar el mensaje
-                if (message.senderId !== userId) {
-                    throw new Error('No autorizado para eliminar este mensaje');
-                }
-                yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .collection('messages')
-                    .doc(messageId)
-                    .delete();
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al eliminar mensaje:', error);
-                throw new Error('Error al eliminar mensaje');
-            }
-        });
-    }
-    /**
-     * Agregar participante a conversación grupal
-     */
-    addParticipantToGroup(conversationId, participantId, adminId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const conversation = yield this.getConversationById(conversationId);
-                if (!conversation) {
-                    throw new Error('Conversación no encontrada');
-                }
-                if (!conversation.isGroup) {
-                    throw new Error('Solo se pueden agregar participantes a conversaciones grupales');
-                }
-                if (conversation.groupAdmin !== adminId) {
-                    throw new Error('Solo el administrador del grupo puede agregar participantes');
-                }
-                if (conversation.participants.includes(participantId)) {
-                    throw new Error('El participante ya está en la conversación');
-                }
-                // Obtener nombre del nuevo participante
-                const userDoc = yield firebase_1.db.collection('users').doc(participantId).get();
-                if (!userDoc.exists) {
-                    throw new Error('Usuario no encontrado');
-                }
-                const userData = userDoc.data();
-                const participantName = `${userData.name} ${userData.lastName}`;
-                // Actualizar conversación
-                yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .update({
-                    participants: firestore_1.FieldValue.arrayUnion(participantId),
-                    [`participantNames.${participantId}`]: participantName,
-                    updatedAt: new Date(),
-                });
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al agregar participante:', error);
-                throw new Error('Error al agregar participante');
-            }
-        });
-    }
-    /**
-     * Remover participante de conversación grupal
-     */
-    removeParticipantFromGroup(conversationId, participantId, adminId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const conversation = yield this.getConversationById(conversationId);
-                if (!conversation) {
-                    throw new Error('Conversación no encontrada');
-                }
-                if (!conversation.isGroup) {
-                    throw new Error('Solo se pueden remover participantes de conversaciones grupales');
-                }
-                if (conversation.groupAdmin !== adminId) {
-                    throw new Error('Solo el administrador del grupo puede remover participantes');
-                }
-                if (!conversation.participants.includes(participantId)) {
-                    throw new Error('El participante no está en la conversación');
-                }
-                // Actualizar conversación
-                yield firebase_1.db
-                    .collection('conversations')
-                    .doc(conversationId)
-                    .update({
-                    participants: firestore_1.FieldValue.arrayRemove(participantId),
-                    [`participantNames.${participantId}`]: firestore_1.FieldValue.delete(),
-                    updatedAt: new Date(),
-                });
-            }
-            catch (error) {
-                loggerService_1.logger.error('Error al remover participante:', error);
-                throw new Error('Error al remover participante');
-            }
-        });
-    }
-    /**
-     * Obtener estadísticas de chat
-     */
-    getChatStats(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const conversations = yield this.getUserConversations({
-                    userId,
-                    limit: 100,
-                });
-                let totalMessages = 0;
-                let unreadMessages = 0;
-                let activeConversations = 0;
-                for (const conversation of conversations) {
-                    const messageCount = yield this.getConversationMessages(conversation.id, 1000);
-                    totalMessages += messageCount.length;
-                    const unreadCount = yield this.getUnreadMessageCount(conversation.id, userId);
-                    unreadMessages += unreadCount;
-                    if (unreadCount > 0) {
-                        activeConversations++;
+                conversation.participants.forEach((participant) => __awaiter(this, void 0, void 0, function* () {
+                    if (participant !== message.senderId) {
+                        // Enviar notificación push
+                        yield pushNotificationService_1.pushNotificationService.sendNotificationToUser(participant, {
+                            title: message.senderName,
+                            body: message.content,
+                            type: 'chat',
+                            data: {
+                                conversationId: conversation.id,
+                                messageId: message.id,
+                                senderId: message.senderId
+                            },
+                            category: 'chat'
+                        });
                     }
-                }
-                return {
-                    totalConversations: conversations.length,
-                    totalMessages,
-                    unreadMessages,
-                    activeConversations,
-                };
+                }));
             }
             catch (error) {
-                loggerService_1.logger.error('Error al obtener estadísticas de chat:', error);
-                throw new Error('Error al obtener estadísticas de chat');
+                loggerService_1.logger.error('Error al enviar notificaciones de mensaje:', error);
+            }
+        });
+    }
+    sendConversationNotification(userEmail, notification) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield pushNotificationService_1.pushNotificationService.sendNotificationToUser(userEmail, {
+                    title: notification.senderName || 'Nueva conversación',
+                    body: notification.message || 'Tienes una nueva conversación',
+                    type: 'chat',
+                    data: {
+                        conversationId: notification.conversationId,
+                        notificationType: notification.type
+                    },
+                    category: 'chat'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('Error al enviar notificación de conversación:', error);
             }
         });
     }
 }
 exports.ChatService = ChatService;
-exports.chatService = new ChatService();
+exports.chatService = ChatService.getInstance();
