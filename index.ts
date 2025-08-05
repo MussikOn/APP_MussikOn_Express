@@ -32,13 +32,15 @@ import notificationRoutes from './src/routes/notificationRoutes';
 import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
 import musicianSearchRoutes from './src/routes/musicianSearchRoutes';
 import hiringRoutes from './src/routes/hiringRoutes';
+import ratingRoutes from './src/routes/ratingRoutes';
+import depositRoutes from './src/routes/depositRoutes';
 
 // Importar gestor de índices
 import { FirestoreIndexManager } from './src/utils/firestoreIndexes';
 
-// Importar sockets (comentado temporalmente hasta que se implementen)
-// import { setupChatSocket } from './src/sockets/chatSocket';
-// import { setupEventSocket } from './src/sockets/eventSocket';
+// Importar sockets
+import { chatSocketHandler } from './src/sockets/chatSocket';
+import { socketHandler } from './src/sockets/eventSocket';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -104,6 +106,7 @@ app.use(cors({
   },
   credentials: true
 }));
+// app.use(cors());
 
 // Middleware para parsing de JSON y URL encoded
 app.use(express.json({ limit: '10mb' }));
@@ -389,6 +392,8 @@ app.use('/notifications', notificationRoutes);
 app.use('/push-notifications', pushNotificationRoutes);
 app.use('/musician-search', musicianSearchRoutes);
 app.use('/hiring', hiringRoutes);
+app.use('/ratings', ratingRoutes);
+app.use('/deposits', depositRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -442,8 +447,10 @@ app.get('/', (req, res) => {
 });
 
 // Configurar sockets
-// setupChatSocket(io);
-// setupEventSocket(io);
+io.on('connection', (socket) => {
+  // Configurar handler de eventos
+  socketHandler(io, socket, {});
+});
 
 // Middleware para rutas no encontradas (debe ir antes del error handler)
 app.use(notFoundHandler);

@@ -96,6 +96,13 @@ export class RateCalculationService {
   };
 
   /**
+   * Obtener datos del mercado (método público)
+   */
+  async getPublicMarketData(instrument: string, location: string, eventType: string): Promise<MarketData> {
+    return this.getMarketData(instrument, location, eventType);
+  }
+
+  /**
    * Calcular tarifa automática para un músico
    */
   async calculateRate(request: RateCalculationRequest): Promise<RateCalculationResult> {

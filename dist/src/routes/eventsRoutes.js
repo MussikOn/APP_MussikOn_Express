@@ -384,4 +384,170 @@ router.patch('/:eventId/complete', authMiddleware_1.authMiddleware, eventControl
  *         description: Error al eliminar el evento
  */
 router.delete('/:eventId', authMiddleware_1.authMiddleware, eventControllers_1.deleteEventController);
+/**
+ * @swagger
+ * /events/advanced/{eventId}:
+ *   get:
+ *     tags: [Events]
+ *     summary: Obtener evento con información avanzada integrada
+ *     description: |
+ *       Obtiene un evento con información avanzada que incluye:
+ *       - Estado del músico asignado
+ *       - Tarifas calculadas automáticamente
+ *       - Conflictos de calendario
+ *       - Músicos disponibles (para creadores de eventos)
+ *       - Datos del mercado
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID del evento a obtener con información avanzada
+ *     responses:
+ *       200:
+ *         description: Evento con información avanzada obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     eventName:
+ *                       type: string
+ *                     eventType:
+ *                       type: string
+ *                     date:
+ *                       type: string
+ *                     time:
+ *                       type: string
+ *                     location:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     assignedMusicianId:
+ *                       type: string
+ *                     advancedInfo:
+ *                       type: object
+ *                       properties:
+ *                         musicianStatus:
+ *                           type: object
+ *                           description: Estado del músico asignado
+ *                         calculatedRate:
+ *                           type: number
+ *                           description: Tarifa calculada automáticamente
+ *                         rateBreakdown:
+ *                           type: array
+ *                           description: Desglose de la tarifa
+ *                         recommendations:
+ *                           type: object
+ *                           description: Recomendaciones de tarifa
+ *                         calendarConflicts:
+ *                           type: array
+ *                           description: Conflictos de calendario
+ *                         availableMusicians:
+ *                           type: array
+ *                           description: Músicos disponibles (solo para creadores)
+ *                         marketData:
+ *                           type: object
+ *                           description: Datos del mercado
+ *       404:
+ *         description: Evento no encontrado
+ *       403:
+ *         description: No tienes permisos para ver este evento
+ *       500:
+ *         description: Error al obtener el evento
+ */
+router.get('/advanced/:eventId', authMiddleware_1.authMiddleware, eventControllers_1.getEventWithAdvancedInfoController);
+/**
+ * @swagger
+ * /events/heartbeat:
+ *   post:
+ *     tags: [Events]
+ *     summary: Sistema de heartbeat para músicos
+ *     description: |
+ *       Permite a los músicos mantener su estado online y recibir información actualizada:
+ *       - Actualiza estado online/offline
+ *       - Verifica eventos próximos
+ *       - Calcula métricas de rendimiento
+ *       - Detecta conflictos de calendario próximos
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               location:
+ *                 type: object
+ *                 properties:
+ *                   latitude:
+ *                     type: number
+ *                   longitude:
+ *                     type: number
+ *                   address:
+ *                     type: string
+ *                 description: Ubicación actual del músico
+ *               availability:
+ *                 type: object
+ *                 properties:
+ *                   isAvailable:
+ *                     type: boolean
+ *                   availableFrom:
+ *                     type: string
+ *                     format: date-time
+ *                   availableTo:
+ *                     type: string
+ *                     format: date-time
+ *                   maxDistance:
+ *                     type: number
+ *                 description: Configuración de disponibilidad
+ *     responses:
+ *       200:
+ *         description: Heartbeat procesado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     status:
+ *                       type: object
+ *                       description: Estado actualizado del músico
+ *                     upcomingEvents:
+ *                       type: array
+ *                       description: Eventos próximos del músico
+ *                     performanceMetrics:
+ *                       type: object
+ *                       description: Métricas de rendimiento actualizadas
+ *                     upcomingConflicts:
+ *                       type: array
+ *                       description: Conflictos de calendario próximos
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *       403:
+ *         description: Solo los músicos pueden usar el heartbeat
+ *       500:
+ *         description: Error al procesar heartbeat
+ */
+router.post('/heartbeat', authMiddleware_1.authMiddleware, eventControllers_1.musicianHeartbeatController);
 exports.default = router;

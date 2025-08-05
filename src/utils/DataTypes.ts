@@ -252,3 +252,52 @@ export interface MusicianSearchResponse {
     conflicts: string[];
   };
 }
+
+export interface BankDeposit {
+  id: string;
+  userEmail: string;
+  amount: number;
+  currency: string;
+  depositDate: Date;
+  bankName: string;
+  accountNumber: string;
+  reference: string;
+  purpose: string;
+  voucherUrl: string;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  isDuplicate?: boolean;
+  duplicateOf?: string;
+}
+
+export interface BankAccount {
+  id: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  accountType: 'savings' | 'checking';
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface DepositRequest {
+  amount: number;
+  currency: string;
+  depositDate: Date;
+  bankName: string;
+  accountNumber: string;
+  reference: string;
+  purpose: string;
+  voucherFile: Express.Multer.File;
+}
+
+export interface DepositApproval {
+  depositId: string;
+  action: 'approve' | 'reject';
+  reason?: string;
+  adminEmail: string;
+}

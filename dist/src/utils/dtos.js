@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.priceRangeDTO = exports.locationFilterDTO = exports.dateRangeDTO = exports.paginationDTO = exports.uploadImageDTO = exports.updateAdminDTO = exports.createAdminDTO = exports.validatePaymentMethodDTO = exports.processRefundDTO = exports.processPaymentDTO = exports.createInvoiceDTO = exports.createPaymentIntentDTO = exports.createPaymentMethodDTO = exports.optimizeRouteDTO = exports.isWithinRadiusDTO = exports.calculateDistanceDTO = exports.reverseGeocodeDTO = exports.geocodeAddressDTO = exports.coordinatesDTO = exports.createChatRoomDTO = exports.sendMessageDTO = exports.analyticsUsersDTO = exports.analyticsRequestsDTO = exports.analyticsEventsDTO = exports.searchUsersDTO = exports.searchMusicianRequestsDTO = exports.searchEventsDTO = exports.updateMusicianRequestDTO = exports.createMusicianRequestDTO = exports.updateEventDTO = exports.createEventDTO = exports.googleAuthDTO = exports.loginDTO = exports.registerDTO = void 0;
+exports.depositStatusDTO = exports.rejectDepositDTO = exports.reportDepositDTO = exports.priceRangeDTO = exports.locationFilterDTO = exports.dateRangeDTO = exports.paginationDTO = exports.uploadImageDTO = exports.updateAdminDTO = exports.createAdminDTO = exports.validatePaymentMethodDTO = exports.processRefundDTO = exports.processPaymentDTO = exports.createInvoiceDTO = exports.createPaymentIntentDTO = exports.createPaymentMethodDTO = exports.optimizeRouteDTO = exports.isWithinRadiusDTO = exports.calculateDistanceDTO = exports.reverseGeocodeDTO = exports.geocodeAddressDTO = exports.coordinatesDTO = exports.createChatRoomDTO = exports.sendMessageDTO = exports.analyticsUsersDTO = exports.analyticsRequestsDTO = exports.analyticsEventsDTO = exports.searchUsersDTO = exports.searchMusicianRequestsDTO = exports.searchEventsDTO = exports.updateMusicianRequestDTO = exports.createMusicianRequestDTO = exports.updateEventDTO = exports.createEventDTO = exports.googleAuthDTO = exports.loginDTO = exports.registerDTO = void 0;
 const joi_1 = __importDefault(require("joi"));
 // Data Transfer Objects for input validation
 // Auth DTOs
@@ -354,4 +354,59 @@ exports.locationFilterDTO = joi_1.default.object({
 exports.priceRangeDTO = joi_1.default.object({
     min: joi_1.default.number().min(0).required(),
     max: joi_1.default.number().min(joi_1.default.ref('min')).required(),
+});
+// DTOs para el sistema de depósitos DPT
+exports.reportDepositDTO = joi_1.default.object({
+    amount: joi_1.default.number().positive().required().messages({
+        'number.base': 'El monto debe ser un número',
+        'number.positive': 'El monto debe ser positivo',
+        'any.required': 'El monto es requerido'
+    }),
+    currency: joi_1.default.string().valid('EUR', 'USD', 'GBP').default('EUR').messages({
+        'string.base': 'La moneda debe ser una cadena de texto',
+        'any.only': 'La moneda debe ser EUR, USD o GBP'
+    }),
+    depositDate: joi_1.default.date().max('now').required().messages({
+        'date.base': 'La fecha debe ser válida',
+        'date.max': 'La fecha no puede ser futura',
+        'any.required': 'La fecha del depósito es requerida'
+    }),
+    bankName: joi_1.default.string().min(2).max(100).required().messages({
+        'string.base': 'El nombre del banco debe ser una cadena de texto',
+        'string.min': 'El nombre del banco debe tener al menos 2 caracteres',
+        'string.max': 'El nombre del banco no puede exceder 100 caracteres',
+        'any.required': 'El nombre del banco es requerido'
+    }),
+    accountNumber: joi_1.default.string().min(5).max(50).required().messages({
+        'string.base': 'El número de cuenta debe ser una cadena de texto',
+        'string.min': 'El número de cuenta debe tener al menos 5 caracteres',
+        'string.max': 'El número de cuenta no puede exceder 50 caracteres',
+        'any.required': 'El número de cuenta es requerido'
+    }),
+    reference: joi_1.default.string().min(3).max(100).required().messages({
+        'string.base': 'La referencia debe ser una cadena de texto',
+        'string.min': 'La referencia debe tener al menos 3 caracteres',
+        'string.max': 'La referencia no puede exceder 100 caracteres',
+        'any.required': 'La referencia es requerida'
+    }),
+    purpose: joi_1.default.string().min(5).max(200).required().messages({
+        'string.base': 'El propósito debe ser una cadena de texto',
+        'string.min': 'El propósito debe tener al menos 5 caracteres',
+        'string.max': 'El propósito no puede exceder 200 caracteres',
+        'any.required': 'El propósito es requerido'
+    })
+});
+exports.rejectDepositDTO = joi_1.default.object({
+    reason: joi_1.default.string().min(10).max(500).required().messages({
+        'string.base': 'La razón debe ser una cadena de texto',
+        'string.min': 'La razón debe tener al menos 10 caracteres',
+        'string.max': 'La razón no puede exceder 500 caracteres',
+        'any.required': 'La razón del rechazo es requerida'
+    })
+});
+exports.depositStatusDTO = joi_1.default.object({
+    status: joi_1.default.string().valid('pending', 'approved', 'rejected').messages({
+        'string.base': 'El estado debe ser una cadena de texto',
+        'any.only': 'El estado debe ser pending, approved o rejected'
+    })
 });
