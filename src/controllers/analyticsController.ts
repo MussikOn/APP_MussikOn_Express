@@ -1,362 +1,241 @@
 import { Request, Response } from 'express';
-import {
-  analyticsService,
-  AnalyticsFilters,
-} from '../services/analyticsService';
+import { db } from '../utils/firebase';
 import { logger } from '../services/loggerService';
-import { asyncHandler } from '../middleware/errorHandler';
 
-/**
- * Analytics de eventos
- */
-export const getEventAnalyticsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-      eventType: req.query.eventType as string,
-      status: req.query.status as string,
-      location: req.query.location as string,
-    };
+export class AnalyticsController {
+  /**
+   * Obtener estadísticas generales del sistema
+   */
+  async getSystemStats(req: Request, res: Response): Promise<void> {
+    try {
+      logger.info('[src/controllers/analyticsController.ts] Obteniendo estadísticas del sistema');
 
-    logger.info('Solicitud de analytics de eventos', {
-      metadata: { filters, userId: (req as any).user?.userEmail },
-    });
+      // Obtener estadísticas de usuarios
+      const usersSnapshot = await db.collection('users').get();
+      const totalUsers = usersSnapshot.size;
+      
+      // Contar usuarios por rol
+      const roleStats = {
+        admin: 0,
+        superadmin: 0,
+        eventCreator: 0,
+        musician: 0
+      };
 
-    const analytics = await analyticsService.getEventAnalytics(filters);
-
-    logger.info('Analytics de eventos completado', {
-      metadata: {
-        totalEvents: analytics.totalEvents,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: analytics,
-    });
-  }
-);
-
-/**
- * Analytics de solicitudes de músicos
- */
-export const getRequestAnalyticsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-      eventType: req.query.eventType as string,
-      status: req.query.status as string,
-      location: req.query.location as string,
-    };
-
-    logger.info('Solicitud de analytics de solicitudes', {
-      metadata: { filters, userId: (req as any).user?.userEmail },
-    });
-
-    const analytics = await analyticsService.getRequestAnalytics(filters);
-
-    logger.info('Analytics de solicitudes completado', {
-      metadata: {
-        totalRequests: analytics.totalRequests,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: analytics,
-    });
-  }
-);
-
-/**
- * Analytics de usuarios
- */
-export const getUserAnalyticsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-      userRole: req.query.userRole as string,
-    };
-
-    logger.info('Solicitud de analytics de usuarios', {
-      metadata: { filters, userId: (req as any).user?.userEmail },
-    });
-
-    const analytics = await analyticsService.getUserAnalytics(filters);
-
-    logger.info('Analytics de usuarios completado', {
-      metadata: {
-        totalUsers: analytics.totalUsers,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: analytics,
-    });
-  }
-);
-
-/**
- * Analytics de la plataforma completa
- */
-export const getPlatformAnalyticsController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-      eventType: req.query.eventType as string,
-      status: req.query.status as string,
-      userRole: req.query.userRole as string,
-      location: req.query.location as string,
-    };
-
-    logger.info('Solicitud de analytics de plataforma', {
-      metadata: { filters, userId: (req as any).user?.userEmail },
-    });
-
-    const analytics = await analyticsService.getPlatformAnalytics(filters);
-
-    logger.info('Analytics de plataforma completado', {
-      metadata: {
-        totalRevenue: analytics.totalRevenue,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: analytics,
-    });
-  }
-);
-
-/**
- * Reporte de tendencias
- */
-export const getTrendsReportController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const months = parseInt(req.query.months as string) || 6;
-
-    logger.info('Solicitud de reporte de tendencias', {
-      metadata: { months, userId: (req as any).user?.userEmail },
-    });
-
-    const trends = await analyticsService.getTrendsReport(months);
-
-    logger.info('Reporte de tendencias completado', {
-      metadata: {
-        months,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: trends,
-    });
-  }
-);
-
-/**
- * Reporte de rendimiento por ubicación
- */
-export const getLocationPerformanceReportController = asyncHandler(
-  async (req: Request, res: Response) => {
-    logger.info('Solicitud de reporte de rendimiento por ubicación', {
-      metadata: { userId: (req as any).user?.userEmail },
-    });
-
-    const performance = await analyticsService.getLocationPerformanceReport();
-
-    logger.info('Reporte de rendimiento por ubicación completado', {
-      metadata: {
-        locationsCount: performance.length,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: performance,
-    });
-  }
-);
-
-/**
- * Reporte de usuarios más activos
- */
-export const getTopActiveUsersReportController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const limit = parseInt(req.query.limit as string) || 10;
-
-    logger.info('Solicitud de reporte de usuarios más activos', {
-      metadata: { limit, userId: (req as any).user?.userEmail },
-    });
-
-    const users = await analyticsService.getTopActiveUsersReport(limit);
-
-    logger.info('Reporte de usuarios más activos completado', {
-      metadata: {
-        usersCount: users.length,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: users,
-    });
-  }
-);
-
-/**
- * Dashboard de analytics completo
- */
-export const getDashboardController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-    };
-
-    logger.info('Solicitud de dashboard de analytics', {
-      metadata: { filters, userId: (req as any).user?.userEmail },
-    });
-
-    const [
-      eventAnalytics,
-      requestAnalytics,
-      userAnalytics,
-      platformAnalytics,
-      trends,
-    ] = await Promise.all([
-      analyticsService.getEventAnalytics(filters),
-      analyticsService.getRequestAnalytics(filters),
-      analyticsService.getUserAnalytics(filters),
-      analyticsService.getPlatformAnalytics(filters),
-      analyticsService.getTrendsReport(6),
-    ]);
-
-    logger.info('Dashboard de analytics completado', {
-      metadata: {
-        totalEvents: eventAnalytics.totalEvents,
-        totalRequests: requestAnalytics.totalRequests,
-        totalUsers: userAnalytics.totalUsers,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.json({
-      success: true,
-      data: {
-        events: eventAnalytics,
-        requests: requestAnalytics,
-        users: userAnalytics,
-        platform: platformAnalytics,
-        trends,
-      },
-    });
-  }
-);
-
-/**
- * Exportar reporte en formato CSV
- */
-export const exportReportController = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { type, format } = req.query;
-    const filters: AnalyticsFilters = {
-      dateFrom: req.query.dateFrom as string,
-      dateTo: req.query.dateTo as string,
-      eventType: req.query.eventType as string,
-      status: req.query.status as string,
-      userRole: req.query.userRole as string,
-      location: req.query.location as string,
-    };
-
-    logger.info('Solicitud de exportación de reporte', {
-      metadata: { type, format, filters, userId: (req as any).user?.userEmail },
-    });
-
-    let data: any;
-    let filename: string;
-
-    switch (type) {
-      case 'events':
-        data = await analyticsService.getEventAnalytics(filters);
-        filename = `eventos_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      case 'requests':
-        data = await analyticsService.getRequestAnalytics(filters);
-        filename = `solicitudes_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      case 'users':
-        data = await analyticsService.getUserAnalytics(filters);
-        filename = `usuarios_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      case 'platform':
-        data = await analyticsService.getPlatformAnalytics(filters);
-        filename = `plataforma_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      case 'trends':
-        data = await analyticsService.getTrendsReport(6);
-        filename = `tendencias_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      case 'location':
-        data = await analyticsService.getLocationPerformanceReport();
-        filename = `rendimiento_ubicacion_${new Date().toISOString().split('T')[0]}.csv`;
-        break;
-      default:
-        throw new Error('Tipo de reporte no válido');
-    }
-
-    // Convertir a CSV (implementación básica)
-    const csvData = convertToCSV(data);
-
-    logger.info('Exportación de reporte completada', {
-      metadata: {
-        type,
-        format,
-        filename,
-        userId: (req as any).user?.userEmail,
-      },
-    });
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send(csvData);
-  }
-);
-
-/**
- * Función auxiliar para convertir datos a CSV
- */
-function convertToCSV(data: any): string {
-  if (Array.isArray(data)) {
-    if (data.length === 0) return '';
-
-    const headers = Object.keys(data[0]);
-    const csvRows = [headers.join(',')];
-
-    for (const row of data) {
-      const values = headers.map(header => {
-        const value = row[header];
-        return typeof value === 'string' ? `"${value}"` : value;
+      usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        const role = userData.roll || 'musician';
+        if (roleStats.hasOwnProperty(role)) {
+          (roleStats as any)[role]++;
+        }
       });
-      csvRows.push(values.join(','));
-    }
 
-    return csvRows.join('\n');
-  } else {
-    // Para objetos simples, convertir a formato clave-valor
-    const rows = Object.entries(data).map(([key, value]) => `${key},${value}`);
-    return `Metrica,Valor\n${rows.join('\n')}`;
+      // Obtener estadísticas de eventos
+      const eventsSnapshot = await db.collection('events').get();
+      const totalEvents = eventsSnapshot.size;
+
+      // Contar eventos por estado
+      const eventStats = {
+        active: 0,
+        completed: 0,
+        cancelled: 0,
+        pending: 0
+      };
+
+      eventsSnapshot.forEach(doc => {
+        const eventData = doc.data();
+        const status = eventData.status || 'pending';
+        if (eventStats.hasOwnProperty(status)) {
+          (eventStats as any)[status]++;
+        }
+      });
+
+      // Obtener estadísticas de solicitudes
+      const requestsSnapshot = await db.collection('musician_requests').get();
+      const totalRequests = requestsSnapshot.size;
+
+      // Contar solicitudes por estado
+      const requestStats = {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        completed: 0
+      };
+
+      requestsSnapshot.forEach(doc => {
+        const requestData = doc.data();
+        const status = requestData.status || 'pending';
+        if (requestStats.hasOwnProperty(status)) {
+          (requestStats as any)[status]++;
+        }
+      });
+
+      // Obtener estadísticas de imágenes
+      const imagesSnapshot = await db.collection('images').get();
+      const totalImages = imagesSnapshot.size;
+
+      // Calcular tamaño total de imágenes
+      let totalImageSize = 0;
+      imagesSnapshot.forEach(doc => {
+        const imageData = doc.data();
+        totalImageSize += imageData.size || 0;
+      });
+
+      // Obtener estadísticas de chat
+      const chatSnapshot = await db.collection('chat_conversations').get();
+      const totalConversations = chatSnapshot.size;
+
+      // Calcular mensajes totales
+      let totalMessages = 0;
+      for (const doc of chatSnapshot.docs) {
+        const messagesSnapshot = await doc.ref.collection('messages').get();
+        totalMessages += messagesSnapshot.size;
+      }
+
+      // Calcular porcentajes de cambio (simulado para demo)
+      const changePercentages = {
+        users: Math.floor(Math.random() * 20) + 5, // 5-25%
+        events: Math.floor(Math.random() * 15) + 3, // 3-18%
+        requests: Math.floor(Math.random() * 30) - 10, // -10 a 20%
+        images: Math.floor(Math.random() * 25) + 10 // 10-35%
+      };
+
+      const stats = {
+        users: {
+          total: totalUsers,
+          byRole: roleStats,
+          change: changePercentages.users
+        },
+        events: {
+          total: totalEvents,
+          byStatus: eventStats,
+          change: changePercentages.events
+        },
+        requests: {
+          total: totalRequests,
+          byStatus: requestStats,
+          change: changePercentages.requests
+        },
+        images: {
+          total: totalImages,
+          totalSize: totalImageSize,
+          change: changePercentages.images
+        },
+        chat: {
+          conversations: totalConversations,
+          messages: totalMessages
+        },
+        system: {
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          memory: process.memoryUsage()
+        }
+      };
+
+      res.status(200).json({
+      success: true,
+        data: stats
+      });
+
+    } catch (error) {
+      logger.error('[src/controllers/analyticsController.ts] Error obteniendo estadísticas del sistema', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo estadísticas del sistema'
+      });
+    }
+  }
+
+  /**
+   * Obtener estadísticas de rendimiento
+   */
+  async getPerformanceStats(req: Request, res: Response): Promise<void> {
+    try {
+      const performanceStats = {
+        timestamp: new Date().toISOString(),
+        memory: process.memoryUsage(),
+        cpu: process.cpuUsage(),
+        uptime: process.uptime(),
+        platform: process.platform,
+        nodeVersion: process.version,
+        pid: process.pid
+      };
+
+      res.status(200).json({
+        success: true,
+        data: performanceStats
+      });
+
+    } catch (error) {
+      logger.error('[src/controllers/analyticsController.ts] Error obteniendo estadísticas de rendimiento', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo estadísticas de rendimiento'
+      });
+    }
+  }
+
+  /**
+   * Obtener estadísticas de actividad reciente
+   */
+  async getRecentActivity(req: Request, res: Response): Promise<void> {
+    try {
+      const { limit = 10 } = req.query;
+      const limitNum = Math.min(Number(limit), 50); // Máximo 50 registros
+
+      // Obtener eventos recientes
+      const recentEvents = await db.collection('events')
+        .orderBy('create_at', 'desc')
+        .limit(limitNum)
+        .get();
+
+      // Obtener usuarios recientes
+      const recentUsers = await db.collection('users')
+        .orderBy('create_at', 'desc')
+        .limit(limitNum)
+        .get();
+
+      // Obtener solicitudes recientes
+      const recentRequests = await db.collection('musician_requests')
+        .orderBy('create_at', 'desc')
+        .limit(limitNum)
+        .get();
+
+      const activity = {
+        events: recentEvents.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          type: 'event'
+        })),
+        users: recentUsers.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          type: 'user'
+        })),
+        requests: recentRequests.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          type: 'request'
+        }))
+      };
+
+      res.status(200).json({
+        success: true,
+        data: activity
+      });
+
+    } catch (error) {
+      logger.error('[src/controllers/analyticsController.ts] Error obteniendo actividad reciente', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo actividad reciente'
+      });
+    }
   }
 }
+
+// Instancia singleton
+export const analyticsController = new AnalyticsController();

@@ -237,6 +237,80 @@ class ImagesController {
         });
     }
     /**
+     * Obtener todas las imágenes con URLs firmadas de IDrive E2
+     */
+    getAllImagesWithSignedUrls(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                const { category, isPublic, isActive, search, page = 1, limit = 20 } = req.query;
+                const filters = {
+                    category: category,
+                    isPublic: isPublic === 'true' ? true : isPublic === 'false' ? false : undefined,
+                    isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
+                    search: search,
+                    page: Number(page),
+                    limit: Number(limit)
+                };
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Obteniendo imágenes con URLs firmadas', {
+                    metadata: { userId, filters }
+                });
+                const images = yield imageService_1.imageService.getAllImagesWithSignedUrls(filters);
+                res.status(200).json({
+                    success: true,
+                    images,
+                    total: images.length,
+                    page: Number(page),
+                    limit: Number(limit),
+                    message: 'Imágenes obtenidas con URLs firmadas de IDrive E2'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imágenes con URLs firmadas', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo imágenes con URLs firmadas'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener imágenes directamente desde IDrive E2 con URLs firmadas
+     */
+    getAllImagesFromIDriveE2(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { category, search, page = 1, limit = 20 } = req.query;
+                const filters = {
+                    category: category,
+                    search: search,
+                    page: Number(page),
+                    limit: Number(limit)
+                };
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Obteniendo imágenes directamente desde IDrive E2', {
+                    metadata: { filters }
+                });
+                const images = yield imageService_1.imageService.getAllImagesFromIDriveE2(filters);
+                res.status(200).json({
+                    success: true,
+                    images,
+                    total: images.length,
+                    page: Number(page),
+                    limit: Number(limit),
+                    message: 'Imágenes obtenidas directamente desde IDrive E2 con URLs firmadas'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imágenes desde IDrive E2', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo imágenes desde IDrive E2'
+                });
+            }
+        });
+    }
+    /**
      * Obtener estadísticas de imágenes (alias para getImageStatistics)
      */
     getImageStats(req, res) {
@@ -571,6 +645,140 @@ class ImagesController {
                 res.status(500).json({
                     success: false,
                     error: 'Error generando URL firmada'
+                });
+            }
+        });
+    }
+    /**
+     * Endpoint de diagnóstico para verificar estado de imágenes
+     */
+    diagnoseImages(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            try {
+                const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail;
+                if (!userId) {
+                    res.status(401).json({ error: 'Usuario no autenticado' });
+                    return;
+                }
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Iniciando diagnóstico de imágenes', { metadata: { userId } });
+                // 1. Verificar configuración de IDrive E2
+                const config = {
+                    endpoint: process.env.IDRIVE_E2_ENDPOINT,
+                    region: process.env.IDRIVE_E2_REGION,
+                    bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+                    accessKey: process.env.IDRIVE_E2_ACCESS_KEY ? 'Configurado' : 'No configurado',
+                    secretKey: process.env.IDRIVE_E2_SECRET_KEY ? 'Configurado' : 'No configurado'
+                };
+                // 2. Verificar registros en Firestore
+                const imagesSnapshot = yield firebase_1.db.collection('images').limit(10).get();
+                const imageUploadsSnapshot = yield firebase_1.db.collection('image_uploads').limit(10).get();
+                const firestoreStats = {
+                    imagesCollection: imagesSnapshot.size,
+                    imageUploadsCollection: imageUploadsSnapshot.size
+                };
+                // 3. Verificar URLs de ejemplo
+                const sampleImages = [];
+                if (imagesSnapshot.size > 0) {
+                    const sampleImage = imagesSnapshot.docs[0].data();
+                    sampleImages.push({
+                        id: imagesSnapshot.docs[0].id,
+                        key: sampleImage.key,
+                        url: sampleImage.url,
+                        filename: sampleImage.filename,
+                        size: sampleImage.size
+                    });
+                }
+                // 4. Intentar conectar a IDrive E2
+                let idriveStatus = { connected: false, error: null, files: 0 };
+                try {
+                    const { S3Client, ListObjectsV2Command } = require('@aws-sdk/client-s3');
+                    const s3Client = new S3Client({
+                        region: process.env.IDRIVE_E2_REGION || 'us-east-1',
+                        endpoint: process.env.IDRIVE_E2_ENDPOINT,
+                        credentials: {
+                            accessKeyId: process.env.IDRIVE_E2_ACCESS_KEY,
+                            secretAccessKey: process.env.IDRIVE_E2_SECRET_KEY,
+                        },
+                        forcePathStyle: true,
+                    });
+                    const listCommand = new ListObjectsV2Command({
+                        Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+                        MaxKeys: 10,
+                    });
+                    const response = yield s3Client.send(listCommand);
+                    idriveStatus = {
+                        connected: true,
+                        error: null,
+                        files: ((_b = response.Contents) === null || _b === void 0 ? void 0 : _b.length) || 0,
+                        sampleFiles: ((_c = response.Contents) === null || _c === void 0 ? void 0 : _c.slice(0, 3).map((file) => ({
+                            key: file.Key,
+                            size: file.Size,
+                            lastModified: file.LastModified
+                        }))) || []
+                    };
+                }
+                catch (error) {
+                    idriveStatus = {
+                        connected: false,
+                        error: error instanceof Error ? error.message : 'Error desconocido',
+                        files: 0
+                    };
+                }
+                // 5. Verificar URLs de acceso
+                const urlTests = [];
+                if (sampleImages.length > 0) {
+                    for (const image of sampleImages.slice(0, 2)) {
+                        try {
+                            const response = yield fetch(image.url, { method: 'HEAD' });
+                            urlTests.push({
+                                url: image.url,
+                                accessible: response.ok,
+                                status: response.status,
+                                size: response.headers.get('content-length')
+                            });
+                        }
+                        catch (error) {
+                            urlTests.push({
+                                url: image.url,
+                                accessible: false,
+                                error: error instanceof Error ? error.message : 'Error desconocido'
+                            });
+                        }
+                    }
+                }
+                const diagnosis = {
+                    timestamp: new Date().toISOString(),
+                    config,
+                    firestoreStats,
+                    idriveStatus,
+                    sampleImages,
+                    urlTests,
+                    recommendations: []
+                };
+                // Generar recomendaciones
+                if (!idriveStatus.connected) {
+                    diagnosis.recommendations.push('Verificar configuración de IDrive E2');
+                }
+                if (firestoreStats.imagesCollection === 0 && firestoreStats.imageUploadsCollection === 0) {
+                    diagnosis.recommendations.push('No hay registros de imágenes en Firestore');
+                }
+                if (urlTests.some(test => !test.accessible)) {
+                    diagnosis.recommendations.push('Algunas URLs no son accesibles');
+                }
+                if (idriveStatus.connected && idriveStatus.files === 0) {
+                    diagnosis.recommendations.push('IDrive E2 conectado pero no hay archivos');
+                }
+                res.status(200).json({
+                    success: true,
+                    data: diagnosis
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error en diagnóstico de imágenes', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error en diagnóstico de imágenes'
                 });
             }
         });

@@ -7,6 +7,8 @@ exports.validateIdFormat = exports.validateEmailFormat = exports.validateSafeStr
 // Jest setup file for MussikOn API tests
 const dotenv_1 = __importDefault(require("dotenv"));
 const loggerService_1 = require("../services/loggerService");
+// Set test environment
+process.env.NODE_ENV = 'test';
 // Load environment variables for testing
 dotenv_1.default.config({ path: '.env.test' });
 // Mock Firebase Admin

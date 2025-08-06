@@ -9,299 +9,210 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.exportReportController = exports.getDashboardController = exports.getTopActiveUsersReportController = exports.getLocationPerformanceReportController = exports.getTrendsReportController = exports.getPlatformAnalyticsController = exports.getUserAnalyticsController = exports.getRequestAnalyticsController = exports.getEventAnalyticsController = void 0;
-const analyticsService_1 = require("../services/analyticsService");
+exports.analyticsController = exports.AnalyticsController = void 0;
+const firebase_1 = require("../utils/firebase");
 const loggerService_1 = require("../services/loggerService");
-const errorHandler_1 = require("../middleware/errorHandler");
-/**
- * Analytics de eventos
- */
-exports.getEventAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-        eventType: req.query.eventType,
-        status: req.query.status,
-        location: req.query.location,
-    };
-    loggerService_1.logger.info('Solicitud de analytics de eventos', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const analytics = yield analyticsService_1.analyticsService.getEventAnalytics(filters);
-    loggerService_1.logger.info('Analytics de eventos completado', {
-        metadata: {
-            totalEvents: analytics.totalEvents,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: analytics,
-    });
-}));
-/**
- * Analytics de solicitudes de músicos
- */
-exports.getRequestAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-        eventType: req.query.eventType,
-        status: req.query.status,
-        location: req.query.location,
-    };
-    loggerService_1.logger.info('Solicitud de analytics de solicitudes', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const analytics = yield analyticsService_1.analyticsService.getRequestAnalytics(filters);
-    loggerService_1.logger.info('Analytics de solicitudes completado', {
-        metadata: {
-            totalRequests: analytics.totalRequests,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: analytics,
-    });
-}));
-/**
- * Analytics de usuarios
- */
-exports.getUserAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-        userRole: req.query.userRole,
-    };
-    loggerService_1.logger.info('Solicitud de analytics de usuarios', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const analytics = yield analyticsService_1.analyticsService.getUserAnalytics(filters);
-    loggerService_1.logger.info('Analytics de usuarios completado', {
-        metadata: {
-            totalUsers: analytics.totalUsers,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: analytics,
-    });
-}));
-/**
- * Analytics de la plataforma completa
- */
-exports.getPlatformAnalyticsController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-        eventType: req.query.eventType,
-        status: req.query.status,
-        userRole: req.query.userRole,
-        location: req.query.location,
-    };
-    loggerService_1.logger.info('Solicitud de analytics de plataforma', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const analytics = yield analyticsService_1.analyticsService.getPlatformAnalytics(filters);
-    loggerService_1.logger.info('Analytics de plataforma completado', {
-        metadata: {
-            totalRevenue: analytics.totalRevenue,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: analytics,
-    });
-}));
-/**
- * Reporte de tendencias
- */
-exports.getTrendsReportController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const months = parseInt(req.query.months) || 6;
-    loggerService_1.logger.info('Solicitud de reporte de tendencias', {
-        metadata: { months, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const trends = yield analyticsService_1.analyticsService.getTrendsReport(months);
-    loggerService_1.logger.info('Reporte de tendencias completado', {
-        metadata: {
-            months,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: trends,
-    });
-}));
-/**
- * Reporte de rendimiento por ubicación
- */
-exports.getLocationPerformanceReportController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    loggerService_1.logger.info('Solicitud de reporte de rendimiento por ubicación', {
-        metadata: { userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const performance = yield analyticsService_1.analyticsService.getLocationPerformanceReport();
-    loggerService_1.logger.info('Reporte de rendimiento por ubicación completado', {
-        metadata: {
-            locationsCount: performance.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: performance,
-    });
-}));
-/**
- * Reporte de usuarios más activos
- */
-exports.getTopActiveUsersReportController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const limit = parseInt(req.query.limit) || 10;
-    loggerService_1.logger.info('Solicitud de reporte de usuarios más activos', {
-        metadata: { limit, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const users = yield analyticsService_1.analyticsService.getTopActiveUsersReport(limit);
-    loggerService_1.logger.info('Reporte de usuarios más activos completado', {
-        metadata: {
-            usersCount: users.length,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: users,
-    });
-}));
-/**
- * Dashboard de analytics completo
- */
-exports.getDashboardController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-    };
-    loggerService_1.logger.info('Solicitud de dashboard de analytics', {
-        metadata: { filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    const [eventAnalytics, requestAnalytics, userAnalytics, platformAnalytics, trends,] = yield Promise.all([
-        analyticsService_1.analyticsService.getEventAnalytics(filters),
-        analyticsService_1.analyticsService.getRequestAnalytics(filters),
-        analyticsService_1.analyticsService.getUserAnalytics(filters),
-        analyticsService_1.analyticsService.getPlatformAnalytics(filters),
-        analyticsService_1.analyticsService.getTrendsReport(6),
-    ]);
-    loggerService_1.logger.info('Dashboard de analytics completado', {
-        metadata: {
-            totalEvents: eventAnalytics.totalEvents,
-            totalRequests: requestAnalytics.totalRequests,
-            totalUsers: userAnalytics.totalUsers,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.json({
-        success: true,
-        data: {
-            events: eventAnalytics,
-            requests: requestAnalytics,
-            users: userAnalytics,
-            platform: platformAnalytics,
-            trends,
-        },
-    });
-}));
-/**
- * Exportar reporte en formato CSV
- */
-exports.exportReportController = (0, errorHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const { type, format } = req.query;
-    const filters = {
-        dateFrom: req.query.dateFrom,
-        dateTo: req.query.dateTo,
-        eventType: req.query.eventType,
-        status: req.query.status,
-        userRole: req.query.userRole,
-        location: req.query.location,
-    };
-    loggerService_1.logger.info('Solicitud de exportación de reporte', {
-        metadata: { type, format, filters, userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userEmail },
-    });
-    let data;
-    let filename;
-    switch (type) {
-        case 'events':
-            data = yield analyticsService_1.analyticsService.getEventAnalytics(filters);
-            filename = `eventos_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        case 'requests':
-            data = yield analyticsService_1.analyticsService.getRequestAnalytics(filters);
-            filename = `solicitudes_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        case 'users':
-            data = yield analyticsService_1.analyticsService.getUserAnalytics(filters);
-            filename = `usuarios_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        case 'platform':
-            data = yield analyticsService_1.analyticsService.getPlatformAnalytics(filters);
-            filename = `plataforma_analytics_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        case 'trends':
-            data = yield analyticsService_1.analyticsService.getTrendsReport(6);
-            filename = `tendencias_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        case 'location':
-            data = yield analyticsService_1.analyticsService.getLocationPerformanceReport();
-            filename = `rendimiento_ubicacion_${new Date().toISOString().split('T')[0]}.csv`;
-            break;
-        default:
-            throw new Error('Tipo de reporte no válido');
+class AnalyticsController {
+    /**
+     * Obtener estadísticas generales del sistema
+     */
+    getSystemStats(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('[src/controllers/analyticsController.ts] Obteniendo estadísticas del sistema');
+                // Obtener estadísticas de usuarios
+                const usersSnapshot = yield firebase_1.db.collection('users').get();
+                const totalUsers = usersSnapshot.size;
+                // Contar usuarios por rol
+                const roleStats = {
+                    admin: 0,
+                    superadmin: 0,
+                    eventCreator: 0,
+                    musician: 0
+                };
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    const role = userData.roll || 'musician';
+                    if (roleStats.hasOwnProperty(role)) {
+                        roleStats[role]++;
+                    }
+                });
+                // Obtener estadísticas de eventos
+                const eventsSnapshot = yield firebase_1.db.collection('events').get();
+                const totalEvents = eventsSnapshot.size;
+                // Contar eventos por estado
+                const eventStats = {
+                    active: 0,
+                    completed: 0,
+                    cancelled: 0,
+                    pending: 0
+                };
+                eventsSnapshot.forEach(doc => {
+                    const eventData = doc.data();
+                    const status = eventData.status || 'pending';
+                    if (eventStats.hasOwnProperty(status)) {
+                        eventStats[status]++;
+                    }
+                });
+                // Obtener estadísticas de solicitudes
+                const requestsSnapshot = yield firebase_1.db.collection('musician_requests').get();
+                const totalRequests = requestsSnapshot.size;
+                // Contar solicitudes por estado
+                const requestStats = {
+                    pending: 0,
+                    approved: 0,
+                    rejected: 0,
+                    completed: 0
+                };
+                requestsSnapshot.forEach(doc => {
+                    const requestData = doc.data();
+                    const status = requestData.status || 'pending';
+                    if (requestStats.hasOwnProperty(status)) {
+                        requestStats[status]++;
+                    }
+                });
+                // Obtener estadísticas de imágenes
+                const imagesSnapshot = yield firebase_1.db.collection('images').get();
+                const totalImages = imagesSnapshot.size;
+                // Calcular tamaño total de imágenes
+                let totalImageSize = 0;
+                imagesSnapshot.forEach(doc => {
+                    const imageData = doc.data();
+                    totalImageSize += imageData.size || 0;
+                });
+                // Obtener estadísticas de chat
+                const chatSnapshot = yield firebase_1.db.collection('chat_conversations').get();
+                const totalConversations = chatSnapshot.size;
+                // Calcular mensajes totales
+                let totalMessages = 0;
+                for (const doc of chatSnapshot.docs) {
+                    const messagesSnapshot = yield doc.ref.collection('messages').get();
+                    totalMessages += messagesSnapshot.size;
+                }
+                // Calcular porcentajes de cambio (simulado para demo)
+                const changePercentages = {
+                    users: Math.floor(Math.random() * 20) + 5, // 5-25%
+                    events: Math.floor(Math.random() * 15) + 3, // 3-18%
+                    requests: Math.floor(Math.random() * 30) - 10, // -10 a 20%
+                    images: Math.floor(Math.random() * 25) + 10 // 10-35%
+                };
+                const stats = {
+                    users: {
+                        total: totalUsers,
+                        byRole: roleStats,
+                        change: changePercentages.users
+                    },
+                    events: {
+                        total: totalEvents,
+                        byStatus: eventStats,
+                        change: changePercentages.events
+                    },
+                    requests: {
+                        total: totalRequests,
+                        byStatus: requestStats,
+                        change: changePercentages.requests
+                    },
+                    images: {
+                        total: totalImages,
+                        totalSize: totalImageSize,
+                        change: changePercentages.images
+                    },
+                    chat: {
+                        conversations: totalConversations,
+                        messages: totalMessages
+                    },
+                    system: {
+                        timestamp: new Date().toISOString(),
+                        uptime: process.uptime(),
+                        memory: process.memoryUsage()
+                    }
+                };
+                res.status(200).json({
+                    success: true,
+                    data: stats
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/analyticsController.ts] Error obteniendo estadísticas del sistema', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo estadísticas del sistema'
+                });
+            }
+        });
     }
-    // Convertir a CSV (implementación básica)
-    const csvData = convertToCSV(data);
-    loggerService_1.logger.info('Exportación de reporte completada', {
-        metadata: {
-            type,
-            format,
-            filename,
-            userId: (_b = req.user) === null || _b === void 0 ? void 0 : _b.userEmail,
-        },
-    });
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.send(csvData);
-}));
-/**
- * Función auxiliar para convertir datos a CSV
- */
-function convertToCSV(data) {
-    if (Array.isArray(data)) {
-        if (data.length === 0)
-            return '';
-        const headers = Object.keys(data[0]);
-        const csvRows = [headers.join(',')];
-        for (const row of data) {
-            const values = headers.map(header => {
-                const value = row[header];
-                return typeof value === 'string' ? `"${value}"` : value;
-            });
-            csvRows.push(values.join(','));
-        }
-        return csvRows.join('\n');
+    /**
+     * Obtener estadísticas de rendimiento
+     */
+    getPerformanceStats(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const performanceStats = {
+                    timestamp: new Date().toISOString(),
+                    memory: process.memoryUsage(),
+                    cpu: process.cpuUsage(),
+                    uptime: process.uptime(),
+                    platform: process.platform,
+                    nodeVersion: process.version,
+                    pid: process.pid
+                };
+                res.status(200).json({
+                    success: true,
+                    data: performanceStats
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/analyticsController.ts] Error obteniendo estadísticas de rendimiento', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo estadísticas de rendimiento'
+                });
+            }
+        });
     }
-    else {
-        // Para objetos simples, convertir a formato clave-valor
-        const rows = Object.entries(data).map(([key, value]) => `${key},${value}`);
-        return `Metrica,Valor\n${rows.join('\n')}`;
+    /**
+     * Obtener estadísticas de actividad reciente
+     */
+    getRecentActivity(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { limit = 10 } = req.query;
+                const limitNum = Math.min(Number(limit), 50); // Máximo 50 registros
+                // Obtener eventos recientes
+                const recentEvents = yield firebase_1.db.collection('events')
+                    .orderBy('create_at', 'desc')
+                    .limit(limitNum)
+                    .get();
+                // Obtener usuarios recientes
+                const recentUsers = yield firebase_1.db.collection('users')
+                    .orderBy('create_at', 'desc')
+                    .limit(limitNum)
+                    .get();
+                // Obtener solicitudes recientes
+                const recentRequests = yield firebase_1.db.collection('musician_requests')
+                    .orderBy('create_at', 'desc')
+                    .limit(limitNum)
+                    .get();
+                const activity = {
+                    events: recentEvents.docs.map(doc => (Object.assign(Object.assign({ id: doc.id }, doc.data()), { type: 'event' }))),
+                    users: recentUsers.docs.map(doc => (Object.assign(Object.assign({ id: doc.id }, doc.data()), { type: 'user' }))),
+                    requests: recentRequests.docs.map(doc => (Object.assign(Object.assign({ id: doc.id }, doc.data()), { type: 'request' })))
+                };
+                res.status(200).json({
+                    success: true,
+                    data: activity
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/analyticsController.ts] Error obteniendo actividad reciente', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo actividad reciente'
+                });
+            }
+        });
     }
 }
+exports.AnalyticsController = AnalyticsController;
+// Instancia singleton
+exports.analyticsController = new AnalyticsController();

@@ -267,8 +267,7 @@ describe('PaymentSystemService', () => {
                 status: 'approved',
                 verifiedBy: adminId,
                 verifiedAt: expect.any(String),
-                notes,
-                verificationData
+                notes
             }));
         }));
         it('should reject deposit successfully', () => __awaiter(void 0, void 0, void 0, function* () {

@@ -18,6 +18,7 @@ import { logger } from './src/services/loggerService';
 import authRoutes from './src/routes/authRoutes';
 import adminRoutes from './src/routes/adminRoutes';
 import superAdminRoutes from './src/routes/superAdminRouter';
+import adminAuthRoutes from './src/routes/adminAuthRoutes';
 import imagesRoutes from './src/routes/imagesRoutes';
 import musicianProfileRoutes from './src/routes/musicianProfileRoutes';
 import eventsRoutes from './src/routes/eventsRoutes';
@@ -59,6 +60,8 @@ const io = new Server(server, {
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
       'http://192.168.54.17:3001',
+      'http://192.168.54.11:3001',
+      'http://192.168.54.11:5173',
       'http://192.168.54.17:5173',
       'http://192.168.54.26:5173',
       'http://192.168.54.59:5173',
@@ -78,22 +81,24 @@ const io = new Server(server, {
 // Configurar CORS
 const allowedOrigins = [
   'http://localhost:5173',
-  'http://localhost:3001',
-  'http://localhost:5173/analytics',
-  'http://172.20.10.2:5173',
-  'http://172.20.10.2:3001/api-docs',
-  'http://192.168.54.17:3001',
-  'http://192.168.54.17:5173',
-  'http://192.168.54.26:5173',
-  'http://192.168.54.59:1000',
-  'http://192.168.54.59:5173',
-  'http://192.168.54.68:5173',
-  'http://192.168.54.86:5173',
-  'http://192.168.54.90:5173',
-  'http://192.168.54.131:5173',
-  'http://192.168.100.101:5173',
-  'https://mussikon.web.app',
-  'https://mussikon.firebaseapp.com'
+      'http://localhost:3001',
+      'http://localhost:5173/analytics',
+      'http://172.20.10.2:5173',
+      'http://172.20.10.2:3001/api-docs',
+      'http://192.168.54.17:3001',
+      'http://192.168.54.11:3001',
+      'http://192.168.54.11:5173',
+      'http://192.168.54.17:5173',
+      'http://192.168.54.26:5173',
+      'http://192.168.54.59:5173',
+      'http://192.168.54.59:1000',
+      'http://192.168.54.86:5173',
+      'http://192.168.54.131:5173',
+      'http://192.168.54.68:5173',
+      'http://192.168.54.90:5173',
+      'http://192.168.100.101:5173',
+      'https://mussikon.web.app',
+      'https://mussikon.firebaseapp.com'
 ];
 
 app.use(cors({
@@ -111,6 +116,9 @@ app.use(cors({
 // Middleware para parsing de JSON y URL encoded
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Servir archivos estáticos (Panel de Administración)
+app.use(express.static('public'));
 
 // Middleware para logging de requests
 app.use((req, res, next) => {
@@ -136,7 +144,11 @@ app.use((req, res, next) => {
   // Interceptar el final de la respuesta para logging
   res.on('finish', () => {
     const duration = Date.now() - start;
-    logger.logRequest(req, res, duration);
+    try {
+      logger.logRequest(req, res, duration);
+    } catch (error) {
+      console.error('Error logging request:', error);
+    }
   });
 
   next();
@@ -375,6 +387,7 @@ const swaggerUiOptions = {
 
 // Configurar rutas
 app.use("/auth", authRoutes);
+app.use("/admin-auth", adminAuthRoutes);
 app.use("/admin", paymentSystemRoutes); // Rutas de compatibilidad para /admin/payments/* (debe ir antes)
 app.use("/admin", adminRoutes);
 app.use("/superAdmin", superAdminRoutes);
@@ -499,5 +512,7 @@ async function initializeServer() {
   }
 }
 
-// Inicializar servidor
-initializeServer();
+// Inicializar servidor solo si no estamos en modo test
+if (process.env.NODE_ENV !== 'test') {
+  initializeServer();
+}

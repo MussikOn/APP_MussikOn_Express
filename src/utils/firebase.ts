@@ -4,9 +4,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS;
+const FIREBASE_CREDENTIALS = process.env.FIREBASE_CREDENTIALS || 'mus1k0n-firebase-adminsdk-fbsvc-d6e712e084.json';
 
-const serviceAccount = path.join(__dirname, `../../${FIREBASE_CREDENTIALS}`);
+// Corregir la ruta para que apunte a la raíz del proyecto, no a dist
+const serviceAccount = path.join(process.cwd(), FIREBASE_CREDENTIALS);
 
 if (!admin.apps.length) {
   admin.initializeApp({

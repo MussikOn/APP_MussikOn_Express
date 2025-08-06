@@ -16,7 +16,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.s3 = exports.extractKeyFromUrl = exports.getImageFromS3 = exports.generatePresignedUploadUrl = exports.generatePresignedUrl = exports.getFileInfo = exports.fileExistsInS3 = exports.deleteFromS3 = exports.downloadFromS3 = exports.uploadToS3 = void 0;
+exports.s3 = exports.listImagesWithSignedUrls = exports.listObjectsFromS3 = exports.extractKeyFromUrl = exports.getImageFromS3 = exports.generatePresignedUploadUrl = exports.generatePresignedUrl = exports.getFileInfo = exports.fileExistsInS3 = exports.deleteFromS3 = exports.downloadFromS3 = exports.uploadToS3 = void 0;
 exports.getS3Client = getS3Client;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
@@ -427,6 +427,95 @@ const extractKeyFromUrl = (url) => {
     }
 };
 exports.extractKeyFromUrl = extractKeyFromUrl;
+/**
+ * Lista objetos desde IDrive E2 con información detallada
+ */
+const listObjectsFromS3 = (prefix_1, ...args_1) => __awaiter(void 0, [prefix_1, ...args_1], void 0, function* (prefix, maxKeys = 1000) {
+    try {
+        const s3Client = yield getS3Client();
+        const command = new client_s3_1.ListObjectsV2Command({
+            Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+            Prefix: prefix,
+            MaxKeys: maxKeys,
+        });
+        const response = yield s3Client.send(command);
+        const objects = (response.Contents || []).map(obj => ({
+            key: obj.Key,
+            size: obj.Size || 0,
+            lastModified: obj.LastModified || new Date(),
+            etag: obj.ETag || '',
+        }));
+        loggerService_1.logger.info('[src/utils/idriveE2.ts] Objetos listados exitosamente desde S3:', {
+            metadata: {
+                bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+                prefix,
+                totalObjects: objects.length,
+                isTruncated: response.IsTruncated
+            }
+        });
+        return {
+            objects,
+            isTruncated: response.IsTruncated || false,
+            nextContinuationToken: response.NextContinuationToken,
+        };
+    }
+    catch (error) {
+        loggerService_1.logger.error('[src/utils/idriveE2.ts] Error listando objetos desde S3:', error instanceof Error ? error : new Error(String(error)));
+        throw new Error('Error listando objetos desde S3');
+    }
+});
+exports.listObjectsFromS3 = listObjectsFromS3;
+/**
+ * Lista todas las imágenes desde IDrive E2 con URLs firmadas
+ */
+const listImagesWithSignedUrls = (prefix_1, ...args_1) => __awaiter(void 0, [prefix_1, ...args_1], void 0, function* (prefix, maxKeys = 1000) {
+    try {
+        const { objects } = yield (0, exports.listObjectsFromS3)(prefix, maxKeys);
+        // Filtrar solo archivos de imagen
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+        const imageObjects = objects.filter(obj => imageExtensions.some(ext => obj.key.toLowerCase().endsWith(ext)));
+        // Generar URLs firmadas para cada imagen
+        const imagesWithUrls = yield Promise.all(imageObjects.map((obj) => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const signedUrl = yield (0, exports.generatePresignedUrl)(obj.key, 3600); // 1 hora
+                // Extraer nombre de archivo y categoría
+                const filename = obj.key.split('/').pop() || obj.key;
+                const pathParts = obj.key.split('/');
+                // La categoría está en la posición después de 'musikon-media'
+                let category = 'general';
+                if (pathParts.length > 2 && pathParts[0] === 'musikon-media') {
+                    category = pathParts[1]; // deposits, profile, post, gallery, etc.
+                }
+                return {
+                    key: obj.key,
+                    url: signedUrl,
+                    size: obj.size,
+                    lastModified: obj.lastModified,
+                    filename,
+                    category,
+                };
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/utils/idriveE2.ts] Error generando URL firmada para:', error instanceof Error ? error : new Error(String(error)), { metadata: { key: obj.key } });
+                return null;
+            }
+        })));
+        // Filtrar objetos con errores
+        const validImages = imagesWithUrls.filter(img => img !== null);
+        loggerService_1.logger.info('[src/utils/idriveE2.ts] Imágenes con URLs firmadas generadas:', {
+            metadata: {
+                totalImages: validImages.length,
+                totalObjects: objects.length
+            }
+        });
+        return validImages;
+    }
+    catch (error) {
+        loggerService_1.logger.error('[src/utils/idriveE2.ts] Error listando imágenes con URLs firmadas:', error instanceof Error ? error : new Error(String(error)));
+        throw new Error('Error listando imágenes con URLs firmadas');
+    }
+});
+exports.listImagesWithSignedUrls = listImagesWithSignedUrls;
 // Cliente S3 legacy para compatibilidad (deprecated)
 exports.s3 = new client_s3_1.S3Client({
     region: process.env.IDRIVE_E2_REGION,

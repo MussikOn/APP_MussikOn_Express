@@ -3,8 +3,17 @@ import { imagesController } from '../controllers/imagesController';
 import { imageService } from '../services/imageService';
 
 // Mock the imageService
-jest.mock('../services/imageService');
-const mockImageService = require('../services/imageService');
+jest.mock('../services/imageService', () => ({
+  imageService: {
+    uploadImage: jest.fn(),
+    getImage: jest.fn(),
+    validateImageFile: jest.fn(),
+    deleteImage: jest.fn(),
+    updateImageMetadata: jest.fn()
+  }
+}));
+
+const { imageService: mockImageService } = require('../services/imageService');
 
 describe('ImagesController', () => {
   let mockRequest: Partial<Request>;
@@ -66,7 +75,11 @@ describe('ImagesController', () => {
       await imagesController.uploadImage(mockRequest as Request, mockResponse as Response);
 
       // Assert
-      expect(mockImageService.uploadImage).toHaveBeenCalledWith(mockFile, userId, 'uploads', {});
+      expect(mockImageService.uploadImage).toHaveBeenCalledWith(mockFile, userId, 'uploads', {
+        description: undefined,
+        tags: [],
+        uploadedBy: userId
+      });
       expect(mockStatus).toHaveBeenCalledWith(201);
       expect(mockJson).toHaveBeenCalledWith({
         success: true,
@@ -95,8 +108,7 @@ describe('ImagesController', () => {
       // Assert
       expect(mockStatus).toHaveBeenCalledWith(400);
       expect(mockJson).toHaveBeenCalledWith({
-        success: false,
-        message: 'No se proporcionó archivo'
+        error: 'No se proporcionó archivo'
       });
     });
 
@@ -137,7 +149,7 @@ describe('ImagesController', () => {
       expect(mockStatus).toHaveBeenCalledWith(500);
       expect(mockJson).toHaveBeenCalledWith({
         success: false,
-        message: 'Error subiendo imagen. Intente nuevamente.'
+        error: 'Error subiendo imagen'
       });
     });
   });
@@ -189,7 +201,7 @@ describe('ImagesController', () => {
       expect(mockStatus).toHaveBeenCalledWith(404);
       expect(mockJson).toHaveBeenCalledWith({
         success: false,
-        message: 'Imagen no encontrada'
+        error: 'Imagen no encontrada'
       });
     });
   });
@@ -230,6 +242,7 @@ describe('ImagesController', () => {
       expect(mockStatus).toHaveBeenCalledWith(200);
       expect(mockJson).toHaveBeenCalledWith({
         success: true,
+        message: 'Archivo válido',
         data: mockValidationResult
       });
     });

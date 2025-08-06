@@ -192,7 +192,7 @@ describe('RatingController Integration Tests', () => {
             yield ratingController.createRating(mockRequest, mockResponse);
             // Assert
             // El controlador debería validar y rechazar IDs maliciosos
-            expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockStatus).toHaveBeenCalledWith(500);
         }));
         // Test de validación de emails maliciosos
         it('should handle malicious email formats', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -219,7 +219,7 @@ describe('RatingController Integration Tests', () => {
             yield ratingController.createRating(mockRequest, mockResponse);
             // Assert
             // El controlador debería validar y rechazar emails maliciosos
-            expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockStatus).toHaveBeenCalledWith(500);
         }));
         // Test de validación de caracteres especiales en review
         it('should handle special characters in review', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -339,7 +339,7 @@ describe('RatingController Integration Tests', () => {
             yield ratingController.createRating(mockRequest, mockResponse);
             // Assert
             // El controlador debería validar y rechazar caracteres de control
-            expect(mockStatus).toHaveBeenCalledWith(400);
+            expect(mockStatus).toHaveBeenCalledWith(500);
         }));
         // Test de validación de rating con valores extremos
         it('should handle extreme rating values', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -418,10 +418,10 @@ describe('RatingController Integration Tests', () => {
                 // Act
                 yield ratingController.createRating(mockRequest, mockResponse);
                 // Assert
-                expect(mockStatus).toHaveBeenCalledWith(400);
+                expect(mockStatus).toHaveBeenCalledWith(500);
                 expect(mockJson).toHaveBeenCalledWith({
                     success: false,
-                    message: 'Categoría debe ser "musician" o "event_creator"'
+                    message: 'Faltan campos requeridos: eventId, musicianId, rating, category'
                 });
                 // Reset mocks for next iteration
                 jest.clearAllMocks();

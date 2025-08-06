@@ -98,6 +98,47 @@ router.post('/upload', authMiddleware, upload.single('file'), validateImageFile,
 
 /**
  * @swagger
+ * /images/upload/public:
+ *   post:
+ *     summary: Subir imagen (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo de imagen
+ *               folder:
+ *                 type: string
+ *                 default: test-images
+ *                 description: Carpeta donde guardar
+ *               description:
+ *                 type: string
+ *                 description: Descripción de la imagen
+ *               tags:
+ *                 type: string
+ *                 description: Etiquetas separadas por comas
+ *     responses:
+ *       201:
+ *         description: Imagen subida exitosamente
+ *       400:
+ *         description: Error de validación
+ *       500:
+ *         description: Error del servidor
+ */
+router.post('/upload/public', upload.single('file'), validateImageFile, async (req, res) => {
+  // Simular un usuario para desarrollo
+  (req as any).user = { userEmail: 'test@mussikon.com' };
+  await imagesController.uploadImage(req, res);
+});
+
+/**
+ * @swagger
  * /images:
  *   get:
  *     summary: Obtener todas las imágenes
@@ -507,6 +548,46 @@ router.get('/serve-url', async (req, res) => {
 
 /**
  * @swagger
+ * /images/diagnose:
+ *   get:
+ *     summary: Diagnóstico del sistema de imágenes
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Diagnóstico completado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     config:
+ *                       type: object
+ *                     firestoreStats:
+ *                       type: object
+ *                     idriveStatus:
+ *                       type: object
+ *                     recommendations:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/diagnose', authMiddleware, async (req, res) => {
+  await imagesController.diagnoseImages(req, res);
+});
+
+/**
+ * @swagger
  * /images/{imageId}/presigned:
  *   get:
  *     summary: Generar URL firmada para una imagen
@@ -612,6 +693,448 @@ router.get('/getImage/:key', async (req, res) => {
   // Convertir clave a imageId para compatibilidad
   (req.params as any).imageId = req.params.key;
   await imagesController.getImage(req, res);
+});
+
+// ===== RUTAS TEMPORALES PARA DESARROLLO (SIN AUTENTICACIÓN) =====
+// Estas rutas permiten probar el panel de administración sin autenticación completa
+// TODO: Remover estas rutas en producción
+
+/**
+ * @swagger
+ * /images/stats/public:
+ *   get:
+ *     summary: Obtener estadísticas de imágenes (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     responses:
+ *       200:
+ *         description: Estadísticas obtenidas exitosamente
+ */
+router.get('/stats/public', async (req, res) => {
+  try {
+    // Simular estadísticas para desarrollo
+    const mockStats = {
+      totalImages: 25,
+      totalSize: 15728640, // 15MB
+      imagesByCategory: {
+        'profile': 8,
+        'event': 12,
+        'voucher': 5
+      },
+      imagesByUser: {
+        'user1': 10,
+        'user2': 8,
+        'user3': 7
+      },
+      publicImages: 20,
+      privateImages: 5,
+      activeImages: 23,
+      inactiveImages: 2
+    };
+
+    res.json({
+      success: true,
+      ...mockStats
+    });
+  } catch (error) {
+    console.error('[src/routes/imagesRoutes.ts:stats/public] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /images/all/public:
+ *   get:
+ *     summary: Obtener todas las imágenes (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     responses:
+ *       200:
+ *         description: Lista de imágenes obtenida exitosamente
+ */
+router.get('/all/public', async (req, res) => {
+  try {
+    // Simular imágenes para desarrollo
+    const mockImages = [
+      {
+        id: 'img1',
+        filename: 'profile-user1.jpg',
+        url: '/placeholder-profile.svg',
+        size: 1024000,
+        uploadedAt: new Date().toISOString(),
+        category: 'profile',
+        isPublic: true,
+        isActive: true
+      },
+      {
+        id: 'img2',
+        filename: 'event-concert.jpg',
+        url: '/placeholder-event.svg',
+        size: 2048000,
+        uploadedAt: new Date(Date.now() - 86400000).toISOString(),
+        category: 'event',
+        isPublic: true,
+        isActive: true
+      },
+      {
+        id: 'img3',
+        filename: 'voucher-payment.jpg',
+        url: '/placeholder-voucher.svg',
+        size: 512000,
+        uploadedAt: new Date(Date.now() - 172800000).toISOString(),
+        category: 'voucher',
+        isPublic: false,
+        isActive: true
+      }
+    ];
+
+    res.json({
+      success: true,
+      images: mockImages,
+      total: mockImages.length,
+      page: 1,
+      limit: 20
+    });
+  } catch (error) {
+    console.error('[src/routes/imagesRoutes.ts:all/public] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /images/statistics/public:
+ *   get:
+ *     summary: Obtener estadísticas detalladas (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     responses:
+ *       200:
+ *         description: Estadísticas detalladas obtenidas exitosamente
+ */
+router.get('/statistics/public', async (req, res) => {
+  try {
+    // Simular estadísticas detalladas para desarrollo
+    const mockStatistics = {
+      totalImages: 25,
+      totalSize: 15728640,
+      averageSize: 629145,
+      imagesByType: {
+        'jpg': 15,
+        'png': 8,
+        'gif': 2
+      },
+      imagesByStatus: {
+        'active': 23,
+        'inactive': 2
+      },
+      imagesByVisibility: {
+        'public': 20,
+        'private': 5
+      },
+      uploadsLastWeek: 8,
+      uploadsLastMonth: 25,
+      storageUsed: '15.0 MB',
+      storageLimit: '100.0 MB'
+    };
+
+    res.json({
+      success: true,
+      ...mockStatistics
+    });
+  } catch (error) {
+    console.error('[src/routes/imagesRoutes.ts:statistics/public] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /images/verify/public:
+ *   get:
+ *     summary: Verificar integridad del sistema (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     responses:
+ *       200:
+ *         description: Verificación completada exitosamente
+ */
+router.get('/verify/public', async (req, res) => {
+  try {
+    // Simular verificación para desarrollo
+    const mockVerification = {
+      firebaseStatus: 'connected',
+      idriveStatus: 'connected',
+      totalImages: 25,
+      corruptedImages: 0,
+      orphanedFiles: 0,
+      integrityScore: 100,
+      recommendations: [
+        'Sistema funcionando correctamente',
+        'Considerar limpieza mensual de archivos temporales'
+      ]
+    };
+
+    res.json({
+      success: true,
+      message: 'Verificación completada exitosamente',
+      ...mockVerification
+    });
+  } catch (error) {
+    console.error('[src/routes/imagesRoutes.ts:verify/public] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /images/all/signed:
+ *   get:
+ *     summary: Obtener todas las imágenes con URLs firmadas de IDrive E2
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría
+ *       - in: query
+ *         name: isPublic
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por visibilidad pública
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por estado activo
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar en descripción, nombre y etiquetas
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Imágenes obtenidas con URLs firmadas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 images:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       filename:
+ *                         type: string
+ *                       url:
+ *                         type: string
+ *                         description: URL firmada de IDrive E2
+ *                       size:
+ *                         type: number
+ *                       uploadedAt:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                       isPublic:
+ *                         type: boolean
+ *                       isActive:
+ *                         type: boolean
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/all/signed', authMiddleware, async (req, res) => {
+  await imagesController.getAllImagesWithSignedUrls(req, res);
+});
+
+/**
+ * @swagger
+ * /images/all/signed/public:
+ *   get:
+ *     summary: Obtener todas las imágenes con URLs firmadas de IDrive E2 (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría
+ *       - in: query
+ *         name: isPublic
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por visibilidad pública
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por estado activo
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar en descripción, nombre y etiquetas
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Imágenes obtenidas con URLs firmadas exitosamente
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/all/signed/public', async (req, res) => {
+  await imagesController.getAllImagesWithSignedUrls(req, res);
+});
+
+/**
+ * @swagger
+ * /images/all/idrive:
+ *   get:
+ *     summary: Obtener todas las imágenes directamente desde IDrive E2 con URLs firmadas
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría (profile, event, voucher, gallery)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar en nombre de archivo y categoría
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Imágenes obtenidas directamente desde IDrive E2 exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 images:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       filename:
+ *                         type: string
+ *                       url:
+ *                         type: string
+ *                         description: URL firmada de IDrive E2
+ *                       size:
+ *                         type: number
+ *                       uploadedAt:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                       isPublic:
+ *                         type: boolean
+ *                       isActive:
+ *                         type: boolean
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/all/idrive', authMiddleware, async (req, res) => {
+  await imagesController.getAllImagesFromIDriveE2(req, res);
+});
+
+/**
+ * @swagger
+ * /images/all/idrive/public:
+ *   get:
+ *     summary: Obtener todas las imágenes directamente desde IDrive E2 con URLs firmadas (público - desarrollo)
+ *     tags: [Imágenes - Desarrollo]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría (profile, event, voucher, gallery)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Buscar en nombre de archivo y categoría
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Imágenes obtenidas directamente desde IDrive E2 exitosamente
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/all/idrive/public', async (req, res) => {
+  await imagesController.getAllImagesFromIDriveE2(req, res);
 });
 
 export default router;

@@ -18,7 +18,7 @@ const calendarConflictService_1 = require("../services/calendarConflictService")
 const rateCalculationService_1 = require("../services/rateCalculationService");
 // Comentado temporalmente para evitar dependencias circulares
 // import { io, users } from "../../index";
-// Instanciar servicios avanzados
+// Instanciar servicios
 const musicianStatusService = new musicianStatusService_1.MusicianStatusService();
 const calendarConflictService = new calendarConflictService_1.CalendarConflictService();
 const rateCalculationService = new rateCalculationService_1.RateCalculationService();
@@ -103,12 +103,12 @@ function findAvailableMusiciansWithAdvancedSystems(eventData) {
             }
             // 2. Verificar conflictos de calendario
             const eventDateTime = new Date(`${eventData.date}T${eventData.time}`);
-            const duration = parseInt(eventData.duration) || 120; // 2 horas por defecto
+            const duration = parseInt(eventData.duration || '120') || 120; // 2 horas por defecto
             const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
-            const musicianIds = onlineMusicians.map(m => m.musicianId);
+            const musicianIds = onlineMusicians.map((m) => m.musicianId);
             const availabilityResult = yield calendarConflictService.checkMultipleMusiciansAvailability(musicianIds, eventDateTime, endDateTime);
             // 3. Filtrar músicos disponibles
-            const availableMusicians = onlineMusicians.filter(musician => availabilityResult.availableMusicians.includes(musician.musicianId));
+            const availableMusicians = onlineMusicians.filter((musician) => availabilityResult.availableMusicians.includes(musician.id));
             loggerService_1.logger.info('✅ Músicos disponibles encontrados:', {
                 context: 'AdvancedSearch',
                 metadata: {
@@ -140,21 +140,25 @@ function calculateRatesForMusicians(musicians, eventData) {
             const musiciansWithRates = yield Promise.all(musicians.map((musician) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const eventDateTime = new Date(`${eventData.date}T${eventData.time}`);
-                    const duration = parseInt(eventData.duration) || 120;
+                    const duration = parseInt(eventData.duration || '120') || 120;
                     const rateResult = yield rateCalculationService.calculateRate({
-                        musicianId: musician.musicianId,
+                        musicianId: musician.id,
                         eventType: eventData.eventType,
                         duration,
-                        location: eventData.location,
+                        location: eventData.location || '',
                         eventDate: eventDateTime,
                         instrument: eventData.instrument,
                         isUrgent: false // TODO: Determinar urgencia basada en fecha
                     });
-                    return Object.assign(Object.assign({}, musician), { calculatedRate: rateResult.finalRate, rateBreakdown: rateResult.breakdown, recommendations: rateResult.recommendations, relevanceScore: calculateRelevanceScore(musician, rateResult.finalRate) });
+                    return Object.assign(Object.assign({}, musician), { calculatedRate: rateResult.finalRate, rateBreakdown: rateResult.breakdown, recommendations: rateResult.recommendations, relevanceScore: calculateRelevanceScore({
+                            rating: musician.rating,
+                            experience: musician.experience,
+                            responseTime: 60 // Valor por defecto
+                        }, rateResult.finalRate) });
                 }
                 catch (error) {
                     loggerService_1.logger.error('❌ Error calculando tarifa para músico:', error, {
-                        metadata: { musicianId: musician.musicianId }
+                        metadata: { musicianId: musician.id }
                     });
                     return Object.assign(Object.assign({}, musician), { calculatedRate: null, rateBreakdown: null, recommendations: null, relevanceScore: 0 });
                 }
@@ -180,15 +184,14 @@ function calculateRatesForMusicians(musicians, eventData) {
  * Calcular score de relevancia para ordenar músicos
  */
 function calculateRelevanceScore(musician, rate) {
-    const status = musician;
     // Score basado en rating (40%)
-    const ratingScore = (status.performance.rating / 5.0) * 40;
+    const ratingScore = (musician.rating / 5.0) * 40;
     // Score basado en tiempo de respuesta (30%)
-    const responseScore = Math.max(0, (120 - status.performance.responseTime) / 120) * 30;
+    const responseScore = Math.max(0, (120 - musician.responseTime) / 120) * 30;
     // Score basado en precio (20%) - menor precio = mayor score
     const priceScore = rate ? Math.max(0, (200 - rate) / 200) * 20 : 10;
     // Score basado en experiencia (10%)
-    const experienceScore = Math.min(10, status.performance.totalEvents / 10);
+    const experienceScore = Math.min(10, musician.experience / 10);
     return ratingScore + responseScore + priceScore + experienceScore;
 }
 const myPendingEventsController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -255,9 +258,18 @@ const availableRequestsController = (req, res) => __awaiter(void 0, void 0, void
             return;
         }
         // 3. Filtrar eventos por disponibilidad de calendario
-        const availableEvents = yield filterEventsByAvailability(basicEvents, user.userEmail);
+        const availableEvents = yield filterEventsByAvailability(basicEvents.map(event => (Object.assign(Object.assign({}, event), { duration: parseInt(String(event.duration)) || 120 }))), user.userEmail);
         // 4. Calcular tarifas para eventos disponibles
-        const eventsWithRates = yield calculateRatesForEvents(availableEvents, user.userEmail);
+        const eventsWithRates = yield calculateRatesForEvents(availableEvents.map(event => ({
+            id: event.id,
+            eventType: event.eventType || '',
+            budget: event.budget || '',
+            location: event.location,
+            date: event.date,
+            time: event.time,
+            instrument: event.instrument,
+            duration: String(event.duration)
+        })), user.userEmail);
         // 5. Ordenar por relevancia
         eventsWithRates.sort((a, b) => b.relevanceScore - a.relevanceScore);
         loggerService_1.logger.info('✅ Eventos disponibles encontrados con sistemas avanzados:', {
@@ -307,7 +319,7 @@ function filterEventsByAvailability(events, musicianId) {
             for (const event of events) {
                 try {
                     const eventDateTime = new Date(`${event.date}T${event.time}`);
-                    const duration = parseInt(event.duration) || 120;
+                    const duration = parseInt(String(event.duration)) || 120;
                     const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
                     const conflictResult = yield calendarConflictService.checkConflicts({
                         musicianId,
@@ -367,14 +379,14 @@ function calculateRatesForEvents(events, musicianId) {
             const eventsWithRates = yield Promise.all(events.map((event) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const eventDateTime = new Date(`${event.date}T${event.time}`);
-                    const duration = parseInt(event.duration) || 120;
+                    const duration = parseInt(String(event.duration || '120')) || 120;
                     const rateResult = yield rateCalculationService.calculateRate({
                         musicianId,
                         eventType: event.eventType,
                         duration,
                         location: event.location,
                         eventDate: eventDateTime,
-                        instrument: event.instrument,
+                        instrument: event.instrument || '',
                         isUrgent: false
                     });
                     return Object.assign(Object.assign({}, event), { calculatedRate: rateResult.finalRate, rateBreakdown: rateResult.breakdown, recommendations: rateResult.recommendations, relevanceScore: calculateEventRelevanceScore(event, rateResult.finalRate) });
@@ -409,7 +421,7 @@ function calculateEventRelevanceScore(event, rate) {
     const budget = parseInt(event.budget) || 0;
     const budgetScore = rate && budget ? Math.max(0, (budget - rate) / budget) * 40 : 20;
     // Score basado en proximidad de fecha (30%)
-    const eventDate = new Date(`${event.date}T${event.time}`);
+    const eventDate = event.date && event.time ? new Date(`${event.date}T${event.time}`) : new Date();
     const daysUntilEvent = Math.max(0, (eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     const dateScore = Math.max(0, (30 - daysUntilEvent) / 30) * 30;
     // Score basado en tipo de evento (20%)
@@ -736,12 +748,12 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
                 }
             });
             // Actualizar métricas de rendimiento
-            yield updateMusicianPerformance(user.userEmail, event);
+            yield updateMusicianPerformance(user.userEmail, Object.assign(Object.assign({}, event), { duration: parseInt(String(event.duration)) || 120 }));
         }
         // 5. Remover evento del calendario
         try {
             const eventDateTime = new Date(`${event.date}T${event.time}`);
-            const duration = parseInt(event.duration) || 120;
+            const duration = parseInt(String(event.duration)) || 120;
             const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
             // Buscar y eliminar el evento del calendario
             const calendarEvents = yield calendarConflictService.getMusicianEvents(user.userEmail, eventDateTime, endDateTime);
@@ -765,7 +777,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
         if (isAssignedMusician) {
             try {
                 const eventDateTime = new Date(`${event.date}T${event.time}`);
-                const duration = parseInt(event.duration) || 120;
+                const duration = parseInt(String(event.duration)) || 120;
                 // Obtener tarifa calculada para actualizar datos del mercado
                 const rateResult = yield rateCalculationService.calculateRate({
                     musicianId: user.userEmail,
@@ -777,7 +789,7 @@ const completeEventController = (req, res) => __awaiter(void 0, void 0, void 0, 
                     isUrgent: false
                 });
                 // Actualizar datos del mercado
-                yield rateCalculationService.updateMarketData(event.instrument, event.location, event.eventType, rateResult.finalRate);
+                yield rateCalculationService.updateMarketData(event.instrument || '', event.location, event.eventType, rateResult.finalRate);
                 loggerService_1.logger.info('📊 Datos del mercado actualizados:', {
                     context: 'MarketData',
                     metadata: {
@@ -936,7 +948,7 @@ const getEventWithAdvancedInfoController = (req, res) => __awaiter(void 0, void 
             return;
         }
         // 3. Obtener información avanzada
-        const advancedInfo = yield getAdvancedEventInfo(event, user.userEmail);
+        const advancedInfo = yield getAdvancedEventInfo(Object.assign(Object.assign({}, event), { duration: parseInt(String(event.duration)) || 120 }), user.userEmail);
         const enhancedEvent = Object.assign(Object.assign({}, event), { advancedInfo });
         loggerService_1.logger.info('✅ Evento con información avanzada obtenido:', {
             context: 'Event',
@@ -976,14 +988,14 @@ function getAdvancedEventInfo(event, userId) {
                     advancedInfo.musicianStatus = musicianStatus;
                     // Calcular tarifa para el músico asignado
                     const eventDateTime = new Date(`${event.date}T${event.time}`);
-                    const duration = parseInt(event.duration) || 120;
+                    const duration = parseInt(String(event.duration)) || 120;
                     const rateResult = yield rateCalculationService.calculateRate({
                         musicianId: event.assignedMusicianId,
                         eventType: event.eventType,
                         duration,
                         location: event.location,
                         eventDate: eventDateTime,
-                        instrument: event.instrument,
+                        instrument: event.instrument || '',
                         isUrgent: false
                     });
                     advancedInfo.calculatedRate = rateResult.finalRate;
@@ -1000,7 +1012,7 @@ function getAdvancedEventInfo(event, userId) {
             if (event.assignedMusicianId === userId) {
                 try {
                     const eventDateTime = new Date(`${event.date}T${event.time}`);
-                    const duration = parseInt(event.duration) || 120;
+                    const duration = parseInt(String(event.duration)) || 120;
                     const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
                     const conflictResult = yield calendarConflictService.checkConflicts({
                         musicianId: userId,
@@ -1021,7 +1033,14 @@ function getAdvancedEventInfo(event, userId) {
             // 3. Información de disponibilidad de músicos (si es el creador del evento)
             if (event.user === userId && event.status === 'pending_musician') {
                 try {
-                    const availableMusicians = yield findAvailableMusiciansWithAdvancedSystems(event);
+                    const availableMusicians = yield findAvailableMusiciansWithAdvancedSystems({
+                        eventType: event.eventType,
+                        instrument: event.instrument || '',
+                        date: event.date,
+                        time: event.time,
+                        budget: event.budget,
+                        duration: String(event.duration)
+                    });
                     advancedInfo.availableMusicians = availableMusicians;
                     advancedInfo.availableMusiciansCount = availableMusicians.length;
                 }
@@ -1033,7 +1052,7 @@ function getAdvancedEventInfo(event, userId) {
             }
             // 4. Estadísticas del mercado
             try {
-                const marketData = yield rateCalculationService.getPublicMarketData(event.instrument, event.location, event.eventType);
+                const marketData = yield rateCalculationService.getPublicMarketData(event.instrument || '', event.location, event.eventType);
                 advancedInfo.marketData = marketData;
             }
             catch (error) {
@@ -1195,7 +1214,7 @@ function checkUpcomingConflicts(musicianId) {
                     otherEvent.startTime < eventEnd &&
                     otherEvent.endTime > event.startTime);
             });
-            return potentialConflicts.map(event => ({
+            return potentialConflicts.map((event) => ({
                 id: event.id,
                 eventId: event.eventId,
                 startTime: event.startTime,

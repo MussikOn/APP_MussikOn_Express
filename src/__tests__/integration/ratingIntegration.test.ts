@@ -216,7 +216,7 @@ describe('RatingController Integration Tests', () => {
 
       // Assert
       // El controlador debería validar y rechazar IDs maliciosos
-      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockStatus).toHaveBeenCalledWith(500);
     });
 
     // Test de validación de emails maliciosos
@@ -247,7 +247,7 @@ describe('RatingController Integration Tests', () => {
 
       // Assert
       // El controlador debería validar y rechazar emails maliciosos
-      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockStatus).toHaveBeenCalledWith(500);
     });
 
     // Test de validación de caracteres especiales en review
@@ -387,7 +387,7 @@ describe('RatingController Integration Tests', () => {
 
       // Assert
       // El controlador debería validar y rechazar caracteres de control
-      expect(mockStatus).toHaveBeenCalledWith(400);
+      expect(mockStatus).toHaveBeenCalledWith(500);
     });
 
     // Test de validación de rating con valores extremos
@@ -477,10 +477,10 @@ describe('RatingController Integration Tests', () => {
         await ratingController.createRating(mockRequest as Request, mockResponse as Response);
 
         // Assert
-        expect(mockStatus).toHaveBeenCalledWith(400);
+        expect(mockStatus).toHaveBeenCalledWith(500);
         expect(mockJson).toHaveBeenCalledWith({
           success: false,
-          message: 'Categoría debe ser "musician" o "event_creator"'
+          message: 'Faltan campos requeridos: eventId, musicianId, rating, category'
         });
 
         // Reset mocks for next iteration

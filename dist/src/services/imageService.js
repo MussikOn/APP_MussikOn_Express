@@ -21,6 +21,7 @@ class ImageService {
             'image/png',
             'image/gif',
             'image/webp',
+            'image/svg+xml',
             'application/pdf'
         ];
     }
@@ -393,6 +394,169 @@ class ImageService {
                 throw new Error('Error verificando integridad de imagen');
             }
         });
+    }
+    /**
+     * Obtener todas las imágenes con URLs firmadas de IDrive E2
+     */
+    getAllImagesWithSignedUrls(filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('[src/services/imageService.ts] Obteniendo imágenes con URLs firmadas', {
+                    metadata: { filters }
+                });
+                // Obtener imágenes de la base de datos
+                const images = yield this.getAllImages(filters);
+                // Generar URLs firmadas para cada imagen
+                const imagesWithSignedUrls = yield Promise.all(images.map((image) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        // Extraer la clave del archivo de la URL o usar el filename
+                        let fileKey = image.filename || image.url;
+                        // Si la URL contiene la clave completa, extraerla
+                        if (image.url && image.url.includes('/')) {
+                            const urlParts = image.url.split('/');
+                            fileKey = urlParts[urlParts.length - 1];
+                        }
+                        // Generar URL firmada válida por 1 hora
+                        const signedUrl = yield (0, idriveE2_1.generatePresignedUrl)(fileKey, 3600);
+                        loggerService_1.logger.info('[src/services/imageService.ts] URL firmada generada', {
+                            metadata: {
+                                imageId: image.id,
+                                filename: image.filename,
+                                originalUrl: image.url,
+                                signedUrl: signedUrl.substring(0, 50) + '...' // Solo mostrar parte de la URL por seguridad
+                            }
+                        });
+                        return Object.assign(Object.assign({}, image), { url: signedUrl, originalUrl: image.url // Mantener URL original como referencia
+                         });
+                    }
+                    catch (error) {
+                        loggerService_1.logger.error('[src/services/imageService.ts] Error generando URL firmada', error, {
+                            metadata: {
+                                imageId: image.id,
+                                filename: image.filename
+                            }
+                        });
+                        // Retornar imagen con URL original si falla la generación de URL firmada
+                        return Object.assign(Object.assign({}, image), { url: image.url, signedUrlError: true });
+                    }
+                })));
+                loggerService_1.logger.info('[src/services/imageService.ts] Imágenes con URLs firmadas obtenidas', {
+                    metadata: {
+                        totalImages: imagesWithSignedUrls.length,
+                        imagesWithErrors: imagesWithSignedUrls.filter(img => img.signedUrlError).length
+                    }
+                });
+                return imagesWithSignedUrls;
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/services/imageService.ts] Error obteniendo imágenes con URLs firmadas', error);
+                throw new Error('Error obteniendo imágenes con URLs firmadas');
+            }
+        });
+    }
+    /**
+     * Obtener todas las imágenes directamente desde IDrive E2 con URLs firmadas
+     */
+    getAllImagesFromIDriveE2(filters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('[src/services/imageService.ts] Obteniendo imágenes directamente desde IDrive E2', {
+                    metadata: { filters }
+                });
+                // Determinar el prefijo basado en la categoría
+                let prefix;
+                if (filters === null || filters === void 0 ? void 0 : filters.category) {
+                    switch (filters.category.toLowerCase()) {
+                        case 'profile':
+                            prefix = 'musikon-media/profile/';
+                            break;
+                        case 'event':
+                            prefix = 'musikon-media/post/';
+                            break;
+                        case 'voucher':
+                            prefix = 'musikon-media/deposits/';
+                            break;
+                        case 'gallery':
+                            prefix = 'musikon-media/gallery/';
+                            break;
+                        default:
+                            prefix = `musikon-media/${filters.category}/`;
+                    }
+                }
+                else {
+                    // Si no hay categoría específica, buscar en todo el bucket
+                    prefix = 'musikon-media/';
+                }
+                // Obtener imágenes directamente desde IDrive E2
+                const images = yield (0, idriveE2_1.listImagesWithSignedUrls)(prefix, (filters === null || filters === void 0 ? void 0 : filters.limit) || 1000);
+                // Aplicar filtro de búsqueda si existe
+                let filteredImages = images;
+                if (filters === null || filters === void 0 ? void 0 : filters.search) {
+                    const searchTerm = filters.search.toLowerCase();
+                    filteredImages = images.filter(img => {
+                        var _a;
+                        return img.filename.toLowerCase().includes(searchTerm) ||
+                            ((_a = img.category) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(searchTerm));
+                    });
+                }
+                // Aplicar paginación
+                if ((filters === null || filters === void 0 ? void 0 : filters.page) && (filters === null || filters === void 0 ? void 0 : filters.limit)) {
+                    const startIndex = (filters.page - 1) * filters.limit;
+                    const endIndex = startIndex + filters.limit;
+                    filteredImages = filteredImages.slice(startIndex, endIndex);
+                }
+                // Formatear respuesta para compatibilidad con el frontend
+                const formattedImages = filteredImages.map((img, index) => ({
+                    id: `idrive_${index}_${Date.now()}`, // ID temporal
+                    filename: img.filename,
+                    url: img.url,
+                    size: img.size,
+                    uploadedAt: img.lastModified.toISOString(),
+                    category: img.category || 'general',
+                    isPublic: true,
+                    isActive: true,
+                    mimeType: this.getMimeTypeFromFilename(img.filename),
+                    metadata: {
+                        key: img.key,
+                        lastModified: img.lastModified,
+                        category: img.category
+                    }
+                }));
+                loggerService_1.logger.info('[src/services/imageService.ts] Imágenes obtenidas desde IDrive E2', {
+                    metadata: {
+                        totalImages: formattedImages.length,
+                        prefix,
+                        filters
+                    }
+                });
+                return formattedImages;
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/services/imageService.ts] Error obteniendo imágenes desde IDrive E2', error);
+                throw new Error('Error obteniendo imágenes desde IDrive E2');
+            }
+        });
+    }
+    /**
+     * Obtener el tipo MIME basado en la extensión del archivo
+     */
+    getMimeTypeFromFilename(filename) {
+        const extension = filename.toLowerCase().split('.').pop();
+        switch (extension) {
+            case 'jpg':
+            case 'jpeg':
+                return 'image/jpeg';
+            case 'png':
+                return 'image/png';
+            case 'gif':
+                return 'image/gif';
+            case 'webp':
+                return 'image/webp';
+            case 'svg':
+                return 'image/svg+xml';
+            default:
+                return 'image/jpeg';
+        }
     }
 }
 exports.ImageService = ImageService;

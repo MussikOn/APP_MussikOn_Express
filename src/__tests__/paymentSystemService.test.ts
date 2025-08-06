@@ -307,8 +307,7 @@ describe('PaymentSystemService', () => {
         status: 'approved',
         verifiedBy: adminId,
         verifiedAt: expect.any(String),
-        notes,
-        verificationData
+        notes
       }));
     });
 

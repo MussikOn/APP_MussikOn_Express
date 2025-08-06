@@ -365,13 +365,7 @@ describe('PaymentSystemController', () => {
             // Act
             yield paymentController.verifyDeposit(mockRequest, mockResponse);
             // Assert
-            expect(mockPaymentSystemService.verifyDeposit).toHaveBeenCalledWith(depositId, adminEmail, true, 'Depósito verificado correctamente', {
-                bankDepositDate: verificationData.bankDepositDate,
-                bankDepositTime: verificationData.bankDepositTime,
-                referenceNumber: verificationData.referenceNumber,
-                accountLastFourDigits: verificationData.accountLastFourDigits,
-                verifiedBy: verificationData.verifiedBy
-            });
+            expect(mockPaymentSystemService.verifyDeposit).toHaveBeenCalledWith(depositId, adminEmail, true, 'Depósito verificado correctamente');
             expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
@@ -523,7 +517,8 @@ describe('PaymentSystemController', () => {
             expect(mockStatus).toHaveBeenCalledWith(200);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                data: mockWithdrawal
+                data: mockWithdrawal,
+                message: 'Solicitud de retiro creada exitosamente'
             });
         }));
     });

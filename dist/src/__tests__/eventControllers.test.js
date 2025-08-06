@@ -14,31 +14,39 @@ const eventModel_1 = require("../models/eventModel");
 const setup_1 = require("./setup");
 // Mock de todas las dependencias
 jest.mock('../models/eventModel');
+// Mock simple de los servicios avanzados
+jest.mock('../services/musicianStatusService', () => ({
+    musicianStatusService: {
+        getStatus: jest.fn().mockResolvedValue({
+            isOnline: true,
+            availability: { isAvailable: true }
+        }),
+        updateStatus: jest.fn().mockResolvedValue(undefined),
+        getOnlineMusicians: jest.fn().mockResolvedValue([])
+    }
+}));
+jest.mock('../services/calendarConflictService', () => ({
+    calendarConflictService: {
+        checkConflicts: jest.fn().mockResolvedValue({ hasConflict: false }),
+        addEvent: jest.fn().mockResolvedValue(undefined),
+        getMusicianEvents: jest.fn().mockResolvedValue([]),
+        removeEvent: jest.fn().mockResolvedValue(undefined)
+    }
+}));
+jest.mock('../services/rateCalculationService', () => ({
+    rateCalculationService: {
+        calculateRate: jest.fn().mockResolvedValue({
+            finalRate: 5000,
+            breakdown: {},
+            recommendations: []
+        })
+    }
+}));
 describe('EventControllers', () => {
     let mockRequest;
     let mockResponse;
     let mockJson;
     let mockStatus;
-    const mockEvent = {
-        id: 'event123',
-        eventName: 'Boda de María',
-        location: 'Santo Domingo',
-        status: 'pending',
-        user: 'juan@example.com',
-        assignedMusicianId: 'musician123'
-    };
-    const mockEvents = [
-        {
-            id: 'event1',
-            eventName: 'Evento 1',
-            status: 'pending'
-        },
-        {
-            id: 'event2',
-            eventName: 'Evento 2',
-            status: 'cancelled'
-        }
-    ];
     beforeEach(() => {
         mockJson = jest.fn();
         mockStatus = jest.fn().mockReturnValue({ json: mockJson });
@@ -80,13 +88,26 @@ describe('EventControllers', () => {
             eventModel_1.createEventModel.mockResolvedValue(mockEvent);
             yield (0, eventControllers_1.requestMusicianController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(201);
-            expect(mockJson).toHaveBeenCalledWith({ data: mockEvent });
+            expect(mockJson).toHaveBeenCalledWith({
+                success: true,
+                message: 'Evento creado exitosamente con búsqueda avanzada de músicos',
+                data: expect.objectContaining({
+                    id: 'event123',
+                    eventName: 'Boda de María',
+                    user: 'juan@example.com',
+                    status: 'pending_musician'
+                })
+            });
         }));
         it('should return error when event creation fails', () => __awaiter(void 0, void 0, void 0, function* () {
             eventModel_1.createEventModel.mockRejectedValue(new Error('Database error'));
             yield (0, eventControllers_1.requestMusicianController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(500);
-            expect(mockJson).toHaveBeenCalledWith({ msg: 'Error al crear solicitud' });
+            expect(mockJson).toHaveBeenCalledWith({
+                success: false,
+                message: 'Error al crear evento',
+                error: 'Database error'
+            });
         }));
     });
     describe('myPendingEventsController', () => {
@@ -159,6 +180,18 @@ describe('EventControllers', () => {
         }));
     });
     describe('availableRequestsController', () => {
+        beforeEach(() => {
+            mockRequest = {
+                user: {
+                    userId: 'musico123',
+                    email: 'musico@example.com',
+                    role: 'musico',
+                    name: 'Músico Test',
+                    userEmail: 'musico@example.com',
+                    roll: 'musico'
+                }
+            };
+        });
         it('should return available events successfully', () => __awaiter(void 0, void 0, void 0, function* () {
             const mockEvents = [
                 { id: 'event1', eventName: 'Evento 1', status: 'pending_musician' },
@@ -166,7 +199,12 @@ describe('EventControllers', () => {
             ];
             eventModel_1.getAvailableEvents.mockResolvedValue(mockEvents);
             yield (0, eventControllers_1.availableRequestsController)(mockRequest, mockResponse);
-            expect(mockJson).toHaveBeenCalledWith({ data: mockEvents });
+            expect(mockJson).toHaveBeenCalledWith({
+                success: true,
+                data: mockEvents,
+                message: expect.any(String),
+                searchMetadata: expect.any(Object)
+            });
         }));
     });
     describe('acceptEventController', () => {
@@ -186,11 +224,25 @@ describe('EventControllers', () => {
             const mockEvent = {
                 id: 'event123',
                 eventName: 'Boda de María',
-                status: 'musician_assigned'
+                status: 'musician_assigned',
+                date: '2024-12-25',
+                time: '18:00',
+                duration: '120',
+                location: 'Santo Domingo'
             };
+            eventModel_1.getEventByIdModel.mockResolvedValue(mockEvent);
             eventModel_1.acceptEventModel.mockResolvedValue(mockEvent);
             yield (0, eventControllers_1.acceptEventController)(mockRequest, mockResponse);
-            expect(mockJson).toHaveBeenCalledWith(mockEvent);
+            expect(mockJson).toHaveBeenCalledWith({
+                success: true,
+                message: 'Evento aceptado exitosamente',
+                data: expect.objectContaining({
+                    event: mockEvent,
+                    calculatedRate: expect.any(Number),
+                    rateBreakdown: expect.any(Object),
+                    recommendations: expect.any(Array)
+                })
+            });
         }));
         it('should return error when user is not a musician', () => __awaiter(void 0, void 0, void 0, function* () {
             mockRequest = (0, setup_1.createMockRequest)({
@@ -208,10 +260,28 @@ describe('EventControllers', () => {
             expect(mockJson).toHaveBeenCalledWith({ msg: 'Solo los músicos pueden aceptar eventos.' });
         }));
         it('should return error when event acceptance fails', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Mock que el músico está online pero el evento no se puede aceptar
+            const { musicianStatusService } = require('../services/musicianStatusService');
+            musicianStatusService.getStatus.mockResolvedValue({
+                isOnline: true,
+                availability: { isAvailable: true }
+            });
+            eventModel_1.getEventByIdModel.mockResolvedValue({
+                id: 'event123',
+                eventName: 'Boda de María',
+                status: 'pending_musician',
+                date: '2024-12-25',
+                time: '18:00',
+                duration: '120',
+                location: 'Santo Domingo'
+            });
             eventModel_1.acceptEventModel.mockResolvedValue(null);
             yield (0, eventControllers_1.acceptEventController)(mockRequest, mockResponse);
             expect(mockStatus).toHaveBeenCalledWith(400);
-            expect(mockJson).toHaveBeenCalledWith({ msg: 'No se pudo aceptar el evento.' });
+            expect(mockJson).toHaveBeenCalledWith({
+                success: false,
+                message: 'No se pudo aceptar el evento.'
+            });
         }));
     });
     describe('myScheduledEventsController', () => {
@@ -442,7 +512,7 @@ describe('EventControllers', () => {
             yield (0, eventControllers_1.completeEventController)(mockRequest, mockResponse);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                message: 'Solicitud completada exitosamente',
+                message: 'Evento completado exitosamente',
                 data: mockEvent
             });
         }));
@@ -458,7 +528,7 @@ describe('EventControllers', () => {
             expect(mockStatus).toHaveBeenCalledWith(403);
             expect(mockJson).toHaveBeenCalledWith({
                 success: false,
-                message: 'No tienes permisos para completar esta solicitud'
+                message: 'No tienes permisos para completar este evento'
             });
         }));
         it('should return error when event completion fails', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -471,10 +541,10 @@ describe('EventControllers', () => {
             eventModel_1.getEventByIdModel.mockResolvedValue(mockEvent);
             eventModel_1.completeEventModel.mockResolvedValue(null);
             yield (0, eventControllers_1.completeEventController)(mockRequest, mockResponse);
-            expect(mockStatus).toHaveBeenCalledWith(500);
+            expect(mockStatus).toHaveBeenCalledWith(400);
             expect(mockJson).toHaveBeenCalledWith({
                 success: false,
-                message: 'Error al completar la solicitud'
+                message: 'No se pudo completar el evento'
             });
         }));
     });
@@ -503,7 +573,8 @@ describe('EventControllers', () => {
             yield (0, eventControllers_1.deleteEventController)(mockRequest, mockResponse);
             expect(mockJson).toHaveBeenCalledWith({
                 success: true,
-                message: 'Solicitud eliminada exitosamente'
+                message: 'Evento eliminado exitosamente',
+                data: true
             });
         }));
         it('should return error when user is not authorized', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -515,10 +586,10 @@ describe('EventControllers', () => {
             };
             eventModel_1.getEventByIdModel.mockResolvedValue(mockEvent);
             yield (0, eventControllers_1.deleteEventController)(mockRequest, mockResponse);
-            expect(mockStatus).toHaveBeenCalledWith(403);
+            expect(mockStatus).toHaveBeenCalledWith(404);
             expect(mockJson).toHaveBeenCalledWith({
                 success: false,
-                message: 'No tienes permisos para eliminar esta solicitud'
+                message: 'Evento no encontrado o no tienes permisos para eliminarlo'
             });
         }));
         it('should return error when event deletion fails', () => __awaiter(void 0, void 0, void 0, function* () {
@@ -531,10 +602,10 @@ describe('EventControllers', () => {
             eventModel_1.getEventByIdModel.mockResolvedValue(mockEvent);
             eventModel_1.deleteEventModel.mockResolvedValue(false);
             yield (0, eventControllers_1.deleteEventController)(mockRequest, mockResponse);
-            expect(mockStatus).toHaveBeenCalledWith(500);
+            expect(mockStatus).toHaveBeenCalledWith(404);
             expect(mockJson).toHaveBeenCalledWith({
                 success: false,
-                message: 'Error al eliminar la solicitud'
+                message: 'Evento no encontrado o no tienes permisos para eliminarlo'
             });
         }));
     });

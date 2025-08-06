@@ -107,11 +107,9 @@ module.exports = {
   
   // Configuración de environment
   testEnvironmentOptions: {
-    url: 'http://localhost'
+    url: 'http://localhost',
+    NODE_ENV: 'test'
   },
-  
-  // Configuración de setup
-  setupFiles: ['<rootDir>/src/__tests__/setup.ts'],
   
   // Configuración de mocks automáticos
   unmockedModulePathPatterns: [

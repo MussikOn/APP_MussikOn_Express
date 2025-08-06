@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { logger } from '../services/loggerService';
 
@@ -448,6 +448,140 @@ export const extractKeyFromUrl = (url: string): string | null => {
   } catch (error) {
     logger.error('[src/utils/idriveE2.ts] Error extrayendo clave de URL:', error instanceof Error ? error : new Error(String(error)));
     return null;
+  }
+};
+
+/**
+ * Lista objetos desde IDrive E2 con información detallada
+ */
+export const listObjectsFromS3 = async (
+  prefix?: string,
+  maxKeys: number = 1000
+): Promise<{
+  objects: Array<{
+    key: string;
+    size: number;
+    lastModified: Date;
+    contentType?: string;
+    etag: string;
+  }>;
+  isTruncated: boolean;
+  nextContinuationToken?: string;
+}> => {
+  try {
+    const s3Client = await getS3Client();
+    
+    const command = new ListObjectsV2Command({
+      Bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+      Prefix: prefix,
+      MaxKeys: maxKeys,
+    });
+
+    const response = await s3Client.send(command);
+    
+    const objects = (response.Contents || []).map(obj => ({
+      key: obj.Key!,
+      size: obj.Size || 0,
+      lastModified: obj.LastModified || new Date(),
+      etag: obj.ETag || '',
+    }));
+
+    logger.info('[src/utils/idriveE2.ts] Objetos listados exitosamente desde S3:', {
+      metadata: { 
+        bucket: process.env.IDRIVE_E2_BUCKET_NAME,
+        prefix,
+        totalObjects: objects.length,
+        isTruncated: response.IsTruncated
+      }
+    });
+
+    return {
+      objects,
+      isTruncated: response.IsTruncated || false,
+      nextContinuationToken: response.NextContinuationToken,
+    };
+  } catch (error) {
+    logger.error('[src/utils/idriveE2.ts] Error listando objetos desde S3:', error instanceof Error ? error : new Error(String(error)));
+    throw new Error('Error listando objetos desde S3');
+  }
+};
+
+/**
+ * Lista todas las imágenes desde IDrive E2 con URLs firmadas
+ */
+export const listImagesWithSignedUrls = async (
+  prefix?: string,
+  maxKeys: number = 1000
+): Promise<Array<{
+  key: string;
+  url: string;
+  size: number;
+  lastModified: Date;
+  contentType?: string;
+  filename: string;
+  category?: string;
+}>> => {
+  try {
+    const { objects } = await listObjectsFromS3(prefix, maxKeys);
+    
+    // Filtrar solo archivos de imagen
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const imageObjects = objects.filter(obj => 
+      imageExtensions.some(ext => obj.key.toLowerCase().endsWith(ext))
+    );
+
+    // Generar URLs firmadas para cada imagen
+    const imagesWithUrls = await Promise.all(
+      imageObjects.map(async (obj) => {
+        try {
+          const signedUrl = await generatePresignedUrl(obj.key, 3600); // 1 hora
+          
+          // Extraer nombre de archivo y categoría
+          const filename = obj.key.split('/').pop() || obj.key;
+          const pathParts = obj.key.split('/');
+          // La categoría está en la posición después de 'musikon-media'
+          let category = 'general';
+          if (pathParts.length > 2 && pathParts[0] === 'musikon-media') {
+            category = pathParts[1]; // deposits, profile, post, gallery, etc.
+          }
+
+          return {
+            key: obj.key,
+            url: signedUrl,
+            size: obj.size,
+            lastModified: obj.lastModified,
+            filename,
+            category,
+          };
+        } catch (error) {
+          logger.error('[src/utils/idriveE2.ts] Error generando URL firmada para:', error instanceof Error ? error : new Error(String(error)), { metadata: { key: obj.key } });
+          return null;
+        }
+      })
+    );
+
+    // Filtrar objetos con errores
+    const validImages = imagesWithUrls.filter(img => img !== null) as Array<{
+      key: string;
+      url: string;
+      size: number;
+      lastModified: Date;
+      contentType?: string;
+      filename: string;
+      category?: string;
+    }>;
+
+    logger.info('[src/utils/idriveE2.ts] Imágenes con URLs firmadas generadas:', {
+      metadata: { 
+        totalImages: validImages.length,
+        totalObjects: objects.length
+      }
+    });
+
+    return validImages;
+  } catch (error) {
+    logger.error('[src/utils/idriveE2.ts] Error listando imágenes con URLs firmadas:', error instanceof Error ? error : new Error(String(error)));
+    throw new Error('Error listando imágenes con URLs firmadas');
   }
 };
 

@@ -117,6 +117,8 @@
     "coverage/**/*"
   ],
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "index.ts",
+    "ENV.ts"
   ]
 }

@@ -23,7 +23,7 @@ import { RateCalculationService } from '../services/rateCalculationService';
 // Comentado temporalmente para evitar dependencias circulares
 // import { io, users } from "../../index";
 
-// Instanciar servicios avanzados
+// Instanciar servicios
 const musicianStatusService = new MusicianStatusService();
 const calendarConflictService = new CalendarConflictService();
 const rateCalculationService = new RateCalculationService();
@@ -58,7 +58,7 @@ export const requestMusicianController = async (
     const availableMusicians = await findAvailableMusiciansWithAdvancedSystems(eventData);
 
     // 3. Calcular tarifas automáticas para músicos disponibles
-    const musiciansWithRates = await calculateRatesForMusicians(availableMusicians, eventData);
+    const musiciansWithRates = await calculateRatesForMusicians(availableMusicians as any[], eventData);
 
     // 4. Actualizar el evento con información de músicos disponibles
     const enhancedEvent = {
@@ -100,7 +100,14 @@ export const requestMusicianController = async (
 /**
  * Buscar músicos disponibles usando sistemas avanzados
  */
-async function findAvailableMusiciansWithAdvancedSystems(eventData: any) {
+async function findAvailableMusiciansWithAdvancedSystems(eventData: {
+  eventType: string;
+  instrument: string;
+  date: string;
+  time: string;
+  budget?: string;
+  duration?: string;
+}) {
   try {
     logger.info('🔍 Buscando músicos con sistemas avanzados:', { 
       context: 'AdvancedSearch', 
@@ -127,10 +134,10 @@ async function findAvailableMusiciansWithAdvancedSystems(eventData: any) {
 
     // 2. Verificar conflictos de calendario
     const eventDateTime = new Date(`${eventData.date}T${eventData.time}`);
-    const duration = parseInt(eventData.duration) || 120; // 2 horas por defecto
+    const duration = parseInt(eventData.duration || '120') || 120; // 2 horas por defecto
     const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
 
-    const musicianIds = onlineMusicians.map(m => m.musicianId);
+    const musicianIds = onlineMusicians.map((m: any) => m.musicianId);
     const availabilityResult = await calendarConflictService.checkMultipleMusiciansAvailability(
       musicianIds,
       eventDateTime,
@@ -138,8 +145,8 @@ async function findAvailableMusiciansWithAdvancedSystems(eventData: any) {
     );
 
     // 3. Filtrar músicos disponibles
-    const availableMusicians = onlineMusicians.filter(musician => 
-      availabilityResult.availableMusicians.includes(musician.musicianId)
+    const availableMusicians = onlineMusicians.filter((musician: any) => 
+      availabilityResult.availableMusicians.includes(musician.id)
     );
 
     logger.info('✅ Músicos disponibles encontrados:', { 
@@ -161,7 +168,23 @@ async function findAvailableMusiciansWithAdvancedSystems(eventData: any) {
 /**
  * Calcular tarifas automáticas para músicos disponibles
  */
-async function calculateRatesForMusicians(musicians: any[], eventData: any) {
+async function calculateRatesForMusicians(musicians: Array<{
+  id: string;
+  userEmail: string;
+  name: string;
+  instrument: string;
+  experience: number;
+  rating: number;
+  baseRate: number;
+}>, eventData: {
+  eventType: string;
+  instrument: string;
+  date: string;
+  time: string;
+  budget?: string;
+  duration?: string;
+  location?: string;
+}) {
   try {
     logger.info('💰 Calculando tarifas automáticas para músicos:', { 
       context: 'RateCalculation', 
@@ -174,13 +197,13 @@ async function calculateRatesForMusicians(musicians: any[], eventData: any) {
       musicians.map(async (musician) => {
         try {
           const eventDateTime = new Date(`${eventData.date}T${eventData.time}`);
-          const duration = parseInt(eventData.duration) || 120;
+          const duration = parseInt(eventData.duration || '120') || 120;
 
           const rateResult = await rateCalculationService.calculateRate({
-            musicianId: musician.musicianId,
+            musicianId: musician.id,
             eventType: eventData.eventType,
             duration,
-            location: eventData.location,
+            location: eventData.location || '',
             eventDate: eventDateTime,
             instrument: eventData.instrument,
             isUrgent: false // TODO: Determinar urgencia basada en fecha
@@ -191,11 +214,15 @@ async function calculateRatesForMusicians(musicians: any[], eventData: any) {
             calculatedRate: rateResult.finalRate,
             rateBreakdown: rateResult.breakdown,
             recommendations: rateResult.recommendations,
-            relevanceScore: calculateRelevanceScore(musician, rateResult.finalRate)
+            relevanceScore: calculateRelevanceScore({
+              rating: musician.rating,
+              experience: musician.experience,
+              responseTime: 60 // Valor por defecto
+            }, rateResult.finalRate)
           };
         } catch (error) {
           logger.error('❌ Error calculando tarifa para músico:', error as Error, {
-            metadata: { musicianId: musician.musicianId }
+            metadata: { musicianId: musician.id }
           });
           return {
             ...musician,
@@ -235,20 +262,22 @@ async function calculateRatesForMusicians(musicians: any[], eventData: any) {
 /**
  * Calcular score de relevancia para ordenar músicos
  */
-function calculateRelevanceScore(musician: any, rate: number): number {
-  const status = musician;
-  
+function calculateRelevanceScore(musician: {
+  rating: number;
+  experience: number;
+  responseTime: number;
+}, rate: number): number {
   // Score basado en rating (40%)
-  const ratingScore = (status.performance.rating / 5.0) * 40;
+  const ratingScore = (musician.rating / 5.0) * 40;
   
   // Score basado en tiempo de respuesta (30%)
-  const responseScore = Math.max(0, (120 - status.performance.responseTime) / 120) * 30;
+  const responseScore = Math.max(0, (120 - musician.responseTime) / 120) * 30;
   
   // Score basado en precio (20%) - menor precio = mayor score
   const priceScore = rate ? Math.max(0, (200 - rate) / 200) * 20 : 10;
   
   // Score basado en experiencia (10%)
-  const experienceScore = Math.min(10, status.performance.totalEvents / 10);
+  const experienceScore = Math.min(10, musician.experience / 10);
   
   return ratingScore + responseScore + priceScore + experienceScore;
 }
@@ -341,10 +370,28 @@ export const availableRequestsController = async (
     }
 
     // 3. Filtrar eventos por disponibilidad de calendario
-    const availableEvents = await filterEventsByAvailability(basicEvents, user.userEmail);
+    const availableEvents = await filterEventsByAvailability(
+      basicEvents.map(event => ({
+        ...event,
+        duration: parseInt(String(event.duration)) || 120
+      })), 
+      user.userEmail
+    );
 
     // 4. Calcular tarifas para eventos disponibles
-    const eventsWithRates = await calculateRatesForEvents(availableEvents, user.userEmail);
+    const eventsWithRates = await calculateRatesForEvents(
+      availableEvents.map(event => ({
+        id: event.id,
+        eventType: event.eventType || '',
+        budget: event.budget || '',
+        location: event.location,
+        date: event.date,
+        time: event.time,
+        instrument: event.instrument,
+        duration: String(event.duration)
+      })), 
+      user.userEmail
+    );
 
     // 5. Ordenar por relevancia
     eventsWithRates.sort((a, b) => b.relevanceScore - a.relevanceScore);
@@ -382,7 +429,16 @@ export const availableRequestsController = async (
 /**
  * Filtrar eventos por disponibilidad de calendario del músico
  */
-async function filterEventsByAvailability(events: any[], musicianId: string) {
+async function filterEventsByAvailability(events: Array<{
+  id: string;
+  date: string;
+  time: string;
+  duration: number;
+  location: string;
+  eventType?: string;
+  budget?: string;
+  instrument?: string;
+}>, musicianId: string) {
   try {
     logger.info('📅 Filtrando eventos por disponibilidad de calendario:', { 
       context: 'CalendarCheck', 
@@ -397,7 +453,7 @@ async function filterEventsByAvailability(events: any[], musicianId: string) {
     for (const event of events) {
       try {
         const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const duration = parseInt(event.duration) || 120;
+        const duration = parseInt(String(event.duration)) || 120;
         const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
 
         const conflictResult = await calendarConflictService.checkConflicts({
@@ -458,7 +514,16 @@ async function filterEventsByAvailability(events: any[], musicianId: string) {
 /**
  * Calcular tarifas para eventos disponibles
  */
-async function calculateRatesForEvents(events: any[], musicianId: string) {
+async function calculateRatesForEvents(events: Array<{
+  id: string;
+  eventType: string;
+  budget: string;
+  location: string;
+  date: string;
+  time: string;
+  instrument?: string;
+  duration?: string;
+}>, musicianId: string) {
   try {
     logger.info('💰 Calculando tarifas para eventos:', { 
       context: 'RateCalculation', 
@@ -472,7 +537,7 @@ async function calculateRatesForEvents(events: any[], musicianId: string) {
       events.map(async (event) => {
         try {
           const eventDateTime = new Date(`${event.date}T${event.time}`);
-          const duration = parseInt(event.duration) || 120;
+          const duration = parseInt(String(event.duration || '120')) || 120;
 
           const rateResult = await rateCalculationService.calculateRate({
             musicianId,
@@ -480,7 +545,7 @@ async function calculateRatesForEvents(events: any[], musicianId: string) {
             duration,
             location: event.location,
             eventDate: eventDateTime,
-            instrument: event.instrument,
+            instrument: event.instrument || '',
             isUrgent: false
           });
 
@@ -530,13 +595,19 @@ async function calculateRatesForEvents(events: any[], musicianId: string) {
 /**
  * Calcular score de relevancia para eventos
  */
-function calculateEventRelevanceScore(event: any, rate: number): number {
+function calculateEventRelevanceScore(event: {
+  eventType: string;
+  budget: string;
+  location: string;
+  date?: string;
+  time?: string;
+}, rate: number): number {
   // Score basado en presupuesto vs tarifa calculada (40%)
   const budget = parseInt(event.budget) || 0;
   const budgetScore = rate && budget ? Math.max(0, (budget - rate) / budget) * 40 : 20;
   
   // Score basado en proximidad de fecha (30%)
-  const eventDate = new Date(`${event.date}T${event.time}`);
+  const eventDate = event.date && event.time ? new Date(`${event.date}T${event.time}`) : new Date();
   const daysUntilEvent = Math.max(0, (eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   const dateScore = Math.max(0, (30 - daysUntilEvent) / 30) * 30;
   
@@ -936,13 +1007,16 @@ export const completeEventController = async (
       });
 
       // Actualizar métricas de rendimiento
-      await updateMusicianPerformance(user.userEmail, event);
+      await updateMusicianPerformance(user.userEmail, {
+        ...event,
+        duration: parseInt(String(event.duration)) || 120
+      });
     }
 
     // 5. Remover evento del calendario
     try {
       const eventDateTime = new Date(`${event.date}T${event.time}`);
-      const duration = parseInt(event.duration) || 120;
+      const duration = parseInt(String(event.duration)) || 120;
       const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
 
       // Buscar y eliminar el evento del calendario
@@ -972,7 +1046,7 @@ export const completeEventController = async (
     if (isAssignedMusician) {
       try {
         const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const duration = parseInt(event.duration) || 120;
+        const duration = parseInt(String(event.duration)) || 120;
         
         // Obtener tarifa calculada para actualizar datos del mercado
         const rateResult = await rateCalculationService.calculateRate({
@@ -987,7 +1061,7 @@ export const completeEventController = async (
 
         // Actualizar datos del mercado
         await rateCalculationService.updateMarketData(
-          event.instrument,
+          event.instrument || '',
           event.location,
           event.eventType,
           rateResult.finalRate
@@ -1037,7 +1111,14 @@ export const completeEventController = async (
 /**
  * Actualizar métricas de rendimiento del músico
  */
-async function updateMusicianPerformance(musicianId: string, event: any) {
+async function updateMusicianPerformance(musicianId: string, event: {
+  id: string;
+  eventName: string;
+  date: string;
+  time: string;
+  location: string;
+  duration: number;
+}) {
   try {
     logger.info('📈 Actualizando métricas de rendimiento del músico:', { 
       context: 'Performance', 
@@ -1168,7 +1249,10 @@ export const getEventWithAdvancedInfoController = async (
     }
 
     // 3. Obtener información avanzada
-    const advancedInfo = await getAdvancedEventInfo(event, user.userEmail);
+    const advancedInfo = await getAdvancedEventInfo({
+      ...event,
+      duration: parseInt(String(event.duration)) || 120
+    }, user.userEmail);
 
     const enhancedEvent = {
       ...event,
@@ -1202,7 +1286,20 @@ export const getEventWithAdvancedInfoController = async (
 /**
  * Obtener información avanzada del evento
  */
-async function getAdvancedEventInfo(event: any, userId: string) {
+async function getAdvancedEventInfo(event: {
+  id: string;
+  eventName: string;
+  date: string;
+  time: string;
+  location: string;
+  duration: number;
+  eventType: string;
+  budget: string;
+  user: string;
+  assignedMusicianId?: string;
+  instrument?: string;
+  status?: string;
+}, userId: string) {
   try {
     const advancedInfo: any = {};
 
@@ -1214,7 +1311,7 @@ async function getAdvancedEventInfo(event: any, userId: string) {
         
         // Calcular tarifa para el músico asignado
         const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const duration = parseInt(event.duration) || 120;
+        const duration = parseInt(String(event.duration)) || 120;
         
         const rateResult = await rateCalculationService.calculateRate({
           musicianId: event.assignedMusicianId,
@@ -1222,7 +1319,7 @@ async function getAdvancedEventInfo(event: any, userId: string) {
           duration,
           location: event.location,
           eventDate: eventDateTime,
-          instrument: event.instrument,
+          instrument: event.instrument || '',
           isUrgent: false
         });
         
@@ -1240,7 +1337,7 @@ async function getAdvancedEventInfo(event: any, userId: string) {
     if (event.assignedMusicianId === userId) {
       try {
         const eventDateTime = new Date(`${event.date}T${event.time}`);
-        const duration = parseInt(event.duration) || 120;
+        const duration = parseInt(String(event.duration)) || 120;
         const endDateTime = new Date(eventDateTime.getTime() + duration * 60000);
 
         const conflictResult = await calendarConflictService.checkConflicts({
@@ -1263,7 +1360,14 @@ async function getAdvancedEventInfo(event: any, userId: string) {
     // 3. Información de disponibilidad de músicos (si es el creador del evento)
     if (event.user === userId && event.status === 'pending_musician') {
       try {
-        const availableMusicians = await findAvailableMusiciansWithAdvancedSystems(event);
+        const availableMusicians = await findAvailableMusiciansWithAdvancedSystems({
+          eventType: event.eventType,
+          instrument: event.instrument || '',
+          date: event.date,
+          time: event.time,
+          budget: event.budget,
+          duration: String(event.duration)
+        });
         advancedInfo.availableMusicians = availableMusicians;
         advancedInfo.availableMusiciansCount = availableMusicians.length;
       } catch (error) {
@@ -1276,7 +1380,7 @@ async function getAdvancedEventInfo(event: any, userId: string) {
     // 4. Estadísticas del mercado
     try {
       const marketData = await rateCalculationService.getPublicMarketData(
-        event.instrument,
+        event.instrument || '',
         event.location,
         event.eventType
       );
@@ -1463,7 +1567,14 @@ async function checkUpcomingConflicts(musicianId: string) {
       );
     });
 
-    return potentialConflicts.map(event => ({
+    return potentialConflicts.map((event: {
+      id: string;
+      eventId: string;
+      startTime: Date;
+      endTime: Date;
+      location: string;
+      status: string;
+    }) => ({
       id: event.id,
       eventId: event.eventId,
       startTime: event.startTime,

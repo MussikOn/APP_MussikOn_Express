@@ -2,6 +2,9 @@
 import dotenv from 'dotenv';
 import { logger } from '../services/loggerService';
 
+// Set test environment
+process.env.NODE_ENV = 'test';
+
 // Load environment variables for testing
 dotenv.config({ path: '.env.test' });
 
