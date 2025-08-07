@@ -14,6 +14,9 @@ import { URL_API } from './ENV';
 import { errorHandler, notFoundHandler, asyncHandler } from './src/middleware/errorHandler';
 import { logger } from './src/services/loggerService';
 
+// Importar middleware de URLs firmadas
+import { autoUpdateSignedUrls, ensureSignedUrlsInResponse, scheduledSignedUrlUpdate } from './src/middleware/signedUrlMiddleware';
+
 // Importar rutas
 import authRoutes from './src/routes/authRoutes';
 import adminRoutes from './src/routes/adminRoutes';
@@ -35,6 +38,7 @@ import musicianSearchRoutes from './src/routes/musicianSearchRoutes';
 import hiringRoutes from './src/routes/hiringRoutes';
 import ratingRoutes from './src/routes/ratingRoutes';
 import depositRoutes from './src/routes/depositRoutes';
+import voucherRoutes from './src/routes/voucherRoutes';
 
 // Importar gestor de índices
 import { FirestoreIndexManager } from './src/utils/firestoreIndexes';
@@ -153,6 +157,10 @@ app.use((req, res, next) => {
 
   next();
 });
+
+// Middleware para actualización automática de URLs firmadas
+app.use(autoUpdateSignedUrls);
+app.use(ensureSignedUrlsInResponse);
 
 // Configuración de Swagger
 const swaggerOptions = {
@@ -407,6 +415,7 @@ app.use('/musician-search', musicianSearchRoutes);
 app.use('/hiring', hiringRoutes);
 app.use('/ratings', ratingRoutes);
 app.use('/deposits', depositRoutes);
+app.use('/vouchers', voucherRoutes);
 
 // Configurar documentación
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, swaggerUiOptions));
@@ -495,6 +504,10 @@ async function initializeServer() {
     // Inicializar índices de Firestore
     logger.info('🔧 Inicializando índices de Firestore...');
     await FirestoreIndexManager.initializeIndexes();
+    
+    // Inicializar actualización programada de URLs firmadas
+    logger.info('🔧 Inicializando actualización programada de URLs firmadas...');
+    scheduledSignedUrlUpdate();
     
     // Iniciar servidor
     server.listen(PORT, () => {

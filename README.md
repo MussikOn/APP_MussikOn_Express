@@ -8,7 +8,7 @@
 - **Tests**: 13/13 suites pasando (100%)
 - **Cobertura**: 172/172 tests individuales (100%)
 - **Estabilidad**: Excelente
-- **Documentación**: Completa y actualizada
+- **Documentación**: Completa y organizada profesionalmente
 
 ---
 
@@ -148,11 +148,27 @@ src/
 ├── __tests__/           # Tests unitarios y de integración
 └── config/              # Configuraciones
 
-docs/                    # Documentación completa
-├── api/                 # Documentación de APIs
-├── guides/              # Guías de desarrollo
-├── deployment/          # Guías de despliegue
-└── system/              # Documentación del sistema
+docs/                    # 📚 Documentación completa y organizada
+├── getting-started/     # 🚀 Guías de inicio rápido
+├── development/         # 🔧 Guías de desarrollo
+├── api/                 # 📖 Documentación de APIs
+├── guides/              # ⚙️ Guías de configuración
+├── deployment/          # 🚀 Guías de despliegue
+├── testing/             # 🧪 Guías de testing
+├── troubleshooting/     # 🔧 Solución de problemas
+├── security/            # 🛡️ Seguridad y autenticación
+├── payment-system/      # 💰 Sistema de pagos
+├── image-system/        # 🖼️ Gestión de imágenes
+├── chat-system/         # 💬 Sistema de chat
+├── event-management/    # 🎵 Gestión de eventos
+├── musician-management/ # 🎼 Gestión de músicos
+├── admin-system/        # 👨‍💼 Sistema administrativo
+├── search-system/       # 🔍 Sistema de búsqueda
+├── mobile-app/          # 📱 Integración móvil
+├── mobile-integration/  # 📱 APIs móviles
+├── validation/          # ✅ Validación de datos
+├── phases/              # 📋 Fases de implementación
+└── system/              # 🏗️ Arquitectura del sistema
 ```
 
 ---
@@ -199,28 +215,65 @@ npm run dev
 
 ---
 
-## 📚 Documentación
+## 📚 Documentación Completa
 
-### **📖 Guías Principales**
-- **[Resumen Ejecutivo](docs/executive-summary.md)** - Estado actual del proyecto
-- **[Vista General del Sistema](docs/SYSTEM_OVERVIEW.md)** - Arquitectura y componentes
-- **[Sistema de Pagos - Resumen](docs/payment-system-overview.md)** - Flujo completo de pagos por transferencia
-- **[Guía de Instalación](docs/guides/installation.md)** - Configuración paso a paso
-- **[Guía de Despliegue](docs/deployment/deployment-guide.md)** - Despliegue a producción
+### **🚀 Guías de Inicio**
+- **[Inicio Rápido](docs/getting-started/README.md)** - Configuración inicial del proyecto
+- **[Guía de Instalación](docs/guides/installation.md)** - Instalación paso a paso
+- **[Configuración del Entorno](docs/guides/configuration.md)** - Variables de entorno y servicios
 
-### **🔧 Guías de Desarrollo**
-- **[Guía de APIs](docs/api/)** - Documentación completa de endpoints
-- **[Sistema de Pagos API](docs/api/payment-system.md)** - Endpoints de pagos por transferencia
-- **[Guía de Testing](docs/guides/testing-guide.md)** - Cómo escribir y ejecutar tests
+### **🔧 Desarrollo**
+- **[Guía de Desarrollo](docs/development/README.md)** - Estándares y mejores prácticas
+- **[Guía de APIs](docs/api/README.md)** - Documentación completa de endpoints
+- **[Guía de Testing](docs/testing/README.md)** - Estrategias de testing
 - **[Guía de Contribución](docs/guides/contribution-guide.md)** - Cómo contribuir al proyecto
+
+### **🚀 Despliegue**
+- **[Guía de Despliegue](docs/deployment/README.md)** - Despliegue a producción con Firebase
+- **[Configuración de Dominio](docs/deployment/README.md#configuración-de-dominio)** - Dominios personalizados
+- **[CI/CD Pipeline](docs/deployment/README.md#cicd-pipeline)** - Automatización con GitHub Actions
 
 ### **🛡️ Seguridad**
 - **[Guía de Seguridad](docs/security/overview.md)** - Mejores prácticas de seguridad
-- **[Configuración de Autenticación](docs/guides/authentication.md)** - JWT y OAuth
+- **[Autenticación](docs/guides/authentication.md)** - JWT y OAuth
+- **[Validación de Datos](docs/validation/overview.md)** - Esquemas y validaciones
 
-### **📊 Analytics y Reportes**
-- **[Guía de Analytics](docs/api/analytics.md)** - Sistema de métricas y reportes
-- **[Dashboard Administrativo](docs/system/admin.md)** - Panel de control
+### **💰 Sistema de Pagos**
+- **[Resumen del Sistema](docs/payment-system-overview.md)** - Vista general completa
+- **[Documentación API](docs/api/payment-system.md)** - Endpoints de pagos
+- **[Guía de Integración](docs/payment-system/INTEGRATION_GUIDE.md)** - Integración con Stripe
+- **[Solución de Problemas](docs/payment-system/TROUBLESHOOTING.md)** - Problemas comunes
+
+### **🖼️ Gestión de Imágenes**
+- **[Sistema de Imágenes](docs/image-system/README.md)** - Arquitectura y funcionalidades
+- **[Integración IDrive E2](docs/image-system/IDRIVE_E2_GUIDE.md)** - Configuración de almacenamiento
+- **[Endpoints de Imágenes](docs/image-system/SINGLE_IMAGE_ENDPOINTS.md)** - APIs de gestión
+
+### **💬 Sistema de Chat**
+- **[Documentación del Chat](docs/chat-system/README.md)** - Funcionalidades en tiempo real
+- **[WebSockets](docs/chat-system/README.md#websockets)** - Eventos y conexiones
+
+### **🎵 Gestión de Eventos**
+- **[Gestión de Eventos](docs/event-management/README.md)** - CRUD y workflow
+- **[Solicitudes de Músicos](docs/musician-management/README.md)** - Proceso de contratación
+
+### **🔍 Sistema de Búsqueda**
+- **[Búsqueda Avanzada](docs/search-system/README.md)** - Algoritmos y filtros
+- **[Búsqueda de Músicos](docs/search-system/MUSICIAN_SEARCH_ALGORITHM.md)** - Algoritmo especializado
+
+### **📱 Integración Móvil**
+- **[APIs Móviles](docs/mobile-integration/README.md)** - Endpoints optimizados
+- **[Notificaciones Push](docs/api/push-notifications.md)** - Sistema de notificaciones
+
+### **🔧 Solución de Problemas**
+- **[Troubleshooting](docs/troubleshooting/README.md)** - Problemas comunes y soluciones
+- **[Debugging](docs/troubleshooting/README.md#debugging)** - Técnicas de depuración
+- **[Monitoreo](docs/troubleshooting/README.md#monitoreo)** - Herramientas de monitoreo
+
+### **📖 Documentación Técnica**
+- **[Vista General del Sistema](docs/SYSTEM_OVERVIEW.md)** - Arquitectura completa
+- **[Resumen Ejecutivo](docs/executive-summary.md)** - Estado actual del proyecto
+- **[Índice de Documentación](docs/INDEX.md)** - Navegación completa
 
 ---
 
@@ -275,7 +328,7 @@ npm run format       # Formateo del código
 - [x] Chat en tiempo real
 - [x] Gestión de archivos
 - [x] Tests unitarios y de integración
-- [x] Documentación completa
+- [x] Documentación completa y organizada
 
 ### **🚀 Próximas Mejoras**
 - [ ] Integración con Redis para caché
@@ -311,7 +364,7 @@ npm run format       # Formateo del código
 - **Issues**: [GitHub Issues](https://github.com/MussikOn/APP_MussikOn_Express/issues)
 
 ### **Recursos Adicionales**
-- **[Troubleshooting](docs/troubleshooting.md)** - Solución de problemas comunes
+- **[Troubleshooting](docs/troubleshooting/README.md)** - Solución de problemas comunes
 - **[FAQ](docs/guides/faq.md)** - Preguntas frecuentes
 - **[Changelog](CHANGELOG.md)** - Historial de cambios
 

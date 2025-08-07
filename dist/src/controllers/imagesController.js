@@ -783,6 +783,192 @@ class ImagesController {
             }
         });
     }
+    /**
+     * Obtener una sola imagen específica desde IDrive E2
+     */
+    getSingleImageFromIDriveE2(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { key } = req.params;
+                if (!key) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'Se requiere la clave (key) de la imagen'
+                    });
+                    return;
+                }
+                const image = yield imageService_1.imageService.getSingleImageFromIDriveE2(key);
+                if (!image) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Imagen no encontrada'
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    image,
+                    message: 'Imagen obtenida exitosamente desde IDrive E2'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen individual:', error instanceof Error ? error : new Error(String(error)));
+                res.status(500).json({
+                    success: false,
+                    error: `Error obteniendo imagen: ${error instanceof Error ? error.message : String(error)}`
+                });
+            }
+        });
+    }
+    /**
+     * Obtener imagen por nombre de archivo desde IDrive E2
+     */
+    getImageByFilenameFromIDriveE2(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { filename } = req.params;
+                const { category } = req.query;
+                if (!filename) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'Se requiere el nombre del archivo'
+                    });
+                    return;
+                }
+                const image = yield imageService_1.imageService.getImageByFilenameFromIDriveE2(filename, category);
+                if (!image) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Imagen no encontrada'
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    image,
+                    message: 'Imagen encontrada por nombre desde IDrive E2'
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen por nombre:', error instanceof Error ? error : new Error(String(error)));
+                res.status(500).json({
+                    success: false,
+                    error: `Error obteniendo imagen por nombre: ${error instanceof Error ? error.message : String(error)}`
+                });
+            }
+        });
+    }
+    /**
+     * Actualizar todas las URLs firmadas (endpoint administrativo)
+     */
+    updateAllSignedUrls(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Iniciando actualización masiva de URLs firmadas');
+                const result = yield imageService_1.imageService.updateAllSignedUrls();
+                res.status(200).json({
+                    success: true,
+                    message: 'Actualización de URLs firmadas completada',
+                    data: result
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error actualizando URLs firmadas', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error actualizando URLs firmadas'
+                });
+            }
+        });
+    }
+    /**
+     * Verificar y renovar URLs firmadas expiradas
+     */
+    refreshExpiredSignedUrls(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                loggerService_1.logger.info('[src/controllers/imagesController.ts] Verificando URLs firmadas expiradas');
+                const result = yield imageService_1.imageService.refreshExpiredSignedUrls();
+                res.status(200).json({
+                    success: true,
+                    message: 'Verificación de URLs expiradas completada',
+                    data: result
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error verificando URLs expiradas', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error verificando URLs expiradas'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener imagen con URL firmada garantizada
+     */
+    getImageWithGuaranteedSignedUrl(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { imageId } = req.params;
+                if (!imageId) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'ID de imagen requerido'
+                    });
+                    return;
+                }
+                const image = yield imageService_1.imageService.getImageWithGuaranteedSignedUrl(imageId);
+                if (!image) {
+                    res.status(404).json({
+                        success: false,
+                        error: 'Imagen no encontrada'
+                    });
+                    return;
+                }
+                res.status(200).json({
+                    success: true,
+                    data: image
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen con URL garantizada', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo imagen con URL garantizada'
+                });
+            }
+        });
+    }
+    /**
+     * Obtener múltiples imágenes con URLs firmadas garantizadas
+     */
+    getMultipleImagesWithGuaranteedSignedUrls(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { imageIds } = req.body;
+                if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'Array de IDs de imágenes requerido'
+                    });
+                    return;
+                }
+                const result = yield imageService_1.imageService.getMultipleImagesWithGuaranteedSignedUrls(imageIds);
+                res.status(200).json({
+                    success: true,
+                    data: result
+                });
+            }
+            catch (error) {
+                loggerService_1.logger.error('[src/controllers/imagesController.ts] Error obteniendo múltiples imágenes con URLs garantizadas', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Error obteniendo múltiples imágenes'
+                });
+            }
+        });
+    }
 }
 exports.ImagesController = ImagesController;
 // Instancia singleton

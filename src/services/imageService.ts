@@ -8,6 +8,8 @@ export interface ImageUploadResult {
   size: number;
   mimeType: string;
   uploadedAt: string;
+  urlExpiresAt?: string;
+  lastUrlUpdate?: string;
   metadata?: Record<string, any>;
 }
 
@@ -660,6 +662,152 @@ export class ImageService {
   }
 
   /**
+   * Obtener una sola imagen específica desde IDrive E2
+   */
+  async getSingleImageFromIDriveE2(imageKey: string): Promise<{
+    id: string;
+    filename: string;
+    url: string;
+    size: number;
+    uploadedAt: string;
+    category: string;
+    isPublic: boolean;
+    isActive: boolean;
+    mimeType: string;
+    metadata: {
+      key: string;
+      lastModified: string;
+      category: string;
+    };
+  } | null> {
+    try {
+      logger.info(`[src/services/imageService.ts] Obteniendo imagen individual desde IDrive E2: ${imageKey}`);
+      
+      // Importar las funciones necesarias
+      const { generatePresignedUrl, getFileInfo } = await import('../utils/idriveE2');
+      
+      // Verificar si el archivo existe
+      const fileInfo = await getFileInfo(imageKey);
+      
+      if (!fileInfo.exists) {
+        logger.warn(`[src/services/imageService.ts] Imagen no encontrada en IDrive E2: ${imageKey}`);
+        return null;
+      }
+      
+      // Generar URL firmada
+      const signedUrl = await generatePresignedUrl(imageKey, 3600); // 1 hora
+      
+      // Extraer información del archivo
+      const pathParts = imageKey.split('/');
+      const filename = pathParts[pathParts.length - 1];
+      
+      // Determinar categoría basada en la ruta
+      let category = 'general';
+      if (pathParts.length > 2 && pathParts[0] === 'musikon-media') {
+        category = pathParts[1]; // deposits, profile, post, gallery, etc.
+      }
+      
+      // Determinar tipo MIME
+      const mimeType = this.getMimeTypeFromFilename(filename);
+      
+      // Crear ID único
+      const id = `idrive_single_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      
+      const imageData = {
+        id,
+        filename,
+        url: signedUrl,
+        size: fileInfo.size || 0,
+        uploadedAt: fileInfo.lastModified?.toISOString() || new Date().toISOString(),
+        category,
+        isPublic: true,
+        isActive: true,
+        mimeType,
+        metadata: {
+          key: imageKey,
+          lastModified: fileInfo.lastModified?.toISOString() || new Date().toISOString(),
+          category
+        }
+      };
+      
+      logger.info(`[src/services/imageService.ts] Imagen obtenida exitosamente: ${filename}`);
+      return imageData;
+      
+    } catch (error) {
+      logger.error(`[src/services/imageService.ts] Error obteniendo imagen individual desde IDrive E2:`, error instanceof Error ? error : new Error(String(error)));
+      throw new Error(`Error obteniendo imagen individual: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Obtener imagen por nombre de archivo desde IDrive E2
+   */
+  async getImageByFilenameFromIDriveE2(filename: string, category?: string): Promise<{
+    id: string;
+    filename: string;
+    url: string;
+    size: number;
+    uploadedAt: string;
+    category: string;
+    isPublic: boolean;
+    isActive: boolean;
+    mimeType: string;
+    metadata: {
+      key: string;
+      lastModified: string;
+      category: string;
+    };
+  } | null> {
+    try {
+      logger.info(`[src/services/imageService.ts] Buscando imagen por nombre: ${filename}, categoría: ${category || 'todas'}`);
+      
+      // Construir el prefijo de búsqueda
+      let searchPrefix = 'musikon-media/';
+      if (category) {
+        searchPrefix += `${category}/`;
+      }
+      
+      // Listar imágenes con el prefijo
+      const images = await listImagesWithSignedUrls(searchPrefix, 1000);
+      
+      // Buscar la imagen por nombre de archivo
+      const foundImage = images.find(img => img.filename === filename);
+      
+      if (!foundImage) {
+        logger.warn(`[src/services/imageService.ts] Imagen no encontrada: ${filename}`);
+        return null;
+      }
+      
+      // Crear ID único
+      const id = `idrive_filename_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      
+      const imageData = {
+        id,
+        filename: foundImage.filename,
+        url: foundImage.url,
+        size: foundImage.size,
+        uploadedAt: foundImage.lastModified.toISOString(),
+        category: foundImage.category || 'general',
+        isPublic: true,
+        isActive: true,
+        mimeType: foundImage.contentType || this.getMimeTypeFromFilename(foundImage.filename),
+        metadata: {
+          key: foundImage.key,
+          lastModified: foundImage.lastModified.toISOString(),
+          category: foundImage.category || 'general'
+        }
+      };
+      
+      logger.info(`[src/services/imageService.ts] Imagen encontrada por nombre: ${filename}`);
+      return imageData;
+      
+    } catch (error) {
+      logger.error(`[src/services/imageService.ts] Error buscando imagen por nombre:`, error instanceof Error ? error : new Error(String(error)));
+      throw new Error(`Error buscando imagen por nombre: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
    * Obtener el tipo MIME basado en la extensión del archivo
    */
   private getMimeTypeFromFilename(filename: string): string {
@@ -678,6 +826,296 @@ export class ImageService {
         return 'image/svg+xml';
       default:
         return 'image/jpeg';
+    }
+  }
+
+  /**
+   * Actualizar automáticamente todas las URLs firmadas para garantizar seguridad
+   */
+  async updateAllSignedUrls(): Promise<{
+    totalImages: number;
+    updatedImages: number;
+    failedImages: number;
+    errors: string[];
+  }> {
+    try {
+      logger.info('[src/services/imageService.ts] Iniciando actualización masiva de URLs firmadas');
+      
+      const result = {
+        totalImages: 0,
+        updatedImages: 0,
+        failedImages: 0,
+        errors: [] as string[]
+      };
+
+      // Obtener todas las imágenes de la base de datos
+      const allImages = await this.getAllImages();
+      result.totalImages = allImages.length;
+
+      logger.info(`[src/services/imageService.ts] Procesando ${result.totalImages} imágenes para actualización de URLs`);
+
+      // Procesar cada imagen y actualizar su URL firmada
+      const updatePromises = allImages.map(async (image) => {
+        try {
+          // Extraer la clave del archivo
+          let fileKey = image.filename || image.url;
+          
+          // Si la URL contiene la clave completa, extraerla
+          if (image.url && image.url.includes('/')) {
+            const urlParts = image.url.split('/');
+            fileKey = urlParts[urlParts.length - 1];
+          }
+
+          // Generar nueva URL firmada válida por 1 hora
+          const newSignedUrl = await generatePresignedUrl(fileKey, 3600);
+          
+          // Actualizar la imagen en la base de datos con la nueva URL
+          await this.updateImageUrl(image.id, newSignedUrl);
+          
+          result.updatedImages++;
+          
+          logger.info(`[src/services/imageService.ts] URL actualizada para imagen ${image.id}`, { 
+            metadata: { 
+              imageId: image.id, 
+              filename: image.filename,
+              newUrlPreview: newSignedUrl.substring(0, 50) + '...'
+            } 
+          });
+
+        } catch (error) {
+          result.failedImages++;
+          const errorMsg = `Error actualizando imagen ${image.id}: ${error instanceof Error ? error.message : String(error)}`;
+          result.errors.push(errorMsg);
+          
+          logger.error(`[src/services/imageService.ts] ${errorMsg}`, error as Error);
+        }
+      });
+
+      // Esperar a que se completen todas las actualizaciones
+      await Promise.all(updatePromises);
+
+      logger.info('[src/services/imageService.ts] Actualización masiva de URLs completada', { 
+        metadata: { 
+          totalImages: result.totalImages,
+          updatedImages: result.updatedImages,
+          failedImages: result.failedImages,
+          errorCount: result.errors.length
+        } 
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('[src/services/imageService.ts] Error en actualización masiva de URLs', error as Error);
+      throw new Error('Error actualizando URLs firmadas');
+    }
+  }
+
+  /**
+   * Actualizar URL de una imagen específica en la base de datos
+   */
+  private async updateImageUrl(imageId: string, newUrl: string): Promise<void> {
+    try {
+      const imageRef = db.collection('image_uploads').doc(imageId);
+      await imageRef.update({
+        url: newUrl,
+        lastUrlUpdate: new Date().toISOString(),
+        urlExpiresAt: new Date(Date.now() + 3600 * 1000).toISOString() // 1 hora
+      });
+    } catch (error) {
+      logger.error(`[src/services/imageService.ts] Error actualizando URL en BD para imagen ${imageId}`, error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verificar y renovar URLs firmadas expiradas
+   */
+  async refreshExpiredSignedUrls(): Promise<{
+    checkedImages: number;
+    refreshedImages: number;
+    expiredImages: number;
+    errors: string[];
+  }> {
+    try {
+      logger.info('[src/services/imageService.ts] Verificando URLs firmadas expiradas');
+      
+      const result = {
+        checkedImages: 0,
+        refreshedImages: 0,
+        expiredImages: 0,
+        errors: [] as string[]
+      };
+
+      // Obtener todas las imágenes
+      const allImages = await this.getAllImages();
+      result.checkedImages = allImages.length;
+
+      const now = new Date();
+
+      // Verificar cada imagen
+      const refreshPromises = allImages.map(async (image) => {
+        try {
+          // Verificar si la URL está próxima a expirar (menos de 30 minutos)
+          const urlExpiresAt = image.urlExpiresAt ? new Date(image.urlExpiresAt) : null;
+          const isExpired = !urlExpiresAt || urlExpiresAt <= now;
+          const isExpiringSoon = urlExpiresAt && (urlExpiresAt.getTime() - now.getTime()) < 30 * 60 * 1000; // 30 minutos
+
+          if (isExpired || isExpiringSoon) {
+            result.expiredImages++;
+            
+            // Extraer la clave del archivo
+            let fileKey = image.filename || image.url;
+            if (image.url && image.url.includes('/')) {
+              const urlParts = image.url.split('/');
+              fileKey = urlParts[urlParts.length - 1];
+            }
+
+            // Generar nueva URL firmada
+            const newSignedUrl = await generatePresignedUrl(fileKey, 3600);
+            
+            // Actualizar en la base de datos
+            await this.updateImageUrl(image.id, newSignedUrl);
+            
+            result.refreshedImages++;
+            
+            logger.info(`[src/services/imageService.ts] URL renovada para imagen ${image.id}`, { 
+              metadata: { 
+                imageId: image.id, 
+                wasExpired: isExpired,
+                wasExpiringSoon: isExpiringSoon
+              } 
+            });
+          }
+
+        } catch (error) {
+          const errorMsg = `Error renovando URL para imagen ${image.id}: ${error instanceof Error ? error.message : String(error)}`;
+          result.errors.push(errorMsg);
+          
+          logger.error(`[src/services/imageService.ts] ${errorMsg}`, error as Error);
+        }
+      });
+
+      await Promise.all(refreshPromises);
+
+      logger.info('[src/services/imageService.ts] Verificación de URLs expiradas completada', { 
+        metadata: { 
+          checkedImages: result.checkedImages,
+          expiredImages: result.expiredImages,
+          refreshedImages: result.refreshedImages,
+          errorCount: result.errors.length
+        } 
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('[src/services/imageService.ts] Error verificando URLs expiradas', error as Error);
+      throw new Error('Error verificando URLs firmadas');
+    }
+  }
+
+  /**
+   * Obtener imagen con URL firmada garantizada (siempre actualizada)
+   */
+  async getImageWithGuaranteedSignedUrl(imageId: string): Promise<ImageUploadResult | null> {
+    try {
+      logger.info(`[src/services/imageService.ts] Obteniendo imagen con URL firmada garantizada: ${imageId}`);
+      
+      // Obtener la imagen
+      const image = await this.getImage(imageId);
+      
+      if (!image) {
+        logger.warn(`[src/services/imageService.ts] Imagen no encontrada: ${imageId}`);
+        return null;
+      }
+
+      // Verificar si la URL necesita renovación
+      const now = new Date();
+      const urlExpiresAt = image.urlExpiresAt ? new Date(image.urlExpiresAt) : null;
+      const needsRefresh = !urlExpiresAt || urlExpiresAt <= now || 
+                          (urlExpiresAt && (urlExpiresAt.getTime() - now.getTime()) < 30 * 60 * 1000);
+
+      if (needsRefresh) {
+        logger.info(`[src/services/imageService.ts] Renovando URL para imagen ${imageId}`);
+        
+        // Extraer la clave del archivo
+        let fileKey = image.filename || image.url;
+        if (image.url && image.url.includes('/')) {
+          const urlParts = image.url.split('/');
+          fileKey = urlParts[urlParts.length - 1];
+        }
+
+        // Generar nueva URL firmada
+        const newSignedUrl = await generatePresignedUrl(fileKey, 3600);
+        
+        // Actualizar en la base de datos
+        await this.updateImageUrl(imageId, newSignedUrl);
+        
+        // Retornar imagen con URL actualizada
+        return {
+          ...image,
+          url: newSignedUrl
+        };
+      }
+
+      // Retornar imagen con URL existente si aún es válida
+      return image;
+
+    } catch (error) {
+      logger.error(`[src/services/imageService.ts] Error obteniendo imagen con URL garantizada: ${imageId}`, error as Error);
+      throw new Error('Error obteniendo imagen con URL firmada');
+    }
+  }
+
+  /**
+   * Obtener múltiples imágenes con URLs firmadas garantizadas
+   */
+  async getMultipleImagesWithGuaranteedSignedUrls(imageIds: string[]): Promise<{
+    images: ImageUploadResult[];
+    failedImages: string[];
+    errors: string[];
+  }> {
+    try {
+      logger.info(`[src/services/imageService.ts] Obteniendo ${imageIds.length} imágenes con URLs firmadas garantizadas`);
+      
+      const result = {
+        images: [] as ImageUploadResult[],
+        failedImages: [] as string[],
+        errors: [] as string[]
+      };
+
+      // Procesar cada imagen
+      const imagePromises = imageIds.map(async (imageId) => {
+        try {
+          const image = await this.getImageWithGuaranteedSignedUrl(imageId);
+          if (image) {
+            result.images.push(image);
+          } else {
+            result.failedImages.push(imageId);
+          }
+        } catch (error) {
+          result.failedImages.push(imageId);
+          result.errors.push(`Error procesando imagen ${imageId}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      await Promise.all(imagePromises);
+
+      logger.info('[src/services/imageService.ts] Procesamiento de múltiples imágenes completado', { 
+        metadata: { 
+          requestedImages: imageIds.length,
+          successfulImages: result.images.length,
+          failedImages: result.failedImages.length,
+          errorCount: result.errors.length
+        } 
+      });
+
+      return result;
+
+    } catch (error) {
+      logger.error('[src/services/imageService.ts] Error obteniendo múltiples imágenes con URLs garantizadas', error as Error);
+      throw new Error('Error obteniendo múltiples imágenes');
     }
   }
 }

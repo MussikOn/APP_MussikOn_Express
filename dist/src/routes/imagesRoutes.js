@@ -15,6 +15,8 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const requireRole_1 = require("../middleware/requireRole");
 const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const uploadMiddleware_2 = require("../middleware/uploadMiddleware");
+const imageService_1 = require("../services/imageService");
+const loggerService_1 = require("../services/loggerService");
 const router = (0, express_1.Router)();
 /**
  * @swagger
@@ -625,6 +627,94 @@ router.get('/diagnose', authMiddleware_1.authMiddleware, (req, res) => __awaiter
 router.get('/:imageId/presigned', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield imagesController_1.imagesController.generatePresignedUrl(req, res);
 }));
+/**
+ * @swagger
+ * /images/diagnose-signed-urls:
+ *   get:
+ *     summary: Diagnosticar estado de URLs firmadas
+ *     tags: [Imágenes - Diagnóstico]
+ *     responses:
+ *       200:
+ *         description: Diagnóstico completado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalImages:
+ *                       type: number
+ *                     workingUrls:
+ *                       type: number
+ *                     brokenUrls:
+ *                       type: number
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     sampleImages:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/diagnose-signed-urls', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        loggerService_1.logger.info('[src/routes/imagesRoutes.ts] Iniciando diagnóstico de URLs firmadas');
+        // Obtener algunas imágenes de muestra
+        const sampleImages = yield imageService_1.imageService.getAllImagesFromIDriveE2({ limit: 5 });
+        const results = {
+            totalImages: sampleImages.length,
+            workingUrls: 0,
+            brokenUrls: 0,
+            errors: [],
+            sampleImages: []
+        };
+        // Probar cada URL
+        for (const image of sampleImages) {
+            try {
+                const response = yield fetch(image.url, { method: 'HEAD' });
+                if (response.ok) {
+                    results.workingUrls++;
+                    results.sampleImages.push(Object.assign(Object.assign({}, image), { status: 'working', statusCode: response.status }));
+                }
+                else {
+                    results.brokenUrls++;
+                    results.sampleImages.push(Object.assign(Object.assign({}, image), { status: 'broken', statusCode: response.status, error: `HTTP ${response.status}` }));
+                }
+            }
+            catch (error) {
+                results.brokenUrls++;
+                results.errors.push(`Error testing ${image.filename}: ${error}`);
+                results.sampleImages.push(Object.assign(Object.assign({}, image), { status: 'error', error: error instanceof Error ? error.message : String(error) }));
+            }
+        }
+        loggerService_1.logger.info('[src/routes/imagesRoutes.ts] Diagnóstico completado', {
+            metadata: {
+                totalImages: results.totalImages,
+                workingUrls: results.workingUrls,
+                brokenUrls: results.brokenUrls
+            }
+        });
+        res.status(200).json({
+            success: true,
+            data: results,
+            message: `Diagnóstico completado: ${results.workingUrls} URLs funcionando, ${results.brokenUrls} URLs con problemas`
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('[src/routes/imagesRoutes.ts] Error en diagnóstico de URLs firmadas', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error en diagnóstico de URLs firmadas'
+        });
+    }
+}));
 // Rutas de compatibilidad con el sistema anterior
 /**
  * @swagger
@@ -684,6 +774,22 @@ router.get('/getImage/:key', (req, res) => __awaiter(void 0, void 0, void 0, fun
     // Convertir clave a imageId para compatibilidad
     req.params.imageId = req.params.key;
     yield imagesController_1.imagesController.getImage(req, res);
+}));
+// Nueva ruta para obtener una sola imagen específica desde IDrive E2 (autenticada)
+router.get('/single/:key', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getSingleImageFromIDriveE2(req, res);
+}));
+// Nueva ruta para obtener una sola imagen específica desde IDrive E2 (pública - desarrollo)
+router.get('/single/:key/public', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getSingleImageFromIDriveE2(req, res);
+}));
+// Nueva ruta para obtener imagen por nombre de archivo desde IDrive E2 (autenticada)
+router.get('/filename/:filename', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageByFilenameFromIDriveE2(req, res);
+}));
+// Nueva ruta para obtener imagen por nombre de archivo desde IDrive E2 (pública - desarrollo)
+router.get('/filename/:filename/public', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageByFilenameFromIDriveE2(req, res);
 }));
 // ===== RUTAS TEMPORALES PARA DESARROLLO (SIN AUTENTICACIÓN) =====
 // Estas rutas permiten probar el panel de administración sin autenticación completa
@@ -1107,5 +1213,256 @@ router.get('/all/idrive', authMiddleware_1.authMiddleware, (req, res) => __await
  */
 router.get('/all/idrive/public', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield imagesController_1.imagesController.getAllImagesFromIDriveE2(req, res);
+}));
+/**
+ * @swagger
+ * /images/update-all-signed-urls:
+ *   post:
+ *     summary: Actualizar todas las URLs firmadas (endpoint administrativo)
+ *     tags: [Imágenes - Administración]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: URLs firmadas actualizadas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalImages:
+ *                       type: number
+ *                     updatedImages:
+ *                       type: number
+ *                     failedImages:
+ *                       type: number
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.post('/update-all-signed-urls', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'super_admin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.updateAllSignedUrls(req, res);
+}));
+/**
+ * @swagger
+ * /images/refresh-expired-signed-urls:
+ *   post:
+ *     summary: Verificar y renovar URLs firmadas expiradas
+ *     tags: [Imágenes - Administración]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Verificación de URLs expiradas completada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     checkedImages:
+ *                       type: number
+ *                     refreshedImages:
+ *                       type: number
+ *                     expiredImages:
+ *                       type: number
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.post('/refresh-expired-signed-urls', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'super_admin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.refreshExpiredSignedUrls(req, res);
+}));
+/**
+ * @swagger
+ * /images/{imageId}/guaranteed-signed-url:
+ *   get:
+ *     summary: Obtener imagen con URL firmada garantizada
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: imageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la imagen
+ *     responses:
+ *       200:
+ *         description: Imagen obtenida con URL firmada garantizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/ImageUploadResult'
+ *       400:
+ *         description: ID de imagen requerido
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Imagen no encontrada
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/:imageId/guaranteed-signed-url', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getImageWithGuaranteedSignedUrl(req, res);
+}));
+/**
+ * @swagger
+ * /images/multiple-guaranteed-signed-urls:
+ *   post:
+ *     summary: Obtener múltiples imágenes con URLs firmadas garantizadas
+ *     tags: [Imágenes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               imageIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array de IDs de imágenes
+ *     responses:
+ *       200:
+ *         description: Múltiples imágenes obtenidas con URLs firmadas garantizadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     images:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/ImageUploadResult'
+ *                     failedImages:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         description: Array de IDs de imágenes requerido
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.post('/multiple-guaranteed-signed-urls', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield imagesController_1.imagesController.getMultipleImagesWithGuaranteedSignedUrls(req, res);
+}));
+/**
+ * @swagger
+ * /images/health/signed-urls:
+ *   get:
+ *     summary: Verificar salud de URLs firmadas
+ *     tags: [Imágenes - Administración]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estado de salud de URLs firmadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     status:
+ *                       type: string
+ *                       enum: [healthy, warning, critical, error]
+ *                     checkedImages:
+ *                       type: number
+ *                     expiredImages:
+ *                       type: number
+ *                     refreshedImages:
+ *                       type: number
+ *                     errorCount:
+ *                       type: number
+ *                     timestamp:
+ *                       type: string
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error del servidor
+ */
+router.get('/health/signed-urls', authMiddleware_1.authMiddleware, (0, requireRole_1.requireRole)(['admin', 'super_admin']), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        loggerService_1.logger.info('[src/routes/imagesRoutes.ts] Verificando salud de URLs firmadas');
+        const result = yield imageService_1.imageService.refreshExpiredSignedUrls();
+        const healthStatus = {
+            status: 'healthy',
+            checkedImages: result.checkedImages,
+            expiredImages: result.expiredImages,
+            refreshedImages: result.refreshedImages,
+            errorCount: result.errors.length,
+            timestamp: new Date().toISOString()
+        };
+        // Determinar estado de salud
+        if (result.errors.length > 0) {
+            healthStatus.status = 'warning';
+        }
+        if (result.expiredImages > result.checkedImages * 0.1) { // Más del 10% expiradas
+            healthStatus.status = 'critical';
+        }
+        res.status(200).json({
+            success: true,
+            data: healthStatus
+        });
+    }
+    catch (error) {
+        loggerService_1.logger.error('[src/routes/imagesRoutes.ts] Error verificando salud de URLs firmadas', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error verificando salud de URLs firmadas',
+            data: {
+                status: 'error',
+                timestamp: new Date().toISOString()
+            }
+        });
+    }
 }));
 exports.default = router;

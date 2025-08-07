@@ -19,9 +19,12 @@ export interface UserDeposit {
   amount: number;
   currency: string;
   voucherFile: {
-    url: string;
+    // Referencia a IDrive E2 en lugar de URL directa
+    idriveKey: string; // Clave completa en IDrive E2 (ej: "musikon-media/deposits/1754188088046-test_voucher.png")
     filename: string;
     uploadedAt: string;
+    // URL temporal generada cuando se necesita (no se guarda en Firebase)
+    tempUrl?: string; // Solo para respuestas de API, no se persiste
   };
   hasVoucherFile?: boolean; // Propiedad calculada para compatibilidad con frontend
   // Información del depósito bancario

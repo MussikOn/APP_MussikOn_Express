@@ -303,17 +303,17 @@ describe('PaymentSystemController', () => {
 
       const mockDeposit = {
         id: 'deposit_123',
-        userId: userEmail,
-        amount: 1000,
+        userId: 'user123',
+        amount: 5000,
         currency: 'RD$',
         voucherFile: {
-          url: 'https://example.com/voucher.jpg',
-          filename: 'voucher.jpg',
-          uploadedAt: new Date().toISOString()
+          idriveKey: 'musikon-media/deposits/test-voucher.png',
+          filename: 'test-voucher.png',
+          uploadedAt: '2024-01-15T10:00:00Z'
         },
         status: 'pending' as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: '2024-01-15T10:00:00Z',
+        updatedAt: '2024-01-15T10:00:00Z',
         accountHolderName: 'Juan Pérez',
         bankName: 'Banco Popular'
       };
@@ -689,7 +689,7 @@ describe('PaymentSystemController', () => {
           currency: 'RD$',
           status: 'pending' as const,
           voucherFile: {
-            url: 'https://example.com/voucher_123.jpg',
+            idriveKey: 'musikon-media/deposits/voucher_123.jpg',
             filename: 'voucher_123.jpg',
             uploadedAt: new Date().toISOString()
           },

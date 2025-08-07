@@ -849,6 +849,208 @@ export class ImagesController {
       });
     }
   }
+
+  /**
+   * Obtener una sola imagen específica desde IDrive E2
+   */
+  async getSingleImageFromIDriveE2(req: Request, res: Response): Promise<void> {
+    try {
+      const { key } = req.params;
+      
+      if (!key) {
+        res.status(400).json({ 
+          success: false, 
+          error: 'Se requiere la clave (key) de la imagen' 
+        });
+        return;
+      }
+
+      const image = await imageService.getSingleImageFromIDriveE2(key);
+      
+      if (!image) {
+        res.status(404).json({ 
+          success: false, 
+          error: 'Imagen no encontrada' 
+        });
+        return;
+      }
+
+      res.status(200).json({ 
+        success: true, 
+        image,
+        message: 'Imagen obtenida exitosamente desde IDrive E2' 
+      });
+      
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen individual:', error instanceof Error ? error : new Error(String(error)));
+      res.status(500).json({ 
+        success: false, 
+        error: `Error obteniendo imagen: ${error instanceof Error ? error.message : String(error)}` 
+      });
+    }
+  }
+
+  /**
+   * Obtener imagen por nombre de archivo desde IDrive E2
+   */
+  async getImageByFilenameFromIDriveE2(req: Request, res: Response): Promise<void> {
+    try {
+      const { filename } = req.params;
+      const { category } = req.query;
+      
+      if (!filename) {
+        res.status(400).json({ 
+          success: false, 
+          error: 'Se requiere el nombre del archivo' 
+        });
+        return;
+      }
+
+      const image = await imageService.getImageByFilenameFromIDriveE2(
+        filename, 
+        category as string
+      );
+      
+      if (!image) {
+        res.status(404).json({ 
+          success: false, 
+          error: 'Imagen no encontrada' 
+        });
+        return;
+      }
+
+      res.status(200).json({ 
+        success: true, 
+        image,
+        message: 'Imagen encontrada por nombre desde IDrive E2' 
+      });
+      
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen por nombre:', error instanceof Error ? error : new Error(String(error)));
+      res.status(500).json({ 
+        success: false, 
+        error: `Error obteniendo imagen por nombre: ${error instanceof Error ? error.message : String(error)}` 
+      });
+    }
+  }
+
+  /**
+   * Actualizar todas las URLs firmadas (endpoint administrativo)
+   */
+  async updateAllSignedUrls(req: Request, res: Response): Promise<void> {
+    try {
+      logger.info('[src/controllers/imagesController.ts] Iniciando actualización masiva de URLs firmadas');
+      
+      const result = await imageService.updateAllSignedUrls();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Actualización de URLs firmadas completada',
+        data: result
+      });
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error actualizando URLs firmadas', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error actualizando URLs firmadas'
+      });
+    }
+  }
+
+  /**
+   * Verificar y renovar URLs firmadas expiradas
+   */
+  async refreshExpiredSignedUrls(req: Request, res: Response): Promise<void> {
+    try {
+      logger.info('[src/controllers/imagesController.ts] Verificando URLs firmadas expiradas');
+      
+      const result = await imageService.refreshExpiredSignedUrls();
+      
+      res.status(200).json({
+        success: true,
+        message: 'Verificación de URLs expiradas completada',
+        data: result
+      });
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error verificando URLs expiradas', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error verificando URLs expiradas'
+      });
+    }
+  }
+
+  /**
+   * Obtener imagen con URL firmada garantizada
+   */
+  async getImageWithGuaranteedSignedUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const { imageId } = req.params;
+      
+      if (!imageId) {
+        res.status(400).json({
+          success: false,
+          error: 'ID de imagen requerido'
+        });
+        return;
+      }
+
+      const image = await imageService.getImageWithGuaranteedSignedUrl(imageId);
+      
+      if (!image) {
+        res.status(404).json({
+          success: false,
+          error: 'Imagen no encontrada'
+        });
+        return;
+      }
+      
+      res.status(200).json({
+        success: true,
+        data: image
+      });
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error obteniendo imagen con URL garantizada', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo imagen con URL garantizada'
+      });
+    }
+  }
+
+  /**
+   * Obtener múltiples imágenes con URLs firmadas garantizadas
+   */
+  async getMultipleImagesWithGuaranteedSignedUrls(req: Request, res: Response): Promise<void> {
+    try {
+      const { imageIds } = req.body;
+      
+      if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'Array de IDs de imágenes requerido'
+        });
+        return;
+      }
+
+      const result = await imageService.getMultipleImagesWithGuaranteedSignedUrls(imageIds);
+      
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      logger.error('[src/controllers/imagesController.ts] Error obteniendo múltiples imágenes con URLs garantizadas', error as Error);
+      
+      res.status(500).json({
+        success: false,
+        error: 'Error obteniendo múltiples imágenes'
+      });
+    }
+  }
 }
 
 // Instancia singleton

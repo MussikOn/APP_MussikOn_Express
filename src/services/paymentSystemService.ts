@@ -143,13 +143,16 @@ export class PaymentSystemService {
         'deposits'
       );
       
+      // Extraer la clave de IDrive E2 de la URL
+      const idriveKey = fileUrl.split('/').slice(-2).join('/'); // Obtener la parte de la clave
+      
       const deposit: UserDeposit = {
         id: `deposit_${Date.now()}_${userId}`,
         userId,
         amount: depositData.amount,
         currency: 'RD$',
         voucherFile: {
-          url: fileUrl,
+          idriveKey, // Usar la clave de IDrive E2 en lugar de la URL
           filename: depositData.voucherFile.originalname || 'voucher.jpg',
           uploadedAt: new Date().toISOString()
         },
@@ -605,7 +608,7 @@ export class PaymentSystemService {
       // Agregar propiedad calculada hasVoucherFile
       const depositWithHasVoucherFile = {
         ...deposit,
-        hasVoucherFile: Boolean(deposit.voucherFile && deposit.voucherFile.url)
+        hasVoucherFile: Boolean(deposit.voucherFile && deposit.voucherFile.idriveKey)
       };
       
       return depositWithHasVoucherFile;
@@ -625,13 +628,13 @@ export class PaymentSystemService {
       // Obtener el depósito actual
       const currentDeposit = await this.getDepositDetails(depositId);
       
-      if (!currentDeposit.voucherFile?.url) {
+      if (!currentDeposit.voucherFile?.idriveKey) {
         return { isDuplicate: false, duplicates: [] };
       }
 
-      // Buscar otros depósitos con la misma URL de voucher
+      // Buscar otros depósitos con la misma clave de IDrive E2
       const duplicatesSnapshot = await db.collection('user_deposits')
-        .where('voucherFile.url', '==', currentDeposit.voucherFile.url)
+        .where('voucherFile.idriveKey', '==', currentDeposit.voucherFile.idriveKey)
         .where('id', '!=', depositId)
         .get();
       

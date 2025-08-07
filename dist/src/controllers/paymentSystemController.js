@@ -937,7 +937,7 @@ exports.PaymentSystemController = PaymentSystemController;
  * Resuelve problemas de CORS y Access Denied en el frontend
  */
 const getVoucherPresignedUrl = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     try {
         const { depositId } = req.params;
         if (!depositId) {
@@ -967,8 +967,8 @@ const getVoucherPresignedUrl = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
             return;
         }
-        // Obtener la clave del archivo del comprobante desde la URL
-        const voucherKey = (_e = (_d = deposit.voucherFile) === null || _d === void 0 ? void 0 : _d.url) === null || _e === void 0 ? void 0 : _e.split('/').pop();
+        // Obtener la clave del archivo del comprobante desde la referencia IDrive E2
+        const voucherKey = (_d = deposit.voucherFile) === null || _d === void 0 ? void 0 : _d.idriveKey;
         if (!voucherKey) {
             res.status(404).json({
                 success: false,

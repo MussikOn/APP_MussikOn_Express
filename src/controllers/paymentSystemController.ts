@@ -1014,8 +1014,8 @@ export const getVoucherPresignedUrl = async (req: Request, res: Response) => {
       return;
     }
 
-    // Obtener la clave del archivo del comprobante desde la URL
-    const voucherKey = deposit.voucherFile?.url?.split('/').pop();
+    // Obtener la clave del archivo del comprobante desde la referencia IDrive E2
+    const voucherKey = deposit.voucherFile?.idriveKey;
     
     if (!voucherKey) {
       res.status(404).json({
