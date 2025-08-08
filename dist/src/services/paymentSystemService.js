@@ -40,7 +40,7 @@ class PaymentSystemService {
                 const balanceDoc = yield firebase_1.db.collection('user_balances').doc(userId).get();
                 if (!balanceDoc.exists) {
                     // Crear balance inicial si no existe
-                    const initialBalance = {
+                    const initialBalance = (0, firebase_1.cleanObjectForFirestore)({
                         userId,
                         balance: 0,
                         currency: 'RD$',
@@ -48,7 +48,7 @@ class PaymentSystemService {
                         totalDeposits: 0,
                         totalWithdrawals: 0,
                         totalEarnings: 0
-                    };
+                    });
                     yield firebase_1.db.collection('user_balances').doc(userId).set(initialBalance);
                     return initialBalance;
                 }
@@ -69,7 +69,19 @@ class PaymentSystemService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 loggerService_1.logger.info('Registrando cuenta bancaria', { metadata: { userId } });
-                const bankAccount = Object.assign(Object.assign({ id: `bank_${Date.now()}_${userId}`, userId }, accountData), { isVerified: false, isDefault: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+                const bankAccount = (0, firebase_1.cleanObjectForFirestore)({
+                    id: `bank_${Date.now()}_${userId}`,
+                    userId,
+                    accountHolder: accountData.accountHolder,
+                    accountNumber: accountData.accountNumber,
+                    bankName: accountData.bankName,
+                    accountType: accountData.accountType,
+                    routingNumber: accountData.routingNumber,
+                    isVerified: false,
+                    isDefault: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
                 yield firebase_1.db.collection('bank_accounts').doc(bankAccount.id).set(bankAccount);
                 // Si es la primera cuenta, establecer como default
                 const userAccounts = yield firebase_1.db.collection('bank_accounts')
@@ -122,7 +134,7 @@ class PaymentSystemService {
                 const fileUrl = yield (0, idriveE2_1.uploadToS3)(depositData.voucherFile.buffer, depositData.voucherFile.originalname || 'voucher.jpg', depositData.voucherFile.mimetype || 'image/jpeg', 'deposits');
                 // Extraer la clave de IDrive E2 de la URL
                 const idriveKey = fileUrl.split('/').slice(-2).join('/'); // Obtener la parte de la clave
-                const deposit = {
+                const deposit = (0, firebase_1.cleanObjectForFirestore)({
                     id: `deposit_${Date.now()}_${userId}`,
                     userId,
                     amount: depositData.amount,
@@ -142,7 +154,7 @@ class PaymentSystemService {
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
-                };
+                });
                 yield firebase_1.db.collection('user_deposits').doc(deposit.id).set(deposit);
                 return deposit;
             }
@@ -206,7 +218,7 @@ class PaymentSystemService {
                     }
                 });
                 const commission = this.calculateCommission(paymentData.amount);
-                const eventPayment = {
+                const eventPayment = (0, firebase_1.cleanObjectForFirestore)({
                     id: `payment_${Date.now()}_${paymentData.eventId}`,
                     eventId: paymentData.eventId,
                     organizerId: paymentData.organizerId,
@@ -219,7 +231,7 @@ class PaymentSystemService {
                     paymentMethod: 'transfer',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
-                };
+                });
                 yield firebase_1.db.collection('event_payments').doc(eventPayment.id).set(eventPayment);
                 // Crear ganancia para el músico
                 yield this.createMusicianEarning(eventPayment);
@@ -241,7 +253,7 @@ class PaymentSystemService {
     createMusicianEarning(eventPayment) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const earning = {
+                const earning = (0, firebase_1.cleanObjectForFirestore)({
                     id: `earning_${Date.now()}_${eventPayment.musicianId}`,
                     musicianId: eventPayment.musicianId,
                     eventId: eventPayment.eventId,
@@ -251,7 +263,7 @@ class PaymentSystemService {
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
-                };
+                });
                 yield firebase_1.db.collection('musician_earnings').doc(earning.id).set(earning);
                 // Actualizar balance del músico
                 yield this.updateUserBalance(eventPayment.musicianId, eventPayment.musicianAmount, 'earning');
@@ -276,7 +288,7 @@ class PaymentSystemService {
                 if (balance.balance < withdrawalData.amount) {
                     throw new Error('Saldo insuficiente para el retiro');
                 }
-                const withdrawal = {
+                const withdrawal = (0, firebase_1.cleanObjectForFirestore)({
                     id: `withdrawal_${Date.now()}_${musicianId}`,
                     musicianId,
                     amount: withdrawalData.amount,
@@ -285,7 +297,7 @@ class PaymentSystemService {
                     status: 'pending',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
-                };
+                });
                 yield firebase_1.db.collection('withdrawal_requests').doc(withdrawal.id).set(withdrawal);
                 return withdrawal;
             }
@@ -366,7 +378,7 @@ class PaymentSystemService {
                         totalEarnings += amount;
                         break;
                 }
-                const updatedBalance = {
+                const updatedBalance = (0, firebase_1.cleanObjectForFirestore)({
                     userId,
                     balance: newBalance,
                     currency: 'RD$',
@@ -374,7 +386,7 @@ class PaymentSystemService {
                     totalDeposits,
                     totalWithdrawals,
                     totalEarnings
-                };
+                });
                 yield balanceRef.set(updatedBalance);
             }
             catch (error) {

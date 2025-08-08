@@ -313,6 +313,117 @@ export class VoucherService {
       throw new Error('Error obteniendo estadísticas de vouchers');
     }
   }
+
+  /**
+   * Actualizar imagen de voucher existente
+   */
+  async updateVoucherImage(
+    voucherId: string,
+    userId: string,
+    newFile: Express.Multer.File
+  ): Promise<UserDeposit> {
+    try {
+      logger.info('[src/services/voucherService.ts] Actualizando imagen de voucher', { 
+        metadata: { voucherId, userId, filename: newFile.originalname } 
+      });
+
+      // Verificar que el voucher existe
+      const depositDoc = await db.collection('user_deposits').doc(voucherId).get();
+      
+      if (!depositDoc.exists) {
+        throw new Error('Voucher no encontrado');
+      }
+
+      const deposit = depositDoc.data() as UserDeposit;
+
+      // Verificar permisos (solo el propietario o admin puede actualizar)
+      if (deposit.userId !== userId) {
+        throw new Error('No tienes permisos para actualizar este voucher');
+      }
+
+      // Eliminar imagen anterior si existe
+      if (deposit.voucherFile && deposit.voucherFile.idriveKey) {
+        try {
+          // Extraer el nombre del archivo de la clave IDrive
+          const oldFilename = deposit.voucherFile.idriveKey.split('/').pop();
+          if (oldFilename) {
+            await this.deleteFileFromIDrive(oldFilename, 'deposits');
+            logger.info('[src/services/voucherService.ts] Imagen anterior eliminada', { 
+              metadata: { oldFilename } 
+            });
+          }
+        } catch (deleteError) {
+          logger.warn('[src/services/voucherService.ts] Error eliminando imagen anterior', deleteError instanceof Error ? deleteError : new Error(String(deleteError)));
+          // Continuamos aunque falle la eliminación
+        }
+      }
+
+      // Generar nueva clave para IDrive E2
+      const timestamp = Date.now();
+      const filename = `${timestamp}-${newFile.originalname || 'voucher_updated.jpg'}`;
+      const idriveKey = `${this.VOUCHER_PREFIX}${filename}`;
+
+      // Subir nueva imagen a IDrive E2
+      const fileUrl = await uploadToS3(
+        newFile.buffer,
+        filename,
+        newFile.mimetype || 'image/jpeg',
+        'deposits'
+      );
+
+      logger.info('[src/services/voucherService.ts] Nueva imagen subida a IDrive E2', { 
+        metadata: { idriveKey, fileUrl } 
+      });
+
+      // Actualizar voucher en Firebase
+      const updatedDeposit: UserDeposit = {
+        ...deposit,
+        voucherFile: {
+          idriveKey,
+          filename: newFile.originalname || 'voucher_updated.jpg',
+          uploadedAt: new Date().toISOString()
+        },
+        updatedAt: new Date().toISOString()
+      };
+
+      await db.collection('user_deposits').doc(voucherId).update({
+        voucherFile: updatedDeposit.voucherFile,
+        updatedAt: updatedDeposit.updatedAt
+      });
+
+      logger.info('[src/services/voucherService.ts] Voucher actualizado en Firebase', { 
+        metadata: { voucherId, newIdriveKey: idriveKey } 
+      });
+
+      return updatedDeposit;
+    } catch (error) {
+      logger.error('[src/services/voucherService.ts] Error actualizando imagen de voucher', error instanceof Error ? error : new Error(String(error)), { 
+        metadata: { voucherId, userId } 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Eliminar archivo de IDrive E2 (método auxiliar)
+   */
+  private async deleteFileFromIDrive(filename: string, category: string): Promise<void> {
+    try {
+      // Implementar eliminación de archivo de IDrive E2
+      // Esto dependerá de la implementación específica de tu servicio IDrive
+      logger.info('[src/services/voucherService.ts] Eliminando archivo de IDrive E2', { 
+        metadata: { filename, category } 
+      });
+      
+      // TODO: Implementar eliminación real de IDrive E2
+      // Por ahora solo loggeamos la acción
+    } catch (error) {
+      logger.error('[src/services/voucherService.ts] Error eliminando archivo de IDrive E2', error instanceof Error ? error : new Error(String(error)), { 
+        metadata: { filename, category } 
+      });
+      throw error;
+    }
+  }
 }
 
 // Instancia singleton

@@ -48,6 +48,7 @@
     "signed-urls:refresh": "node scripts/update-signed-urls.js --refresh-expired",
     "signed-urls:health": "node scripts/update-signed-urls.js --health-check",
     "signed-urls:all": "node scripts/update-signed-urls.js --all",
+    "test:update-voucher": "node scripts/test-update-voucher-image.js",
     "images:diagnose": "node scripts/diagnose-images.js",
     "images:sync": "node scripts/diagnose-images.js sync",
     "images:diagnose:simple": "node scripts/diagnose-images-simple.js",

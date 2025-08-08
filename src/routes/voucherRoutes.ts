@@ -288,4 +288,98 @@ router.get('/statistics', authMiddleware, requireRole(['admin', 'superadmin']), 
   await voucherController.getVoucherStatistics(req, res);
 });
 
+/**
+ * @swagger
+ * /vouchers/{voucherId}/image:
+ *   put:
+ *     tags: [Vouchers]
+ *     summary: Actualizar imagen de voucher existente
+ *     description: Permite actualizar la imagen de un voucher existente
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: voucherId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del voucher a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - voucherImage
+ *             properties:
+ *               voucherImage:
+ *                 type: string
+ *                 format: binary
+ *                 description: Nueva imagen del voucher
+ *     responses:
+ *       200:
+ *         description: Imagen del voucher actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     depositId:
+ *                       type: string
+ *                     userId:
+ *                       type: string
+ *                     amount:
+ *                       type: number
+ *                     currency:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     voucherUrl:
+ *                       type: string
+ *                     voucherFile:
+ *                       type: object
+ *                       properties:
+ *                         url:
+ *                           type: string
+ *                         filename:
+ *                           type: string
+ *                         uploadedAt:
+ *                           type: string
+ *                         fileSize:
+ *                           type: number
+ *                         mimeType:
+ *                           type: string
+ *                         hash:
+ *                           type: string
+ *                     hasVoucherFile:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *                     updatedAt:
+ *                       type: string
+ *       400:
+ *         description: Datos inválidos o archivo faltante
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Sin permisos para actualizar este voucher
+ *       404:
+ *         description: Voucher no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.put('/:voucherId/image', authMiddleware, upload.single('voucherImage'), async (req, res) => {
+  await voucherController.updateVoucherImage(req, res);
+});
+
 export default router; 

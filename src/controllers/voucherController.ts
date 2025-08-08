@@ -314,6 +314,102 @@ export class VoucherController {
       });
     }
   }
+
+  /**
+   * Actualizar imagen de voucher existente
+   */
+  async updateVoucherImage(req: Request, res: Response): Promise<void> {
+    try {
+      const { voucherId } = req.params;
+      const userId = (req as any).user?.userEmail;
+      
+      if (!userId) {
+        res.status(401).json({ 
+          success: false, 
+          error: 'Usuario no autenticado' 
+        });
+        return;
+      }
+
+      if (!req.file) {
+        res.status(400).json({ 
+          success: false, 
+          error: 'No se proporcionó archivo de imagen' 
+        });
+        return;
+      }
+
+      if (!voucherId) {
+        res.status(400).json({ 
+          success: false, 
+          error: 'ID de voucher requerido' 
+        });
+        return;
+      }
+
+      logger.info('[src/controllers/voucherController.ts] Actualizando imagen de voucher', { 
+        metadata: { voucherId, userId, filename: req.file.originalname } 
+      });
+
+      const updatedDeposit = await voucherService.updateVoucherImage(
+        voucherId,
+        userId,
+        req.file
+      );
+
+      res.status(200).json({
+        success: true,
+        message: 'Imagen del voucher actualizada exitosamente',
+        data: {
+          id: updatedDeposit.id,
+          depositId: updatedDeposit.id,
+          userId: updatedDeposit.userId,
+          amount: updatedDeposit.amount,
+          currency: updatedDeposit.currency,
+          status: updatedDeposit.status,
+          voucherUrl: updatedDeposit.voucherFile?.idriveKey,
+          voucherFile: {
+            url: updatedDeposit.voucherFile?.idriveKey,
+            filename: updatedDeposit.voucherFile?.filename,
+            uploadedAt: updatedDeposit.voucherFile?.uploadedAt,
+            fileSize: req.file.size,
+            mimeType: req.file.mimetype,
+            hash: req.file.buffer.toString('base64').substring(0, 16) // Hash simple
+          },
+          hasVoucherFile: true,
+          createdAt: updatedDeposit.createdAt,
+          updatedAt: updatedDeposit.updatedAt
+        }
+      });
+
+    } catch (error) {
+      logger.error('[src/controllers/voucherController.ts] Error actualizando imagen de voucher', error instanceof Error ? error : new Error(String(error)));
+      
+      if (error instanceof Error) {
+        if (error.message.includes('no encontrado')) {
+          res.status(404).json({ 
+            success: false, 
+            error: 'Voucher no encontrado' 
+          });
+        } else if (error.message.includes('permisos')) {
+          res.status(403).json({ 
+            success: false, 
+            error: 'No tienes permisos para actualizar este voucher' 
+          });
+        } else {
+          res.status(500).json({ 
+            success: false, 
+            error: `Error actualizando imagen: ${error.message}` 
+          });
+        }
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          error: 'Error interno del servidor' 
+        });
+      }
+    }
+  }
 }
 
 // Instancia singleton

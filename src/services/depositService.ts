@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, cleanObjectForFirestore } from '../utils/firebase';
 import { logger } from './loggerService';
 import { BankDeposit, BankAccount, DepositRequest, DepositApproval } from '../utils/DataTypes';
 import { ImageService } from './imageService';
@@ -32,7 +32,7 @@ export class DepositService {
       const isDuplicate = await this.checkForDuplicateVoucher(voucherUrl, userEmail);
 
       // 3. Crear el depósito
-      const deposit: BankDeposit = {
+      const deposit: BankDeposit = cleanObjectForFirestore({
         id: `deposit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userEmail,
         amount: depositData.amount,
@@ -47,7 +47,7 @@ export class DepositService {
         isDuplicate,
         createdAt: new Date(),
         updatedAt: new Date()
-      };
+      });
 
       // 4. Guardar en Firestore
       await db.collection(this.COLLECTION_DEPOSITS).doc(deposit.id).set(deposit);
@@ -201,13 +201,13 @@ export class DepositService {
           updatedAt: new Date()
         });
       } else {
-        await balanceRef.set({
+        await balanceRef.set(cleanObjectForFirestore({
           userEmail,
           balance: amount,
           currency,
           createdAt: new Date(),
           updatedAt: new Date()
-        });
+        }));
       }
     } catch (error) {
       logger.error('Error actualizando balance del usuario:', error as Error, {

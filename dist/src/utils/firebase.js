@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = exports.dmAdmin = exports.suthAdmin = void 0;
+exports.cleanObjectForFirestore = cleanObjectForFirestore;
 const path_1 = __importDefault(require("path"));
 const admin = __importStar(require("firebase-admin"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -57,3 +58,31 @@ exports.suthAdmin = admin.auth();
 // });
 exports.dmAdmin = admin;
 exports.db = admin.firestore();
+/**
+ * Limpia un objeto removiendo campos undefined para evitar errores en Firestore
+ * @param obj - Objeto a limpiar
+ * @returns Objeto sin campos undefined
+ */
+function cleanObjectForFirestore(obj) {
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
+    if (typeof obj !== 'object') {
+        return obj;
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(item => cleanObjectForFirestore(item));
+    }
+    const cleaned = {};
+    for (const [key, value] of Object.entries(obj)) {
+        if (value !== undefined) {
+            if (typeof value === 'object' && value !== null) {
+                cleaned[key] = cleanObjectForFirestore(value);
+            }
+            else {
+                cleaned[key] = value;
+            }
+        }
+    }
+    return cleaned;
+}

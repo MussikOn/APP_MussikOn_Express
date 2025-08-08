@@ -1,4 +1,4 @@
-import { db } from '../utils/firebase';
+import { db, cleanObjectForFirestore } from '../utils/firebase';
 import { logger } from './loggerService';
 import { uploadToS3 } from '../utils/idriveE2';
 import { 
@@ -45,7 +45,7 @@ export class PaymentSystemService {
       
       if (!balanceDoc.exists) {
         // Crear balance inicial si no existe
-        const initialBalance: UserBalance = {
+        const initialBalance: UserBalance = cleanObjectForFirestore({
           userId,
           balance: 0,
           currency: 'RD$',
@@ -53,7 +53,7 @@ export class PaymentSystemService {
           totalDeposits: 0,
           totalWithdrawals: 0,
           totalEarnings: 0
-        };
+        });
         
         await db.collection('user_balances').doc(userId).set(initialBalance);
         return initialBalance;
@@ -75,15 +75,19 @@ export class PaymentSystemService {
     try {
       logger.info('Registrando cuenta bancaria', { metadata: { userId } });
       
-      const bankAccount: BankAccount = {
+      const bankAccount: BankAccount = cleanObjectForFirestore({
         id: `bank_${Date.now()}_${userId}`,
         userId,
-        ...accountData,
+        accountHolder: accountData.accountHolder,
+        accountNumber: accountData.accountNumber,
+        bankName: accountData.bankName,
+        accountType: accountData.accountType,
+        routingNumber: accountData.routingNumber,
         isVerified: false,
         isDefault: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
+      });
       
       await db.collection('bank_accounts').doc(bankAccount.id).set(bankAccount);
       
@@ -146,7 +150,7 @@ export class PaymentSystemService {
       // Extraer la clave de IDrive E2 de la URL
       const idriveKey = fileUrl.split('/').slice(-2).join('/'); // Obtener la parte de la clave
       
-      const deposit: UserDeposit = {
+      const deposit: UserDeposit = cleanObjectForFirestore({
         id: `deposit_${Date.now()}_${userId}`,
         userId,
         amount: depositData.amount,
@@ -166,7 +170,7 @@ export class PaymentSystemService {
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
+      });
       
       await db.collection('user_deposits').doc(deposit.id).set(deposit);
       
@@ -237,7 +241,7 @@ export class PaymentSystemService {
       
       const commission = this.calculateCommission(paymentData.amount);
       
-      const eventPayment: EventPayment = {
+      const eventPayment: EventPayment = cleanObjectForFirestore({
         id: `payment_${Date.now()}_${paymentData.eventId}`,
         eventId: paymentData.eventId,
         organizerId: paymentData.organizerId,
@@ -250,7 +254,7 @@ export class PaymentSystemService {
         paymentMethod: 'transfer',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
+      });
       
       await db.collection('event_payments').doc(eventPayment.id).set(eventPayment);
       
@@ -274,7 +278,7 @@ export class PaymentSystemService {
    */
   private async createMusicianEarning(eventPayment: EventPayment): Promise<void> {
     try {
-      const earning: MusicianEarnings = {
+      const earning: MusicianEarnings = cleanObjectForFirestore({
         id: `earning_${Date.now()}_${eventPayment.musicianId}`,
         musicianId: eventPayment.musicianId,
         eventId: eventPayment.eventId,
@@ -284,7 +288,7 @@ export class PaymentSystemService {
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
+      });
       
       await db.collection('musician_earnings').doc(earning.id).set(earning);
       
@@ -311,7 +315,7 @@ export class PaymentSystemService {
         throw new Error('Saldo insuficiente para el retiro');
       }
       
-      const withdrawal: WithdrawalRequest = {
+      const withdrawal: WithdrawalRequest = cleanObjectForFirestore({
         id: `withdrawal_${Date.now()}_${musicianId}`,
         musicianId,
         amount: withdrawalData.amount,
@@ -320,7 +324,7 @@ export class PaymentSystemService {
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
+      });
       
       await db.collection('withdrawal_requests').doc(withdrawal.id).set(withdrawal);
       
@@ -411,7 +415,7 @@ export class PaymentSystemService {
           break;
       }
       
-      const updatedBalance: UserBalance = {
+      const updatedBalance: UserBalance = cleanObjectForFirestore({
         userId,
         balance: newBalance,
         currency: 'RD$',
@@ -419,7 +423,7 @@ export class PaymentSystemService {
         totalDeposits,
         totalWithdrawals,
         totalEarnings
-      };
+      });
       
       await balanceRef.set(updatedBalance);
     } catch (error) {
