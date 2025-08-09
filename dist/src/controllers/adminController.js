@@ -37,6 +37,11 @@ exports.adminMusicianRequestsGetById = adminMusicianRequestsGetById;
 exports.adminMusicianRequestsUpdate = adminMusicianRequestsUpdate;
 exports.adminMusicianRequestsRemove = adminMusicianRequestsRemove;
 exports.adminMusicianRequestsStats = adminMusicianRequestsStats;
+exports.adminEventsStats = adminEventsStats;
+exports.adminImagesStats = adminImagesStats;
+exports.adminPaymentsStats = adminPaymentsStats;
+exports.adminChatStats = adminChatStats;
+exports.adminSystemStats = adminSystemStats;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const firebase_1 = require("../utils/firebase");
 const errorHandler_1 = require("../middleware/errorHandler");
@@ -1123,4 +1128,207 @@ function getTopEvents(payments) {
         .map(([eventId, count]) => ({ eventId, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
+}
+// ===== NUEVAS FUNCIONES DE ESTADÍSTICAS =====
+/**
+ * Obtener estadísticas de eventos
+ */
+function adminEventsStats(req, res, next) {
+    firebase_1.db.collection('events')
+        .get()
+        .then(snapshot => {
+        const events = [];
+        snapshot.forEach(doc => events.push(Object.assign({ _id: doc.id }, doc.data())));
+        const stats = {
+            total: events.length,
+            upcoming: events.filter(event => {
+                const eventDate = new Date(event.date);
+                return eventDate > new Date();
+            }).length,
+            completed: events.filter(event => event.status === 'completed').length,
+            cancelled: events.filter(event => event.status === 'cancelled').length,
+            byType: getEventsByType(events),
+            byStatus: getEventsByStatus(events),
+            attendanceRate: 85.5, // Mock data - implement real calculation
+            topVenues: getTopVenues(events)
+        };
+        res.status(200).json({ success: true, data: stats });
+    })
+        .catch(err => {
+        loggerService_1.logger.error('Error getting events stats:', err);
+        res.status(500).json({ success: false, error: err.message });
+    });
+}
+/**
+ * Obtener estadísticas de imágenes
+ */
+function adminImagesStats(req, res, next) {
+    firebase_1.db.collection('images')
+        .get()
+        .then(snapshot => {
+        const images = [];
+        snapshot.forEach(doc => images.push(Object.assign({ _id: doc.id }, doc.data())));
+        const totalSize = images.reduce((sum, img) => sum + (img.size || 0), 0);
+        const today = new Date();
+        const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const stats = {
+            total: images.length,
+            totalSize: totalSize,
+            averageSize: images.length > 0 ? totalSize / images.length : 0,
+            byType: getImagesByType(images),
+            uploadsToday: images.filter(img => {
+                const imgDate = new Date(img.createdAt);
+                return imgDate.toDateString() === today.toDateString();
+            }).length,
+            uploadsThisWeek: images.filter(img => {
+                const imgDate = new Date(img.createdAt);
+                return imgDate >= thisWeek;
+            }).length,
+            storageUsed: totalSize,
+            storageLimit: 10 * 1024 * 1024 * 1024 // 10GB mock limit
+        };
+        res.status(200).json({ success: true, data: stats });
+    })
+        .catch(err => {
+        loggerService_1.logger.error('Error getting images stats:', err);
+        res.status(500).json({ success: false, error: err.message });
+    });
+}
+/**
+ * Obtener estadísticas de pagos
+ */
+function adminPaymentsStats(req, res, next) {
+    firebase_1.db.collection('payments')
+        .get()
+        .then(snapshot => {
+        const payments = [];
+        snapshot.forEach(doc => payments.push(Object.assign({ _id: doc.id }, doc.data())));
+        const totalRevenue = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+        const successfulPayments = payments.filter(p => p.status === 'completed');
+        const stats = {
+            totalRevenue: totalRevenue,
+            totalTransactions: payments.length,
+            averageTransaction: payments.length > 0 ? totalRevenue / payments.length : 0,
+            successRate: payments.length > 0 ? (successfulPayments.length / payments.length) * 100 : 0,
+            failureRate: payments.length > 0 ? ((payments.length - successfulPayments.length) / payments.length) * 100 : 0,
+            byMethod: getPaymentsByMethod(payments),
+            revenueGrowth: 12.5, // Mock data - implement real calculation
+            topCurrencies: getTopCurrencies(payments)
+        };
+        res.status(200).json({ success: true, data: stats });
+    })
+        .catch(err => {
+        loggerService_1.logger.error('Error getting payments stats:', err);
+        res.status(500).json({ success: false, error: err.message });
+    });
+}
+/**
+ * Obtener estadísticas de chat
+ */
+function adminChatStats(req, res, next) {
+    Promise.all([
+        firebase_1.db.collection('conversations').get(),
+        firebase_1.db.collection('messages').get()
+    ])
+        .then(([conversationsSnapshot, messagesSnapshot]) => {
+        const conversations = [];
+        const messages = [];
+        conversationsSnapshot.forEach(doc => conversations.push(Object.assign({ _id: doc.id }, doc.data())));
+        messagesSnapshot.forEach(doc => messages.push(Object.assign({ _id: doc.id }, doc.data())));
+        const activeConversations = conversations.filter(conv => conv.isActive);
+        const stats = {
+            totalConversations: conversations.length,
+            activeConversations: activeConversations.length,
+            totalMessages: messages.length,
+            messagesPerConversation: conversations.length > 0 ? messages.length / conversations.length : 0,
+            responseTime: 2.5, // Mock data - implement real calculation
+            userSatisfaction: 4.6 // Mock data - implement real calculation
+        };
+        res.status(200).json({ success: true, data: stats });
+    })
+        .catch(err => {
+        loggerService_1.logger.error('Error getting chat stats:', err);
+        res.status(500).json({ success: false, error: err.message });
+    });
+}
+/**
+ * Obtener estadísticas del sistema
+ */
+function adminSystemStats(req, res, next) {
+    try {
+        const memoryUsage = process.memoryUsage();
+        const uptime = process.uptime();
+        const stats = {
+            uptime: 99.8, // Mock percentage uptime
+            cpuUsage: Math.random() * 50 + 25, // Mock CPU usage between 25-75%
+            memoryUsage: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100,
+            diskUsage: 34.5, // Mock disk usage
+            networkLatency: Math.random() * 50 + 10, // Mock latency 10-60ms
+            errorRate: Math.random() * 2, // Mock error rate 0-2%
+            requestsPerMinute: Math.floor(Math.random() * 1000 + 500), // Mock requests
+            activeConnections: Math.floor(Math.random() * 200 + 50) // Mock connections
+        };
+        res.status(200).json({ success: true, data: stats });
+    }
+    catch (err) {
+        loggerService_1.logger.error('Error getting system stats:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+}
+// ===== FUNCIONES AUXILIARES =====
+function getEventsByType(events) {
+    const typeCounts = {};
+    events.forEach(event => {
+        const type = event.eventType || 'unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    return typeCounts;
+}
+function getEventsByStatus(events) {
+    const statusCounts = {};
+    events.forEach(event => {
+        const status = event.status || 'unknown';
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+    });
+    return statusCounts;
+}
+function getTopVenues(events) {
+    const venueCounts = {};
+    events.forEach(event => {
+        const venue = event.location || 'unknown';
+        venueCounts[venue] = (venueCounts[venue] || 0) + 1;
+    });
+    return Object.entries(venueCounts)
+        .map(([venue, count]) => ({ venue, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+}
+function getImagesByType(images) {
+    const typeCounts = {};
+    images.forEach(image => {
+        var _a;
+        const type = ((_a = image.mimetype) === null || _a === void 0 ? void 0 : _a.split('/')[1]) || 'unknown';
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    return typeCounts;
+}
+function getPaymentsByMethod(payments) {
+    const methodCounts = {};
+    payments.forEach(payment => {
+        const method = payment.paymentMethod || 'unknown';
+        methodCounts[method] = (methodCounts[method] || 0) + 1;
+    });
+    return methodCounts;
+}
+function getTopCurrencies(payments) {
+    const currencyCounts = {};
+    payments.forEach(payment => {
+        const currency = payment.currency || 'USD';
+        const amount = payment.amount || 0;
+        currencyCounts[currency] = (currencyCounts[currency] || 0) + amount;
+    });
+    return Object.entries(currencyCounts)
+        .map(([currency, amount]) => ({ currency, amount }))
+        .sort((a, b) => b.amount - a.amount)
+        .slice(0, 3);
 }

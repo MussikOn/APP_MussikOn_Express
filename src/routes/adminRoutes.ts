@@ -37,6 +37,12 @@ import {
   adminVerifyMobilePayment,
   adminRejectMobilePayment,
   adminGetMobilePaymentStats,
+  // Nuevos controladores para estadísticas
+  adminEventsStats,
+  adminImagesStats,
+  adminPaymentsStats,
+  adminChatStats,
+  adminSystemStats,
 } from '../controllers/adminController';
 
 const adminRoutes = Router();
@@ -159,11 +165,11 @@ const adminRoutes = Router();
 
 // --- Usuarios ---
 adminRoutes.get('/users', adminOnly, adminUsersGetAll);
+adminRoutes.get('/users/stats', adminOnly, adminUsersStats); // ✅ MOVIDO ANTES DE :id
 adminRoutes.get('/users/:id', adminOnly, adminUsersGetById);
 adminRoutes.post('/users', adminOnly, adminUsersCreate);
 adminRoutes.put('/users/:id', adminOnly, adminUsersUpdate);
 adminRoutes.delete('/users/:id', adminOnly, adminUsersRemove);
-adminRoutes.get('/users/stats', adminOnly, adminUsersStats);
 
 /**
  * @swagger
@@ -256,6 +262,7 @@ adminRoutes.get('/users/stats', adminOnly, adminUsersStats);
 
 // --- Eventos ---
 adminRoutes.get('/events', adminOnly, adminEventsGetAll);
+adminRoutes.get('/events/stats', adminOnly, adminEventsStats); // ✅ NUEVA RUTA
 adminRoutes.get('/events/:id', adminOnly, adminEventsGetById);
 adminRoutes.post('/events', adminOnly, adminEventsCreate);
 adminRoutes.put('/events/:id', adminOnly, adminEventsUpdate);
@@ -391,6 +398,7 @@ adminRoutes.delete('/musicians/:id', adminOnly, adminMusiciansRemove);
 
 // --- Imágenes ---
 adminRoutes.get('/images', adminOnly, adminImagesGetAll);
+adminRoutes.get('/images/stats', adminOnly, adminImagesStats); // ✅ NUEVA RUTA
 adminRoutes.get('/images/:id', adminOnly, adminImagesGetById);
 adminRoutes.delete('/images/:id', adminOnly, adminImagesRemove);
 
@@ -731,5 +739,55 @@ adminRoutes.post('/mobile-payments/:id/reject', adminOnly, adminRejectMobilePaym
  *         description: Acceso solo para administradores
  */
 adminRoutes.get('/mobile-payments/stats', adminOnly, adminGetMobilePaymentStats);
+
+// ===== NUEVAS RUTAS DE ESTADÍSTICAS =====
+
+/**
+ * @swagger
+ * /admin/payments/stats:
+ *   get:
+ *     summary: Obtener estadísticas de pagos
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas de pagos
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/payments/stats', adminOnly, adminPaymentsStats);
+
+/**
+ * @swagger
+ * /admin/chat/stats:
+ *   get:
+ *     summary: Obtener estadísticas de chat
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas de chat
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/chat/stats', adminOnly, adminChatStats);
+
+/**
+ * @swagger
+ * /admin/system/stats:
+ *   get:
+ *     summary: Obtener estadísticas del sistema
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estadísticas del sistema
+ *       403:
+ *         description: Acceso solo para administradores
+ */
+adminRoutes.get('/system/stats', adminOnly, adminSystemStats);
 
 export default adminRoutes;

@@ -1442,3 +1442,253 @@ function getTopEvents(payments: any[]) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
 }
+
+// ===== NUEVAS FUNCIONES DE ESTADÍSTICAS =====
+
+/**
+ * Obtener estadísticas de eventos
+ */
+export function adminEventsStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  db.collection('events')
+    .get()
+    .then(snapshot => {
+      const events: any[] = [];
+      snapshot.forEach(doc => events.push({ _id: doc.id, ...doc.data() }));
+
+      const stats = {
+        total: events.length,
+        upcoming: events.filter(event => {
+          const eventDate = new Date(event.date);
+          return eventDate > new Date();
+        }).length,
+        completed: events.filter(event => event.status === 'completed').length,
+        cancelled: events.filter(event => event.status === 'cancelled').length,
+        byType: getEventsByType(events),
+        byStatus: getEventsByStatus(events),
+        attendanceRate: 85.5, // Mock data - implement real calculation
+        topVenues: getTopVenues(events)
+      };
+
+      res.status(200).json({ success: true, data: stats });
+    })
+    .catch(err => {
+      logger.error('Error getting events stats:', err);
+      res.status(500).json({ success: false, error: err.message });
+    });
+}
+
+/**
+ * Obtener estadísticas de imágenes
+ */
+export function adminImagesStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  db.collection('images')
+    .get()
+    .then(snapshot => {
+      const images: any[] = [];
+      snapshot.forEach(doc => images.push({ _id: doc.id, ...doc.data() }));
+
+      const totalSize = images.reduce((sum, img) => sum + (img.size || 0), 0);
+      const today = new Date();
+      const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const stats = {
+        total: images.length,
+        totalSize: totalSize,
+        averageSize: images.length > 0 ? totalSize / images.length : 0,
+        byType: getImagesByType(images),
+        uploadsToday: images.filter(img => {
+          const imgDate = new Date(img.createdAt);
+          return imgDate.toDateString() === today.toDateString();
+        }).length,
+        uploadsThisWeek: images.filter(img => {
+          const imgDate = new Date(img.createdAt);
+          return imgDate >= thisWeek;
+        }).length,
+        storageUsed: totalSize,
+        storageLimit: 10 * 1024 * 1024 * 1024 // 10GB mock limit
+      };
+
+      res.status(200).json({ success: true, data: stats });
+    })
+    .catch(err => {
+      logger.error('Error getting images stats:', err);
+      res.status(500).json({ success: false, error: err.message });
+    });
+}
+
+/**
+ * Obtener estadísticas de pagos
+ */
+export function adminPaymentsStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  db.collection('payments')
+    .get()
+    .then(snapshot => {
+      const payments: any[] = [];
+      snapshot.forEach(doc => payments.push({ _id: doc.id, ...doc.data() }));
+
+      const totalRevenue = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+      const successfulPayments = payments.filter(p => p.status === 'completed');
+
+      const stats = {
+        totalRevenue: totalRevenue,
+        totalTransactions: payments.length,
+        averageTransaction: payments.length > 0 ? totalRevenue / payments.length : 0,
+        successRate: payments.length > 0 ? (successfulPayments.length / payments.length) * 100 : 0,
+        failureRate: payments.length > 0 ? ((payments.length - successfulPayments.length) / payments.length) * 100 : 0,
+        byMethod: getPaymentsByMethod(payments),
+        revenueGrowth: 12.5, // Mock data - implement real calculation
+        topCurrencies: getTopCurrencies(payments)
+      };
+
+      res.status(200).json({ success: true, data: stats });
+    })
+    .catch(err => {
+      logger.error('Error getting payments stats:', err);
+      res.status(500).json({ success: false, error: err.message });
+    });
+}
+
+/**
+ * Obtener estadísticas de chat
+ */
+export function adminChatStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  Promise.all([
+    db.collection('conversations').get(),
+    db.collection('messages').get()
+  ])
+    .then(([conversationsSnapshot, messagesSnapshot]) => {
+      const conversations: any[] = [];
+      const messages: any[] = [];
+      
+      conversationsSnapshot.forEach(doc => conversations.push({ _id: doc.id, ...doc.data() }));
+      messagesSnapshot.forEach(doc => messages.push({ _id: doc.id, ...doc.data() }));
+
+      const activeConversations = conversations.filter(conv => conv.isActive);
+
+      const stats = {
+        totalConversations: conversations.length,
+        activeConversations: activeConversations.length,
+        totalMessages: messages.length,
+        messagesPerConversation: conversations.length > 0 ? messages.length / conversations.length : 0,
+        responseTime: 2.5, // Mock data - implement real calculation
+        userSatisfaction: 4.6 // Mock data - implement real calculation
+      };
+
+      res.status(200).json({ success: true, data: stats });
+    })
+    .catch(err => {
+      logger.error('Error getting chat stats:', err);
+      res.status(500).json({ success: false, error: err.message });
+    });
+}
+
+/**
+ * Obtener estadísticas del sistema
+ */
+export function adminSystemStats(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  try {
+    const memoryUsage = process.memoryUsage();
+    const uptime = process.uptime();
+
+    const stats = {
+      uptime: 99.8, // Mock percentage uptime
+      cpuUsage: Math.random() * 50 + 25, // Mock CPU usage between 25-75%
+      memoryUsage: (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100,
+      diskUsage: 34.5, // Mock disk usage
+      networkLatency: Math.random() * 50 + 10, // Mock latency 10-60ms
+      errorRate: Math.random() * 2, // Mock error rate 0-2%
+      requestsPerMinute: Math.floor(Math.random() * 1000 + 500), // Mock requests
+      activeConnections: Math.floor(Math.random() * 200 + 50) // Mock connections
+    };
+
+    res.status(200).json({ success: true, data: stats });
+  } catch (err) {
+    logger.error('Error getting system stats:', err as Error);
+    res.status(500).json({ success: false, error: (err as Error).message });
+  }
+}
+
+// ===== FUNCIONES AUXILIARES =====
+
+function getEventsByType(events: any[]) {
+  const typeCounts: Record<string, number> = {};
+  events.forEach(event => {
+    const type = event.eventType || 'unknown';
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
+  });
+  return typeCounts;
+}
+
+function getEventsByStatus(events: any[]) {
+  const statusCounts: Record<string, number> = {};
+  events.forEach(event => {
+    const status = event.status || 'unknown';
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  });
+  return statusCounts;
+}
+
+function getTopVenues(events: any[]) {
+  const venueCounts: Record<string, number> = {};
+  events.forEach(event => {
+    const venue = event.location || 'unknown';
+    venueCounts[venue] = (venueCounts[venue] || 0) + 1;
+  });
+  
+  return Object.entries(venueCounts)
+    .map(([venue, count]) => ({ venue, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+}
+
+function getImagesByType(images: any[]) {
+  const typeCounts: Record<string, number> = {};
+  images.forEach(image => {
+    const type = image.mimetype?.split('/')[1] || 'unknown';
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
+  });
+  return typeCounts;
+}
+
+function getPaymentsByMethod(payments: any[]) {
+  const methodCounts: Record<string, number> = {};
+  payments.forEach(payment => {
+    const method = payment.paymentMethod || 'unknown';
+    methodCounts[method] = (methodCounts[method] || 0) + 1;
+  });
+  return methodCounts;
+}
+
+function getTopCurrencies(payments: any[]) {
+  const currencyCounts: Record<string, number> = {};
+  payments.forEach(payment => {
+    const currency = payment.currency || 'USD';
+    const amount = payment.amount || 0;
+    currencyCounts[currency] = (currencyCounts[currency] || 0) + amount;
+  });
+  
+  return Object.entries(currencyCounts)
+    .map(([currency, amount]) => ({ currency, amount }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 3);
+}
