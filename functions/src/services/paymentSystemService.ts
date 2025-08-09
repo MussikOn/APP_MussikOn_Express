@@ -153,6 +153,8 @@ export class PaymentSystemService {
           filename: depositData.voucherFile.originalname || 'voucher.jpg',
           uploadedAt: new Date().toISOString()
         },
+        accountHolderName: 'Sin especificar', // TODO: Agregar al formulario del frontend
+        bankName: 'Sin especificar', // TODO: Agregar al formulario del frontend
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

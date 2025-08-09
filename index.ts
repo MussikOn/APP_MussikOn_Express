@@ -18,7 +18,7 @@ import { logger } from './src/services/loggerService';
 import { autoUpdateSignedUrls, ensureSignedUrlsInResponse, scheduledSignedUrlUpdate } from './src/middleware/signedUrlMiddleware';
 
 // Importar rutas
-import authRoutes from './src/routes/authRoutes';
+
 import adminRoutes from './src/routes/adminRoutes';
 import superAdminRoutes from './src/routes/superAdminRouter';
 import adminAuthRoutes from './src/routes/adminAuthRoutes';
@@ -30,7 +30,7 @@ import chatRoutes from './src/routes/chatRoutes';
 import searchRoutes from './src/routes/searchRoutes';
 import analyticsRoutes from './src/routes/analyticsRoutes';
 import geolocationRoutes from './src/routes/geolocationRoutes';
-import paymentRoutes from './src/routes/paymentRoutes';
+
 import paymentSystemRoutes from './src/routes/paymentSystemRoutes';
 import notificationRoutes from './src/routes/notificationRoutes';
 import pushNotificationRoutes from './src/routes/pushNotificationRoutes';
@@ -63,9 +63,10 @@ const io = new Server(server, {
       'http://localhost:5173/analytics',
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
+      'http://192.168.54.24:5173',
       'http://192.168.54.17:3001',
       'http://192.168.54.11:3001',
-      'http://192.168.54.11:5173',
+      'http://192.168.54.24:5173',
       'http://192.168.54.93:5173',
       'http://192.168.100.101:5173',
       'https://mussikon.web.app',
@@ -82,7 +83,8 @@ const allowedOrigins = [
       'http://localhost:5173/analytics',
       'http://172.20.10.2:5173',
       'http://172.20.10.2:3001/api-docs',
-      'http://192.168.54.17:3001',
+      'http://192.168.54.24:5173',
+      'http://192.168.54.24:3001',
       'http://192.168.54.11:3001',
       'http://192.168.54.11:5173',
       'http://192.168.54.93:5173',
@@ -380,7 +382,7 @@ const swaggerUiOptions = {
 };
 
 // Configurar rutas
-app.use("/auth", authRoutes);
+
 app.use("/admin-auth", adminAuthRoutes);
 app.use("/admin", paymentSystemRoutes); // Rutas de compatibilidad para /admin/payments/* (debe ir antes)
 app.use("/admin", adminRoutes);
@@ -393,7 +395,7 @@ app.use('/chat', chatRoutes);
 app.use('/search', searchRoutes);
 app.use('/analytics', analyticsRoutes);
 app.use('/geolocation', geolocationRoutes);
-app.use('/payments', paymentRoutes);
+
 app.use('/payment-system', paymentSystemRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/push-notifications', pushNotificationRoutes);
